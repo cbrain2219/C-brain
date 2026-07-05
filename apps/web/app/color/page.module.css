@@ -1,0 +1,76 @@
+.page {
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  font-family: var(--font-sans);
+  color: #111827;
+}
+
+.title {
+  margin: 0;
+  font-size: 28px;
+  line-height: 36px;
+  letter-spacing: -0.02em;
+  font-weight: 700;
+}
+
+.section {
+  color: #4b5563;
+  font-size: 14px;
+}
+
+.groupGrid {
+  display: grid;
+  gap: 24px;
+}
+
+.group {
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.groupTitle {
+  margin: 0 0 12px;
+  font-size: 18px;
+  line-height: 26px;
+  font-weight: 700;
+}
+
+.rowGrid {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+}
+
+.tokenItem {
+  border: 1px solid #f3f4f6;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #ffffff;
+}
+
+.swatch {
+  height: 72px;
+}
+
+.tokenMeta {
+  padding: 8px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.tokenName {
+  margin: 0;
+  font-size: 13px;
+  color: #111827;
+  word-break: break-all;
+}
+
+.tokenValue {
+  margin: 0;
+  font-size: 12px;
+  color: #6b7280;
+}
