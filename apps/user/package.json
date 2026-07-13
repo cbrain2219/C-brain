@@ -14,6 +14,7 @@
     "@repo/supabase": "workspace:*",
     "@repo/ui": "workspace:*",
     "next": "16.2.0",
+    "pretendard-gov": "^1.3.9",
     "react": "^19.2.0",
     "react-dom": "^19.2.0"
   },
