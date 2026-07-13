@@ -25,8 +25,10 @@ export function Metrics() {
       <div className={styles.metricGrid}>
         {metrics.map((metric) => (
           <article className={styles.metricItem} key={metric.label}>
-            <p className={styles.metricLabel}>{metric.label}</p>
-            <strong className={styles.metricValue}>{metric.value}</strong>
+            <div className={styles.metricMain}>
+              <p className={styles.metricLabel}>{metric.label}</p>
+              <strong className={styles.metricValue}>{metric.value}</strong>
+            </div>
             <p className={styles.metricDescription}>{metric.description}</p>
           </article>
         ))}
