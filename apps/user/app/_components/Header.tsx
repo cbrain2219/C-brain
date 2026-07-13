@@ -60,32 +60,34 @@ export function Header() {
     <header
       className={`${styles.header} ${isScrolled ? styles.headerScrolled : ""}`}
     >
-      <a aria-label="씨브레인 홈" className={styles.logoLink} href="#">
-        <span className={styles.logoMark}>
-          <Image
-            alt=""
-            className={styles.logoMain}
-            height={21}
-            src="/figma-assets/cbrain-logo-main.svg"
-            width={77}
-          />
-          <Image
-            alt=""
-            className={styles.logoTagline}
-            height={4}
-            src="/figma-assets/cbrain-logo-tagline.svg"
-            width={76}
-          />
-        </span>
-      </a>
+      <div className={styles.headerPrimary}>
+        <a aria-label="씨브레인 홈" className={styles.logoLink} href="#">
+          <span className={styles.logoMark}>
+            <Image
+              alt=""
+              className={styles.logoMain}
+              height={21}
+              src="/figma-assets/cbrain-logo-main.svg"
+              width={77}
+            />
+            <Image
+              alt=""
+              className={styles.logoTagline}
+              height={4}
+              src="/figma-assets/cbrain-logo-tagline.svg"
+              width={76}
+            />
+          </span>
+        </a>
 
-      <nav aria-label="주요 메뉴" className={styles.desktopNav}>
-        {navItems.map((item) => (
-          <a className={styles.navLink} href={item.href} key={item.label}>
-            {item.label}
-          </a>
-        ))}
-      </nav>
+        <nav aria-label="주요 메뉴" className={styles.desktopNav}>
+          {navItems.map((item) => (
+            <a className={styles.navLink} href={item.href} key={item.label}>
+              {item.label}
+            </a>
+          ))}
+        </nav>
+      </div>
 
       <div className={styles.headerActions}>
         <Button style={priceButtonStyle}>정찰제 가격 보기</Button>

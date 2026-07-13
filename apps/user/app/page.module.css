@@ -63,6 +63,14 @@
   text-decoration: none;
 }
 
+.headerPrimary {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 32px;
+  min-width: 0;
+}
+
 .logoMark {
   width: 78px;
   height: 28px;
@@ -88,6 +96,10 @@
 .desktopNav,
 .headerActions {
   display: none;
+}
+
+.desktopNav {
+  gap: 32px;
 }
 
 .mobileMenuButton {
@@ -1090,10 +1102,6 @@
   .headerActions {
     display: flex;
     align-items: center;
-  }
-
-  .desktopNav {
-    gap: 32px;
   }
 
   .headerActions {
