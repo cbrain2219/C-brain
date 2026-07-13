@@ -54,8 +54,8 @@ export function PortfolioSection() {
             <p
               className={`${styles.sectionDescription} ${styles.portfolioDescription}`}
             >
-              브로슈어 · 카탈로그 · 리플렛 · 포스터 · 명함 등 씨브레인의 실제
-              디자인 제작물을 확인하세요.
+              브로슈어 · 카탈로그 · 리플렛 · 포스터 · 명함 등 씨브레인
+              <br />의 실제 디자인 제작물을 확인하세요.
             </p>
           </div>
         </div>
