@@ -10,8 +10,8 @@
   --landing-button-kakao-fill: linear-gradient(103.542563deg, var(--landing-kakao) 0%, var(--landing-kakao) 49.519%, var(--landing-kakao-strong) 100%);
   --landing-button-border-start: linear-gradient(to bottom right, rgba(255, 255, 255, 0.8) 0%, rgba(255, 255, 255, 0.08) 30%, rgba(255, 255, 255, 0.08) 100%);
   --landing-button-border-end: linear-gradient(to bottom right, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.08) 70%, rgba(255, 255, 255, 0.8) 100%);
-  --landing-brand-border-start: linear-gradient(to bottom right, rgba(48, 186, 195, 0.88) 0%, rgba(48, 186, 195, 0.2) 30%, rgba(48, 186, 195, 0.2) 100%);
-  --landing-brand-border-end: linear-gradient(to bottom right, rgba(48, 186, 195, 0.2) 0%, rgba(48, 186, 195, 0.2) 70%, rgba(48, 186, 195, 0.88) 100%);
+  --landing-brand-border-start: linear-gradient(to bottom right, rgba(48, 186, 195, 0.8) 0%, rgba(48, 186, 195, 0.08) 30%, rgba(48, 186, 195, 0.08) 100%);
+  --landing-brand-border-end: linear-gradient(to bottom right, rgba(48, 186, 195, 0.08) 0%, rgba(48, 186, 195, 0.08) 70%, rgba(48, 186, 195, 0.8) 100%);
   --landing-gray-50: #f8fafc;
   --landing-gray-100: #f1f5f9;
   --landing-gray-200: #e2e8f0;
@@ -734,12 +734,9 @@
     var(--landing-brand-border-start) border-box;
   background-clip: padding-box, border-box, border-box;
   background-origin: padding-box, border-box, border-box;
-  -webkit-backdrop-filter: blur(10px);
-  backdrop-filter: blur(10px);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.72),
-    0 12px 28px rgba(48, 186, 195, 0.1);
   color: var(--landing-brand-500);
+  font-family: "Noto Sans KR", var(--font-sans);
+  line-height: normal;
   position: relative;
 }
 
