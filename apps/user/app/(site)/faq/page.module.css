@@ -1,0 +1,563 @@
+.faqPage {
+  --faq-page-card-bg: #f8fafc;
+  --faq-page-card-border: #f1f5f9;
+  --faq-page-divider-gradient: linear-gradient(
+    90deg,
+    rgba(30, 41, 59, 0) 0%,
+    rgba(30, 41, 59, 0.2) 50%,
+    rgba(30, 41, 59, 0) 100%
+  );
+  --faq-header-offset: 80px;
+  --faq-mobile-category-height: 52px;
+
+  padding-top: 80px;
+  background: #ffffff;
+  color: var(--landing-gray-800);
+  container-type: inline-size;
+}
+
+.faqPage :is(h1, h2, p) {
+  margin: 0;
+}
+
+.faqLayout {
+  width: 100%;
+}
+
+.sidebar {
+  display: none;
+}
+
+.mainColumn {
+  width: min(100%, 640px);
+  margin: 0 auto;
+  padding: 32px 20px 72px;
+}
+
+.hero {
+  margin-bottom: 72px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 20px;
+}
+
+.heroBadge,
+.contactBadge {
+  width: fit-content;
+  min-height: 40px;
+  border: 1px solid transparent;
+  border-radius: 32px;
+  padding: 8px 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 21px;
+  letter-spacing: 0;
+  white-space: nowrap;
+}
+
+.heroBadge {
+  background-color: rgba(48, 186, 195, 0.1);
+  background-clip: padding-box;
+  color: var(--landing-brand-500);
+  position: relative;
+}
+
+.heroBadge::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1px;
+  background:
+    var(--landing-brand-border-end),
+    var(--landing-brand-border-start);
+  pointer-events: none;
+  -webkit-mask:
+    linear-gradient(#ffffff 0 0) content-box,
+    linear-gradient(#ffffff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+}
+
+.heroCopy,
+.contactCopy,
+.contactHeading {
+  display: flex;
+  flex-direction: column;
+}
+
+.heroCopy {
+  gap: 8px;
+}
+
+.heroTitle {
+  max-width: 280px;
+  font-family: var(--font-sans);
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 36px;
+  letter-spacing: 0;
+  color: var(--landing-gray-800);
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
+
+.heroDescription {
+  max-width: 280px;
+  font-family: var(--font-sans);
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 24px;
+  letter-spacing: 0;
+  color: var(--landing-gray-800);
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
+
+.mobileCategoryNav {
+  width: 100cqw;
+  margin: 0 0 20px calc(50% - 50cqw);
+  border-bottom: 1px solid var(--landing-gray-100);
+  position: sticky;
+  top: var(--faq-header-offset);
+  z-index: 10;
+  background: #ffffff;
+  display: flex;
+  gap: 4px;
+  overflow-x: auto;
+  touch-action: pan-y;
+  scrollbar-width: none;
+}
+
+.mobileCategoryNav[data-dragging="true"] {
+  cursor: grabbing;
+  user-select: none;
+}
+
+.mobileCategoryNav[data-dragging="true"] .mobileCategoryLink {
+  cursor: grabbing;
+}
+
+.mobileCategoryNav::-webkit-scrollbar {
+  display: none;
+}
+
+.mobileCategoryLink,
+.sidebarLink {
+  color: inherit;
+  text-decoration: none;
+}
+
+.mobileCategoryLink {
+  height: 52px;
+  padding: 0 16px;
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  border-bottom: 2px solid transparent;
+  border-radius: 12px 12px 0 0;
+  color: var(--landing-gray-500);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  letter-spacing: 0;
+  white-space: nowrap;
+  cursor: grab;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.mobileCategoryLink:first-child {
+  margin-left: 20px;
+}
+
+.mobileCategoryLink:last-child {
+  margin-right: 20px;
+}
+
+.mobileCategoryLink:hover {
+  color: var(--landing-gray-800);
+}
+
+.mobileCategoryLink:focus-visible {
+  outline: 2px solid var(--landing-brand-500);
+  outline-offset: -2px;
+}
+
+.mobileCategoryLinkActive {
+  border-bottom-color: var(--landing-brand-500);
+  color: var(--landing-brand-500);
+  font-weight: 700;
+}
+
+.categorySections {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.categorySection {
+  scroll-margin-top: calc(
+    var(--faq-header-offset) + var(--faq-mobile-category-height) + 24px
+  );
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.categoryTitle {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--font-sans);
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 26px;
+  letter-spacing: 0;
+  color: var(--landing-gray-800);
+}
+
+.faqList {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.faqItem {
+  max-width: 100%;
+}
+
+.faqQuestion {
+  width: 100%;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--landing-gray-800);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  letter-spacing: 0;
+}
+
+.faqQuestion strong {
+  width: 20px;
+  height: 20px;
+  border-radius: 8px;
+  background: var(--landing-brand-500);
+  color: var(--landing-gray-50);
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 16px;
+  letter-spacing: 0;
+}
+
+.faqQuestionText {
+  min-width: 0;
+  flex: 1 1 auto;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+
+.contactSection {
+  min-height: 372px;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.contactBackground {
+  position: absolute;
+  inset: 0;
+  background-image: url("/figma-assets/landing-cta-background.jpg");
+  background-position: center;
+  background-size: cover;
+  opacity: 0.94;
+  pointer-events: none;
+}
+
+.contactContent {
+  width: min(100%, 390px);
+  padding: 72px 20px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 52px;
+  text-align: center;
+}
+
+.contactCopy {
+  align-items: center;
+  gap: 20px;
+}
+
+.contactBadge {
+  border-color: #ffffff;
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--landing-gray-50);
+}
+
+.contactHeading {
+  align-items: center;
+  gap: 8px;
+}
+
+.contactHeading h2 {
+  color: #ffffff;
+  font-family: var(--font-sans);
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 36px;
+  letter-spacing: 0;
+  word-break: keep-all;
+}
+
+.contactHeading p {
+  color: var(--landing-gray-50);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  letter-spacing: 0;
+  word-break: keep-all;
+}
+
+.contactButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+
+@media (min-width: 640px) {
+  .mainColumn {
+    width: min(100%, 640px);
+  }
+
+  .heroTitle {
+    max-width: 540px;
+  }
+
+  .heroDescription {
+    max-width: 538px;
+  }
+
+  .contactContent {
+    width: min(100%, 640px);
+  }
+}
+
+@media (min-width: 1200px) {
+  .faqLayout {
+    display: grid;
+    grid-template-columns: 260px minmax(0, 1fr);
+    align-items: stretch;
+  }
+
+  .sidebar {
+    display: block;
+    min-height: calc(100svh - 80px);
+    padding: 32px 20px;
+  }
+
+  .sidebarInner {
+    position: sticky;
+    top: var(--faq-header-offset);
+    z-index: 5;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .sidebarTitle {
+    font-family: var(--font-sans);
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 26px;
+    letter-spacing: 0;
+    color: var(--landing-gray-800);
+  }
+
+  .sidebarNav {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .sidebarLink {
+    height: 52px;
+    padding: 0 16px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--landing-gray-500);
+    font-family: var(--font-sans);
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 20px;
+    letter-spacing: 0;
+    white-space: nowrap;
+  }
+
+  .sidebarLink:hover {
+    background: var(--landing-gray-50);
+    color: var(--landing-gray-800);
+  }
+
+  .sidebarLink:focus-visible {
+    outline: 2px solid var(--landing-brand-500);
+    outline-offset: -2px;
+  }
+
+  .sidebarLinkActive {
+    background: var(--landing-gray-50);
+    color: var(--landing-brand-500);
+    font-weight: 700;
+  }
+
+  .sidebarContact {
+    box-sizing: border-box;
+    height: 140px;
+    padding: 20px;
+    border: 1px solid #ffffff;
+    border-radius: 16px;
+    background: var(--landing-button-kakao-fill);
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 16px;
+    color: var(--landing-kakao-dark);
+  }
+
+  .sidebarContactText {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .sidebarContact p,
+  .sidebarContact strong {
+    font-family: var(--font-sans);
+    letter-spacing: 0;
+    color: inherit;
+    white-space: nowrap;
+  }
+
+  .sidebarContact p {
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 16px;
+    letter-spacing: 0;
+  }
+
+  .sidebarContact strong {
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 20px;
+  }
+
+  .sidebarContactButton {
+    width: 164px;
+    height: 44px;
+    padding: 8px 16px;
+    border: 1px solid #ffffff;
+    border-radius: 32px;
+    background: linear-gradient(90deg, #ffffff 0%, #efefef 100%);
+    color: var(--landing-kakao-dark);
+    display: inline-flex;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    font-family: var(--font-sans);
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 21px;
+    letter-spacing: 0;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+
+  .mainColumn {
+    width: 100%;
+    max-width: 820px;
+    margin: 0;
+    padding: 32px 20px 72px;
+  }
+
+  .hero {
+    margin-bottom: 32px;
+  }
+
+  .heroTitle {
+    max-width: 780px;
+    font-size: 36px;
+    line-height: 48px;
+  }
+
+  .mobileCategoryNav {
+    display: none;
+  }
+
+  .categorySections {
+    gap: 52px;
+  }
+
+  .categorySection {
+    scroll-margin-top: calc(var(--faq-header-offset) + 24px);
+  }
+}
+
+@media (min-width: 1440px) {
+  .faqLayout {
+    grid-template-columns: 320px minmax(0, 1fr);
+  }
+
+  .sidebar {
+    padding: 52px 40px;
+  }
+
+  .mainColumn {
+    max-width: 1600px;
+    padding: 52px 40px 104px;
+  }
+
+  .hero {
+    margin-bottom: 52px;
+  }
+
+  .heroTitle {
+    max-width: 1008px;
+  }
+
+  .categorySections {
+    max-width: 1520px;
+  }
+
+  .contactSection {
+    min-height: 380px;
+  }
+
+  .contactContent {
+    width: min(100%, 1360px);
+  }
+}

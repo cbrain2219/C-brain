@@ -1,6 +1,7 @@
 "use client";
 
 import type {
+  DragEvent,
   KeyboardEvent,
   MouseEvent,
   PointerEvent,
@@ -20,6 +21,8 @@ type DragState = {
   startX: number;
 };
 
+const DRAG_START_DISTANCE = 10;
+
 export function HorizontalDragScroll({
   ariaLabel,
   children,
@@ -33,7 +36,7 @@ export function HorizontalDragScroll({
   const didDrag = useRef(false);
 
   const handlePointerDown = (event: PointerEvent<HTMLDivElement>) => {
-    if (event.pointerType !== "mouse" || event.button !== 0) return;
+    if (event.pointerType === "mouse" && event.button !== 0) return;
 
     dragState.current = {
       pointerId: event.pointerId,
@@ -41,17 +44,20 @@ export function HorizontalDragScroll({
       startX: event.clientX,
     };
     didDrag.current = false;
-    event.currentTarget.setPointerCapture(event.pointerId);
   };
 
   const handlePointerMove = (event: PointerEvent<HTMLDivElement>) => {
     if (dragState.current.pointerId !== event.pointerId) return;
 
     const distance = event.clientX - dragState.current.startX;
-    if (!didDrag.current && Math.abs(distance) < 4) return;
+    if (!didDrag.current) {
+      if (Math.abs(distance) < DRAG_START_DISTANCE) return;
 
-    didDrag.current = true;
-    event.currentTarget.dataset.dragging = "true";
+      didDrag.current = true;
+      event.currentTarget.dataset.dragging = "true";
+      event.currentTarget.setPointerCapture(event.pointerId);
+    }
+
     event.currentTarget.scrollLeft = dragState.current.scrollLeft - distance;
     event.preventDefault();
   };
@@ -73,6 +79,10 @@ export function HorizontalDragScroll({
   const handlePointerCancel = (event: PointerEvent<HTMLDivElement>) => {
     finishDrag(event);
     didDrag.current = false;
+  };
+
+  const handleDragStart = (event: DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
   };
 
   const handleClickCapture = (event: MouseEvent<HTMLDivElement>) => {
@@ -99,6 +109,7 @@ export function HorizontalDragScroll({
       aria-label={ariaLabel}
       className={className}
       onClickCapture={handleClickCapture}
+      onDragStartCapture={handleDragStart}
       onKeyDown={handleKeyDown}
       onPointerCancel={handlePointerCancel}
       onPointerDown={handlePointerDown}

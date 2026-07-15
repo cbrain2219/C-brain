@@ -2,6 +2,7 @@
 
 import { Button } from "@repo/ui/button";
 import Image from "next/image";
+import Link from "next/link";
 import {
   type MouseEvent,
   type SyntheticEvent,
@@ -15,14 +16,14 @@ import styles from "../page.module.css";
 import { createGradientBorderButtonStyle } from "./buttonStyles";
 
 const navItems = [
-  { label: "회사소개", href: "#about" },
-  { label: "포트폴리오", href: "#portfolio" },
-  { label: "고객 후기", href: "#reviews" },
-  { label: "주문 · 결제", href: "#services" },
-  { label: "FAQ & 가이드", href: "#faq" },
-  { label: "블로그", href: "#blog" },
-  { label: "불편 접수", href: "#contact" },
-  { label: "공지사항", href: "#notice" },
+  { label: "회사소개", href: "/#about" },
+  { label: "포트폴리오", href: "/#portfolio" },
+  { label: "고객 후기", href: "/#reviews" },
+  { label: "주문 · 결제", href: "/#services" },
+  { label: "FAQ & 가이드", href: "/faq" },
+  { label: "블로그", href: "/#blog" },
+  { label: "불편 접수", href: "/#contact" },
+  { label: "공지사항", href: "/#notice" },
 ];
 
 const priceButtonStyle = createGradientBorderButtonStyle({ width: 148 });
@@ -122,7 +123,7 @@ export function Header() {
       className={`${styles.header} ${isScrolled ? styles.headerScrolled : ""}`}
     >
       <div className={styles.headerPrimary}>
-        <a aria-label="씨브레인 홈" className={styles.logoLink} href="#">
+        <Link aria-label="씨브레인 홈" className={styles.logoLink} href="/">
           <span className={styles.logoMark}>
             <Image
               alt=""
@@ -139,13 +140,13 @@ export function Header() {
               width={76}
             />
           </span>
-        </a>
+        </Link>
 
         <nav aria-label="주요 메뉴" className={styles.desktopNav}>
           {navItems.map((item) => (
-            <a className={styles.navLink} href={item.href} key={item.label}>
+            <Link className={styles.navLink} href={item.href} key={item.label}>
               {item.label}
-            </a>
+            </Link>
           ))}
         </nav>
       </div>
@@ -198,7 +199,7 @@ export function Header() {
               className={styles.mobileNavLinks}
             >
               {navItems.map((item) => (
-                <a
+                <Link
                   aria-current={
                     activeNavHref === item.href ? "location" : undefined
                   }
@@ -212,7 +213,7 @@ export function Header() {
                   onClick={handleMobileNavClick}
                 >
                   {item.label}
-                </a>
+                </Link>
               ))}
             </nav>
           </div>
