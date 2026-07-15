@@ -19,7 +19,17 @@ export default function Home() {
       <AboutSection />
       <CustomerReviewSection />
       <BlogSection />
-      <CtaSection />
+      <CtaSection
+        badge="지금 바로 시작하세요"
+        description="빠른 상담 · 전국 납품 · 소량부터 대량까지"
+        id="contact"
+        titleLines={[
+          "실패 없는 홍보물 디자인 제작,",
+          <>
+            지금 바로 <strong>씨브레인</strong>에 맡기세요
+          </>,
+        ]}
+      />
       <FaqSection items={landingFaqs} />
     </>
   );

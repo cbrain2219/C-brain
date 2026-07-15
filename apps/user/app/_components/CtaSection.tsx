@@ -1,5 +1,5 @@
 import { Button } from "@repo/ui/button";
-import type { CSSProperties } from "react";
+import type { CSSProperties, ReactNode } from "react";
 
 import { Icon } from "../../components/Icon";
 import styles from "../page.module.css";
@@ -27,20 +27,43 @@ const ctaButtonIconStyle: CSSProperties = {
   flex: "0 0 auto",
 };
 
-export function CtaSection() {
+type CtaSectionProps = {
+  backgroundImage?: string;
+  badge?: ReactNode | null;
+  description?: ReactNode | null;
+  id?: string;
+  titleLines: readonly ReactNode[];
+};
+
+type CtaSectionStyle = CSSProperties & {
+  "--cta-background-image": string;
+};
+
+export function CtaSection({
+  backgroundImage = "/figma-assets/landing-cta-background.jpg",
+  badge = null,
+  description = null,
+  id,
+  titleLines,
+}: CtaSectionProps) {
+  const sectionStyle: CtaSectionStyle = {
+    "--cta-background-image": `url("${backgroundImage}")`,
+  };
+
   return (
-    <section className={styles.ctaSection} id="contact">
+    <section className={styles.ctaSection} id={id} style={sectionStyle}>
       <div className={styles.ctaBackground} />
       <div className={styles.ctaContent}>
-        <p className={styles.ctaBadge}>지금 바로 시작하세요</p>
+        {badge ? <p className={styles.ctaBadge}>{badge}</p> : null}
         <div className={styles.ctaText}>
           <h2>
-            <span>실패 없는 홍보물 디자인 제작,</span>
-            <span>
-              지금 바로 <strong>씨브레인</strong>에 맡기세요
-            </span>
+            {titleLines.map((titleLine, index) => (
+              <span key={typeof titleLine === "string" ? titleLine : index}>
+                {titleLine}
+              </span>
+            ))}
           </h2>
-          <p>빠른 상담 · 전국 납품 · 소량부터 대량까지</p>
+          {description ? <p>{description}</p> : null}
         </div>
         <div className={styles.ctaRow}>
           <Button style={kakaoButtonStyle}>

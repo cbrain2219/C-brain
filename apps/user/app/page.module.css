@@ -1219,7 +1219,7 @@
 }
 
 .ctaBackground {
-  background-image: url("/figma-assets/landing-cta-background.jpg");
+  background-image: var(--cta-background-image);
   opacity: 0.94;
 }
 
