@@ -16,12 +16,18 @@ export function BlogConsultCard({ className }: BlogConsultCardProps) {
   return (
     <aside className={cardClassName} aria-label="카카오톡 1:1 상담">
       <div className={styles.blogConsultCopy}>
-        <p className={styles.blogConsultEyebrow}>카카오톡으로 1:1 상담하기</p>
-        <h3 className={styles.blogConsultTitle}>
-          홍보물 제작, 무엇이든 물어보세요.
+        <h3
+          className={`${styles.blogConsultTitle} ${styles.blogConsultTitleDesktop}`}
+        >
+          실시간 카톡상담
+        </h3>
+        <h3
+          className={`${styles.blogConsultTitle} ${styles.blogConsultTitleMobile}`}
+        >
+          카카오톡으로 1:1 상담하기
         </h3>
         <p className={styles.blogConsultDescription}>
-          26년 경력 전문가가 제작 목적과 예산에 맞는 방법을 안내합니다.
+          견적·납기·디자인 질문을 바로 물어보세요
         </p>
       </div>
       <Button

@@ -40,7 +40,7 @@ export function BlogBoard({ posts }: BlogBoardProps) {
         <header className={styles.blogBoardHeader}>
           <p className={styles.blogBoardKicker}>C · Brain 공식 블로그</p>
           <h2 className={styles.blogBoardTitle} id="blog-board-title">
-            전체 <strong>{posts.length}</strong>개의 게시글
+            전체 게시글 <strong>{posts.length}</strong>
           </h2>
         </header>
 

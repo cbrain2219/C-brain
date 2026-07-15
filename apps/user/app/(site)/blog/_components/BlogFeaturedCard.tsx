@@ -25,7 +25,7 @@ export function BlogFeaturedCard({ post }: BlogFeaturedCardProps) {
       <div className={styles.blogFeaturedContent}>
         <p className={styles.blogFeaturedCategory}>{post.category}</p>
         <div className={styles.blogFeaturedCopy}>
-          <h2 className={styles.blogFeaturedTitle}>{post.title}</h2>
+          <h3 className={styles.blogFeaturedTitle}>{post.title}</h3>
           <p className={styles.blogFeaturedSummary}>{post.summary}</p>
         </div>
       </div>
