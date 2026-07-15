@@ -1,0 +1,347 @@
+@font-face {
+  font-family: "Notice Ellipsis";
+  src:
+    local("Arial"),
+    local("Helvetica"),
+    local("Liberation Sans"),
+    local("Roboto");
+  unicode-range: U+2026;
+}
+
+.noticeSection {
+  background: #ffffff;
+  container-type: inline-size;
+  overflow-x: clip;
+}
+
+.sectionInner {
+  gap: 32px;
+}
+
+.sectionHeader {
+  gap: 16px;
+}
+
+.sectionBadge {
+  border: 1px solid var(--landing-brand-500);
+  background: rgba(48, 186, 195, 0.1);
+  color: var(--landing-brand-500);
+}
+
+.sectionTitle {
+  max-width: none;
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  white-space: nowrap;
+}
+
+.sectionTitle strong {
+  color: var(--landing-brand-500);
+}
+
+.noticeBoard {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.categoryRail {
+  width: 100cqw;
+  margin-left: calc(50% - 50cqw);
+  background: linear-gradient(
+      var(--landing-gray-100),
+      var(--landing-gray-100)
+    )
+    center bottom / calc(100% - 40px) 1px no-repeat;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  overflow-x: auto;
+  scroll-padding-inline: 20px;
+  scrollbar-width: none;
+  cursor: grab;
+}
+
+.categoryRail::before,
+.categoryRail::after {
+  content: "";
+  flex: 0 0 16px;
+}
+
+.categoryRail[data-dragging="true"] {
+  cursor: grabbing;
+  user-select: none;
+}
+
+.categoryRail[data-dragging="true"] .categoryLink {
+  cursor: grabbing;
+}
+
+.categoryRail::-webkit-scrollbar {
+  display: none;
+}
+
+.categoryLink {
+  height: 52px;
+  padding: 0 16px;
+  border-bottom: 2px solid transparent;
+  color: var(--landing-gray-600);
+  font-family: "Pretendard GOV Variable", var(--font-sans);
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 24px;
+  letter-spacing: -0.24px;
+  text-decoration: none;
+  white-space: nowrap;
+  position: relative;
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+}
+
+.categoryLinkActive {
+  color: var(--landing-brand-500);
+  font-weight: 700;
+}
+
+.categoryLinkActive::after {
+  content: "";
+  height: 2px;
+  position: absolute;
+  right: 0;
+  bottom: -1px;
+  left: 0;
+  background: linear-gradient(
+    90deg,
+    rgba(48, 186, 195, 0) 0%,
+    var(--landing-brand-500) 50%,
+    rgba(48, 186, 195, 0) 100%
+  );
+  pointer-events: none;
+}
+
+.noticeList {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.pinnedNoticeList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.noticeItemPinned {
+  min-height: 102px;
+  padding: 16px;
+  border-radius: 16px;
+  background: var(--landing-gray-50);
+}
+
+.noticeArticle {
+  min-width: 0;
+}
+
+.noticeItemPinned .categoryTag,
+.noticeItemPinned .pinnedTag {
+  background: #ffffff;
+}
+
+.noticeItem {
+  min-width: 0;
+  color: inherit;
+  text-decoration: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.noticeItem:focus-visible {
+  outline: 2px solid var(--landing-brand-500);
+  outline-offset: 4px;
+}
+
+.noticeTopRow {
+  display: contents;
+}
+
+.noticeTags {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  order: 1;
+}
+
+.categoryTag,
+.pinnedTag {
+  min-height: 24px;
+  padding: 4px 8px;
+  border-radius: 16px;
+  background: var(--landing-brand-50);
+  color: var(--landing-brand-500);
+  font-family: "Pretendard GOV Variable", var(--font-sans);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+  letter-spacing: -0.18px;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pinnedTag {
+  display: inline-flex;
+  gap: 4px;
+}
+
+.pinIcon {
+  width: 12px;
+  height: 12px;
+  flex: 0 0 auto;
+}
+
+.noticeCopy {
+  min-width: 0;
+  color: var(--landing-gray-800);
+  font-family:
+    "Notice Ellipsis", "Pretendard GOV Variable", var(--font-sans);
+  font-weight: 500;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  order: 2;
+}
+
+.noticeCopy h3,
+.noticeCopy p {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.noticeCopy h3 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  letter-spacing: -0.21px;
+  white-space: nowrap;
+}
+
+.noticeCopy p {
+  font-size: 12px;
+  line-height: 16px;
+  letter-spacing: -0.18px;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.noticeMeta {
+  color: var(--landing-gray-600);
+  font-family: "Pretendard GOV Variable", var(--font-sans);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+  letter-spacing: -0.18px;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  order: 3;
+}
+
+.noticeMeta strong {
+  font-weight: 700;
+}
+
+.authorMark {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--landing-brand-500);
+  color: #ffffff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+}
+
+.authorMarkIcon {
+  width: 3px;
+  height: 12px;
+  display: block;
+  flex: 0 0 auto;
+}
+
+.emptyState {
+  min-height: 180px;
+  color: var(--landing-gray-500);
+  font-family: "Pretendard GOV Variable", var(--font-sans);
+  font-size: 14px;
+  line-height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@media (min-width: 640px) {
+  .sectionInner {
+    gap: 52px;
+  }
+
+  .noticeItem {
+    min-height: 70px;
+  }
+
+  .noticeTopRow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .noticeTags,
+  .noticeMeta {
+    order: initial;
+  }
+
+  .noticeCopy {
+    order: initial;
+  }
+
+  .noticeCopy p {
+    white-space: nowrap;
+    display: block;
+    -webkit-line-clamp: unset;
+  }
+}
+
+@media (min-width: 1080px) {
+  .sectionInner {
+    gap: 32px;
+  }
+}
+
+@media (min-width: 1440px) {
+  .sectionInner {
+    width: 1080px;
+    gap: 52px;
+  }
+
+  .categoryRail {
+    width: 100%;
+    margin-left: 0;
+  }
+
+  .categoryRail::before,
+  .categoryRail::after {
+    display: none;
+  }
+
+}

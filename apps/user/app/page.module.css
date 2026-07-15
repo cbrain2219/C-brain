@@ -73,6 +73,21 @@
   backdrop-filter: blur(10px);
 }
 
+.headerDarkHero {
+  color: var(--landing-gray-50);
+}
+
+.headerDarkHero .navLink,
+.headerDarkHero .mobileMenuButton {
+  color: var(--landing-gray-50);
+}
+
+.navLink.navLinkActive,
+.headerDarkHero .navLink.navLinkActive {
+  color: var(--landing-brand-500);
+  font-weight: 700;
+}
+
 .logoLink,
 .navLink,
 .socialLinks a,
@@ -1956,5 +1971,13 @@
 
   .footer {
     padding: 52px 40px;
+  }
+}
+
+@media (max-width: 1099px) {
+  .headerNoticePage {
+    height: 64px;
+    padding-left: 20px;
+    padding-right: 20px;
   }
 }

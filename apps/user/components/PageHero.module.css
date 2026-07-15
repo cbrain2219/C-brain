@@ -14,7 +14,7 @@
 }
 
 .background {
-  background-position: center;
+  background-position: var(--page-hero-mobile-background-position, center);
   background-size: cover;
 }
 
@@ -123,6 +123,26 @@
   background: linear-gradient(90deg, rgba(0, 0, 0, 0.72) 0%, rgba(0, 0, 0, 0) 72%);
 }
 
+.subpage {
+  min-height: 336px;
+  align-items: stretch;
+}
+
+.subpage.dark .overlay {
+  background: transparent;
+}
+
+.subpage .content {
+  width: min(100%, 390px);
+  padding: 136px 20px 72px;
+}
+
+.subpage .title {
+  font-size: 28px;
+  line-height: 36px;
+  letter-spacing: -0.42px;
+}
+
 .dark .badge {
   background-color: rgba(255, 255, 255, 0.1);
   color: var(--landing-gray-50);
@@ -192,6 +212,25 @@
 }
 
 @media (min-width: 640px) {
+  .background {
+    background-position: var(--page-hero-background-position, center);
+  }
+
+  .hero.subpage {
+    min-height: 344px;
+  }
+
+  .subpage .content {
+    width: min(100%, 640px);
+    padding: 136px 20px 72px;
+  }
+
+  .subpage .title {
+    font-size: 32px;
+    line-height: 44px;
+    letter-spacing: -0.8px;
+  }
+
   .hero.landing {
     min-height: 512px;
   }
@@ -218,6 +257,15 @@
 }
 
 @media (min-width: 1080px) {
+  .hero.subpage {
+    min-height: 360px;
+  }
+
+  .subpage .content {
+    width: min(100%, 1080px);
+    padding: 152px 80px 72px;
+  }
+
   .hero.landing {
     min-height: 528px;
   }
@@ -237,6 +285,22 @@
 }
 
 @media (min-width: 1440px) {
+  .hero.subpage {
+    min-height: 428px;
+  }
+
+  .subpage .content {
+    width: 1360px;
+    padding: 184px 0 104px;
+    margin: 0 auto;
+  }
+
+  .subpage .title {
+    font-size: 36px;
+    line-height: 48px;
+    letter-spacing: -0.9px;
+  }
+
   .hero.landing {
     min-height: 632px;
   }

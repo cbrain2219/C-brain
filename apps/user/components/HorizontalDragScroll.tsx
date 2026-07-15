@@ -12,6 +12,7 @@ type HorizontalDragScrollProps = {
   ariaLabel: string;
   children: ReactNode;
   className?: string;
+  role?: "navigation" | "region";
 };
 
 type DragState = {
@@ -20,10 +21,13 @@ type DragState = {
   startX: number;
 };
 
+const DRAG_ACTIVATION_DISTANCE = 8;
+
 export function HorizontalDragScroll({
   ariaLabel,
   children,
   className,
+  role = "region",
 }: HorizontalDragScrollProps) {
   const dragState = useRef<DragState>({
     pointerId: null,
@@ -41,17 +45,21 @@ export function HorizontalDragScroll({
       startX: event.clientX,
     };
     didDrag.current = false;
-    event.currentTarget.setPointerCapture(event.pointerId);
   };
 
   const handlePointerMove = (event: PointerEvent<HTMLDivElement>) => {
     if (dragState.current.pointerId !== event.pointerId) return;
 
     const distance = event.clientX - dragState.current.startX;
-    if (!didDrag.current && Math.abs(distance) < 4) return;
+    if (!didDrag.current && Math.abs(distance) < DRAG_ACTIVATION_DISTANCE) {
+      return;
+    }
 
-    didDrag.current = true;
-    event.currentTarget.dataset.dragging = "true";
+    if (!didDrag.current) {
+      didDrag.current = true;
+      event.currentTarget.dataset.dragging = "true";
+      event.currentTarget.setPointerCapture(event.pointerId);
+    }
     event.currentTarget.scrollLeft = dragState.current.scrollLeft - distance;
     event.preventDefault();
   };
@@ -104,7 +112,7 @@ export function HorizontalDragScroll({
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
       onPointerUp={finishDrag}
-      role="region"
+      role={role}
       tabIndex={0}
     >
       {children}

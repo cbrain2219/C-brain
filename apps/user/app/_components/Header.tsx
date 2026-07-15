@@ -2,6 +2,8 @@
 
 import { Button } from "@repo/ui/button";
 import Image from "next/image";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
 import styles from "../page.module.css";
@@ -15,7 +17,7 @@ const navItems = [
   { label: "FAQ & 가이드", href: "#faq" },
   { label: "블로그", href: "#blog" },
   { label: "불편 접수", href: "#contact" },
-  { label: "공지사항", href: "#notice" },
+  { label: "공지사항", href: "/notice" },
 ];
 
 const priceButtonStyle = createGradientBorderButtonStyle({ width: 148 });
@@ -26,6 +28,7 @@ const kakaoButtonStyle = createGradientBorderButtonStyle({
 });
 
 export function Header() {
+  const pathname = usePathname();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [activeNavHref, setActiveNavHref] = useState<string | null>(null);
@@ -87,12 +90,17 @@ export function Header() {
     window.requestAnimationFrame(() => menuButtonRef.current?.focus());
   };
 
+  const isNoticePage = pathname.startsWith("/notice");
+  const hasDarkHero = pathname === "/notice" && !isScrolled;
+
   return (
     <header
-      className={`${styles.header} ${isScrolled ? styles.headerScrolled : ""}`}
+      className={`${styles.header} ${isScrolled ? styles.headerScrolled : ""} ${
+        hasDarkHero ? styles.headerDarkHero : ""
+      } ${isNoticePage ? styles.headerNoticePage : ""}`}
     >
       <div className={styles.headerPrimary}>
-        <a aria-label="씨브레인 홈" className={styles.logoLink} href="#">
+        <Link aria-label="씨브레인 홈" className={styles.logoLink} href="/">
           <span className={styles.logoMark}>
             <Image
               alt=""
@@ -109,13 +117,24 @@ export function Header() {
               width={76.2359}
             />
           </span>
-        </a>
+        </Link>
 
         <nav aria-label="주요 메뉴" className={styles.desktopNav}>
           {navItems.map((item) => (
-            <a className={styles.navLink} href={item.href} key={item.label}>
+            <Link
+              aria-current={
+                item.href === "/notice" && isNoticePage ? "page" : undefined
+              }
+              className={`${styles.navLink} ${
+                item.href === "/notice" && isNoticePage
+                  ? styles.navLinkActive
+                  : ""
+              }`}
+              href={item.href}
+              key={item.label}
+            >
               {item.label}
-            </a>
+            </Link>
           ))}
         </nav>
       </div>
@@ -195,11 +214,16 @@ export function Header() {
               className={styles.mobileNavLinks}
             >
               {navItems.map((item) => (
-                <a
+                <Link
                   aria-current={
-                    activeNavHref === item.href ? "location" : undefined
+                    item.href === "/notice" && isNoticePage
+                      ? "page"
+                      : activeNavHref === item.href
+                        ? "location"
+                        : undefined
                   }
                   className={`${styles.mobileNavLink} ${
+                    (item.href === "/notice" && isNoticePage) ||
                     activeNavHref === item.href
                       ? styles.mobileNavLinkActive
                       : ""
@@ -212,7 +236,7 @@ export function Header() {
                   }}
                 >
                   {item.label}
-                </a>
+                </Link>
               ))}
             </nav>
           </div>
