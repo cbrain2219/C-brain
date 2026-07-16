@@ -16,6 +16,10 @@ const phoneVerificationPath = new URL(
   "../app/(site)/complaint/phoneVerification.ts",
   import.meta.url,
 );
+const complaintTypesPath = new URL(
+  "../app/(site)/complaint/complaintTypes.ts",
+  import.meta.url,
+);
 const footerPath = new URL("../app/_components/Footer.tsx", import.meta.url);
 const attachmentsPath = new URL(
   "../app/(site)/complaint/attachments.ts",
@@ -83,6 +87,106 @@ test("complaint page exposes the required intake form content", async () => {
   }
 });
 
+test("complaint service options match the service cards in visual order", async () => {
+  const formSource = await readFile(formPath, "utf8");
+  const serviceOptionsSource = formSource.match(
+    /const serviceOptions = \[([\s\S]*?)\];/,
+  );
+
+  assert.ok(serviceOptionsSource);
+  assert.deepEqual(
+    Array.from(
+      serviceOptionsSource[1].matchAll(/"([^"]+)"/g),
+      (match) => match[1],
+    ),
+    [
+      "브로슈어 · 카탈로그",
+      "리플렛 · 팜플렛",
+      "포스터 · 전단지",
+      "배너 · 족자 · 현수막",
+      "명함 · 봉투",
+      "로고",
+      "패키지 · 쇼핑백",
+      "촬영",
+      "기타",
+    ],
+  );
+});
+
+test("complaint types provide the supplied descriptions in order", async () => {
+  const { complaintTypeOptions, getComplaintTypeDescription } =
+    await importTypescriptModule(complaintTypesPath);
+
+  assert.deepEqual(complaintTypeOptions, [
+    {
+      title: "대표에게 제보하기",
+      description:
+        "서비스 전반에 대한 의견이나 제안을 대표에게 직접 전달합니다",
+    },
+    {
+      title: "불친절한 서비스",
+      description: "상담·응대 과정에서 불편했던 점을 알려주세요",
+    },
+    {
+      title: "결과물의 결함",
+      description: "완성된 제작물의 품질·오류에 대한 내용입니다",
+    },
+    {
+      title: "기타",
+      description: "위 항목에 해당하지 않는 내용을 자유롭게 작성해주세요",
+    },
+  ]);
+  assert.equal(
+    getComplaintTypeDescription("불친절한 서비스"),
+    "상담·응대 과정에서 불편했던 점을 알려주세요",
+  );
+  assert.equal(getComplaintTypeDescription(""), "");
+  assert.equal(getComplaintTypeDescription("알 수 없는 유형"), "");
+});
+
+test("complaint form shows the selected type description in the Figma layout", async () => {
+  const formSource = await readFile(formPath, "utf8");
+  const stylesSource = await readFile(stylesPath, "utf8");
+
+  assert.match(formSource, /from "\.\/complaintTypes"/);
+  assert.match(formSource, /watch\("complaintType"\)/);
+  assert.match(formSource, /getComplaintTypeDescription/);
+  assert.match(formSource, /selectedComplaintTypeDescription \?/);
+  assert.match(formSource, /aria-live="polite"/);
+  assert.match(formSource, /id="complaint-type-label"/);
+  assert.match(formSource, /aria-labelledby="complaint-type-label"/);
+  assert.match(
+    formSource,
+    /aria-describedby=\{[\s\S]*selectedComplaintTypeDescription[\s\S]*\? "complaint-type-description"[\s\S]*: undefined[\s\S]*\}/,
+  );
+  assert.match(formSource, /id="complaint-type-description"/);
+  assert.match(formSource, /className=\{styles\.complaintTypeControl\}/);
+  assert.match(formSource, /className=\{styles\.complaintTypeDescription\}/);
+  assert.match(formSource, /option\.title/);
+
+  assert.match(stylesSource, /\.complaintTypeControl\s*\{[\s\S]*?gap:\s*4px;/);
+  assert.match(
+    stylesSource,
+    /\.complaintTypeDescription\s*\{[\s\S]*?color:\s*var\(--landing-gray-600\);/,
+  );
+  assert.match(
+    stylesSource,
+    /\.complaintTypeDescription\s*\{[\s\S]*?font-size:\s*12px;/,
+  );
+  assert.match(
+    stylesSource,
+    /\.complaintTypeDescription\s*\{[\s\S]*?font-weight:\s*500;/,
+  );
+  assert.match(
+    stylesSource,
+    /\.complaintTypeDescription\s*\{[\s\S]*?line-height:\s*16px;/,
+  );
+  assert.doesNotMatch(
+    stylesSource,
+    /\.complaintTypeDescription[^}]*white-space:\s*nowrap/,
+  );
+});
+
 test("complaint validation returns invalid required fields in visual order", async () => {
   const { getInvalidRequiredComplaintFields } =
     await importTypescriptModule(validationPath);
@@ -109,11 +213,45 @@ test("complaint validation returns invalid required fields in visual order", asy
   );
 });
 
+test("complaint validation rejects malformed contact details", async () => {
+  const { getInvalidRequiredComplaintFields } =
+    await importTypescriptModule(validationPath);
+  const validValues = {
+    complaintType: "대표에게 제보하기",
+    detail: "상세 내용입니다.",
+    email: "user@example.com",
+    name: "홍길동",
+    phone: "01012345678",
+    privacy: true,
+    service: "브로슈어 · 카탈로그",
+    verificationCode: "123456",
+  };
+
+  assert.deepEqual(
+    getInvalidRequiredComplaintFields({
+      ...validValues,
+      email: "user",
+    }),
+    ["email"],
+  );
+  assert.deepEqual(
+    getInvalidRequiredComplaintFields({
+      ...validValues,
+      phone: "a",
+    }),
+    ["phone"],
+  );
+  assert.deepEqual(getInvalidRequiredComplaintFields(validValues), []);
+});
+
 test("complaint validation requires a six digit verification code", async () => {
   const {
+    COMPLAINT_TEMP_VERIFICATION_CODE,
     COMPLAINT_VERIFICATION_CODE_LENGTH,
     getInvalidRequiredComplaintFields,
   } = await importTypescriptModule(validationPath);
+
+  assert.equal(COMPLAINT_TEMP_VERIFICATION_CODE, "123456");
 
   assert.equal(COMPLAINT_VERIFICATION_CODE_LENGTH, 6);
 
@@ -144,9 +282,16 @@ test("complaint validation requires a six digit verification code", async () => 
   assert.deepEqual(
     getInvalidRequiredComplaintFields({
       ...validValues,
-      verificationCode: "123456",
+      verificationCode: COMPLAINT_TEMP_VERIFICATION_CODE,
     }),
     [],
+  );
+  assert.deepEqual(
+    getInvalidRequiredComplaintFields({
+      ...validValues,
+      verificationCode: "654321",
+    }),
+    ["verificationCode"],
   );
 });
 
@@ -278,16 +423,91 @@ test("footer logo images rely on image dimensions without duplicate inline sizin
   assert.doesNotMatch(footerSource, /style=\{\{ height: 4, width: 76 \}\}/);
 });
 
-test("complaint form keeps review-sensitive handlers and focus states explicit", async () => {
+test("complaint form delegates required field state to react-hook-form", async () => {
   const formSource = await readFile(formPath, "utf8");
   const stylesSource = await readFile(stylesPath, "utf8");
 
-  assert.doesNotMatch(formSource, /onChange=\{\(event\) =>/);
-  assert.doesNotMatch(formSource, /onClick=\{\(\) => handleRemoveAttachment/);
-  assert.match(formSource, /onChange=\{handleRequiredFieldChange\}/);
+  assert.match(formSource, /from "react-hook-form"/);
+  assert.match(formSource, /useForm<ComplaintFormValues>/);
+  assert.match(formSource, /formState:\s*\{\s*errors\s*\}/);
+  assert.match(
+    formSource,
+    /handleSubmit\(handleValidSubmit, handleInvalidSubmit\)/,
+  );
+  assert.match(formSource, /getValues\("phone"\)/);
+  assert.match(formSource, /setError\("phone"/);
+  assert.match(formSource, /const handlePhoneChange/);
+  assert.match(formSource, /onChange:\s*handlePhoneChange/);
+
+  for (const fieldName of [
+    "name",
+    "email",
+    "phone",
+    "verificationCode",
+    "service",
+    "complaintType",
+    "detail",
+    "privacy",
+  ]) {
+    assert.match(formSource, new RegExp(`register\\("${fieldName}"`));
+  }
+
+  assert.doesNotMatch(formSource, /invalidFieldNames/);
+  assert.doesNotMatch(formSource, /handleRequiredFieldChange/);
+  assert.doesNotMatch(formSource, /data-required-field-name/);
   assert.match(formSource, /onClick=\{handleRemoveAttachmentClick\}/);
   assert.match(
     stylesSource,
     /\.complaintConsent input:focus-visible \+ \.complaintConsentBox/,
+  );
+});
+
+test("complaint form shows the Figma success dialog and resets on close", async () => {
+  const formSource = await readFile(formPath, "utf8");
+  const stylesSource = await readFile(stylesPath, "utf8");
+
+  assert.match(formSource, /useRef<HTMLDialogElement>\(null\)/);
+  assert.match(formSource, /successDialogRef\.current\?\.showModal\(\)/);
+  assert.match(formSource, /const handleSuccessDialogClose/);
+  assert.match(formSource, /successDialogRef\.current\?\.close\(\)/);
+  assert.match(formSource, /\breset\(\)/);
+  assert.match(formSource, /setAttachmentFiles\(\[\]\)/);
+  assert.match(formSource, /syncAttachmentInputFiles\(\[\]\)/);
+  assert.match(formSource, /setPhoneVerificationResult\(null\)/);
+  assert.match(formSource, /setIsRequestingPhoneVerification\(false\)/);
+  assert.match(formSource, /event\.target === event\.currentTarget/);
+  assert.match(formSource, /event\.key === "Escape"/);
+
+  for (const expectedSource of [
+    "<dialog",
+    'aria-describedby="complaint-success-description"',
+    'aria-labelledby="complaint-success-title"',
+    'aria-label="접수 완료 팝업 닫기"',
+    "onCancel={handleSuccessDialogCancel}",
+    "onClick={handleSuccessDialogBackdropClick}",
+    "onClick={handleSuccessDialogClose}",
+    "onKeyDown={handleSuccessDialogKeyDown}",
+    "소중한 의견 감사합니다.",
+    "대표님 확인 후 영업일 기준 1~2일 내 회신드리겠습니다.",
+  ]) {
+    assert.match(formSource, new RegExp(expectedSource));
+  }
+  assert.match(formSource, />\s*확인\s*</);
+
+  assert.match(
+    stylesSource,
+    /\.complaintSuccessDialog::backdrop\s*\{[\s\S]*background:\s*rgba\(30, 41, 59, 0\.52\)/,
+  );
+  assert.match(
+    stylesSource,
+    /\.complaintSuccessPanel\s*\{[\s\S]*border-radius:\s*16px[\s\S]*padding:\s*16px 20px/,
+  );
+  assert.match(
+    stylesSource,
+    /\.complaintSuccessConfirmButton\s*\{[^}]*width:\s*56px[^}]*height:\s*52px[^}]*white-space:\s*nowrap[^}]*\}/,
+  );
+  assert.ok(
+    stylesSource.indexOf(".complaintSuccessDialog {") <
+      stylesSource.indexOf("@media (min-width: 640px)"),
   );
 });

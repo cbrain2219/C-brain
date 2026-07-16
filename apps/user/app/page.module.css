@@ -1634,6 +1634,24 @@
   pointer-events: none;
 }
 
+.complaintTypeControl {
+  width: 100%;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.complaintTypeDescription {
+  width: 100%;
+  color: var(--landing-gray-600);
+  font-family: "Pretendard GOV Variable", var(--font-sans);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+  letter-spacing: 0;
+}
+
 .complaintFileDrop {
   height: 160px;
   border: 1px dashed var(--landing-gray-100);
@@ -1898,6 +1916,100 @@
   clip-path: inset(50%);
   overflow: hidden;
   white-space: nowrap;
+}
+
+.complaintSuccessDialog {
+  width: min(calc(100% - 40px), 600px);
+  max-width: none;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  overflow: visible;
+}
+
+.complaintSuccessDialog::backdrop {
+  background: rgba(30, 41, 59, 0.52);
+}
+
+.complaintSuccessDialogContent {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.complaintSuccessCloseButton {
+  width: 24px;
+  height: 24px;
+  border: 0;
+  background: transparent;
+  color: #ffffff;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.complaintSuccessPanel {
+  width: 100%;
+  min-height: 148px;
+  border-radius: 16px;
+  background: #ffffff;
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 16px;
+}
+
+.complaintSuccessMessage {
+  width: 100%;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  color: var(--landing-gray-800);
+  font-family: "Pretendard GOV Variable", var(--font-sans);
+  letter-spacing: 0;
+}
+
+.complaintSuccessMessage strong {
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 24px;
+}
+
+.complaintSuccessMessage p {
+  max-width: 100%;
+  color: var(--landing-gray-700);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  overflow-wrap: anywhere;
+}
+
+.complaintSuccessConfirmButton {
+  width: 56px;
+  height: 52px;
+  border: 0;
+  border-radius: 16px;
+  background: var(--landing-brand-500);
+  color: #f8fafc;
+  padding: 8px 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: "Pretendard GOV Variable", var(--font-sans);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 20px;
+  letter-spacing: 0;
+  white-space: nowrap;
+  cursor: pointer;
 }
 
 .footer {
