@@ -16,14 +16,31 @@ const phoneVerificationPath = new URL(
   "../app/(site)/complaint/phoneVerification.ts",
   import.meta.url,
 );
+const footerPath = new URL("../app/_components/Footer.tsx", import.meta.url);
 const attachmentsPath = new URL(
   "../app/(site)/complaint/attachments.ts",
+  import.meta.url,
+);
+const complaintConstantsPath = new URL(
+  "../constants/complaint.ts",
   import.meta.url,
 );
 const stylesPath = new URL("../app/page.module.css", import.meta.url);
 
 async function importTypescriptModule(path) {
-  const source = await readFile(path, "utf8");
+  let source = await readFile(path, "utf8");
+  if (source.includes('from "../../../constants/complaint"')) {
+    const constantsSource = await readFile(complaintConstantsPath, "utf8");
+    source = `${constantsSource}\n${source
+      .replace(
+        /import \{[\s\S]*?\} from "\.\.\/\.\.\/\.\.\/constants\/complaint";\n/,
+        "",
+      )
+      .replace(
+        /export \{[\s\S]*?\} from "\.\.\/\.\.\/\.\.\/constants\/complaint";\n/,
+        "",
+      )}`;
+  }
   const ts = await import("typescript");
   const { outputText } = ts.transpileModule(source, {
     compilerOptions: {
@@ -96,8 +113,7 @@ test("complaint validation requires a six digit verification code", async () => 
   const {
     COMPLAINT_VERIFICATION_CODE_LENGTH,
     getInvalidRequiredComplaintFields,
-  } =
-    await importTypescriptModule(validationPath);
+  } = await importTypescriptModule(validationPath);
 
   assert.equal(COMPLAINT_VERIFICATION_CODE_LENGTH, 6);
 
@@ -233,6 +249,33 @@ test("complaint attachments are formatted for the selected file list", async () 
     name: "작은 파일.png",
     sizeLabel: "2KB",
   });
+});
+
+test("complaint attachment limits are managed from shared constants", async () => {
+  const attachmentsSource = await readFile(attachmentsPath, "utf8");
+  const constantsSource = await readFile(complaintConstantsPath, "utf8");
+
+  assert.match(attachmentsSource, /from "..\/..\/..\/constants\/complaint"/);
+  assert.doesNotMatch(
+    attachmentsSource,
+    /MAX_COMPLAINT_ATTACHMENT_COUNT\s*=\s*10/,
+  );
+  assert.match(constantsSource, /MAX_COMPLAINT_ATTACHMENT_COUNT = 10/);
+  assert.match(
+    constantsSource,
+    /MAX_COMPLAINT_ATTACHMENT_SIZE_BYTES =\s*50 \* COMPLAINT_ATTACHMENT_BYTES_IN_MEGABYTE/,
+  );
+});
+
+test("footer logo images rely on image dimensions without duplicate inline sizing", async () => {
+  const footerSource = await readFile(footerPath, "utf8");
+
+  assert.match(footerSource, /height=\{21\}/);
+  assert.match(footerSource, /width=\{77\}/);
+  assert.match(footerSource, /height=\{4\}/);
+  assert.match(footerSource, /width=\{76\}/);
+  assert.doesNotMatch(footerSource, /style=\{\{ height: 21, width: 77 \}\}/);
+  assert.doesNotMatch(footerSource, /style=\{\{ height: 4, width: 76 \}\}/);
 });
 
 test("complaint form keeps review-sensitive handlers and focus states explicit", async () => {

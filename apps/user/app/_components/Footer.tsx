@@ -44,14 +44,12 @@ export function Footer() {
             alt=""
             height={21}
             src="/figma-assets/cbrain-logo-main.svg"
-            style={{ height: 21, width: 77 }}
             width={77}
           />
           <Image
             alt=""
             height={4}
             src="/figma-assets/cbrain-logo-tagline.svg"
-            style={{ height: 4, width: 76 }}
             width={76}
           />
         </a>

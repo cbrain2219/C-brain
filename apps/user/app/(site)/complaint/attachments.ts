@@ -1,8 +1,15 @@
-export const MAX_COMPLAINT_ATTACHMENT_COUNT = 10;
+import {
+  MAX_COMPLAINT_ATTACHMENT_COUNT,
+  MAX_COMPLAINT_ATTACHMENT_SIZE_BYTES,
+} from "../../../constants/complaint";
+
+export {
+  MAX_COMPLAINT_ATTACHMENT_COUNT,
+  MAX_COMPLAINT_ATTACHMENT_SIZE_BYTES,
+} from "../../../constants/complaint";
 
 const BYTES_IN_KILOBYTE = 1024;
 const BYTES_IN_MEGABYTE = BYTES_IN_KILOBYTE * 1024;
-export const MAX_COMPLAINT_ATTACHMENT_SIZE_BYTES = 50 * BYTES_IN_MEGABYTE;
 
 export type ComplaintAttachmentFile = Pick<
   File,
