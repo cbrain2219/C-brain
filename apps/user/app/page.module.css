@@ -11,14 +11,52 @@
   --landing-kakao: #fae100;
   --landing-kakao-strong: #fac800;
   --landing-kakao-dark: #3b1d1d;
-  --landing-button-brand-fill: linear-gradient(90deg, var(--landing-brand-500) 0%, var(--landing-brand-600) 100%);
-  --landing-button-kakao-fill: linear-gradient(103.542563deg, var(--landing-kakao) 0%, var(--landing-kakao) 49.519%, var(--landing-kakao-strong) 100%);
-  --landing-button-contact-kakao-fill: linear-gradient(104.944112deg, var(--landing-kakao) 0%, var(--landing-kakao) 49.519%, var(--landing-kakao-strong) 100%);
-  --landing-button-contact-kakao-underlay: linear-gradient(90deg, #3d82f5 0%, #0360ef 100%);
-  --landing-button-border-start: linear-gradient(to bottom right, rgba(255, 255, 255, 0.8) 0%, rgba(255, 255, 255, 0.08) 30%, rgba(255, 255, 255, 0.08) 100%);
-  --landing-button-border-end: linear-gradient(to bottom right, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.08) 70%, rgba(255, 255, 255, 0.8) 100%);
-  --landing-brand-border-start: linear-gradient(to bottom right, rgba(48, 186, 195, 0.8) 0%, rgba(48, 186, 195, 0.08) 30%, rgba(48, 186, 195, 0.08) 100%);
-  --landing-brand-border-end: linear-gradient(to bottom right, rgba(48, 186, 195, 0.08) 0%, rgba(48, 186, 195, 0.08) 70%, rgba(48, 186, 195, 0.8) 100%);
+  --landing-button-brand-fill: linear-gradient(
+    90deg,
+    var(--landing-brand-500) 0%,
+    var(--landing-brand-600) 100%
+  );
+  --landing-button-kakao-fill: linear-gradient(
+    103.542563deg,
+    var(--landing-kakao) 0%,
+    var(--landing-kakao) 49.519%,
+    var(--landing-kakao-strong) 100%
+  );
+  --landing-button-contact-kakao-fill: linear-gradient(
+    104.944112deg,
+    var(--landing-kakao) 0%,
+    var(--landing-kakao) 49.519%,
+    var(--landing-kakao-strong) 100%
+  );
+  --landing-button-contact-kakao-underlay: linear-gradient(
+    90deg,
+    #3d82f5 0%,
+    #0360ef 100%
+  );
+  --landing-button-border-start: linear-gradient(
+    to bottom right,
+    rgba(255, 255, 255, 0.8) 0%,
+    rgba(255, 255, 255, 0.08) 30%,
+    rgba(255, 255, 255, 0.08) 100%
+  );
+  --landing-button-border-end: linear-gradient(
+    to bottom right,
+    rgba(255, 255, 255, 0.08) 0%,
+    rgba(255, 255, 255, 0.08) 70%,
+    rgba(255, 255, 255, 0.8) 100%
+  );
+  --landing-brand-border-start: linear-gradient(
+    to bottom right,
+    rgba(48, 186, 195, 0.8) 0%,
+    rgba(48, 186, 195, 0.08) 30%,
+    rgba(48, 186, 195, 0.08) 100%
+  );
+  --landing-brand-border-end: linear-gradient(
+    to bottom right,
+    rgba(48, 186, 195, 0.08) 0%,
+    rgba(48, 186, 195, 0.08) 70%,
+    rgba(48, 186, 195, 0.8) 100%
+  );
   --landing-gray-50: #f8fafc;
   --landing-gray-100: #f1f5f9;
   --landing-gray-200: #e2e8f0;
@@ -276,8 +314,7 @@
 
 .heroGradientButton::before {
   background:
-    var(--landing-button-border-end),
-    var(--landing-button-border-start);
+    var(--landing-button-border-end), var(--landing-button-border-start);
 }
 
 .ctaText,
@@ -387,8 +424,7 @@
   border-radius: inherit;
   padding: 1px;
   background:
-    var(--landing-brand-border-end),
-    var(--landing-brand-border-start);
+    var(--landing-brand-border-end), var(--landing-brand-border-start);
   pointer-events: none;
   -webkit-mask:
     linear-gradient(#ffffff 0 0) content-box,
@@ -752,8 +788,7 @@
   border-radius: inherit;
   padding: 1px;
   background:
-    var(--landing-button-border-end),
-    var(--landing-button-border-start);
+    var(--landing-button-border-end), var(--landing-button-border-start);
   pointer-events: none;
   -webkit-mask:
     linear-gradient(#ffffff 0 0) content-box,
@@ -865,8 +900,7 @@
   border-radius: inherit;
   padding: 1px;
   background:
-    var(--landing-brand-border-end),
-    var(--landing-brand-border-start);
+    var(--landing-brand-border-end), var(--landing-brand-border-start);
   pointer-events: none;
   -webkit-mask:
     linear-gradient(#ffffff 0 0) content-box,
@@ -1255,8 +1289,7 @@
   border-radius: inherit;
   padding: 1px;
   background:
-    var(--landing-button-border-end),
-    var(--landing-button-border-start);
+    var(--landing-button-border-end), var(--landing-button-border-start);
   pointer-events: none;
   -webkit-mask:
     linear-gradient(#ffffff 0 0) content-box,
@@ -1324,8 +1357,7 @@
   border-radius: inherit;
   padding: 1px;
   background:
-    var(--landing-brand-border-end),
-    var(--landing-brand-border-start);
+    var(--landing-brand-border-end), var(--landing-brand-border-start);
   pointer-events: none;
   -webkit-mask:
     linear-gradient(#ffffff 0 0) content-box,
@@ -1416,6 +1448,455 @@
   line-height: 21px;
   letter-spacing: 0;
   text-decoration: none;
+  white-space: nowrap;
+}
+
+.complaintSection {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.5);
+  padding: 152px 20px 72px;
+}
+
+.complaintInner {
+  width: min(100%, 350px);
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 52px;
+}
+
+.complaintIntro {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  color: var(--landing-gray-800);
+}
+
+.complaintIntro h1 {
+  font-family: var(--font-sans);
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 32px;
+  letter-spacing: 0;
+}
+
+.complaintIntro p {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  font-family: "Pretendard GOV Variable", var(--font-sans);
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 24px;
+  letter-spacing: 0;
+}
+
+.complaintForm {
+  width: 100%;
+  border: 0;
+  border-radius: 32px;
+  background: var(--landing-gray-50);
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 52px;
+}
+
+.complaintFields {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.complaintFieldGrid,
+.complaintPhoneGroup {
+  width: 100%;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 20px;
+}
+
+.complaintPhoneGroup {
+  gap: 8px;
+}
+
+.complaintField {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  color: var(--landing-gray-800);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 21px;
+  letter-spacing: 0;
+}
+
+.complaintField input,
+.complaintField textarea,
+.complaintField select {
+  width: 100%;
+  border: 1px solid var(--landing-gray-100);
+  border-radius: 16px;
+  background: #ffffff;
+  color: var(--landing-gray-800);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 21px;
+  letter-spacing: 0;
+  outline: 0;
+}
+
+.complaintField input,
+.complaintField select {
+  height: 52px;
+  padding: 0 16px;
+}
+
+.complaintField textarea {
+  height: 160px;
+  min-height: 160px;
+  resize: vertical;
+  padding: 14px 16px;
+}
+
+.complaintField input::placeholder,
+.complaintField textarea::placeholder {
+  color: #a0aab8;
+  opacity: 1;
+}
+
+.complaintField input:focus,
+.complaintField textarea:focus,
+.complaintField select:focus {
+  border-color: var(--landing-brand-500);
+  box-shadow: 0 0 0 3px rgba(48, 186, 195, 0.14);
+}
+
+.complaintField[data-invalid="true"] input,
+.complaintField[data-invalid="true"] textarea,
+.complaintField[data-invalid="true"] select {
+  border-color: #ef4444;
+}
+
+.complaintField[data-invalid="true"] input:focus,
+.complaintField[data-invalid="true"] textarea:focus,
+.complaintField[data-invalid="true"] select:focus {
+  border-color: #ef4444;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.14);
+}
+
+.complaintPhoneRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 84px;
+  gap: 8px;
+}
+
+.complaintVerifyButton {
+  height: 52px;
+  border: 0;
+  border-radius: 16px;
+  background: var(--landing-brand-500);
+  color: #f8fafc;
+  padding: 8px 16px;
+  font-family: "Pretendard GOV Variable", var(--font-sans);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 20px;
+  letter-spacing: 0;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.complaintVerifyButton:disabled {
+  cursor: wait;
+  opacity: 0.72;
+}
+
+.complaintSelectWrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.complaintSelectWrap select {
+  appearance: none;
+  padding-right: 48px;
+}
+
+.complaintSelectWrap svg {
+  position: absolute;
+  right: 16px;
+  color: var(--landing-gray-800);
+  pointer-events: none;
+}
+
+.complaintFileDrop {
+  height: 160px;
+  border: 1px dashed var(--landing-gray-100);
+  border-radius: 16px;
+  background: #ffffff;
+  position: relative;
+  overflow: hidden;
+  padding: 52px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.complaintFileDrop input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.complaintFileIcon {
+  width: 32px;
+  height: 32px;
+  border-radius: 16px;
+  background: var(--landing-gray-100);
+  color: var(--landing-gray-800);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+}
+
+.complaintFileText {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  text-align: center;
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 18px;
+  letter-spacing: 0;
+}
+
+.complaintFileText strong {
+  color: var(--landing-gray-800);
+  font-weight: 500;
+}
+
+.complaintFileText span {
+  color: #a0aab8;
+}
+
+.complaintAttachmentField {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.complaintAttachmentList {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.complaintAttachmentItem {
+  width: 100%;
+  min-height: 68px;
+  border: 1px solid var(--landing-gray-100);
+  border-radius: 16px;
+  background: #ffffff;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.complaintAttachmentDetails {
+  min-width: 0;
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  font-family: "Pretendard GOV Variable", var(--font-sans);
+  font-weight: 500;
+  letter-spacing: 0;
+}
+
+.complaintAttachmentName {
+  width: 100%;
+  overflow: hidden;
+  color: var(--landing-gray-800);
+  font-size: 14px;
+  line-height: 20px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.complaintAttachmentSize {
+  color: #475569;
+  font-size: 12px;
+  line-height: 16px;
+}
+
+.complaintAttachmentRemoveButton {
+  width: 24px;
+  height: 24px;
+  border: 0;
+  background: transparent;
+  color: var(--landing-gray-800);
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  cursor: pointer;
+}
+
+.complaintConsent {
+  min-height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  color: var(--landing-gray-800);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 21px;
+  letter-spacing: 0;
+}
+
+.complaintConsent label {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.complaintConsent input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  border: 0;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.complaintConsentBox {
+  width: 24px;
+  height: 24px;
+  border-radius: 8px;
+  background: var(--landing-brand-500);
+  color: #ffffff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+}
+
+.complaintConsentBox::before {
+  content: "";
+  width: 10px;
+  height: 6px;
+  border-left: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: translateY(-1px) rotate(-45deg);
+}
+
+.complaintConsent input:not(:checked) + .complaintConsentBox {
+  background: #ffffff;
+  box-shadow: inset 0 0 0 1px var(--landing-gray-200);
+}
+
+.complaintConsent[data-invalid="true"] .complaintConsentBox {
+  background: #ffffff;
+  box-shadow: inset 0 0 0 1px #ef4444;
+}
+
+.complaintConsent[data-invalid="true"]
+  input:not(:checked)
+  + .complaintConsentBox {
+  background: #ffffff;
+  box-shadow: inset 0 0 0 1px #ef4444;
+}
+
+.complaintConsent input:focus-visible + .complaintConsentBox {
+  box-shadow:
+    inset 0 0 0 1px var(--landing-brand-500),
+    0 0 0 3px rgba(48, 186, 195, 0.14);
+}
+
+.complaintConsent[data-invalid="true"]
+  input:focus-visible
+  + .complaintConsentBox {
+  box-shadow:
+    inset 0 0 0 1px #ef4444,
+    0 0 0 3px rgba(239, 68, 68, 0.14);
+}
+
+.complaintConsent input:not(:checked) + .complaintConsentBox::before {
+  display: none;
+}
+
+.complaintConsent a {
+  color: #a0aab8;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.complaintSubmitButton {
+  width: 100%;
+  height: 52px;
+  border: 1px solid transparent;
+  border-radius: 32px;
+  background:
+    var(--landing-button-brand-fill) padding-box,
+    var(--landing-button-border-end) border-box,
+    var(--landing-button-border-start) border-box;
+  background-clip: padding-box, border-box, border-box;
+  background-origin: padding-box, border-box, border-box;
+  color: #fefefe;
+  padding: 8px 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 21px;
+  letter-spacing: 0;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.complaintSubmitButton svg {
+  flex: 0 0 auto;
+}
+
+.complaintVisuallyHidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  border: 0;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  overflow: hidden;
   white-space: nowrap;
 }
 
@@ -1680,6 +2161,14 @@
     width: min(100%, 560px);
   }
 
+  .complaintInner {
+    width: min(100%, 600px);
+  }
+
+  .complaintFieldGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .footerTop {
     flex-direction: row;
     align-items: center;
@@ -1790,6 +2279,15 @@
     width: 640px;
   }
 
+  .complaintSection {
+    padding-top: 184px;
+    padding-bottom: 104px;
+  }
+
+  .complaintInner {
+    width: min(100%, 640px);
+  }
+
   .footer {
     padding-left: 20px;
     padding-right: 20px;
@@ -1832,6 +2330,11 @@
     color: var(--landing-gray-800);
     white-space: nowrap;
   }
+
+  .navLinkActive {
+    color: var(--landing-brand-500);
+    font-weight: 700;
+  }
 }
 
 @media (min-width: 1440px) {
@@ -1857,6 +2360,22 @@
     width: 1360px;
     padding-left: 0;
     padding-right: 0;
+  }
+
+  .complaintInner {
+    width: 1360px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+    gap: 20px;
+  }
+
+  .complaintIntro h1 {
+    font-size: 28px;
+    line-height: 36px;
+  }
+
+  .complaintForm {
+    padding: 24px 32px;
   }
 
   .metricGrid {

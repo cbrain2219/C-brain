@@ -24,6 +24,7 @@ type IconName =
   | "edit-03"
   | "file-text"
   | "flag"
+  | "folder-up-02"
   | "megaphone"
   | "menu-04"
   | "message-typing"
@@ -207,10 +208,7 @@ function CreditCardIcon({ size = 24, ...props }: Omit<IconProps, "name">) {
   );
 }
 
-function DotsHorizontalIcon({
-  size = 24,
-  ...props
-}: Omit<IconProps, "name">) {
+function DotsHorizontalIcon({ size = 24, ...props }: Omit<IconProps, "name">) {
   return (
     <svg
       aria-hidden="true"
@@ -289,6 +287,28 @@ function FlagIcon({ size = 24, ...props }: Omit<IconProps, "name">) {
     >
       <path
         d="M6 21V4M6 4H17L15.5 8L17 12H6"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="1.8"
+      />
+    </svg>
+  );
+}
+
+function FolderUp02Icon({ size = 24, ...props }: Omit<IconProps, "name">) {
+  return (
+    <svg
+      aria-hidden="true"
+      fill="none"
+      height={size}
+      viewBox="0 0 24 24"
+      width={size}
+      xmlns="http://www.w3.org/2000/svg"
+      {...props}
+    >
+      <path
+        d="M12 17V10M12 10L9.5 12.5M12 10L14.5 12.5M3.5 7.5V17.5C3.5 18.6 4.4 19.5 5.5 19.5H18.5C19.6 19.5 20.5 18.6 20.5 17.5V9.5C20.5 8.4 19.6 7.5 18.5 7.5H12.35L10.35 5.5H5.5C4.4 5.5 3.5 6.4 3.5 7.5Z"
         stroke="currentColor"
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -509,6 +529,7 @@ const icons = {
   "edit-03": Edit03Icon,
   "file-text": FileTextIcon,
   flag: FlagIcon,
+  "folder-up-02": FolderUp02Icon,
   megaphone: MegaphoneIcon,
   "menu-04": Menu04Icon,
   "message-typing": MessageTypingIcon,
