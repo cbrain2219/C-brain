@@ -30,8 +30,12 @@ test("CTA section owns its styles and conditionally renders the second action", 
   assert.match(source, /CtaSection\.module\.css/);
   assert.match(source, /secondaryAction \?/);
   assert.match(source, /<Link/);
+  assert.match(source, /createGradientBorderButtonStyle/);
   assert.match(styles, /\.descriptionSm/);
   assert.match(styles, /\.descriptionMd/);
+  assert.match(styles, /\.badge::before/);
+  assert.match(styles, /var\(--landing-button-border-end\)/);
+  assert.doesNotMatch(styles, /\.section\s*\{[^}]*min-height/s);
 });
 
 test("landing page passes the landing CTA configuration explicitly", async () => {
