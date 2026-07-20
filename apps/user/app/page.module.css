@@ -1128,6 +1128,444 @@
   }
 }
 
+.reviewsPageHero {
+  min-height: 540px;
+  padding: 144px 20px 72px;
+  position: relative;
+  overflow: hidden;
+  background: var(--landing-info-50);
+  display: flex;
+  align-items: center;
+}
+
+.reviewsHeroImage {
+  object-fit: cover;
+  object-position: center;
+}
+
+.reviewsHeroOverlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.96) 0%,
+    rgba(255, 255, 255, 0.84) 48%,
+    rgba(255, 255, 255, 0.2) 100%
+  );
+  pointer-events: none;
+}
+
+.reviewsHeroContent {
+  width: min(100%, 390px);
+  margin: 0 auto;
+}
+
+.reviewsHeroContent {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.reviewsBadge {
+  width: fit-content;
+  min-height: 40px;
+  border: 1px solid transparent;
+  border-radius: 32px;
+  background-color: rgba(48, 186, 195, 0.1);
+  background-clip: padding-box;
+  color: var(--landing-brand-500);
+  padding: 8px 16px;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 21px;
+  white-space: nowrap;
+}
+
+.reviewsBadge::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1px;
+  background:
+    var(--landing-brand-border-end), var(--landing-brand-border-start);
+  pointer-events: none;
+  -webkit-mask:
+    linear-gradient(#ffffff 0 0) content-box,
+    linear-gradient(#ffffff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+}
+
+.reviewsHeroCopy,
+.reviewsSectionHeading,
+.reviewsInterviewArticle,
+.reviewsFeaturedText,
+.reviewsFeaturedBody,
+.reviewsInterviewBody,
+.reviewsInterviewCopy,
+.reviewsTestimonialArticle,
+.reviewsTestimonialContent,
+.reviewsTestimonialMeta {
+  display: flex;
+  flex-direction: column;
+}
+
+.reviewsHeroCopy {
+  gap: 8px;
+}
+
+.reviewsHeroCopy h1 {
+  max-width: 1008px;
+  color: var(--landing-gray-800);
+  font-family: var(--font-sans);
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 36px;
+}
+
+.reviewsHeroCopy h1 span {
+  display: block;
+}
+
+.reviewsHeroCopy p {
+  max-width: 538px;
+  color: var(--landing-gray-800);
+  font-family: "Pretendard GOV Variable", var(--font-sans);
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 24px;
+  word-break: keep-all;
+}
+
+.reviewsMain {
+  background: #ffffff;
+}
+
+.reviewsContent {
+  width: 100%;
+  margin: 0 auto;
+  padding: 72px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 72px;
+}
+
+.reviewsSectionBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.reviewsInterviewSection {
+  gap: 32px;
+}
+
+.reviewsSectionHeading {
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.reviewsSectionHeading h2 {
+  color: var(--landing-gray-800);
+  font-family: var(--font-sans);
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 32px;
+}
+
+.reviewsSectionDescription {
+  display: none;
+  color: var(--landing-gray-800);
+  font-family: "Pretendard GOV Variable", var(--font-sans);
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 24px;
+  letter-spacing: -0.24px;
+}
+
+.reviewsFeatured {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+}
+
+.reviewsFeaturedInline {
+  display: none;
+}
+
+.reviewsFeaturedMedia {
+  width: 100%;
+  margin: 0;
+  position: relative;
+  overflow: hidden;
+  border-radius: 16px;
+  background: var(--landing-gray-100);
+  aspect-ratio: 350 / 196;
+}
+
+.reviewsInterviewMedia {
+  width: 100%;
+  margin: 0;
+  position: relative;
+  overflow: hidden;
+  background: var(--landing-gray-100);
+  aspect-ratio: 350 / 210;
+}
+
+.reviewsMediaImage {
+  object-fit: cover;
+}
+
+.reviewsMediaOverlay {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: rgba(0, 0, 0, 0.2);
+  pointer-events: none;
+}
+
+.reviewsPlayButton {
+  display: block;
+  border-radius: 50%;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  overflow: hidden;
+  z-index: 1;
+}
+
+.reviewsPlayButtonLarge,
+.reviewsPlayButtonSmall {
+  width: 36px;
+  height: 36px;
+}
+
+.reviewsPlayIconImage,
+.reviewsQuoteMarkImage {
+  object-fit: contain;
+}
+
+.reviewsFeaturedText {
+  justify-content: center;
+  gap: 16px;
+}
+
+.reviewsCategory {
+  color: var(--landing-brand-500);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 20px;
+}
+
+.reviewsFeaturedCompactTitle {
+  color: var(--landing-gray-800);
+  font-family: var(--font-sans);
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 24px;
+}
+
+.reviewsQuoteMark,
+.reviewsFeaturedDesktopTitle {
+  display: none;
+}
+
+.reviewsQuoteMark {
+  width: 22px;
+  height: 8px;
+  position: relative;
+}
+
+.reviewsFeaturedDesktopTitle {
+  color: var(--landing-gray-800);
+  font-family: var(--font-sans);
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 26px;
+  letter-spacing: -0.27px;
+}
+
+.reviewsFeaturedDesktopTitle span {
+  display: block;
+}
+
+.reviewsFeaturedBody {
+  gap: 8px;
+  color: var(--landing-gray-600);
+  font-family: "Pretendard GOV Variable", var(--font-sans);
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 24px;
+  letter-spacing: -0.24px;
+  word-break: keep-all;
+}
+
+.reviewsFeaturedBody strong {
+  color: var(--landing-gray-800);
+  font-weight: 700;
+}
+
+.reviewsFeaturedBody blockquote,
+.reviewsInterviewCopy blockquote,
+.reviewsTestimonialContent blockquote {
+  margin: 0;
+}
+
+.reviewsCardMeta {
+  color: var(--landing-gray-600);
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+}
+
+.reviewsInterviewGrid,
+.reviewsTestimonialGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.reviewsInterviewGrid {
+  gap: 8px;
+}
+
+.reviewsTestimonialGrid {
+  gap: 20px;
+}
+
+.reviewsInterviewCard,
+.reviewsTestimonialCard {
+  min-width: 0;
+  border: 1px solid var(--landing-gray-100);
+  border-radius: 16px;
+  background: var(--landing-gray-50);
+  overflow: hidden;
+}
+
+.reviewsInterviewCard {
+  display: flex;
+  flex-direction: column;
+}
+
+.reviewsInterviewArticle,
+.reviewsTestimonialArticle {
+  height: 100%;
+}
+
+.reviewsInterviewCard:nth-child(n + 5) {
+  display: none;
+}
+
+.reviewsInterviewBody {
+  padding: 20px 20px 0;
+  gap: 16px;
+}
+
+.reviewsInterviewCopy {
+  gap: 4px;
+}
+
+.reviewsInterviewBody h3 {
+  overflow: hidden;
+  color: var(--landing-gray-800);
+  font-family: var(--font-sans);
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 24px;
+  letter-spacing: -0.24px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.reviewsInterviewCopy p,
+.reviewsInterviewCopy blockquote {
+  color: var(--landing-gray-600);
+  font-family: "Pretendard GOV Variable", var(--font-sans);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+}
+
+.reviewsInterviewCard .reviewsCardMeta {
+  padding: 0 20px 20px;
+}
+
+.reviewsTestimonialCard {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.reviewsTestimonialArticle {
+  gap: 20px;
+}
+
+.reviewsTestimonialContent {
+  gap: 8px;
+}
+
+.reviewsStars {
+  color: #ffa91f;
+  font-family: var(--font-sans);
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 30px;
+}
+
+.reviewsTestimonialContent p:not(.reviewsStars),
+.reviewsTestimonialContent blockquote {
+  color: var(--landing-gray-600);
+  font-family: "Pretendard GOV Variable", var(--font-sans);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+}
+
+.reviewsDivider {
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    rgba(30, 41, 59, 0) 0%,
+    rgba(30, 41, 59, 0.2) 50%,
+    rgba(30, 41, 59, 0) 100%
+  );
+}
+
+.reviewsTestimonialMeta {
+  gap: 4px;
+}
+
+.reviewsTestimonialMeta p {
+  color: var(--landing-gray-800);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 20px;
+}
+
+.reviewsTestimonialMeta span {
+  color: var(--landing-gray-600);
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+}
+
 .blogInner {
   gap: 52px;
 }
@@ -2166,6 +2604,27 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  .reviewsHeroContent {
+    width: min(100%, 600px);
+  }
+
+  .reviewsContent {
+    width: 100%;
+  }
+
+  .reviewsFeaturedMedia {
+    aspect-ratio: 600 / 338;
+  }
+
+  .reviewsInterviewMedia {
+    aspect-ratio: 296 / 195;
+  }
+
+  .reviewsInterviewGrid,
+  .reviewsTestimonialGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .footerTop {
     flex-direction: row;
     align-items: center;
@@ -2256,6 +2715,65 @@
   .reviewClientLogo {
     width: 180px;
     height: 60px;
+  }
+
+  .reviewsPageHero {
+    min-height: 600px;
+    padding: 160px 0 104px;
+  }
+
+  .reviewsHeroContent,
+  .reviewsContent {
+    width: min(100%, 1080px);
+  }
+
+  .reviewsContent {
+    padding: 104px 0;
+    gap: 104px;
+  }
+
+  .reviewsHeroCopy h1 {
+    font-size: 36px;
+    line-height: 48px;
+  }
+
+  .reviewsHeroCopy p {
+    font-size: 16px;
+  }
+
+  .reviewsFeaturedStandalone {
+    grid-template-columns: minmax(0, 1fr) 530px;
+    align-items: center;
+    gap: 52px;
+  }
+
+  .reviewsFeaturedStandalone .reviewsFeaturedMedia {
+    aspect-ratio: 530 / 298;
+  }
+
+  .reviewsPlayButtonLarge {
+    width: 64px;
+    height: 64px;
+  }
+
+  .reviewsInterviewGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .reviewsInterviewCard:nth-child(n + 5) {
+    display: flex;
+  }
+
+  .reviewsTestimonialSection {
+    gap: 52px;
+  }
+
+  .reviewsTestimonialGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .reviewsTestimonialCard {
+    padding: 32px;
   }
 
   .blogGrid {
@@ -2453,6 +2971,68 @@
 
   .reviewClientLogoRow {
     flex-wrap: nowrap;
+  }
+
+  .reviewsHeroContent {
+    width: 1360px;
+  }
+
+  .reviewsContent {
+    width: min(100%, 1080px);
+  }
+
+  .reviewsInterviewSection {
+    gap: 52px;
+  }
+
+  .reviewsSectionHeading h2 {
+    font-size: 28px;
+    line-height: 36px;
+  }
+
+  .reviewsSectionDescription {
+    display: block;
+  }
+
+  .reviewsFeaturedStandalone {
+    display: none;
+  }
+
+  .reviewsFeaturedInline {
+    display: grid;
+    grid-template-columns: minmax(0, 530px) minmax(0, 1fr);
+    align-items: center;
+    gap: 52px;
+  }
+
+  .reviewsFeaturedInline .reviewsFeaturedCompactTitle {
+    display: none;
+  }
+
+  .reviewsFeaturedInline .reviewsQuoteMark,
+  .reviewsFeaturedInline .reviewsFeaturedDesktopTitle {
+    display: block;
+  }
+
+  .reviewsFeaturedInline .reviewsFeaturedMedia {
+    aspect-ratio: 530 / 298;
+  }
+
+  .reviewsInterviewGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
+  }
+
+  .reviewsInterviewCard:nth-child(n + 5) {
+    display: none;
+  }
+
+  .reviewsInterviewMedia {
+    aspect-ratio: 530 / 299;
+  }
+
+  .reviewsCategory {
+    display: none;
   }
 
   .footer {

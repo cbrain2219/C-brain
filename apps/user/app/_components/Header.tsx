@@ -19,7 +19,7 @@ import { createGradientBorderButtonStyle } from "./buttonStyles";
 const navItems = [
   { label: "회사소개", href: "/#about" },
   { label: "포트폴리오", href: "/#portfolio" },
-  { label: "고객 후기", href: "/#reviews" },
+  { label: "고객 후기", href: "/reviews" },
   { label: "주문 · 결제", href: "/#services" },
   { label: "FAQ & 가이드", href: "/faq" },
   { label: "블로그", href: "/#blog" },

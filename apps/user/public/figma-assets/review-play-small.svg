@@ -1,0 +1,9 @@
+<svg preserveAspectRatio="none" width="100%" height="100%" overflow="visible" style="display: block;" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="Group 1707485491">
+<foreignObject x="-2" y="-2" width="40" height="40"><div xmlns="http://www.w3.org/1999/xhtml" style="backdrop-filter:blur(1px);clip-path:url(#bgblur_0_0_12_clip_path);height:100%;width:100%"></div></foreignObject><circle id="Ellipse 5" data-figma-bg-blur-radius="2" cx="18" cy="18" r="18" fill="var(--fill-0, white)" fill-opacity="0.4"/>
+<path id="Polygon 1" d="M26 17.134C26.6667 17.5189 26.6667 18.4811 26 18.866L14 25.7942C13.3333 26.1791 12.5 25.698 12.5 24.9282L12.5 11.0718C12.5 10.302 13.3333 9.82087 14 10.2058L26 17.134Z" fill="var(--fill-0, white)" fill-opacity="0.6"/>
+</g>
+<defs>
+<clipPath id="bgblur_0_0_12_clip_path" transform="translate(2 2)"><circle cx="18" cy="18" r="18"/>
+</clipPath></defs>
+</svg>
