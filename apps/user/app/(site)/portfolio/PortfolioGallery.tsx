@@ -157,40 +157,45 @@ export function PortfolioGallery({
         })}
       </HorizontalDragScroll>
 
-      <div className={styles.portfolioGrid}>
+      <ul className={styles.portfolioGrid}>
         {activeItems.map((item) => (
-          <Link
-            aria-label={`${item.client} ${item.title} 상세 보기`}
-            className={styles.portfolioCard}
-            href={getPortfolioDetailHref(item, activeCategoryId)}
-            key={item.slug}
-            onClick={handlePortfolioCardClick}
-          >
-            <div className={styles.portfolioImageFrame}>
-              <Image
-                alt={`${item.client} ${item.title}`}
-                className={styles.portfolioImage}
-                fill
-                sizes="(min-width: 1080px) 333px, (min-width: 640px) 290px, calc(100vw - 40px)"
-                src={item.image}
-              />
-            </div>
-            <div className={styles.portfolioCardBody}>
-              <span className={styles.portfolioTag}>
-                {
-                  categories.find(
-                    (category) => category.id === item.categoryId,
-                  )?.label
-                }
-              </span>
-              <div className={styles.portfolioCardText}>
-                <p>{item.client}</p>
-                <h3>{item.title}</h3>
-              </div>
-            </div>
-          </Link>
+          <li className={styles.portfolioItem} key={item.slug}>
+            <article>
+              <Link
+                aria-label={`${item.client} ${item.title} 상세 보기`}
+                className={styles.portfolioCard}
+                href={getPortfolioDetailHref(item, activeCategoryId)}
+                onClick={handlePortfolioCardClick}
+              >
+                <figure className={styles.portfolioFigure}>
+                  <div className={styles.portfolioImageFrame}>
+                    <Image
+                      alt={item.imageAlt}
+                      className={styles.portfolioImage}
+                      fill
+                      sizes="(min-width: 1080px) 333px, (min-width: 640px) 290px, calc(100vw - 40px)"
+                      src={item.image}
+                    />
+                  </div>
+                  <figcaption className={styles.portfolioCardBody}>
+                    <span className={styles.portfolioTag}>
+                      {
+                        categories.find(
+                          (category) => category.id === item.categoryId,
+                        )?.label
+                      }
+                    </span>
+                    <div className={styles.portfolioCardText}>
+                      <p>{item.client}</p>
+                      <h3>{item.title}</h3>
+                    </div>
+                  </figcaption>
+                </figure>
+              </Link>
+            </article>
+          </li>
         ))}
-      </div>
+      </ul>
     </div>
   );
 }

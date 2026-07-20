@@ -1,9 +1,6 @@
-import { Button } from "@repo/ui/button";
 import type { Metadata } from "next";
-import type { CSSProperties } from "react";
 
-import { Icon } from "../../../components/Icon";
-import { createGradientBorderButtonStyle } from "../../_components/buttonStyles";
+import { CtaSection } from "../../_components/CtaSection";
 import {
   getPortfolioCategoryIdFromValue,
   portfolioCategories,
@@ -17,25 +14,6 @@ type PortfolioPageProps = {
   searchParams?: Promise<{
     category?: string | string[];
   }>;
-};
-
-const contactButtonStyle: CSSProperties = {
-  ...createGradientBorderButtonStyle({
-    padding: "8px 23px",
-    tone: "contactKakao",
-  }),
-  width: "var(--portfolio-cta-button-width)",
-};
-
-const priceButtonStyle: CSSProperties = {
-  ...createGradientBorderButtonStyle({
-    padding: "8px 23px",
-  }),
-  width: "var(--portfolio-cta-button-width)",
-};
-
-const ctaButtonIconStyle: CSSProperties = {
-  flex: "0 0 auto",
 };
 
 export const metadata: Metadata = {
@@ -99,29 +77,16 @@ export default async function PortfolioPage({ searchParams }: PortfolioPageProps
         </div>
       </section>
 
-      <section className={styles.cta} id="contact">
-        <div aria-hidden="true" className={styles.ctaBackground} />
-        <div className={styles.ctaContent}>
-          <div className={styles.ctaText}>
-            <h2>궁금하신 점, 지금 바로 문의하세요</h2>
-            <p>견적부터 납기까지 빠르고 명확하게 안내드립니다.</p>
-          </div>
-          <div className={styles.ctaActions}>
-            <Button style={contactButtonStyle}>
-              <span>실시간 카톡상담</span>
-              <Icon
-                name="message-typing"
-                size={24}
-                style={ctaButtonIconStyle}
-              />
-            </Button>
-            <Button style={priceButtonStyle}>
-              <span>정찰제 가격 보기</span>
-              <Icon name="arrow-right" size={24} style={ctaButtonIconStyle} />
-            </Button>
-          </div>
-        </div>
-      </section>
+      <CtaSection
+        description="견적부터 납기까지 빠르고 명확하게 안내드립니다."
+        descriptionSize="md"
+        id="contact"
+        secondaryAction={{
+          label: "정찰제 가격 보기",
+          href: "/#services",
+        }}
+        titleLines={["궁금하신 점, 지금 바로 문의하세요"]}
+      />
     </div>
   );
 }

@@ -65,6 +65,10 @@
   letter-spacing: 0;
 }
 
+.authorLine > span:first-child {
+  font-weight: 700;
+}
+
 .authorIcon {
   width: 20px;
   height: 20px;
@@ -87,6 +91,7 @@
 
 .detailImageFrame {
   width: 100%;
+  margin: 0;
   aspect-ratio: 4 / 3;
   border-radius: 16px;
   background: var(--landing-gray-100);
@@ -157,14 +162,29 @@
 }
 
 .relatedList {
-  margin-top: 20px;
+  margin: 20px 0 0;
+  padding: 0;
   display: flex;
   flex-direction: column;
   gap: 24px;
+  list-style: none;
+}
+
+.relatedItem,
+.relatedItem article {
+  min-width: 0;
 }
 
 .relatedCard {
   min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.relatedFigure {
+  min-width: 0;
+  margin: 0;
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -248,7 +268,7 @@
 }
 
 @media (min-width: 560px) {
-  .relatedCard {
+  .relatedFigure {
     display: grid;
     grid-template-columns: 200px minmax(0, 1fr);
     align-items: center;

@@ -14,8 +14,7 @@
 }
 
 .heroBackground,
-.heroOverlay,
-.ctaBackground {
+.heroOverlay {
   position: absolute;
   inset: 0;
   pointer-events: none;
@@ -87,8 +86,6 @@
 .heroText h1,
 .heroText p,
 .workHeader h2,
-.ctaText h2,
-.ctaText p,
 .portfolioCardText p,
 .portfolioCardText h3 {
   margin: 0;
@@ -131,7 +128,7 @@
   margin: 0 auto;
   display: flex;
   flex-direction: column;
-  gap: 52px;
+  gap: 32px;
 }
 
 .workHeader {
@@ -213,7 +210,7 @@
   margin-right: 20px;
 }
 
-.categoryButton:hover {
+.categoryButton:not(.categoryButtonActive):hover {
   color: var(--landing-gray-800);
 }
 
@@ -229,9 +226,17 @@
 }
 
 .portfolioGrid {
+  margin: 0;
+  padding: 0;
   display: grid;
   grid-template-columns: 1fr;
   gap: 32px 20px;
+  list-style: none;
+}
+
+.portfolioItem,
+.portfolioItem article {
+  min-width: 0;
 }
 
 .portfolioCard {
@@ -241,6 +246,15 @@
   flex-direction: column;
   gap: 8px;
   text-decoration: none;
+}
+
+.portfolioFigure {
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .portfolioCard:focus-visible {
@@ -310,71 +324,6 @@
   color: var(--landing-gray-800);
 }
 
-.cta {
-  --portfolio-cta-button-width: 164px;
-
-  min-height: 416px;
-  position: relative;
-  overflow: hidden;
-  background: var(--landing-gray-900);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.ctaBackground {
-  background-image: url("/figma-assets/landing-cta-background.jpg");
-  background-position: center;
-  background-size: cover;
-  opacity: 0.94;
-}
-
-.ctaContent {
-  width: min(calc(100% - 40px), 1080px);
-  padding: 72px 0;
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 52px;
-  text-align: center;
-}
-
-.ctaText {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-}
-
-.ctaText h2 {
-  font-family: var(--font-sans);
-  font-size: 28px;
-  font-weight: 700;
-  line-height: 36px;
-  letter-spacing: 0;
-  color: #ffffff;
-  word-break: keep-all;
-}
-
-.ctaText p {
-  font-family: "Pretendard GOV Variable", var(--font-sans);
-  font-size: 14px;
-  font-weight: 500;
-  line-height: 20px;
-  letter-spacing: 0;
-  color: var(--landing-gray-50);
-  word-break: keep-all;
-}
-
-.ctaActions {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-}
-
 @media (min-width: 640px) {
   .hero {
     min-height: 412px;
@@ -414,6 +363,10 @@
     min-height: 476px;
   }
 
+  .workInner {
+    gap: 52px;
+  }
+
   .heroOverlay {
     background: linear-gradient(90deg, #ffffff 0%, rgba(255, 255, 255, 0) 78%);
   }
@@ -432,9 +385,6 @@
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
-  .cta {
-    min-height: 304px;
-  }
 }
 
 @media (min-width: 1440px) {
@@ -442,12 +392,4 @@
     padding: 104px 0;
   }
 
-  .ctaContent {
-    padding: 104px 0;
-  }
-
-  .ctaText h2 {
-    font-size: 36px;
-    line-height: 48px;
-  }
 }

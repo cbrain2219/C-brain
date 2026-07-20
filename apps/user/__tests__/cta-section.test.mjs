@@ -5,6 +5,10 @@ import test from "node:test";
 const ctaPath = new URL("../app/_components/CtaSection.tsx", import.meta.url);
 const landingPagePath = new URL("../app/(site)/page.tsx", import.meta.url);
 const faqPagePath = new URL("../app/(site)/faq/page.tsx", import.meta.url);
+const portfolioPagePath = new URL(
+  "../app/(site)/portfolio/page.tsx",
+  import.meta.url,
+);
 const stylesPath = new URL(
   "../app/_components/CtaSection.module.css",
   import.meta.url,
@@ -66,4 +70,20 @@ test("FAQ page reuses the shared CTA with its own copy", async () => {
     /description="씨브레인에 직접 물어보세요\. 빠르게 답변드립니다\."/,
   );
   assert.doesNotMatch(source, /contactSection/);
+});
+
+test("portfolio page reuses the shared CTA with its own copy", async () => {
+  const source = await readFile(portfolioPagePath, "utf8");
+
+  assert.match(source, /<CtaSection/);
+  assert.match(source, /id="contact"/);
+  assert.match(source, /titleLines=\{\["궁금하신 점, 지금 바로 문의하세요"\]\}/);
+  assert.match(
+    source,
+    /description="견적부터 납기까지 빠르고 명확하게 안내드립니다\."/,
+  );
+  assert.match(source, /descriptionSize="md"/);
+  assert.match(source, /label: "정찰제 가격 보기"/);
+  assert.match(source, /href: "\/#services"/);
+  assert.doesNotMatch(source, /styles\.cta/);
 });
