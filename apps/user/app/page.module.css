@@ -1330,6 +1330,31 @@
   aspect-ratio: 350 / 196;
 }
 
+.reviewsFeaturedMediaLink,
+.reviewsInterviewLink {
+  color: inherit;
+  text-decoration: none;
+}
+
+.reviewsFeaturedMediaLink {
+  position: absolute;
+  inset: 0;
+  display: block;
+}
+
+.reviewsInterviewLink {
+  min-width: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.reviewsFeaturedMediaLink:focus-visible,
+.reviewsInterviewLink:focus-visible {
+  outline: 2px solid var(--landing-brand-500);
+  outline-offset: -4px;
+}
+
 .reviewsInterviewMedia {
   width: 100%;
   margin: 0;

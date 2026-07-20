@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 
 import { CtaSection } from "../../_components/CtaSection";
 import {
@@ -43,15 +44,21 @@ function FeaturedInterview({ variant }: { variant: "inline" | "standalone" }) {
   const desktopTitleId = `${titleId}-desktop`;
   const media = (
     <figure className={styles.reviewsFeaturedMedia}>
-      <Image
-        alt={featuredCustomerInterview.videoAlt}
-        className={styles.reviewsMediaImage}
-        fill
-        sizes="(min-width: 1440px) 530px, (min-width: 1080px) 530px, (min-width: 640px) 600px, 350px"
-        src={featuredCustomerInterview.thumbnail}
-      />
-      <span className={styles.reviewsMediaOverlay} aria-hidden="true" />
-      <PlayButton size="large" />
+      <Link
+        aria-label={`${featuredCustomerInterview.title} 상세 보기`}
+        className={styles.reviewsFeaturedMediaLink}
+        href={`/reviews/${featuredCustomerInterview.detailSlug}`}
+      >
+        <Image
+          alt={featuredCustomerInterview.videoAlt}
+          className={styles.reviewsMediaImage}
+          fill
+          sizes="(min-width: 1440px) 530px, (min-width: 1080px) 530px, (min-width: 640px) 600px, 350px"
+          src={featuredCustomerInterview.thumbnail}
+        />
+        <span className={styles.reviewsMediaOverlay} aria-hidden="true" />
+        <PlayButton size="large" />
+      </Link>
     </figure>
   );
   const text = (
@@ -134,8 +141,8 @@ export default function CustomerReviewsPage() {
               <span>고객이 직접 말하는 씨브레인</span>
             </h1>
             <p>
-              제조·병원·교육·바이오·IT·부동산·공공기관 등 다양한 업종의
-              기업 고객님들이 직접 전하는 씨브레인 제작 경험을 들어보세요.
+              제조·병원·교육·바이오·IT·부동산·공공기관 등 다양한 업종의 기업
+              고객님들이 직접 전하는 씨브레인 제작 경험을 들어보세요.
             </p>
           </div>
         </div>
@@ -166,37 +173,48 @@ export default function CustomerReviewsPage() {
                 const titleId = `customer-interview-${interview.id}-title`;
 
                 return (
-                  <li className={styles.reviewsInterviewCard} key={interview.id}>
+                  <li
+                    className={styles.reviewsInterviewCard}
+                    key={interview.id}
+                  >
                     <article
                       aria-labelledby={titleId}
                       className={styles.reviewsInterviewArticle}
                     >
-                      <figure className={styles.reviewsInterviewMedia}>
-                        <Image
-                          alt={interview.videoAlt}
-                          className={styles.reviewsMediaImage}
-                          fill
-                          sizes="(min-width: 1080px) 341px, (min-width: 640px) 296px, 350px"
-                          src={interview.thumbnail}
-                        />
-                        <span
-                          className={styles.reviewsMediaOverlay}
-                          aria-hidden="true"
-                        />
-                        <PlayButton />
-                      </figure>
-                      <div className={styles.reviewsInterviewBody}>
-                        <p className={styles.reviewsCategory}>
-                          {interview.category}
-                        </p>
-                        <div className={styles.reviewsInterviewCopy}>
-                          <h3 id={titleId}>{interview.title}</h3>
-                          <blockquote>&quot;{interview.quote}&quot;</blockquote>
+                      <Link
+                        aria-label={`${interview.title} 상세 보기`}
+                        className={styles.reviewsInterviewLink}
+                        href={`/reviews/${interview.detailSlug}`}
+                      >
+                        <figure className={styles.reviewsInterviewMedia}>
+                          <Image
+                            alt={interview.videoAlt}
+                            className={styles.reviewsMediaImage}
+                            fill
+                            sizes="(min-width: 1080px) 341px, (min-width: 640px) 296px, 350px"
+                            src={interview.thumbnail}
+                          />
+                          <span
+                            className={styles.reviewsMediaOverlay}
+                            aria-hidden="true"
+                          />
+                          <PlayButton />
+                        </figure>
+                        <div className={styles.reviewsInterviewBody}>
+                          <p className={styles.reviewsCategory}>
+                            {interview.category}
+                          </p>
+                          <div className={styles.reviewsInterviewCopy}>
+                            <h3 id={titleId}>{interview.title}</h3>
+                            <blockquote>
+                              &quot;{interview.quote}&quot;
+                            </blockquote>
+                          </div>
                         </div>
-                      </div>
-                      <footer className={styles.reviewsCardMeta}>
-                        {interview.meta}
-                      </footer>
+                        <footer className={styles.reviewsCardMeta}>
+                          {interview.meta}
+                        </footer>
+                      </Link>
                     </article>
                   </li>
                 );
@@ -229,7 +247,10 @@ export default function CustomerReviewsPage() {
                       </p>
                       <blockquote>{review.body}</blockquote>
                     </div>
-                    <span className={styles.reviewsDivider} aria-hidden="true" />
+                    <span
+                      className={styles.reviewsDivider}
+                      aria-hidden="true"
+                    />
                     <footer className={styles.reviewsTestimonialMeta}>
                       <p>{review.name}</p>
                       <span>{review.company}</span>

@@ -2,10 +2,7 @@ import assert from "node:assert/strict";
 import { stat, readFile } from "node:fs/promises";
 import test from "node:test";
 
-const pagePath = new URL(
-  "../app/(site)/reviews/page.tsx",
-  import.meta.url,
-);
+const pagePath = new URL("../app/(site)/reviews/page.tsx", import.meta.url);
 const contentPath = new URL(
   "../app/_content/customerReviews.ts",
   import.meta.url,
@@ -104,6 +101,7 @@ test("customer reviews page uses shared navigation and CTA", async () => {
   const headerSource = await readFile(headerPath, "utf8");
   const pageSource = await readFile(pagePath, "utf8");
 
+  assert.match(pageSource, /import Link from "next\/link"/);
   assert.match(headerSource, /label: "고객 후기", href: "\/reviews"/);
   assert.match(pageSource, /import \{ CtaSection \}/);
   assert.match(pageSource, /<CtaSection/);
@@ -118,6 +116,8 @@ test("customer reviews page includes responsive layout styles", async () => {
     ".reviewsPageHero",
     ".reviewsBadge",
     ".reviewsFeatured",
+    ".reviewsFeaturedMediaLink",
+    ".reviewsInterviewLink",
     ".reviewsInterviewGrid",
     ".reviewsTestimonialGrid",
   ];
@@ -126,8 +126,14 @@ test("customer reviews page includes responsive layout styles", async () => {
     assert.match(stylesSource, new RegExp(className.replace(".", "\\.")));
   }
 
-  assert.match(stylesSource, /grid-template-columns: repeat\(2, minmax\(0, 1fr\)\)/);
-  assert.match(stylesSource, /grid-template-columns: repeat\(3, minmax\(0, 1fr\)\)/);
+  assert.match(
+    stylesSource,
+    /grid-template-columns: repeat\(2, minmax\(0, 1fr\)\)/,
+  );
+  assert.match(
+    stylesSource,
+    /grid-template-columns: repeat\(3, minmax\(0, 1fr\)\)/,
+  );
 });
 
 test("customer interviews follow the P/T/F/M responsive section variants", async () => {
@@ -182,14 +188,39 @@ test("customer interview markup stays semantic and uses admin video alt text", a
   const pageSource = await readFile(pagePath, "utf8");
   const stylesSource = await readFile(stylesPath, "utf8");
 
+  assert.equal(contentSource.match(/detailSlug: "/g)?.length, 7);
+  assert.match(contentSource, /detailSlug: "seojin-instech"/);
+  assert.match(contentSource, /detailSlug: "ninebell-healthcare"/);
+  assert.match(contentSource, /detailSlug: "chungkang-college"/);
   assert.match(contentSource, /videoAlt:/);
   assert.match(pageSource, /alt=\{featuredCustomerInterview\.videoAlt\}/);
   assert.match(pageSource, /alt=\{interview\.videoAlt\}/);
+  assert.match(
+    pageSource,
+    /href=\{`\/reviews\/\$\{featuredCustomerInterview\.detailSlug\}`\}/,
+  );
+  assert.match(
+    pageSource,
+    /aria-label=\{`\$\{featuredCustomerInterview\.title\} 상세 보기`\}/,
+  );
   assert.doesNotMatch(pageSource, /고객 인터뷰 영상`\}/);
-  assert.match(pageSource, /<figure className=\{styles\.reviewsFeaturedMedia\}>/);
-  assert.match(pageSource, /<figure className=\{styles\.reviewsInterviewMedia\}>/);
+  assert.match(
+    pageSource,
+    /<figure className=\{styles\.reviewsFeaturedMedia\}>/,
+  );
+  assert.match(pageSource, /className=\{styles\.reviewsFeaturedMediaLink\}/);
+  assert.match(pageSource, /href=\{`\/reviews\/\$\{interview\.detailSlug\}`\}/);
+  assert.match(pageSource, /aria-label=\{`\$\{interview\.title\} 상세 보기`\}/);
+  assert.match(pageSource, /className=\{styles\.reviewsInterviewLink\}/);
+  assert.match(
+    pageSource,
+    /<figure className=\{styles\.reviewsInterviewMedia\}>/,
+  );
   assert.match(pageSource, /<ul className=\{styles\.reviewsInterviewGrid\}>/);
-  assert.match(pageSource, /<li className=\{styles\.reviewsInterviewCard\}/);
+  assert.match(
+    pageSource,
+    /<li[\s\S]*className=\{styles\.reviewsInterviewCard\}/,
+  );
   assert.match(pageSource, /<blockquote>/);
   assert.match(pageSource, /<footer className=\{styles\.reviewsCardMeta\}>/);
   assert.match(stylesSource, /list-style: none;/);
