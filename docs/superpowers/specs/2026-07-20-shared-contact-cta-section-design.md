@@ -1,30 +1,31 @@
-# Shared Contact CTA Section Design
+# 공용 Contact CTA 섹션 설계
 
-## Goal
+## 목표
 
-Use one reusable `CtaSection` for the contact sections on the landing, portfolio,
-customer review, FAQ, and product type pages while preserving each Figma screen's
-content and button differences.
+메인, 포트폴리오, 고객후기, FAQ, 상품유형 페이지의 Contact 섹션을 하나의
+공용 `CtaSection` 컴포넌트로 관리합니다. 각 Figma 시안의 문구와 버튼 차이는
+유지하면서, 공통 배경과 간격, 글자 스타일, 반응형 배치, 버튼 스타일은 한 곳에서
+관리하는 것이 목표입니다.
 
-The component owns the shared background, spacing, typography, responsive layout,
-and button presentation. Pages provide only the content that actually differs.
+페이지에서는 실제로 달라지는 내용만 컴포넌트에 전달합니다.
 
-## Figma Comparison
+## Figma 시안 비교
 
-| Page | Figma node | Badge | Title | Description | Secondary action |
+| 페이지 | Figma 노드 | 배지 | 제목 | 설명 | 두 번째 버튼 |
 | --- | --- | --- | --- | --- | --- |
-| Landing | `22:2128` | Present | Two lines with brand emphasis | 16px | Pricing |
-| Portfolio | `27:5034` | None | One line | 16px | Pricing |
-| Customer review | `41:9161` | None | Two lines | None | Pricing |
-| FAQ | `51:1412` | Business hours | One line | 14px | None |
-| Product type | `177:1620` | None | One line | 14px | FAQ |
+| 메인 | `22:2128` | 있음 | 2줄, 브랜드명 강조 | 16px | 정찰제 가격 보기 |
+| 포트폴리오 | `27:5034` | 없음 | 1줄 | 16px | 정찰제 가격 보기 |
+| 고객후기 | `41:9161` | 없음 | 2줄 | 없음 | 정찰제 가격 보기 |
+| FAQ | `51:1412` | 상담 가능 시간 | 1줄 | 14px | 없음 |
+| 상품유형 | `177:1620` | 없음 | 1줄 | 14px | FAQ 보기 |
 
-All five designs share the same background artwork, centered layout, 104px desktop
-vertical padding, 52px content-to-action gap, and 164x52px action buttons.
+다섯 시안은 동일한 배경 이미지와 중앙 정렬 구조를 사용합니다. 데스크톱 기준
+위아래 여백은 `104px`, 문구와 버튼 영역의 간격은 `52px`, 버튼 크기는
+`164x52px`로 동일합니다.
 
-## Component API
+## 컴포넌트 사용 방법
 
-Keep the existing `CtaSection` and narrow its props to the confirmed variations:
+기존 `CtaSection`을 유지하고, Figma에서 실제로 확인된 차이만 props로 받습니다.
 
 ```tsx
 type CtaSectionProps = {
@@ -40,62 +41,62 @@ type CtaSectionProps = {
 };
 ```
 
-- `titleLines` preserves intentional Figma line breaks and allows the landing page
-  to emphasize `씨브레인` without introducing a one-page-only highlight prop.
-- `descriptionSize` maps the confirmed 14px and 16px description styles. It defaults
-  to `sm`; landing and portfolio pass `md` explicitly.
-- The Kakao consultation action is always rendered and remains internal because it
-  is identical in every design.
-- `secondaryAction` renders the brand-colored second action when supplied. FAQ omits
-  it, while product type supplies the FAQ label and URL.
-- The shared background is fixed inside the component because every supplied design
-  uses the same artwork. Do not keep a speculative `backgroundImage` prop.
+- `titleLines`: 제목을 줄 단위로 전달합니다. 메인 페이지처럼 `씨브레인`만 색상을
+  강조해야 할 때도 별도 전용 prop 없이 표현할 수 있습니다.
+- `description`: 제목 아래 설명입니다. 고객후기처럼 설명이 없으면 전달하지 않습니다.
+- `descriptionSize`: 설명 글자가 14px이면 `sm`, 16px이면 `md`를 사용합니다.
+  기본값은 `sm`이고 메인과 포트폴리오만 `md`를 명시합니다.
+- 카카오 상담 버튼: 모든 시안에서 동일하므로 컴포넌트가 항상 내부에서 표시합니다.
+- `secondaryAction`: 두 번째 버튼이 필요할 때만 버튼 문구와 이동 주소를 전달합니다.
+  FAQ 페이지는 전달하지 않으므로 카카오 버튼 하나만 표시됩니다.
+- 배경 이미지: 모든 시안이 같은 이미지를 사용하므로 변경 가능한 prop으로 만들지
+  않고 컴포넌트 내부에 고정합니다.
 
-## Structure And Styling
+## 구조와 스타일 관리
 
-Move CTA-only styles from `app/page.module.css` into
-`app/_components/CtaSection.module.css`. This keeps the reusable component independent
-from the landing page stylesheet.
+현재 `app/page.module.css`에 들어 있는 CTA 전용 스타일은
+`app/_components/CtaSection.module.css`로 옮깁니다. 그래야 공용 컴포넌트가
+메인 페이지 스타일 파일에 의존하지 않습니다.
 
-The shared component renders:
+공용 컴포넌트는 다음 순서로 화면을 구성합니다.
 
-1. Semantic `section` with an optional `id`.
-2. Decorative background marked `aria-hidden`.
-3. Optional badge.
-4. Heading lines and optional description.
-5. Kakao action and optional secondary action.
+1. 선택적으로 `id`를 받는 `section`
+2. 스크린 리더에서 제외되는 장식용 배경
+3. 선택적으로 표시되는 배지
+4. 제목과 선택적으로 표시되는 설명
+5. 항상 표시되는 카카오 상담 버튼과 선택적인 두 번째 버튼
 
-Responsive behavior is defined once in the component stylesheet. Pages must not add
-page-specific CTA width variables or duplicate the shared CTA layout CSS.
+모바일과 데스크톱 반응형 스타일도 컴포넌트의 CSS 파일에서 한 번만 관리합니다.
+각 페이지에서는 CTA 너비용 CSS 변수나 동일한 배치 스타일을 다시 작성하지 않습니다.
 
-Reuse the existing `Button`, `Icon`, and `createGradientBorderButtonStyle` utilities.
-Do not introduce another button abstraction or dependency.
+기존 `Button`, `Icon`, `createGradientBorderButtonStyle`을 그대로 재사용합니다.
+CTA를 위해 새로운 버튼 컴포넌트나 라이브러리를 추가하지 않습니다.
 
-## Page Configuration
+## 페이지별 설정
 
-- Landing: badge, two title lines, highlighted brand text, `md` description, pricing.
-- Portfolio: one title line, `md` description, pricing.
-- Customer review: two title lines, no description, pricing.
-- FAQ: business-hours badge, one title line, `sm` description, no secondary action.
-- Product type: one title line, `sm` description, FAQ secondary action.
+- 메인: 배지, 2줄 제목, 브랜드명 강조, `md` 설명, 정찰제 가격 버튼
+- 포트폴리오: 1줄 제목, `md` 설명, 정찰제 가격 버튼
+- 고객후기: 2줄 제목, 설명 없음, 정찰제 가격 버튼
+- FAQ: 상담 가능 시간 배지, 1줄 제목, `sm` 설명, 두 번째 버튼 없음
+- 상품유형: 1줄 제목, `sm` 설명, FAQ 버튼
 
-Only pages present on `main` are migrated in the shared CTA branch. Feature-only
-pages merge the completed shared component from `main` and replace their duplicate
-section in their own branch.
+현재 `main`에 존재하는 페이지만 공용 CTA 브랜치에서 바로 교체합니다. 아직 각 기능
+브랜치에만 존재하는 페이지는 공용 컴포넌트가 `main`에 병합된 뒤, 해당 브랜치에서
+최신 `main`을 받아 중복 Contact 섹션을 교체합니다.
 
-## Verification
+## 확인 방법
 
-- Unit-level source checks cover optional badge, description size, title lines, and
-  optional secondary action rendering.
-- Type checking and linting must pass for the user app.
-- Production build must include all routes available on `main`.
-- Visual checks cover desktop and mobile widths for the landing and FAQ variants;
-  page feature branches verify their own content after adopting the component.
+- 배지, 설명 크기, 제목 줄, 두 번째 버튼의 선택적 표시를 테스트합니다.
+- 사용자 앱의 타입 검사와 린트를 실행합니다.
+- `main`에 존재하는 전체 페이지가 프로덕션 빌드되는지 확인합니다.
+- 메인과 FAQ 형태를 데스크톱과 모바일 크기에서 확인합니다.
+- 포트폴리오, 고객후기, 상품유형 페이지는 각 기능 브랜치에서 공용 컴포넌트를 적용한
+  뒤 해당 문구와 버튼이 시안대로 표시되는지 확인합니다.
 
-## Rollout
+## 브랜치 적용 순서
 
-1. Implement and verify on `feat/shared-cta-section` after merging latest `main`.
-2. Merge the shared CTA branch into `main`.
-3. Merge latest `main` into portfolio, customer review, and product type branches.
-4. Replace each branch's duplicate contact markup and styles with `CtaSection`.
+1. 최신 `main`을 병합한 `feat/shared-cta-section`에서 구현하고 검사합니다.
+2. 완성된 공용 CTA 브랜치를 `main`에 병합합니다.
+3. 포트폴리오, 고객후기, 상품유형 브랜치에서 최신 `main`을 병합합니다.
+4. 각 브랜치의 중복 Contact 코드와 스타일을 `CtaSection` 사용으로 교체합니다.
 
