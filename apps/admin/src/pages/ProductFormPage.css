@@ -1,0 +1,229 @@
+.product-form-field,
+.product-form-tab-field,
+.product-form-unit-price-field {
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.product-form-field__label-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.product-form-field__label,
+.product-form-control,
+.product-form-option-toggle,
+.product-form-tab,
+.product-form-unit-price-row__label,
+.product-form-validation-message {
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 21px;
+  letter-spacing: -0.015em;
+}
+
+.product-form-field__label {
+  padding: 0;
+  color: var(--admin-gray-800);
+  font-weight: 500;
+}
+
+.product-form-field__helper {
+  overflow: hidden;
+  color: var(--admin-gray-600);
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 18px;
+  letter-spacing: -0.015em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.product-form-control {
+  width: 100%;
+  height: 52px;
+  min-width: 0;
+  padding: 0 16px;
+  border: 1px solid #f1f5f9;
+  border-radius: 16px;
+  background: var(--admin-surface);
+  color: var(--admin-gray-800);
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.product-form-control__input {
+  width: 100%;
+  min-width: 0;
+  height: 50px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--admin-gray-800);
+  font: inherit;
+  letter-spacing: inherit;
+}
+
+.product-form-control__input::placeholder {
+  color: var(--admin-gray-400);
+  opacity: 1;
+}
+
+.product-form-control__input:disabled {
+  color: var(--admin-gray-400);
+  cursor: not-allowed;
+  opacity: 1;
+}
+
+.product-form-control__suffix {
+  flex: 0 0 auto;
+  color: var(--admin-gray-800);
+  white-space: nowrap;
+}
+
+.product-form-option-list,
+.product-form-unit-price-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.product-form-option-row,
+.product-form-unit-price-row {
+  width: 100%;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.product-form-option-toggle {
+  height: 52px;
+  flex: 0 0 auto;
+  padding: 0 16px;
+  border: 1px solid #f1f5f9;
+  border-radius: 16px;
+  background: var(--admin-gray-50);
+  color: var(--admin-gray-800);
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.product-form-option-toggle__box {
+  width: 24px;
+  height: 24px;
+  flex: 0 0 auto;
+  border-radius: 8px;
+  background: var(--admin-gray-400);
+  color: var(--admin-text-inverse);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.product-form-option-toggle--active .product-form-option-toggle__box {
+  background: var(--admin-brand-500);
+}
+
+.product-form-control--disabled {
+  border-color: #e2e8f0;
+  background: #f1f5f9;
+}
+
+.product-form-tabs {
+  width: 100%;
+  min-height: 52px;
+  padding: 4px;
+  border-radius: 16px;
+  background: var(--admin-gray-50);
+  display: flex;
+  align-items: stretch;
+  gap: 4px;
+}
+
+.product-form-tab {
+  min-width: 0;
+  min-height: 44px;
+  flex: 1 1 0;
+  border-radius: 12px;
+  color: var(--admin-gray-600);
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 16px;
+  text-align: center;
+  cursor: pointer;
+}
+
+.product-form-tab--selected {
+  border-radius: 14px;
+  background: var(--admin-brand-500);
+  color: var(--admin-text-inverse);
+}
+
+.product-form-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  border: 0;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.product-form-unit-price-row__label {
+  width: fit-content;
+  min-width: 116px;
+  max-width: calc(100% - 160px);
+  height: 52px;
+  flex: 0 1 auto;
+  padding: 0 16px;
+  border: 1px solid #f1f5f9;
+  border-radius: 16px;
+  background: var(--admin-gray-50);
+  color: var(--admin-gray-800);
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.product-form-validation-message {
+  color: #ef4444;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 18px;
+}
+
+@media (max-width: 720px) {
+  .product-form-option-toggle {
+    padding: 0 12px;
+  }
+
+  .product-form-tab {
+    padding: 0 8px;
+  }
+}
+
+@media (max-width: 520px) {
+  .product-form-option-toggle > span:last-child {
+    display: none;
+  }
+
+}

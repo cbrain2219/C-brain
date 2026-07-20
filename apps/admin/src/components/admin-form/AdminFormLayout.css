@@ -1,0 +1,105 @@
+.admin-form-page {
+  width: 100%;
+  min-height: calc(100svh - 80px);
+  flex: 1 0 auto;
+  padding: 52px 40px 104px;
+  border-top: 1px solid #f1f5f9;
+  background: var(--admin-surface);
+  color: var(--admin-gray-800);
+  display: flex;
+  justify-content: center;
+}
+
+.admin-form {
+  width: min(640px, 100%);
+  display: flex;
+  flex-direction: column;
+  gap: 52px;
+}
+
+.admin-form__body {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.admin-form__title {
+  color: var(--admin-gray-800);
+}
+
+.admin-form__actions,
+.admin-form__actions-group {
+  display: flex;
+  align-items: center;
+}
+
+.admin-form__actions {
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.admin-form__actions-group {
+  gap: 8px;
+}
+
+.admin-form__button {
+  min-height: 52px;
+  padding: 8px 16px;
+  border-radius: 16px;
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 21px;
+  letter-spacing: -0.015em;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.admin-form__button--outline {
+  border: 1px solid var(--admin-brand-500);
+  background: var(--admin-surface);
+  color: var(--admin-brand-500);
+}
+
+.admin-form__button--solid {
+  border: 1px solid var(--admin-brand-500);
+  background: var(--admin-brand-500);
+  color: var(--admin-text-inverse);
+}
+
+.admin-form__button--outline:hover {
+  border-color: var(--admin-brand-600);
+  color: var(--admin-brand-600);
+}
+
+.admin-form__button--solid:hover {
+  border-color: var(--admin-brand-600);
+  background: var(--admin-brand-600);
+}
+
+@media (max-width: 720px) {
+  .admin-form-page {
+    padding: 40px 20px 72px;
+  }
+}
+
+@media (max-width: 520px) {
+  .admin-form__actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .admin-form__actions-group,
+  .admin-form__button {
+    width: 100%;
+  }
+
+  .admin-form__button {
+    flex: 1 1 0;
+  }
+}

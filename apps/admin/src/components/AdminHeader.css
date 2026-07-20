@@ -118,3 +118,14 @@
     height: 48px;
   }
 }
+
+@media (max-width: 720px) {
+  .admin-header {
+    overflow-x: auto;
+    justify-content: flex-start;
+  }
+
+  .admin-header__left {
+    flex: 0 0 auto;
+  }
+}

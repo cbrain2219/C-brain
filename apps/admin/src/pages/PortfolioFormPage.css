@@ -1,0 +1,348 @@
+.portfolio-form__field,
+.portfolio-form__image-field,
+.portfolio-form__content-field,
+.portfolio-form__image-slot,
+.portfolio-form__settings {
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.portfolio-form__label,
+.portfolio-form__control,
+.portfolio-form__alt-input,
+.portfolio-form__image-title,
+.portfolio-form__image-add,
+.portfolio-form__image-file-chip,
+.portfolio-form__mode-tab,
+.portfolio-form__textarea,
+.portfolio-form-setting,
+.portfolio-form__error {
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 21px;
+  letter-spacing: -0.015em;
+}
+
+.portfolio-form__label {
+  color: var(--admin-gray-800);
+  font-weight: 500;
+}
+
+.portfolio-form__control,
+.portfolio-form__alt-input,
+.portfolio-form__textarea {
+  width: 100%;
+  border: 1px solid #f1f5f9;
+  border-radius: 16px;
+  background: var(--admin-surface);
+  color: var(--admin-gray-800);
+  font-weight: 500;
+}
+
+.portfolio-form__control,
+.portfolio-form__alt-input {
+  height: 52px;
+  padding: 0 16px;
+}
+
+.portfolio-form__control::placeholder,
+.portfolio-form__alt-input::placeholder,
+.portfolio-form__textarea::placeholder {
+  color: var(--admin-gray-400);
+  opacity: 1;
+}
+
+.portfolio-form__error {
+  color: var(--color-error-500);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 18px;
+}
+
+.portfolio-form__image-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.portfolio-form__image-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.portfolio-form__image-add-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.portfolio-form__image-title,
+.portfolio-form__image-add {
+  height: 52px;
+  flex: 0 0 auto;
+  padding: 0 16px;
+  border: 1px solid #f1f5f9;
+  border-radius: 16px;
+  background: var(--admin-gray-50);
+  color: var(--admin-gray-800);
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+
+.portfolio-form__image-title,
+.portfolio-form__image-add {
+  cursor: pointer;
+}
+
+.portfolio-form__image-add {
+  width: fit-content;
+}
+
+.portfolio-form__image-check {
+  width: 24px;
+  height: 24px;
+  flex: 0 0 auto;
+  border-radius: 8px;
+  background: var(--admin-brand-500);
+  color: var(--admin-text-inverse);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.portfolio-form__image-check--muted {
+  background: var(--admin-gray-400);
+}
+
+.portfolio-form__alt-label {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.portfolio-form__alt-input--disabled {
+  min-width: 0;
+  flex: 1 1 auto;
+  border-color: #e2e8f0;
+  background: #f1f5f9;
+  color: var(--admin-gray-400);
+  cursor: not-allowed;
+}
+
+.portfolio-form__dropzone {
+  width: 100%;
+  height: 240px;
+  padding: 16px;
+  border: 0;
+  border-radius: 16px;
+  background: var(--admin-gray-50);
+  color: var(--admin-gray-800);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.portfolio-form__dropzone--preview {
+  height: auto;
+  min-height: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+.portfolio-form__image-preview-wrap {
+  position: relative;
+}
+
+.portfolio-form__image-preview {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.portfolio-form__image-file-chip {
+  position: absolute;
+  z-index: 1;
+  top: 50%;
+  left: 50%;
+  max-width: calc(100% - 32px);
+  transform: translate(-50%, -50%);
+  height: 32px;
+  padding: 4px 8px;
+  border-radius: 16px;
+  background: rgb(255 255 255 / 50%);
+  backdrop-filter: blur(5px);
+  color: var(--admin-gray-800);
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.portfolio-form__image-file-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.portfolio-form__image-file-remove {
+  width: 20px;
+  height: 20px;
+  flex: 0 0 auto;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--admin-surface);
+  color: var(--admin-gray-800);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.portfolio-form__dropzone-copy {
+  color: var(--admin-gray-600);
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 18px;
+  letter-spacing: -0.015em;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+}
+
+.portfolio-form__dropzone-copy > span:last-child {
+  color: var(--admin-gray-400);
+}
+
+.portfolio-form__mode-tabs {
+  width: 100%;
+  min-height: 52px;
+  padding: 4px;
+  border-radius: 16px;
+  background: var(--admin-gray-50);
+  display: flex;
+  align-items: stretch;
+  gap: 4px;
+}
+
+.portfolio-form__mode-tab {
+  min-width: 0;
+  min-height: 44px;
+  flex: 1 1 0;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  color: var(--admin-gray-600);
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.portfolio-form__mode-tab--active {
+  border-radius: 14px;
+  background: var(--admin-brand-500);
+  color: var(--admin-text-inverse);
+}
+
+.portfolio-form__textarea {
+  height: 200px;
+  min-height: 200px;
+  padding: 16px;
+  resize: vertical;
+}
+
+.portfolio-form-setting {
+  height: 52px;
+  padding: 0 16px;
+  border: 1px solid #f1f5f9;
+  border-radius: 16px;
+  background: var(--admin-gray-50);
+  color: var(--admin-gray-800);
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+
+.portfolio-form-setting__content {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.portfolio-form-setting__label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.portfolio-form-setting__check {
+  width: 24px;
+  height: 24px;
+  flex: 0 0 auto;
+  border-radius: 8px;
+  background: var(--admin-gray-400);
+  color: var(--admin-text-inverse);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.portfolio-form-setting__check--checked {
+  background: var(--admin-brand-500);
+}
+
+.portfolio-form-setting__count {
+  color: var(--admin-gray-400);
+}
+
+.portfolio-form__visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  border: 0;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+@media (max-width: 520px) {
+  .portfolio-form__image-header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .portfolio-form__image-add-row {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .portfolio-form__image-title,
+  .portfolio-form__image-add {
+    width: 100%;
+  }
+
+  .portfolio-form__dropzone {
+    height: 200px;
+  }
+
+  .portfolio-form__mode-tab {
+    padding: 0 8px;
+  }
+}

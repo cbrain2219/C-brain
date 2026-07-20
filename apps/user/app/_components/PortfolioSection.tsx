@@ -1,5 +1,4 @@
 import { Button } from "@repo/ui/button";
-import Image from "next/image";
 
 import { HorizontalDragScroll } from "../../components/HorizontalDragScroll";
 import { Icon } from "../../components/Icon";
@@ -17,26 +16,6 @@ const categories = [
   "패키지 · 쇼핑백",
   "촬영",
   "기타",
-];
-
-const portfolioItems = [
-  {
-    title: "신림산업㈜",
-    src: "/figma-assets/portfolio-shinlim.png",
-    description:
-      "벌크백 물류 솔루션 전문 기업의 S-BAG 제품 브로슈어·카탈로그를 기술형 인포그래픽 중심으로 제작했습니다.",
-  },
-  { title: "Axis", src: "/figma-assets/portfolio-axis.png" },
-  { title: "Wedding", src: "/figma-assets/portfolio-wedding.png" },
-  { title: "TMES", src: "/figma-assets/portfolio-tmes.png" },
-  { title: "Orange", src: "/figma-assets/portfolio-orange.png" },
-  { title: "Black Red", src: "/figma-assets/portfolio-black-red.png" },
-  { title: "Lab", src: "/figma-assets/portfolio-lab.png" },
-  { title: "Guide", src: "/figma-assets/portfolio-blue-guide.png" },
-  { title: "Green", src: "/figma-assets/portfolio-green.png" },
-  { title: "Brochure", src: "/figma-assets/portfolio-blue-brochure.png" },
-  { title: "Building", src: "/figma-assets/portfolio-building.png" },
-  { title: "Card", src: "/figma-assets/portfolio-card.png" },
 ];
 
 const buttonStyle = createGradientBorderButtonStyle();
@@ -76,30 +55,6 @@ export function PortfolioSection() {
             </button>
           ))}
         </HorizontalDragScroll>
-
-        <div className={styles.portfolioGrid}>
-          {portfolioItems.map((item) => (
-            <article
-              aria-label={`${item.title} 포트폴리오`}
-              className={styles.portfolioCard}
-              key={item.src}
-              tabIndex={0}
-            >
-              <Image
-                alt={item.title}
-                className={styles.coverImage}
-                fill
-                sizes="(min-width: 1440px) 325px, (min-width: 1080px) 33vw, (min-width: 640px) 50vw, 300px"
-                src={item.src}
-              />
-              <div className={styles.portfolioOverlay}>
-                <h3>{item.title}</h3>
-                {item.description ? <p>{item.description}</p> : null}
-              </div>
-            </article>
-          ))}
-
-        </div>
       </div>
 
       <div className={styles.centerAction}>

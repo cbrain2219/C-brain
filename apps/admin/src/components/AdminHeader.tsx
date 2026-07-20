@@ -1,4 +1,4 @@
-import { NavLink } from 'react-router-dom'
+import { Link, NavLink } from 'react-router-dom'
 import './AdminHeader.css'
 
 const menuItems = [
@@ -11,16 +11,15 @@ const menuItems = [
   { label: '불편접수', to: '/complaints' },
 ] as const
 
-const actionItems = [
-  { label: '씨브레인 홈페이지', to: '/' },
-  { label: '링크페이 생성하기', to: '/linkpay/new' },
-] as const
-
 export function AdminHeader() {
   return (
     <header className="admin-header">
       <div className="admin-header__left">
-        <NavLink className="admin-header__logo" to="/sales" aria-label="C-Brain 관리자 홈">
+        <NavLink
+          className="admin-header__logo"
+          to="/sales"
+          aria-label="C-Brain 관리자 홈"
+        >
           <img
             className="admin-header__logo-wordmark"
             src="/figma-assets/cbrain-logo-wordmark.svg"
@@ -58,11 +57,12 @@ export function AdminHeader() {
       </div>
 
       <div className="admin-header__actions">
-        {actionItems.map((item) => (
-          <a className="admin-header__action pretendard-bold-14" href={item.to} key={item.to}>
-            {item.label}
-          </a>
-        ))}
+        <a className="admin-header__action pretendard-bold-14" href="/">
+          씨브레인 홈페이지
+        </a>
+        <Link className="admin-header__action pretendard-bold-14" to="/linkpay">
+          링크페이 생성하기
+        </Link>
       </div>
     </header>
   )

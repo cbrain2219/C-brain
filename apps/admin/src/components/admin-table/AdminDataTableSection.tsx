@@ -14,7 +14,7 @@ const ADMIN_TABLE_MIN_SCALE = 0.24
 export type AdminTableFilter = {
   readonly id: string
   readonly label: string
-  readonly value: string
+  readonly options: readonly string[]
 }
 
 export type AdminTableSearch = {
@@ -34,15 +34,12 @@ export type AdminTableColumn<Row> = {
   readonly track: string
 }
 
-export type AdminTableRowVariant = 'default' | 'filled'
-
 export type AdminDataTableSectionProps<Row> = {
   readonly bottomAction?: AdminTableAction
   readonly columns: readonly AdminTableColumn<Row>[]
   readonly emptyMessage?: string
   readonly filters: readonly AdminTableFilter[]
   readonly getRowKey: (row: Row) => string
-  readonly getRowVariant?: (row: Row) => AdminTableRowVariant
   readonly rows: readonly Row[]
   readonly search: AdminTableSearch
   readonly title: string
@@ -126,11 +123,18 @@ function ChevronDownIcon() {
 
 function SearchIcon() {
   return (
-    <svg aria-hidden="true" className="admin-data-table__icon" viewBox="0 0 20 20">
+    <svg
+      aria-hidden="true"
+      className="admin-data-table__icon"
+      height="20"
+      viewBox="0 0 20 20"
+      width="20"
+      xmlns="http://www.w3.org/2000/svg"
+    >
       <path
         d="M14.1057 14.2L17 17M9.5 6C11.1569 6 12.5 7.34315 12.5 9M16.0667 9.53333C16.0667 13.1416 13.1416 16.0667 9.53333 16.0667C5.92507 16.0667 3 13.1416 3 9.53333C3 5.92507 5.92507 3 9.53333 3C13.1416 3 16.0667 5.92507 16.0667 9.53333Z"
         fill="none"
-        stroke="currentColor"
+        stroke="#1E293B"
         strokeLinecap="round"
         strokeWidth="1.5"
       />
@@ -166,7 +170,6 @@ export function AdminDataTableSection<Row>({
   emptyMessage = '표시할 데이터가 없습니다.',
   filters,
   getRowKey,
-  getRowVariant,
   rows,
   search,
   title,
@@ -198,13 +201,27 @@ export function AdminDataTableSection<Row>({
 
             <div className="admin-data-table-toolbar" aria-label={`${title} 도구`}>
               {filters.map((filter) => (
-                <div className="admin-data-table-filter" key={filter.id}>
+                <label className="admin-data-table-filter" key={filter.id}>
                   <span className="admin-data-table-filter__label pretendard-bold-14">{filter.label}</span>
-                  <button className="admin-data-table-filter__trigger pretendard-medium-14" type="button">
-                    <span>{filter.value}</span>
+                  <span className="admin-data-table-filter__select-wrap">
+                    <select
+                      className="admin-data-table-filter__select pretendard-medium-14"
+                      disabled={filter.options.length === 0}
+                      name={filter.id}
+                    >
+                      {filter.options.length === 0 ? (
+                        <option>생성된 태그 없음</option>
+                      ) : (
+                        filter.options.map((option) => (
+                          <option key={option} value={option}>
+                            {option}
+                          </option>
+                        ))
+                      )}
+                    </select>
                     <ChevronDownIcon />
-                  </button>
-                </div>
+                  </span>
+                </label>
               ))}
 
               <label className="admin-data-table-search">
@@ -234,14 +251,7 @@ export function AdminDataTableSection<Row>({
             <div className="admin-data-table__body" role="rowgroup">
               {rows.length > 0 ? (
                 rows.map((row) => (
-                  <div
-                    className={[
-                      'admin-data-table__row',
-                      getRowVariant?.(row) === 'filled' ? 'admin-data-table__row--filled' : '',
-                    ].join(' ')}
-                    key={getRowKey(row)}
-                    role="row"
-                  >
+                  <div className="admin-data-table__row" key={getRowKey(row)} role="row">
                     {columns.map((column) => (
                       <div className="admin-data-table__cell pretendard-medium-14" key={column.id} role="cell">
                         {column.renderCell(row)}

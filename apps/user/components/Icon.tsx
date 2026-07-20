@@ -30,6 +30,7 @@ type IconName =
   | "message-typing"
   | "package"
   | "pen-tool"
+  | "pin"
   | "star"
   | "truck"
   | "user-profile-circle"
@@ -496,6 +497,25 @@ function UserProfileCircleIcon({
   );
 }
 
+function PinIcon({ size = 24, ...props }: Omit<IconProps, "name">) {
+  return (
+    <svg
+      aria-hidden="true"
+      fill="none"
+      height={size}
+      viewBox="0 0 12 12"
+      width={size}
+      xmlns="http://www.w3.org/2000/svg"
+      {...props}
+    >
+      <path
+        d="m7.85 1.5 2.65 2.65-1.7.57-1.65 1.65.25 1.8-.72.72-1.78-1.8-2.68 2.68-.7-.7L4.2 6.39 2.4 4.61l.72-.72 1.8.25 1.65-1.65.58-1.7.7.71Z"
+        fill="currentColor"
+      />
+    </svg>
+  );
+}
+
 function XCloseIcon({ size = 24, ...props }: Omit<IconProps, "name">) {
   return (
     <svg
@@ -535,6 +555,7 @@ const icons = {
   "message-typing": MessageTypingIcon,
   package: PackageIcon,
   "pen-tool": PenToolIcon,
+  pin: PinIcon,
   star: StarIcon,
   truck: TruckIcon,
   "user-profile-circle": UserProfileCircleIcon,

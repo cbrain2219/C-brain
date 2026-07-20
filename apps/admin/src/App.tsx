@@ -1,6 +1,21 @@
+import type { FormEvent } from 'react'
 import { Navigate, Route, Routes } from 'react-router-dom'
+import { Toaster } from 'sonner'
 import { AdminHeader } from './components/AdminHeader'
+import { BlogFormPage } from './pages/BlogFormPage'
+import { BlogPage } from './pages/BlogPage'
+import { ComplaintDetailPage } from './pages/ComplaintDetailPage'
+import { ComplaintPage } from './pages/ComplaintPage'
+import { LinkPayPage } from './pages/LinkPayPage'
+import { NoticeFormPage } from './pages/NoticeFormPage'
+import { NoticePage } from './pages/NoticePage'
+import { PortfolioFormPage } from './pages/PortfolioFormPage'
 import { PortfolioPage } from './pages/PortfolioPage'
+import { ProductFormPage } from './pages/ProductFormPage'
+import { ProductPage } from './pages/ProductPage'
+import { ReviewFormPage } from './pages/ReviewFormPage'
+import { ReviewPage } from './pages/ReviewPage'
+import { SalesPage } from './pages/SalesPage'
 import './App.css'
 
 const adminPages = [
@@ -64,25 +79,91 @@ function AdminPage({ eyebrow, title, description }: AdminPageProps) {
   return (
     <main className="admin-main">
       <section className="admin-page-heading" aria-labelledby="page-title">
-        <p className="admin-page-heading__eyebrow pretendard-bold-12">{eyebrow}</p>
-        <h1 className="admin-page-heading__title pretendard-bold-32" id="page-title">
+        <p className="admin-page-heading__eyebrow pretendard-bold-12">
+          {eyebrow}
+        </p>
+        <h1
+          className="admin-page-heading__title pretendard-bold-32"
+          id="page-title"
+        >
           {title}
         </h1>
-        <p className="admin-page-heading__description pretendard-medium-16">{description}</p>
+        <p className="admin-page-heading__description pretendard-medium-16">
+          {description}
+        </p>
       </section>
     </main>
   )
 }
 
+function scrollToFirstInvalidControl(event: FormEvent<HTMLElement>) {
+  const control = event.target
+
+  if (
+    !(
+      control instanceof HTMLInputElement ||
+      control instanceof HTMLSelectElement ||
+      control instanceof HTMLTextAreaElement
+    )
+  )
+    return
+
+  const firstInvalidControl = control.form?.querySelector(
+    'input:invalid, select:invalid, textarea:invalid',
+  )
+
+  if (firstInvalidControl !== control) return
+
+  const scrollTarget =
+    control.type === 'checkbox' || control.type === 'radio'
+      ? (control.closest('label') ?? control)
+      : control
+
+  window.requestAnimationFrame(() => {
+    scrollTarget.scrollIntoView({
+      behavior: 'smooth',
+      block: 'center',
+      inline: 'nearest',
+    })
+  })
+}
+
 export function App() {
-  const placeholderPages = adminPages.filter((page) => page.path !== '/portfolio')
+  const placeholderPages = adminPages.filter(
+    (page) =>
+      page.path !== '/products' &&
+      page.path !== '/portfolio' &&
+      page.path !== '/blog' &&
+      page.path !== '/reviews' &&
+      page.path !== '/notices' &&
+      page.path !== '/sales' &&
+      page.path !== '/complaints',
+  )
 
   return (
-    <div className="admin-shell">
+    <div className="admin-shell" onInvalidCapture={scrollToFirstInvalidControl}>
       <AdminHeader />
       <Routes>
         <Route element={<Navigate replace to="/products" />} path="/" />
+        <Route element={<ProductPage />} path="/products" />
+        <Route element={<ProductFormPage />} path="/products/new" />
+        <Route element={<ProductFormPage />} path="/products/:productId" />
         <Route element={<PortfolioPage />} path="/portfolio" />
+        <Route element={<PortfolioFormPage />} path="/portfolio/new" />
+        <Route element={<PortfolioFormPage />} path="/portfolio/:portfolioId" />
+        <Route element={<BlogPage />} path="/blog" />
+        <Route element={<BlogFormPage />} path="/blog/new" />
+        <Route element={<BlogFormPage />} path="/blog/:blogId" />
+        <Route element={<ReviewPage />} path="/reviews" />
+        <Route element={<ReviewFormPage />} path="/reviews/new" />
+        <Route element={<ReviewFormPage />} path="/reviews/:reviewId" />
+        <Route element={<NoticePage />} path="/notices" />
+        <Route element={<NoticeFormPage />} path="/notices/new" />
+        <Route element={<NoticeFormPage />} path="/notices/:noticeId" />
+        <Route element={<ComplaintPage />} path="/complaints" />
+        <Route element={<ComplaintDetailPage />} path="/complaints/:complaintId" />
+        <Route element={<LinkPayPage />} path="/linkpay" />
+        <Route element={<SalesPage />} path="/sales" />
         {placeholderPages.map((page) => (
           <Route
             element={
@@ -97,6 +178,7 @@ export function App() {
           />
         ))}
       </Routes>
+      <Toaster />
     </div>
   )
 }

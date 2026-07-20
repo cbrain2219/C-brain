@@ -102,3 +102,9 @@ Use `margin` only for page-level exceptions where `gap` cannot express the layou
 - 섹션, 카드 목록, 폼 필드, 버튼 그룹, 아이콘/텍스트 간격도 기본적으로 `gap`을 사용한다.
 - `margin-top`, `margin-bottom`, `margin-left`, `margin-right`로 일반 간격을 만들지 않는다.
 - `margin`이 필요한 경우에는 해당 요소가 부모 layout의 `gap`으로 표현할 수 없는 예외인지 먼저 확인한다.
+
+# Form Focus
+
+- `input`, `select`, `textarea`에 별도의 focus CSS를 작성하지 않는다.
+- 포커스 시 border, outline, box-shadow 등 시각 스타일을 추가하거나 변경하지 않는다.
+- 브라우저 기본 focus outline은 공통 기본 스타일의 `outline: none`으로 제거한다.

@@ -58,20 +58,37 @@
   white-space: nowrap;
 }
 
-.admin-data-table-filter__trigger {
+.admin-data-table-filter__select-wrap {
+  position: relative;
   height: 24px;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  color: var(--admin-gray-800);
   display: flex;
   align-items: center;
-  gap: 4px;
+  color: var(--admin-gray-800);
+}
+
+.admin-data-table-filter__select {
+  appearance: none;
+  height: 24px;
+  min-width: 0;
+  padding: 0 24px 0 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
   cursor: pointer;
 }
 
-.admin-data-table-filter__trigger:focus-visible,
-.admin-data-table-search__input:focus-visible,
+.admin-data-table-filter__select:disabled {
+  color: var(--admin-gray-400);
+  cursor: default;
+}
+
+.admin-data-table-filter__select-wrap .admin-data-table__icon {
+  position: absolute;
+  right: 0;
+  pointer-events: none;
+}
+
 .admin-data-table-section__action:focus-visible,
 .admin-data-table__link:focus-visible {
   outline: 2px solid var(--admin-brand-500);
@@ -159,7 +176,12 @@
   right: 0;
   width: 1px;
   height: 32px;
-  background: var(--admin-gray-100);
+  background: linear-gradient(
+    to bottom,
+    rgb(30 41 59 / 0%),
+    rgb(30 41 59 / 20%) 50.4808%,
+    rgb(30 41 59 / 0%)
+  );
 }
 
 .admin-data-table__body {
@@ -173,7 +195,7 @@
   border-radius: 16px;
 }
 
-.admin-data-table__row--filled {
+.admin-data-table__row:hover {
   background: var(--admin-gray-50);
 }
 
@@ -200,6 +222,13 @@
   font-weight: 700;
 }
 
+.admin-data-table__summary-cell {
+  width: 100%;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .admin-data-table__brand-text,
 .admin-data-table__link {
   color: var(--admin-brand-500);
@@ -214,13 +243,18 @@
 }
 
 .admin-data-table__empty {
-  min-height: 52px;
+  align-self: center;
+  margin: 52px 0;
+  width: fit-content;
+  height: 32px;
+  padding: 4px 8px;
   border-radius: 16px;
   background: var(--admin-gray-50);
-  color: var(--admin-gray-500);
+  color: var(--admin-gray-400);
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 10px;
 }
 
 .admin-data-table-section__action {
