@@ -51,8 +51,6 @@ export type PortfolioListHref =
 export type PortfolioDetailHref =
   `/portfolio/${string}?category=${PortfolioCategoryId}`;
 
-export const PORTFOLIO_SCROLL_RESTORE_KEY = "portfolio-scroll-restore";
-
 export const portfolioPageSeo: PortfolioSeo = {
   description:
     "씨브레인의 브로슈어, 카탈로그, 리플렛, 포스터, 명함 등 실제 디자인 제작 사례를 확인하세요.",
@@ -69,10 +67,9 @@ export const portfolioPageSeo: PortfolioSeo = {
 
 type PortfolioItemSeed = Omit<
   PortfolioItem,
-  "author" | "description" | "detailImages" | "summary"
+  "author" | "description" | "summary"
 > & {
   description?: string;
-  detailImageSources?: readonly string[];
   summary?: string;
 };
 
@@ -88,77 +85,65 @@ export const portfolioCategories = [
   { id: "etc", label: "기타" },
 ] as const satisfies readonly PortfolioCategory[];
 
-const fallbackPortfolioImages = [
-  "/figma-assets/portfolio-blue-guide.png",
-  "/figma-assets/portfolio-axis.png",
-  "/figma-assets/portfolio-shinlim.png",
-  "/figma-assets/portfolio-wedding.png",
-] as const;
-
-const categoryDetailImageSources: Record<
-  PortfolioCategoryId,
-  readonly string[]
-> = {
-  "banner-book": [
-    "/figma-assets/portfolio-black-red.png",
-    "/figma-assets/portfolio-orange.png",
-  ],
-  "brochure-catalog": [
-    "/figma-assets/portfolio-blue-guide.png",
-    "/figma-assets/portfolio-axis.png",
-  ],
-  "business-card-envelope": [
-    "/figma-assets/portfolio-card.png",
-    "/figma-assets/portfolio-blue-brochure.png",
-  ],
-  etc: [
-    "/figma-assets/portfolio-building.png",
-    "/figma-assets/portfolio-blue-guide.png",
-  ],
-  "leaflet-pamphlet": [
-    "/figma-assets/portfolio-tmes.png",
-    "/figma-assets/portfolio-blue-guide.png",
-  ],
-  logo: [
-    "/figma-assets/portfolio-green.png",
-    "/figma-assets/portfolio-card.png",
-  ],
-  "package-shopping-bag": [
-    "/figma-assets/portfolio-green.png",
-    "/figma-assets/portfolio-building.png",
-  ],
-  photo: [
-    "/figma-assets/portfolio-lab.png",
-    "/figma-assets/portfolio-orange.png",
-  ],
-  "poster-flyer": [
-    "/figma-assets/portfolio-orange.png",
-    "/figma-assets/portfolio-black-red.png",
-  ],
-};
+const portfolioDetailImages = {
+  axis: {
+    alt: "SAINTI AXis PHM 2단 접지 카탈로그 앞뒤면",
+    src: "/figma-assets/portfolio-axis.png",
+  },
+  blackRed: {
+    alt: "병원 의약품 공급 플랫폼 소개 리플렛 표지와 내지",
+    src: "/figma-assets/portfolio-black-red.png",
+  },
+  blueBrochure: {
+    alt: "한결정보기술 클라우드와 인공지능 기업 소개 브로슈어",
+    src: "/figma-assets/portfolio-blue-brochure.png",
+  },
+  blueGuide: {
+    alt: "중소기업 지원 제도 안내 팜플렛 표지와 펼침면",
+    src: "/figma-assets/portfolio-blue-guide.png",
+  },
+  building: {
+    alt: "성방산업 창호 제품 카탈로그 표지와 내지",
+    src: "/figma-assets/portfolio-building.png",
+  },
+  card: {
+    alt: "남이면 어울림한마당 행사 초청장 앞뒤면",
+    src: "/figma-assets/portfolio-card.png",
+  },
+  green: {
+    alt: "웰롯 시니어 웰니스 서비스 소개 리플렛",
+    src: "/figma-assets/portfolio-green.png",
+  },
+  lab: {
+    alt: "TEMES 전자현미경 분석센터 안내 리플렛",
+    src: "/figma-assets/portfolio-lab.png",
+  },
+  orange: {
+    alt: "화인아이앤씨 전자파 차폐 기술 회사 현황 브로슈어",
+    src: "/figma-assets/portfolio-orange.png",
+  },
+  shinlim: {
+    alt: "신림산업 S-BAG 제품 카탈로그 표지와 펼침면",
+    src: "/figma-assets/portfolio-shinlim.png",
+  },
+  tmes: {
+    alt: "TMS 산업 자동화 기업 소개 리플렛 표지와 펼침면",
+    src: "/figma-assets/portfolio-tmes.png",
+  },
+  wedding: {
+    alt: "케어나인 병원 서비스 안내 브로슈어 표지와 내지",
+    src: "/figma-assets/portfolio-wedding.png",
+  },
+} as const satisfies Record<string, PortfolioDetailImage>;
 
 const defaultPortfolioDescription =
   "대상 고객과 제작 목적에 맞춰 콘텐츠 구조와 시각 흐름을 정리한 포트폴리오 사례입니다. 브랜드의 핵심 메시지가 한눈에 들어오도록 표지, 본문, 그래픽 요소를 균형감 있게 구성했습니다.";
-
-function createDetailImages(item: PortfolioItemSeed): PortfolioDetailImage[] {
-  const sources = [
-    item.image,
-    ...(item.detailImageSources ?? categoryDetailImageSources[item.categoryId]),
-    ...fallbackPortfolioImages,
-  ].filter((source, index, array) => array.indexOf(source) === index);
-
-  return sources.slice(0, 3).map((src, index) => ({
-    alt: `${item.client} ${item.title} 상세 디자인 ${index + 1}`,
-    src,
-  }));
-}
 
 function createPortfolioItem(item: PortfolioItemSeed): PortfolioItem {
   return {
     ...item,
     author: "씨브레인",
     description: item.description ?? defaultPortfolioDescription,
-    detailImages: createDetailImages(item),
     summary:
       item.summary ??
       `${item.client}의 제작 목적과 브랜드 톤에 맞춰 완성한 ${item.title}입니다.`,
@@ -169,6 +154,11 @@ export const portfolioItems = [
   createPortfolioItem({
     categoryId: "brochure-catalog",
     client: "신림산업㈜",
+    detailImages: [
+      portfolioDetailImages.shinlim,
+      portfolioDetailImages.blueGuide,
+      portfolioDetailImages.axis,
+    ],
     image: "/figma-assets/portfolio-shinlim.png",
     imageAlt: "신림산업㈜ 제품 카탈로그 A4 16P 제작 사례",
     slug: "shinlim-product-catalog",
@@ -177,6 +167,11 @@ export const portfolioItems = [
   createPortfolioItem({
     categoryId: "brochure-catalog",
     client: "세인티",
+    detailImages: [
+      portfolioDetailImages.axis,
+      portfolioDetailImages.blueGuide,
+      portfolioDetailImages.shinlim,
+    ],
     image: "/figma-assets/portfolio-axis.png",
     imageAlt: "세인티 2단 접지 카탈로그 제작 사례",
     slug: "sainty-folded-catalog",
@@ -185,6 +180,11 @@ export const portfolioItems = [
   createPortfolioItem({
     categoryId: "brochure-catalog",
     client: "케어나인",
+    detailImages: [
+      portfolioDetailImages.wedding,
+      portfolioDetailImages.blueGuide,
+      portfolioDetailImages.axis,
+    ],
     image: "/figma-assets/portfolio-wedding.png",
     imageAlt: "케어나인 병원 서비스 안내 브로슈어 제작 사례",
     slug: "care-nine-hospital-brochure",
@@ -193,6 +193,11 @@ export const portfolioItems = [
   createPortfolioItem({
     categoryId: "brochure-catalog",
     client: "TMES",
+    detailImages: [
+      portfolioDetailImages.tmes,
+      portfolioDetailImages.blueGuide,
+      portfolioDetailImages.axis,
+    ],
     image: "/figma-assets/portfolio-tmes.png",
     imageAlt: "TMES 행사 안내 리플렛 제작 사례",
     slug: "tmes-event-leaflet",
@@ -201,6 +206,11 @@ export const portfolioItems = [
   createPortfolioItem({
     categoryId: "brochure-catalog",
     client: "오렌지클래스",
+    detailImages: [
+      portfolioDetailImages.orange,
+      portfolioDetailImages.blueGuide,
+      portfolioDetailImages.axis,
+    ],
     image: "/figma-assets/portfolio-orange.png",
     imageAlt: "오렌지클래스 프로모션 포스터 제작 사례",
     slug: "orange-class-poster",
@@ -209,6 +219,11 @@ export const portfolioItems = [
   createPortfolioItem({
     categoryId: "brochure-catalog",
     client: "블랙레드",
+    detailImages: [
+      portfolioDetailImages.blackRed,
+      portfolioDetailImages.blueGuide,
+      portfolioDetailImages.axis,
+    ],
     image: "/figma-assets/portfolio-black-red.png",
     imageAlt: "블랙레드 전시 홍보 배너 제작 사례",
     slug: "black-red-exhibition-banner",
@@ -217,6 +232,11 @@ export const portfolioItems = [
   createPortfolioItem({
     categoryId: "brochure-catalog",
     client: "랩프로젝트",
+    detailImages: [
+      portfolioDetailImages.lab,
+      portfolioDetailImages.blueGuide,
+      portfolioDetailImages.axis,
+    ],
     image: "/figma-assets/portfolio-lab.png",
     imageAlt: "랩프로젝트 연구 소개 브로슈어 제작 사례",
     slug: "lab-project-brochure",
@@ -225,6 +245,11 @@ export const portfolioItems = [
   createPortfolioItem({
     categoryId: "brochure-catalog",
     client: "가이드랩",
+    detailImages: [
+      portfolioDetailImages.blueGuide,
+      portfolioDetailImages.axis,
+      portfolioDetailImages.shinlim,
+    ],
     image: "/figma-assets/portfolio-blue-guide.png",
     imageAlt: "가이드랩 서비스 안내 팜플렛 제작 사례",
     slug: "guide-lab-pamphlet",
@@ -233,6 +258,11 @@ export const portfolioItems = [
   createPortfolioItem({
     categoryId: "brochure-catalog",
     client: "그린패키지",
+    detailImages: [
+      portfolioDetailImages.green,
+      portfolioDetailImages.blueGuide,
+      portfolioDetailImages.axis,
+    ],
     image: "/figma-assets/portfolio-green.png",
     imageAlt: "그린패키지 브랜드 패키지 디자인 제작 사례",
     slug: "green-package-design",
@@ -241,6 +271,11 @@ export const portfolioItems = [
   createPortfolioItem({
     categoryId: "brochure-catalog",
     client: "블루브로슈어",
+    detailImages: [
+      portfolioDetailImages.blueBrochure,
+      portfolioDetailImages.blueGuide,
+      portfolioDetailImages.axis,
+    ],
     image: "/figma-assets/portfolio-blue-brochure.png",
     imageAlt: "블루브로슈어 기업 소개 브로슈어 제작 사례",
     slug: "blue-company-brochure",
@@ -249,6 +284,11 @@ export const portfolioItems = [
   createPortfolioItem({
     categoryId: "brochure-catalog",
     client: "빌딩파트너스",
+    detailImages: [
+      portfolioDetailImages.building,
+      portfolioDetailImages.blueGuide,
+      portfolioDetailImages.axis,
+    ],
     image: "/figma-assets/portfolio-building.png",
     imageAlt: "빌딩파트너스 분양 안내 제작물 제작 사례",
     slug: "building-partners-sales-material",
@@ -257,6 +297,11 @@ export const portfolioItems = [
   createPortfolioItem({
     categoryId: "brochure-catalog",
     client: "카드스튜디오",
+    detailImages: [
+      portfolioDetailImages.card,
+      portfolioDetailImages.blueGuide,
+      portfolioDetailImages.axis,
+    ],
     image: "/figma-assets/portfolio-card.png",
     imageAlt: "카드스튜디오 브랜드 명함 세트 제작 사례",
     slug: "card-studio-business-card",
@@ -265,6 +310,11 @@ export const portfolioItems = [
   createPortfolioItem({
     categoryId: "leaflet-pamphlet",
     client: "가이드랩",
+    detailImages: [
+      portfolioDetailImages.blueGuide,
+      portfolioDetailImages.tmes,
+      portfolioDetailImages.axis,
+    ],
     image: "/figma-assets/portfolio-blue-guide.png",
     imageAlt: "가이드랩 서비스 안내 팜플렛 제작 사례",
     slug: "guide-lab-service-pamphlet",
@@ -273,6 +323,11 @@ export const portfolioItems = [
   createPortfolioItem({
     categoryId: "poster-flyer",
     client: "오렌지클래스",
+    detailImages: [
+      portfolioDetailImages.orange,
+      portfolioDetailImages.blackRed,
+      portfolioDetailImages.blueGuide,
+    ],
     image: "/figma-assets/portfolio-orange.png",
     imageAlt: "오렌지클래스 프로모션 포스터 제작 사례",
     slug: "orange-class-promotion-poster",
@@ -281,6 +336,11 @@ export const portfolioItems = [
   createPortfolioItem({
     categoryId: "banner-book",
     client: "블랙레드",
+    detailImages: [
+      portfolioDetailImages.blackRed,
+      portfolioDetailImages.orange,
+      portfolioDetailImages.blueGuide,
+    ],
     image: "/figma-assets/portfolio-black-red.png",
     imageAlt: "블랙레드 전시 홍보 배너 제작 사례",
     slug: "black-red-display-banner",
@@ -289,6 +349,11 @@ export const portfolioItems = [
   createPortfolioItem({
     categoryId: "business-card-envelope",
     client: "카드스튜디오",
+    detailImages: [
+      portfolioDetailImages.card,
+      portfolioDetailImages.blueBrochure,
+      portfolioDetailImages.blueGuide,
+    ],
     image: "/figma-assets/portfolio-card.png",
     imageAlt: "카드스튜디오 브랜드 명함 세트 제작 사례",
     slug: "card-studio-brand-stationery",
@@ -297,6 +362,11 @@ export const portfolioItems = [
   createPortfolioItem({
     categoryId: "logo",
     client: "씨브레인",
+    detailImages: [
+      portfolioDetailImages.green,
+      portfolioDetailImages.card,
+      portfolioDetailImages.blueGuide,
+    ],
     image: "/figma-assets/portfolio-green.png",
     imageAlt: "씨브레인 브랜드 로고 응용안 제작 사례",
     slug: "cbrain-logo-application",
@@ -305,6 +375,11 @@ export const portfolioItems = [
   createPortfolioItem({
     categoryId: "photo",
     client: "스튜디오 케이스",
+    detailImages: [
+      portfolioDetailImages.lab,
+      portfolioDetailImages.orange,
+      portfolioDetailImages.blueGuide,
+    ],
     image: "/figma-assets/portfolio-lab.png",
     imageAlt: "스튜디오 케이스 제품 촬영 연출 제작 사례",
     slug: "studio-case-product-photo",
@@ -313,6 +388,11 @@ export const portfolioItems = [
   createPortfolioItem({
     categoryId: "package-shopping-bag",
     client: "그린패키지",
+    detailImages: [
+      portfolioDetailImages.green,
+      portfolioDetailImages.building,
+      portfolioDetailImages.blueGuide,
+    ],
     image: "/figma-assets/portfolio-green.png",
     imageAlt: "그린패키지 브랜드 패키지 디자인 제작 사례",
     slug: "green-package-shopping-bag",
@@ -321,6 +401,11 @@ export const portfolioItems = [
   createPortfolioItem({
     categoryId: "etc",
     client: "빌딩파트너스",
+    detailImages: [
+      portfolioDetailImages.building,
+      portfolioDetailImages.blueGuide,
+      portfolioDetailImages.axis,
+    ],
     image: "/figma-assets/portfolio-building.png",
     imageAlt: "빌딩파트너스 분양 안내 제작물 제작 사례",
     slug: "building-partners-real-estate-material",

@@ -3,7 +3,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-import { Icon } from "../../../../components/Icon";
 import {
   getPortfolioCategoryIdFromValue,
   getPortfolioCategoryLabel,
@@ -102,10 +101,12 @@ export default async function PortfolioDetailPage({
             </h1>
             <p className={styles.authorLine}>
               <span>작성자</span>
-              <Icon
+              <Image
+                alt=""
                 className={styles.authorIcon}
-                name="cbrain-author"
-                size={20}
+                height={20}
+                src="/figma-assets/cbrain-author.svg"
+                width={20}
               />
               <span>{item.author}</span>
             </p>

@@ -7,7 +7,6 @@ import { type MouseEvent, useEffect, useMemo, useState } from "react";
 
 import { HorizontalDragScroll } from "../../../components/HorizontalDragScroll";
 import {
-  PORTFOLIO_SCROLL_RESTORE_KEY,
   getPortfolioDetailHref,
   getPortfolioListHref,
   type PortfolioCategory,
@@ -15,6 +14,8 @@ import {
   type PortfolioItem,
 } from "../../_content/portfolio";
 import styles from "./page.module.css";
+
+const PORTFOLIO_SCROLL_RESTORE_KEY = "portfolio-scroll-restore";
 
 type PortfolioGalleryProps = {
   categories: readonly PortfolioCategory[];

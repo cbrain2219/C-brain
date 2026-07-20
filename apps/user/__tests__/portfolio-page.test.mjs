@@ -10,10 +10,19 @@ const galleryPath = new URL(
   "../app/(site)/portfolio/PortfolioGallery.tsx",
   import.meta.url,
 );
+const landingPortfolioPath = new URL(
+  "../app/_components/PortfolioSection.tsx",
+  import.meta.url,
+);
 const detailPagePath = new URL(
   "../app/(site)/portfolio/[slug]/page.tsx",
   import.meta.url,
 );
+const detailStylesPath = new URL(
+  "../app/(site)/portfolio/[slug]/page.module.css",
+  import.meta.url,
+);
+const iconPath = new URL("../components/Icon.tsx", import.meta.url);
 const stylesPath = new URL(
   "../app/(site)/portfolio/page.module.css",
   import.meta.url,
@@ -32,15 +41,19 @@ test("portfolio category hover excludes the active tab", async () => {
 test("portfolio cards expose semantic project markup and descriptive alt text", async () => {
   const content = await readFile(contentPath, "utf8");
   const gallery = await readFile(galleryPath, "utf8");
+  const landingPortfolio = await readFile(landingPortfolioPath, "utf8");
 
   assert.match(content, /imageAlt: string/);
   assert.doesNotMatch(content, /export function getPortfolioImageAlt/);
+  assert.doesNotMatch(content, /function createDetailImages/);
+  assert.doesNotMatch(content, /detailImageSources/);
   assert.match(gallery, /<ul className=\{styles\.portfolioGrid\}>/);
   assert.match(gallery, /<li[^>]*>/);
   assert.match(gallery, /<article>/);
   assert.match(gallery, /<figure[^>]*>/);
   assert.match(gallery, /<figcaption[^>]*>/);
   assert.match(gallery, /alt=\{item\.imageAlt\}/);
+  assert.match(landingPortfolio, /alt=\{item\.imageAlt\}/);
 });
 
 test("portfolio detail metadata and related cards reuse representative image semantics", async () => {
@@ -64,6 +77,8 @@ test("portfolio detail metadata and related cards reuse representative image sem
 
 test("portfolio detail body is associated with its heading and images", async () => {
   const detailPage = await readFile(detailPagePath, "utf8");
+  const detailStyles = await readFile(detailStylesPath, "utf8");
+  const icons = await readFile(iconPath, "utf8");
 
   assert.match(detailPage, /<article className=\{styles\.detailPage\}>/);
   assert.match(detailPage, /<header className=\{styles\.detailHeader\}>/);
@@ -77,4 +92,11 @@ test("portfolio detail body is associated with its heading and images", async ()
     /<figure className=\{styles\.detailImageFrame\} key=\{image\.src\}>/,
   );
   assert.match(detailPage, /alt=\{image\.alt\}/);
+  assert.match(detailPage, /src="\/figma-assets\/cbrain-author\.svg"/);
+  assert.doesNotMatch(detailPage, /name="cbrain-author"/);
+  assert.doesNotMatch(icons, /cbrain-author/);
+
+  const authorIconRule = detailStyles.match(/\.authorIcon\s*\{([^}]*)\}/)?.[1];
+  assert.ok(authorIconRule);
+  assert.doesNotMatch(authorIconRule, /\b(?:width|height)\s*:/);
 });

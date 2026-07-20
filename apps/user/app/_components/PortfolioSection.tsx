@@ -59,7 +59,7 @@ export function PortfolioSection() {
               key={item.slug}
             >
               <Image
-                alt={`${item.client} ${item.title}`}
+                alt={item.imageAlt}
                 className={styles.coverImage}
                 fill
                 sizes="(min-width: 1440px) 325px, (min-width: 1080px) 33vw, (min-width: 640px) 50vw, 300px"
