@@ -39,13 +39,20 @@ function getBlogDetailHref(post: BlogPost, category: BlogCategoryFilter) {
   return `/blog/${post.slug}?${params.toString()}`;
 }
 
-function getFeaturedSlides(posts: readonly BlogPost[]) {
-  return posts.slice(0, FEATURED_SLIDE_COUNT);
+function getBannerSlides(posts: readonly BlogPost[]) {
+  const bannerPosts = posts
+    .filter((post) => post.bannerRank !== undefined)
+    .sort((first, second) => first.bannerRank! - second.bannerRank!);
+
+  return (bannerPosts.length > 0 ? bannerPosts : posts).slice(
+    0,
+    FEATURED_SLIDE_COUNT,
+  );
 }
 
 export function BlogBoard({ activeCategory, posts }: BlogBoardProps) {
   const visiblePosts = filterBlogPosts(posts, activeCategory);
-  const featuredSlides = getFeaturedSlides(visiblePosts);
+  const featuredSlides = getBannerSlides(visiblePosts);
   const featuredPost = featuredSlides[0];
   const ordinaryPosts = visiblePosts.filter(
     (post) => post.id !== featuredPost?.id,

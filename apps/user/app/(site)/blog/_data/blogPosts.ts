@@ -175,7 +175,8 @@ export const blogPosts = [
     publishedAt: "2026. 11. 02",
     author: "씨브레인",
     image: "/figma-assets/blog-featured.png",
-    featured: true,
+    landingRank: 1,
+    bannerRank: 1,
     popularRank: 1,
     detail: featuredPostDetail,
   }),
@@ -188,7 +189,8 @@ export const blogPosts = [
     publishedAt: "2026. 10. 28",
     author: "씨브레인",
     image: "/figma-assets/blog-brochure.png",
-    featured: false,
+    landingRank: 2,
+    bannerRank: 2,
     popularRank: 2,
   }),
   createBlogPost({
@@ -200,7 +202,7 @@ export const blogPosts = [
     publishedAt: "2026. 10. 21",
     author: "씨브레인",
     image: "/figma-assets/blog-print-guide.png",
-    featured: false,
+    landingRank: 3,
     popularRank: 3,
   }),
   createBlogPost({
@@ -212,7 +214,6 @@ export const blogPosts = [
     publishedAt: "2026. 10. 15",
     author: "씨브레인",
     image: "/figma-assets/blog-brochure.png",
-    featured: false,
     popularRank: 4,
   }),
   createBlogPost({
@@ -224,7 +225,6 @@ export const blogPosts = [
     publishedAt: "2026. 10. 08",
     author: "씨브레인",
     image: "/figma-assets/blog-print-guide.png",
-    featured: false,
     popularRank: 5,
   }),
   createBlogPost({
@@ -236,7 +236,6 @@ export const blogPosts = [
     publishedAt: "2026. 09. 30",
     author: "씨브레인",
     image: "/figma-assets/blog-brochure.png",
-    featured: false,
   }),
   createBlogPost({
     id: "pamphlet-size-guide",
@@ -247,7 +246,6 @@ export const blogPosts = [
     publishedAt: "2026. 09. 23",
     author: "씨브레인",
     image: "/figma-assets/blog-print-guide.png",
-    featured: false,
   }),
   createBlogPost({
     id: "brand-color-printing",
@@ -258,7 +256,6 @@ export const blogPosts = [
     publishedAt: "2026. 09. 16",
     author: "씨브레인",
     image: "/figma-assets/blog-brochure.png",
-    featured: false,
   }),
 ] satisfies readonly BlogPost[];
 

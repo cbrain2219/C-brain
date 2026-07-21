@@ -44,7 +44,8 @@ export type BlogPost = {
   publishedAtIso: string;
   author: string;
   image: string;
-  featured: boolean;
+  landingRank?: number;
+  bannerRank?: number;
   popularRank?: number;
   detail: BlogPostDetail;
 };

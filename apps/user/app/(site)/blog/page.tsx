@@ -1,3 +1,5 @@
+import type { Metadata } from "next";
+
 import { PageHero } from "../../../components/PageHero";
 
 import { BlogBoard } from "./_components/BlogBoard";
@@ -7,6 +9,26 @@ import styles from "./page.module.css";
 
 type BlogPageProps = {
   searchParams: Promise<{ category?: string }>;
+};
+
+const BLOG_PAGE_DESCRIPTION =
+  "26년 경력 전문가 씨브레인이 직접 작성하는 브로슈어, 카탈로그, 디자인, 인쇄 실무 정보입니다.";
+
+export const metadata: Metadata = {
+  description: BLOG_PAGE_DESCRIPTION,
+  openGraph: {
+    description: BLOG_PAGE_DESCRIPTION,
+    locale: "ko_KR",
+    siteName: "C-Brain",
+    title: "블로그 | C-Brain",
+    type: "website",
+  },
+  title: "블로그 | C-Brain",
+  twitter: {
+    card: "summary",
+    description: BLOG_PAGE_DESCRIPTION,
+    title: "블로그 | C-Brain",
+  },
 };
 
 export default async function BlogPage({ searchParams }: BlogPageProps) {

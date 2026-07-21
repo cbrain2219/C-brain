@@ -26,6 +26,7 @@ const paths = {
     import.meta.url,
   ),
   posts: new URL("../app/(site)/blog/_data/blogPosts.ts", import.meta.url),
+  types: new URL("../app/(site)/blog/_types/blog.ts", import.meta.url),
   header: new URL("../app/_components/Header.tsx", import.meta.url),
   historyBoundary: new URL(
     "../app/(site)/blog/_components/BlogHistoryBoundary.tsx",
@@ -63,6 +64,17 @@ test("blog page keeps the shared header, hero, and category state contracts", as
   );
 });
 
+test("blog list page exposes SEO metadata", async () => {
+  const page = await source("page");
+
+  assert.match(page, /import type \{ Metadata \} from "next"/);
+  assert.match(page, /export const metadata: Metadata = \{/);
+  assert.match(page, /title: "블로그 \| C-Brain"/);
+  assert.match(page, /description:/);
+  assert.match(page, /openGraph:/);
+  assert.match(page, /twitter:/);
+});
+
 test("blog featured carousel supports configurable autoplay and hover pause", async () => {
   const featuredCard = await source("featuredCard");
 
@@ -98,6 +110,21 @@ test("blog featured carousel wraps infinitely through cloned edge slides", async
   assert.match(featuredCard, /onTransitionEnd=\{handleTrackTransitionEnd\}/);
   assert.match(featuredCard, /styles\.blogFeaturedTrackInstant/);
   assert.match(styles, /\.blogFeaturedTrackInstant/);
+});
+
+test("blog featured carousel ignores overlapping slide commands while moving", async () => {
+  const featuredCard = await source("featuredCard");
+
+  assert.match(featuredCard, /isSlideLockedRef/);
+  assert.match(featuredCard, /slideUnlockTimerRef/);
+  assert.match(featuredCard, /unlockSlide/);
+  assert.match(featuredCard, /moveSlide/);
+  assert.match(
+    featuredCard,
+    /if \(!hasMultipleSlides \|\| isSlideLockedRef\.current\) return;/,
+  );
+  assert.match(featuredCard, /window\.setTimeout\(/);
+  assert.match(featuredCard, /BLOG_FEATURED_TRANSITION_MS/);
 });
 
 test("blog featured carousel keeps drag gestures from becoming native link drags", async () => {
@@ -143,6 +170,33 @@ test("blog list prepares notice-style history restore and popular heading separa
     /rgba\(30, 41, 59, 0\) 0%[\s\S]*rgba\(30, 41, 59, 0\.2\) 50%[\s\S]*rgba\(30, 41, 59, 0\) 100%/,
   );
   assert.match(styles, /\.blogCategoryButton\[aria-current="page"\]/);
+});
+
+test("blog data mirrors admin landing, banner, and popular settings", async () => {
+  const [types, posts, board, popularList] = await Promise.all([
+    source("types"),
+    source("posts"),
+    source("board"),
+    readFile(
+      new URL(
+        "../app/(site)/blog/_components/BlogPopularList.tsx",
+        import.meta.url,
+      ),
+      "utf8",
+    ),
+  ]);
+
+  assert.match(types, /landingRank\?: number/);
+  assert.match(types, /bannerRank\?: number/);
+  assert.match(types, /popularRank\?: number/);
+  assert.doesNotMatch(types, /featured: boolean/);
+  assert.match(posts, /landingRank: 1/);
+  assert.match(posts, /bannerRank: 1/);
+  assert.match(posts, /popularRank: 1/);
+  assert.doesNotMatch(posts, /featured:/);
+  assert.match(board, /getBannerSlides/);
+  assert.match(board, /post\.bannerRank/);
+  assert.match(popularList, /post\.popularRank/);
 });
 
 test("blog list uses semantic navigation and article lists without changing visual hooks", async () => {

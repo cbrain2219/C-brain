@@ -41,6 +41,8 @@ export function BlogFeaturedCard({
   const [isTransitionEnabled, setIsTransitionEnabled] = useState(true);
   const [isPaused, setIsPaused] = useState(false);
   const didSwipeRef = useRef(false);
+  const isSlideLockedRef = useRef(false);
+  const slideUnlockTimerRef = useRef<number | null>(null);
   const swipeStartXRef = useRef<number | null>(null);
   const slideCount = posts.length;
   const hasMultipleSlides = slideCount > 1;
@@ -52,23 +54,52 @@ export function BlogFeaturedCard({
       : posts
     : posts;
 
-  const showPreviousSlide = useCallback(() => {
-    if (!hasMultipleSlides) return;
+  const clearSlideUnlockTimer = useCallback(() => {
+    if (slideUnlockTimerRef.current === null) return;
 
-    setIsTransitionEnabled(true);
-    setTrackIndex((currentIndex) => currentIndex - 1);
-    setActiveIndex((currentIndex) =>
-      currentIndex === 0 ? slideCount - 1 : currentIndex - 1,
+    window.clearTimeout(slideUnlockTimerRef.current);
+    slideUnlockTimerRef.current = null;
+  }, []);
+
+  const unlockSlide = useCallback(() => {
+    clearSlideUnlockTimer();
+    isSlideLockedRef.current = false;
+  }, [clearSlideUnlockTimer]);
+
+  const scheduleSlideUnlock = useCallback(() => {
+    clearSlideUnlockTimer();
+    slideUnlockTimerRef.current = window.setTimeout(
+      unlockSlide,
+      BLOG_FEATURED_TRANSITION_MS,
     );
-  }, [hasMultipleSlides, slideCount]);
+  }, [clearSlideUnlockTimer, unlockSlide]);
+
+  const moveSlide = useCallback(
+    (direction: -1 | 1) => {
+      if (!hasMultipleSlides || isSlideLockedRef.current) return;
+
+      isSlideLockedRef.current = true;
+      setIsTransitionEnabled(true);
+      scheduleSlideUnlock();
+      setTrackIndex((currentIndex) => currentIndex + direction);
+      setActiveIndex((currentIndex) =>
+        direction > 0
+          ? (currentIndex + 1) % slideCount
+          : currentIndex === 0
+            ? slideCount - 1
+            : currentIndex - 1,
+      );
+    },
+    [hasMultipleSlides, scheduleSlideUnlock, slideCount],
+  );
+
+  const showPreviousSlide = useCallback(() => {
+    moveSlide(-1);
+  }, [moveSlide]);
 
   const showNextSlide = useCallback(() => {
-    if (!hasMultipleSlides) return;
-
-    setIsTransitionEnabled(true);
-    setTrackIndex((currentIndex) => currentIndex + 1);
-    setActiveIndex((currentIndex) => (currentIndex + 1) % slideCount);
-  }, [hasMultipleSlides, slideCount]);
+    moveSlide(1);
+  }, [moveSlide]);
 
   const restoreTrackTransition = useCallback(() => {
     window.requestAnimationFrame(() => {
@@ -93,13 +124,21 @@ export function BlogFeaturedCard({
     setIsTransitionEnabled(false);
     setTrackIndex((currentIndex) => getLoopedTrackIndex(currentIndex));
     restoreTrackTransition();
-  }, [getLoopedTrackIndex, restoreTrackTransition]);
+    unlockSlide();
+  }, [getLoopedTrackIndex, restoreTrackTransition, unlockSlide]);
 
   useEffect(() => {
     setActiveIndex(0);
     setTrackIndex(hasMultipleSlides ? 1 : 0);
     setIsTransitionEnabled(true);
-  }, [hasMultipleSlides, posts]);
+    unlockSlide();
+  }, [hasMultipleSlides, posts, unlockSlide]);
+
+  useEffect(() => {
+    return () => {
+      clearSlideUnlockTimer();
+    };
+  }, [clearSlideUnlockTimer]);
 
   useEffect(() => {
     if (!hasMultipleSlides) return;
@@ -209,7 +248,10 @@ export function BlogFeaturedCard({
 
     if (trackIndex === 0 || trackIndex === slideCount + 1) {
       resetTrackToLoopedIndex();
+      return;
     }
+
+    unlockSlide();
   };
 
   const handleKeyDown = (event: KeyboardEvent<HTMLElement>) => {
