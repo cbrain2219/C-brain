@@ -1,0 +1,1679 @@
+.sectionInner,
+.heroInner,
+.historyInner {
+  width: min(100%, 1360px);
+  margin: 0;
+  padding: 0 20px;
+}
+
+.sectionInner,
+.historyInner {
+  display: flex;
+  flex-direction: column;
+  gap: var(--section-content-gap);
+}
+
+.hero {
+  min-height: 696px;
+  padding: 104px 0;
+  position: relative;
+  overflow: hidden;
+  color: #ffffff;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+}
+
+.heroImage {
+  object-fit: cover;
+  object-position: center;
+}
+
+.heroOverlay {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(
+      90deg,
+      rgba(0, 0, 0, 0.88) 0%,
+      rgba(0, 0, 0, 0.58) 38%,
+      rgba(0, 0, 0, 0.08) 100%
+    ),
+    linear-gradient(180deg, rgba(0, 0, 0, 0.18) 0%, rgba(0, 0, 0, 0.36) 100%);
+}
+
+.heroInner {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 52px;
+  padding: 0;
+}
+
+.heroCopy {
+  width: min(100%, 1008px);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.heroTextBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.heroBadge,
+.sectionBadge {
+  width: fit-content;
+  margin: 0;
+  min-height: 32px;
+  padding: 6px 14px;
+  border: 1px solid transparent;
+  border-radius: 32px;
+  background: rgba(48, 186, 195, 0.12);
+  background-clip: padding-box;
+  color: #30bac3;
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 20px;
+  letter-spacing: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  isolation: isolate;
+}
+
+.sectionBadge {
+  justify-content: center;
+}
+
+.sectionBadge > span {
+  position: relative;
+  z-index: 2;
+}
+
+.sectionBadge::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  z-index: 1;
+  border-radius: inherit;
+  padding: 1px;
+  background:
+    linear-gradient(
+      to bottom right,
+      rgba(48, 186, 195, 0.8) 0%,
+      rgba(48, 186, 195, 0.08) 30%,
+      rgba(48, 186, 195, 0.08) 100%
+    ),
+    linear-gradient(
+      to bottom right,
+      rgba(48, 186, 195, 0.08) 0%,
+      rgba(48, 186, 195, 0.08) 70%,
+      rgba(48, 186, 195, 0.8) 100%
+    );
+  pointer-events: none;
+  -webkit-mask:
+    linear-gradient(#ffffff 0 0) content-box,
+    linear-gradient(#ffffff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+}
+
+.heroBadge {
+  min-height: 40px;
+  padding: 8px 16px;
+  border-color: transparent;
+  background: rgba(255, 255, 255, 0.1);
+  color: #f8fafc;
+  font-family: Pretendard, var(--font-sans);
+  line-height: 21px;
+  white-space: nowrap;
+}
+
+.heroBadge > span {
+  position: relative;
+  z-index: 2;
+}
+
+.heroBadge::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  z-index: 1;
+  border-radius: inherit;
+  padding: 1px;
+  background:
+    linear-gradient(
+      to bottom right,
+      rgba(255, 255, 255, 0.08) 0%,
+      rgba(255, 255, 255, 0.08) 70%,
+      rgba(255, 255, 255, 0.8) 100%
+    ),
+    linear-gradient(
+      to bottom right,
+      rgba(255, 255, 255, 0.8) 0%,
+      rgba(255, 255, 255, 0.08) 30%,
+      rgba(255, 255, 255, 0.08) 100%
+    );
+  pointer-events: none;
+  -webkit-mask:
+    linear-gradient(#ffffff 0 0) content-box,
+    linear-gradient(#ffffff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+}
+
+.heroCopy h1,
+.sectionHeading h2,
+.introCopy h2,
+.historyHeading h2,
+.infoContent h2 {
+  margin: 0;
+  color: #1e293b;
+  font-family: var(--font-sans);
+  font-weight: 700;
+  letter-spacing: 0;
+}
+
+.heroCopy h1 {
+  color: #ffffff;
+  font-size: 36px;
+  line-height: 48px;
+}
+
+.sectionHeading h2 span,
+.introCopy h2 span {
+  display: block;
+}
+
+.heroTitleLead {
+  display: block;
+}
+
+.heroTitleLine {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  column-gap: 8px;
+  row-gap: 0;
+}
+
+.heroTitleAccent {
+  color: #30bac3;
+}
+
+.heroTitleDesktopSeparator {
+  display: inline;
+}
+
+.heroTitlePlain {
+  color: #ffffff;
+}
+
+.heroTitleMobileBreak {
+  display: none;
+}
+
+.heroDescription {
+  width: min(100%, 648px);
+  color: #f8fafc;
+  font-family: "Pretendard GOV Variable", var(--font-sans);
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 24px;
+}
+
+.heroDescriptionLine {
+  display: block;
+  white-space: nowrap;
+}
+
+.heroDescriptionLineMobile {
+  display: none;
+}
+
+.heroMetricPanel {
+  width: min(100%, 1360px);
+  height: 224px;
+  padding: 52px 0;
+  border-radius: 16px;
+  border: 1px solid transparent;
+  background: rgba(255, 255, 255, 0.1);
+  background-clip: padding-box;
+  -webkit-backdrop-filter: blur(18px);
+  backdrop-filter: blur(18px);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.16),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.08),
+    0 24px 44px rgba(15, 23, 42, 0.18);
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.heroMetricPanel::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  z-index: 1;
+  border-radius: inherit;
+  padding: 1px;
+  background:
+    linear-gradient(
+      118deg,
+      rgba(255, 255, 255, 0.42) 0%,
+      rgba(255, 255, 255, 0.16) 24%,
+      rgba(255, 255, 255, 0.08) 52%,
+      rgba(255, 255, 255, 0.28) 76%,
+      rgba(255, 255, 255, 0.58) 100%
+    ),
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.32) 0%,
+      rgba(255, 255, 255, 0.08) 50%,
+      rgba(255, 255, 255, 0.24) 100%
+    );
+  pointer-events: none;
+  -webkit-mask:
+    linear-gradient(#ffffff 0 0) content-box,
+    linear-gradient(#ffffff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+}
+
+.heroMetric {
+  min-width: 0;
+  min-height: 120px;
+  padding: 0 24px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  text-align: center;
+}
+
+.heroMetricMain {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.heroMetric + .heroMetric {
+  border-left: 0;
+}
+
+.heroMetric + .heroMetric::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 1px;
+  height: 72px;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.2) 50.4808%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  transform: translateY(-50%);
+}
+
+.heroMetric p,
+.heroMetricDescription {
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 18px;
+}
+
+.heroMetricDescription {
+  margin-top: 20px;
+}
+
+.heroMetric strong {
+  color: #ffffff;
+  font-size: 26px;
+  font-weight: 700;
+  line-height: 32px;
+}
+
+.introSection,
+.reasonSection,
+.partnerSection,
+.channelSection,
+.infoSection {
+  --section-content-gap: 52px;
+  padding: 104px 0;
+  background: #ffffff;
+  display: flex;
+  justify-content: center;
+}
+
+.hero p,
+.introSection p,
+.reasonSection p,
+.partnerSection p,
+.historySection p,
+.channelSection p,
+.infoSection p {
+  margin: 0;
+}
+
+.introGrid,
+.infoGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(420px, 1fr);
+  align-items: center;
+  gap: 80px;
+}
+
+.introCopy,
+.sectionHeading,
+.historyHeading,
+.infoContent {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.introCopy h2,
+.sectionHeading h2,
+.historyHeading h2,
+.infoContent h2 {
+  font-size: 32px;
+  line-height: 42px;
+}
+
+.bodyCopy {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 640px;
+  color: #334155;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 28px;
+}
+
+.mobileBreak {
+  display: none;
+}
+
+.introMedia {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.introMediaLarge,
+.introMediaSmall,
+.mapWrap {
+  position: relative;
+  overflow: hidden;
+  border-radius: 16px;
+  background: #f1f5f9;
+}
+
+.introMediaLarge {
+  grid-column: 1 / -1;
+  aspect-ratio: 608 / 274;
+}
+
+.introMediaSmall {
+  aspect-ratio: 296 / 180;
+}
+
+.introMedia img,
+.mapWrap img {
+  object-fit: cover;
+}
+
+.sectionHeading {
+  width: min(100%, 740px);
+  margin: 0;
+}
+
+.channelSection .sectionHeading {
+  margin: 0;
+}
+
+.channelSection .sectionHeading h2 {
+  font-family: "Pretendard GOV Variable", var(--font-sans);
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  line-height: 36px;
+}
+
+.channelSection .sectionBadge {
+  min-height: 40px;
+  padding: 8px 16px;
+  border-color: transparent;
+  background-color: rgba(48, 186, 195, 0.1);
+  background-clip: padding-box;
+  color: #30bac3;
+  font-family: "Noto Sans KR", var(--font-sans);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: normal;
+  position: relative;
+}
+
+.channelSection .sectionBadge::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1px;
+  background:
+    linear-gradient(
+      to bottom right,
+      rgba(48, 186, 195, 0.8) 0%,
+      rgba(48, 186, 195, 0.08) 30%,
+      rgba(48, 186, 195, 0.08) 100%
+    ),
+    linear-gradient(
+      to bottom right,
+      rgba(48, 186, 195, 0.08) 0%,
+      rgba(48, 186, 195, 0.08) 70%,
+      rgba(48, 186, 195, 0.8) 100%
+    );
+  pointer-events: none;
+  -webkit-mask:
+    linear-gradient(#ffffff 0 0) content-box,
+    linear-gradient(#ffffff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+}
+
+.sectionHeading p,
+.historyHeading p {
+  margin: 0;
+  color: #64748b;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 24px;
+}
+
+.reasonSection .sectionInner {
+  width: min(100%, 1400px);
+}
+
+.reasonSection .sectionHeading {
+  gap: 16px;
+  margin: 0;
+}
+
+.reasonSection .sectionBadge {
+  height: 40px;
+  min-height: 40px;
+  padding: 8px 16px;
+  border-color: transparent;
+  border-radius: 32px;
+  background: rgba(48, 186, 195, 0.1);
+  background-clip: padding-box;
+  color: #30bac3;
+  font-family: "Pretendard", "Pretendard GOV Variable", var(--font-sans);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0;
+  line-height: 21px;
+  position: relative;
+  isolation: isolate;
+}
+
+.reasonSection .sectionBadge > span {
+  color: var(--_500, #30bac3);
+  font-family: "Pretendard";
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 21px;
+  position: relative;
+  z-index: 2;
+}
+
+.reasonSection .sectionBadge::before,
+.reasonCard span::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1px;
+  background:
+    linear-gradient(
+      to bottom right,
+      rgba(48, 186, 195, 0.8) 0%,
+      rgba(48, 186, 195, 0.08) 30%,
+      rgba(48, 186, 195, 0.08) 100%
+    ),
+    linear-gradient(
+      to bottom right,
+      rgba(48, 186, 195, 0.08) 0%,
+      rgba(48, 186, 195, 0.08) 70%,
+      rgba(48, 186, 195, 0.8) 100%
+    );
+  pointer-events: none;
+  -webkit-mask:
+    linear-gradient(#ffffff 0 0) content-box,
+    linear-gradient(#ffffff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+}
+
+.reasonHeadingText,
+.reasonCardBody {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.reasonSection .sectionHeading h2 {
+  margin: 0;
+  color: #1e293b;
+  font-family: "Pretendard GOV Variable", var(--font-sans);
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  line-height: 36px;
+}
+
+.reasonSection .sectionHeading p {
+  margin: 0;
+  color: #1e293b;
+  font-family: "Pretendard GOV Variable", var(--font-sans);
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: -0.015em;
+  line-height: 20px;
+}
+
+.reasonGrid {
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.reasonCard,
+.channelCard {
+  min-width: 0;
+  border: 1px solid #f1f5f9;
+  border-radius: 16px;
+  background: #f8fafc;
+}
+
+.reasonCard {
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.reasonCard span {
+  width: fit-content;
+  height: 32px;
+  padding: 8px 16px;
+  border: 1px solid transparent;
+  border-radius: 32px;
+  background: rgba(48, 186, 195, 0.1);
+  background-clip: padding-box;
+  color: #30bac3;
+  font-family: "Pretendard GOV Variable", var(--font-sans);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: -0.015em;
+  line-height: 16px;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  isolation: isolate;
+}
+
+.reasonCard h3 {
+  margin: 0;
+  color: #1e293b;
+  font-family: "Pretendard GOV Variable", var(--font-sans);
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  line-height: 26px;
+}
+
+.reasonCard p {
+  color: #475569;
+  font-family: "Pretendard GOV Variable", var(--font-sans);
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: -0.015em;
+  line-height: 20px;
+}
+
+.partnerSection .sectionInner {
+  width: min(100%, 1400px);
+}
+
+.partnerSection .sectionBadge {
+  height: 40px;
+  min-height: 40px;
+  padding: 8px 16px;
+  border-color: transparent;
+  border-radius: 32px;
+  background: rgba(48, 186, 195, 0.1);
+  background-clip: padding-box;
+  color: #30bac3;
+  font-family: "Noto Sans KR", "Pretendard GOV Variable", var(--font-sans);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: normal;
+}
+
+.partnerSection .sectionHeading h2 {
+  font-size: 28px;
+  letter-spacing: -0.015em;
+  line-height: 36px;
+}
+
+.historySection {
+  --section-content-gap: 52px;
+  padding: 104px 0;
+  background: linear-gradient(106deg, #1c656c 0%, #1e293b 100%);
+  color: #ffffff;
+  display: flex;
+  justify-content: center;
+}
+
+.historyHeading {
+  gap: 16px;
+}
+
+.historyHeading h2 {
+  color: #f8fafc;
+  font-family: "Pretendard GOV Variable", var(--font-sans);
+  font-size: 28px;
+  letter-spacing: -0.015em;
+  line-height: 36px;
+}
+
+.historyHeading p {
+  color: #f8fafc;
+  font-family: "Pretendard GOV Variable", var(--font-sans);
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: -0.015em;
+  line-height: 20px;
+}
+
+.historySection .sectionBadge {
+  min-height: 40px;
+  padding: 8px 16px;
+  border: 1px solid transparent;
+  background-color: rgba(255, 255, 255, 0.1);
+  background-clip: padding-box;
+  color: #f8fafc;
+  font-family: "Pretendard", "Pretendard GOV Variable", var(--font-sans);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 21px;
+  opacity: 1;
+  position: relative;
+  isolation: isolate;
+}
+
+.historySection .sectionBadge > span,
+.timelineTag > span {
+  position: relative;
+  z-index: 2;
+}
+
+.historySection .sectionBadge::before,
+.timelineTag::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border-radius: inherit;
+  padding: 1px;
+  background:
+    linear-gradient(
+      to bottom right,
+      rgba(255, 255, 255, 0.08) 0%,
+      rgba(255, 255, 255, 0.08) 70%,
+      rgba(255, 255, 255, 0.8) 100%
+    ),
+    linear-gradient(
+      to bottom right,
+      rgba(255, 255, 255, 0.8) 0%,
+      rgba(255, 255, 255, 0.08) 30%,
+      rgba(255, 255, 255, 0.08) 100%
+    );
+  pointer-events: none;
+  -webkit-mask:
+    linear-gradient(#ffffff 0 0) content-box,
+    linear-gradient(#ffffff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+}
+
+.historyContent {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.historyCallout {
+  width: 100%;
+  padding: 20px;
+  border-radius: 16px;
+  background-color: rgba(255, 255, 255, 0.1);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.18),
+    inset -1px 0 0 rgba(255, 255, 255, 0.14),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.historyCallout strong {
+  color: #30bac3;
+  font-family: "Pretendard GOV Variable", var(--font-sans);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  line-height: 16px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.historyCallout strong::before {
+  content: "";
+  width: 4px;
+  height: 4px;
+  border-radius: 1px;
+  background: currentColor;
+  flex: 0 0 auto;
+}
+
+.historyCallout ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.historyCallout li {
+  color: #f8fafc;
+  font-family: "Pretendard GOV Variable", var(--font-sans);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: -0.015em;
+  line-height: 16px;
+}
+
+.timeline {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  position: relative;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.timelineCompact {
+  display: none;
+}
+
+.timeline::before {
+  content: "";
+  width: 1px;
+  position: absolute;
+  top: 10px;
+  bottom: 10px;
+  left: 64px;
+  border-left: 1px dashed rgba(48, 186, 195, 0.58);
+}
+
+.timelineItem {
+  min-width: 0;
+  position: relative;
+  display: grid;
+  grid-template-columns: 48px 32px minmax(0, 1fr);
+  align-items: start;
+  gap: 0;
+  color: #e2e8f0;
+  font-family: "Pretendard GOV Variable", var(--font-sans);
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: -0.015em;
+  line-height: 20px;
+}
+
+.timelineItem time {
+  color: #30bac3;
+  font-weight: 700;
+  letter-spacing: 0;
+  line-height: 20px;
+}
+
+.timelineDot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #30bac3;
+  box-shadow: 0 0 0 2px rgba(48, 186, 195, 0.1);
+  justify-self: center;
+  transform: translateY(8px);
+}
+
+.timelineBody {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.timelineBody p {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 0;
+  flex-wrap: wrap;
+  color: #e2e8f0;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: -0.015em;
+  line-height: 20px;
+}
+
+.timelineBody strong {
+  font: inherit;
+  font-weight: 700;
+}
+
+.timelineBody p > span {
+  color: #e2e8f0;
+}
+
+.timelineDetail::before {
+  content: " ";
+}
+
+.timelineTag {
+  height: 24px;
+  padding: 4px 8px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background-color: rgba(255, 255, 255, 0.1);
+  background-clip: padding-box;
+  color: #f8fafc;
+  font-family: "Pretendard GOV Variable", var(--font-sans);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.015em;
+  line-height: 16px;
+  position: relative;
+  isolation: isolate;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.channelGrid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(202px, 1fr));
+  gap: 20px;
+}
+
+.channelCard {
+  padding: 32px;
+  border-radius: 16px;
+  color: inherit;
+  text-decoration: none;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 32px;
+}
+
+.channelMain {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.channelIcon {
+  width: 40px;
+  height: 40px;
+  border: 1px solid #a7e9ed;
+  border-radius: 16px;
+  background: #d2f5f7;
+  color: #30bac3;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.channelIcon svg,
+.channelLink svg {
+  display: block;
+  flex: 0 0 auto;
+}
+
+.channelText {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.channelText strong {
+  color: #1e293b;
+  font-family: "Pretendard GOV Variable", var(--font-sans);
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  line-height: 26px;
+}
+
+.channelText span {
+  color: #475569;
+  font-family: "Pretendard GOV Variable", var(--font-sans);
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: -0.015em;
+  line-height: 20px;
+}
+
+.channelLink {
+  color: #30bac3;
+  font-family: "Pretendard GOV Variable", var(--font-sans);
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: -0.015em;
+  line-height: 20px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.infoSection .sectionBadge {
+  min-height: 40px;
+  padding: 8px 16px;
+  border-color: transparent;
+  background-color: rgba(48, 186, 195, 0.1);
+  background-clip: padding-box;
+  color: #30bac3;
+  font-family: "Pretendard", "Pretendard GOV Variable", var(--font-sans);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 21px;
+  position: relative;
+}
+
+.infoSection .sectionBadge::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1px;
+  background:
+    linear-gradient(
+      to bottom right,
+      rgba(48, 186, 195, 0.8) 0%,
+      rgba(48, 186, 195, 0.08) 30%,
+      rgba(48, 186, 195, 0.08) 100%
+    ),
+    linear-gradient(
+      to bottom right,
+      rgba(48, 186, 195, 0.08) 0%,
+      rgba(48, 186, 195, 0.08) 70%,
+      rgba(48, 186, 195, 0.8) 100%
+    );
+  pointer-events: none;
+  -webkit-mask:
+    linear-gradient(#ffffff 0 0) content-box,
+    linear-gradient(#ffffff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+}
+
+.infoGrid {
+  grid-template-columns: minmax(0, 640px) 670px;
+  align-items: end;
+  justify-content: space-between;
+  gap: 50px;
+}
+
+.infoContent {
+  width: min(100%, 640px);
+}
+
+.infoContent h2 {
+  font-family: "Pretendard GOV Variable", var(--font-sans);
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  line-height: 36px;
+}
+
+.infoBody {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--section-content-gap);
+}
+
+.infoList {
+  width: 100%;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.infoRow {
+  min-width: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: 100px minmax(0, 392px);
+  gap: 16px;
+}
+
+.infoRow:not(:last-child) {
+  padding-bottom: 16px;
+  border-bottom: 1px dashed #f1f5f9;
+}
+
+.infoRow + .infoRow {
+  padding-top: 16px;
+}
+
+.infoRow dt,
+.infoRow dd {
+  margin: 0;
+  color: #1e293b;
+  font-family: "Pretendard GOV Variable", var(--font-sans);
+  font-size: 14px;
+  letter-spacing: -0.015em;
+  line-height: 24px;
+}
+
+.infoRow dt {
+  font-weight: 700;
+}
+
+.infoRow dd {
+  min-width: 0;
+  font-weight: 500;
+  display: flex;
+  flex-direction: column;
+}
+
+.mapWrap {
+  width: 670px;
+  aspect-ratio: 670 / 480;
+  justify-self: end;
+}
+
+@media (max-width: 1399px) {
+  .sectionInner,
+  .heroInner,
+  .historyInner {
+    width: min(100%, 1180px);
+    padding: 0 24px;
+  }
+
+  .introSection,
+  .reasonSection,
+  .partnerSection,
+  .historySection,
+  .channelSection,
+  .infoSection {
+    --section-content-gap: 32px;
+  }
+
+  .hero {
+    min-height: 584px;
+    padding: 72px 0;
+  }
+
+  .heroInner {
+    gap: 32px;
+    padding: 0 80px;
+  }
+
+  .heroCopy h1 {
+    font-size: 32px;
+    line-height: 44px;
+  }
+
+  .heroMetricPanel {
+    height: 204px;
+  }
+
+  .heroMetric {
+    min-height: 100px;
+    padding: 0 16px;
+  }
+
+  .introGrid,
+  .infoGrid {
+    gap: 56px;
+  }
+
+  .infoSection {
+    padding: 72px 0;
+  }
+
+  .infoGrid {
+    grid-template-columns: minmax(0, 508px) 530px;
+    justify-content: space-between;
+    gap: 40px;
+  }
+
+  .infoContent {
+    width: min(100%, 508px);
+  }
+
+  .infoContent h2 {
+    font-size: 24px;
+    line-height: 32px;
+  }
+
+  .mapWrap {
+    width: 530px;
+    aspect-ratio: 530 / 380;
+  }
+
+  .channelSection .sectionHeading h2 {
+    font-size: 24px;
+    line-height: 32px;
+  }
+
+  .channelGrid {
+    grid-template-columns: repeat(5, minmax(202px, 1fr));
+  }
+
+  .channelCard {
+    padding: 24px;
+  }
+
+  .historySection {
+    background: linear-gradient(101deg, #1c656c 0%, #1e293b 100%);
+  }
+
+  .historyInner {
+    padding: 0 20px;
+  }
+
+  .historyHeading h2 {
+    font-size: 24px;
+    line-height: 32px;
+  }
+
+  .timelineDesktop {
+    display: none;
+  }
+
+  .timelineCompact {
+    display: flex;
+  }
+
+  .timeline {
+    gap: 32px;
+  }
+
+  .timeline::before {
+    left: 54px;
+  }
+
+  .timelineItem {
+    grid-template-columns: 40px 28px minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 1099px) {
+  .hero {
+    min-height: 584px;
+    padding: 72px 0;
+  }
+
+  .heroMetricPanel {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .heroMetric:nth-child(3) {
+    border-left: 0;
+  }
+
+  .heroMetric:nth-child(n + 3) {
+    border-top: 0;
+  }
+
+  .introSection,
+  .reasonSection,
+  .partnerSection,
+  .channelSection,
+  .infoSection {
+    padding: 80px 0;
+  }
+
+  .introGrid,
+  .infoGrid {
+    grid-template-columns: 1fr;
+    gap: 32px;
+    justify-content: start;
+    align-items: start;
+  }
+
+  .infoSection {
+    padding: 72px 0;
+  }
+
+  .infoContent {
+    width: min(100%, 600px);
+  }
+
+  .infoRow {
+    grid-template-columns: 100px minmax(0, 1fr);
+    gap: 8px;
+  }
+
+  .mapWrap {
+    width: min(100%, 600px);
+    aspect-ratio: 600 / 430;
+    justify-self: start;
+  }
+
+  .introMedia {
+    order: 2;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .introMediaLarge,
+  .introMediaSmall {
+    grid-column: auto;
+    aspect-ratio: 341 / 188;
+  }
+
+  .reasonSection .sectionHeading h2 {
+    font-size: 24px;
+    line-height: 32px;
+  }
+
+  .reasonGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .reasonCard {
+    padding: 20px;
+  }
+
+  .partnerSection .sectionHeading h2 {
+    font-size: 22px;
+    line-height: 32px;
+  }
+
+  .channelGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 1137px) {
+  .channelGrid {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .channelCard {
+    padding: 20px;
+    gap: 20px;
+  }
+
+  .channelCard:nth-child(-n + 2) {
+    grid-column: span 3;
+  }
+
+  .channelCard:nth-child(n + 3) {
+    grid-column: span 2;
+  }
+}
+
+@media (max-width: 699px) {
+  .sectionInner,
+  .historyInner {
+    padding: 0 20px;
+  }
+
+  .hero {
+    min-height: 720px;
+    padding: 72px 0;
+  }
+
+  .heroImage {
+    object-position: 64% center;
+  }
+
+  .heroOverlay {
+    background:
+      linear-gradient(
+        90deg,
+        rgba(0, 0, 0, 0.92) 0%,
+        rgba(0, 0, 0, 0.7) 54%,
+        rgba(0, 0, 0, 0.18) 100%
+      ),
+      linear-gradient(180deg, rgba(0, 0, 0, 0.16) 0%, rgba(0, 0, 0, 0.4) 100%);
+  }
+
+  .heroInner {
+    gap: 32px;
+    padding: 0 20px;
+  }
+
+  .heroCopy {
+    gap: 20px;
+  }
+
+  .sectionBadge {
+    min-height: 28px;
+    padding: 4px 10px;
+    font-size: 12px;
+    line-height: 18px;
+  }
+
+  .heroCopy h1 {
+    font-size: 32px;
+    line-height: 44px;
+  }
+
+  .heroDescription {
+    font-size: 16px;
+    line-height: 24px;
+  }
+
+  .heroMetricPanel {
+    width: 100%;
+    height: 296px;
+    padding: 32px 0;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 32px 0;
+  }
+
+  .heroMetric {
+    min-height: 100px;
+    padding: 0 16px;
+  }
+
+  .heroMetric::before {
+    display: none;
+  }
+
+  .heroMetric:nth-child(even)::before {
+    display: block;
+  }
+
+  .heroMetric + .heroMetric {
+    border-left: 0;
+    border-top: 0;
+  }
+
+  .heroMetric strong {
+    font-size: 24px;
+    line-height: 30px;
+  }
+
+  .introSection,
+  .reasonSection,
+  .partnerSection,
+  .channelSection,
+  .infoSection {
+    padding: 72px 0;
+  }
+
+  .introCopy h2,
+  .sectionHeading h2,
+  .historyHeading h2,
+  .infoContent h2 {
+    font-size: 22px;
+    line-height: 32px;
+  }
+
+  .bodyCopy,
+  .sectionHeading p,
+  .historyHeading p {
+    font-size: 14px;
+    line-height: 24px;
+  }
+
+  .desktopBreak {
+    display: none;
+  }
+
+  .mobileBreak {
+    display: inline;
+  }
+
+  .reasonGrid,
+  .channelGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .channelCard {
+    min-height: 0;
+    padding: 22px;
+  }
+
+  .reasonSection .sectionBadge {
+    height: 40px;
+    min-height: 40px;
+    padding: 8px 16px;
+    font-size: 14px;
+    line-height: 21px;
+  }
+
+  .reasonSection .sectionHeading h2 {
+    font-size: 24px;
+    line-height: 32px;
+  }
+
+  .reasonCard {
+    min-height: 0;
+    padding: 20px;
+  }
+
+  .historySection {
+    padding: 72px 0;
+    background: linear-gradient(93deg, #1c656c 0%, #1e293b 100%);
+  }
+
+  .historySection .sectionBadge {
+    min-height: 40px;
+    padding: 8px 16px;
+    font-size: 14px;
+    line-height: 21px;
+  }
+
+  .historyHeading h2 {
+    font-size: 24px;
+    line-height: 32px;
+  }
+
+  .historyHeading p {
+    line-height: 20px;
+  }
+
+  .historyCallout {
+    padding: 20px;
+    border-radius: 16px;
+  }
+
+  .timelineItem {
+    grid-template-columns: 40px 22px minmax(0, 1fr);
+    align-items: start;
+    font-size: 14px;
+    line-height: 20px;
+  }
+
+  .timeline::before {
+    left: 50px;
+  }
+
+  .timelineBody {
+    align-items: flex-start;
+    gap: 8px;
+    flex-direction: column;
+  }
+
+  .timelineBody p {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+    font-size: 14px;
+    line-height: 20px;
+  }
+
+  .timelineTag {
+    order: -1;
+    width: fit-content;
+  }
+
+  .channelGrid {
+    gap: 8px;
+  }
+
+  .channelCard {
+    padding: 20px;
+    gap: 20px;
+  }
+
+  .channelCard:nth-child(n) {
+    grid-column: auto;
+  }
+
+  .channelMain {
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .channelSection .sectionBadge {
+    min-height: 40px;
+    padding: 8px 16px;
+    font-size: 14px;
+    line-height: normal;
+  }
+
+  .infoGrid {
+    justify-items: center;
+    gap: 32px;
+  }
+
+  .infoContent {
+    width: min(100%, 350px);
+  }
+
+  .infoContent h2 {
+    font-size: 24px;
+    line-height: 32px;
+  }
+
+  .infoSection .sectionBadge {
+    min-height: 40px;
+    padding: 8px 16px;
+    font-size: 14px;
+    line-height: 21px;
+  }
+
+  .infoList {
+    margin: 0;
+  }
+
+  .infoRow {
+    grid-template-columns: 100px minmax(0, 1fr);
+    gap: 8px;
+  }
+
+  .infoRow dt,
+  .infoRow dd {
+    font-size: 14px;
+    line-height: 24px;
+  }
+
+  .mapWrap {
+    width: min(100%, 350px);
+    aspect-ratio: 350 / 251;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero {
+    min-height: 1044px;
+  }
+
+  .heroMetricPanel {
+    height: 560px;
+    grid-template-columns: 1fr;
+  }
+
+  .introMedia {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .introMediaLarge,
+  .introMediaSmall {
+    aspect-ratio: 320 / 170;
+  }
+
+  .heroMetric::before,
+  .heroMetric:nth-child(even)::before {
+    display: none;
+  }
+
+  .heroCopy h1 {
+    font-family: "Pretendard GOV Variable", var(--font-sans);
+    font-size: 28px;
+    line-height: 36px;
+  }
+
+  .heroTitleMobileBreak {
+    display: block;
+  }
+
+  .heroTitleDesktopSeparator {
+    display: none;
+  }
+
+  .heroDescription {
+    width: min(100%, 334px);
+  }
+
+  .heroDescriptionLineDesktop {
+    display: none;
+  }
+
+  .heroDescriptionLineMobile {
+    display: block;
+  }
+}

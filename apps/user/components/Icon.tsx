@@ -12,12 +12,18 @@ import {
   SavedArrowUpSquareContainedIcon,
 } from "./icons";
 
-type IconName =
+export type IconName =
   | "arrow-left"
   | "arrow-right"
   | "book-open"
   | "calendar"
   | "camera"
+  | "channel-arrow-right"
+  | "channel-home-02"
+  | "channel-instagram"
+  | "channel-message-typing"
+  | "channel-naver-blog"
+  | "channel-youtube"
   | "chevron-down"
   | "credit-card"
   | "dots-horizontal"
@@ -25,6 +31,7 @@ type IconName =
   | "file-text"
   | "flag"
   | "folder-up-02"
+  | "home-02"
   | "megaphone"
   | "menu-04"
   | "message-typing"
@@ -319,6 +326,28 @@ function FolderUp02Icon({ size = 24, ...props }: Omit<IconProps, "name">) {
   );
 }
 
+function Home02Icon({ size = 24, ...props }: Omit<IconProps, "name">) {
+  return (
+    <svg
+      aria-hidden="true"
+      fill="none"
+      height={size}
+      viewBox="0 0 24 24"
+      width={size}
+      xmlns="http://www.w3.org/2000/svg"
+      {...props}
+    >
+      <path
+        d="M4 10.5L12 4L20 10.5V19C20 20.1 19.1 21 18 21H6C4.9 21 4 20.1 4 19V10.5ZM9 21V14H15V21"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="1.8"
+      />
+    </svg>
+  );
+}
+
 function MegaphoneIcon({ size = 24, ...props }: Omit<IconProps, "name">) {
   return (
     <svg
@@ -358,6 +387,150 @@ function MessageTypingIcon({ size = 24, ...props }: Omit<IconProps, "name">) {
         strokeLinecap="round"
         strokeLinejoin="round"
         strokeWidth="2"
+      />
+    </svg>
+  );
+}
+
+function ChannelArrowRightIcon({
+  size = 24,
+  ...props
+}: Omit<IconProps, "name">) {
+  return (
+    <svg
+      aria-hidden="true"
+      fill="none"
+      height={size}
+      viewBox="0 0 16 16"
+      width={size}
+      xmlns="http://www.w3.org/2000/svg"
+      {...props}
+    >
+      <path
+        d="M6.97222 10.0833L11.4167 5.41667L6.97222 0.750001M11.4167 5.41667L0.75 5.41667"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="1.5"
+        transform="translate(1.91665 2.58335)"
+      />
+    </svg>
+  );
+}
+
+function ChannelHome02Icon({ size = 24, ...props }: Omit<IconProps, "name">) {
+  return (
+    <svg
+      aria-hidden="true"
+      fill="none"
+      height={size}
+      viewBox="0 0 24 24"
+      width={size}
+      xmlns="http://www.w3.org/2000/svg"
+      {...props}
+    >
+      <path
+        d="M5.5 15.0625H14.5M9.30457 1.21117L1.50457 6.48603C1.18802 6.7001 1 7.04666 1 7.41605V17.2882C1 18.2336 1.80589 19 2.8 19H17.2C18.1941 19 19 18.2336 19 17.2882V7.41605C19 7.04665 18.812 6.7001 18.4954 6.48603L10.6954 1.21117C10.2791 0.92961 9.72092 0.929609 9.30457 1.21117Z"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="2"
+        transform="translate(2 2)"
+      />
+    </svg>
+  );
+}
+
+function ChannelInstagramIcon({
+  size = 24,
+  ...props
+}: Omit<IconProps, "name">) {
+  return (
+    <svg
+      aria-hidden="true"
+      fill="none"
+      height={size}
+      viewBox="0 0 24 24"
+      width={size}
+      xmlns="http://www.w3.org/2000/svg"
+      {...props}
+    >
+      <path
+        d="M1 15.64H2V3.4H1H0V15.64H1ZM3.4 1V2H17.8V1V0H3.4V1ZM20.2 3.4H19.2V15.64H20.2H21.2V3.4H20.2ZM20.2 15.64H19.2C19.2 16.4132 18.5732 17.04 17.8 17.04V18.04V19.04C19.6778 19.04 21.2 17.5178 21.2 15.64H20.2ZM17.8 1V2C18.5732 2 19.2 2.6268 19.2 3.4H20.2H21.2C21.2 1.52223 19.6778 0 17.8 0V1ZM1 3.4H2C2 2.6268 2.6268 2 3.4 2V1V0C1.52223 0 0 1.52223 0 3.4H1ZM3.4 18.04V17.04C2.6268 17.04 2 16.4132 2 15.64H1H0C0 17.5178 1.52223 19.04 3.4 19.04V18.04ZM14.2 9.52012H13.2C13.2 10.9561 12.0359 12.1201 10.6 12.1201V13.1201V14.1201C13.1405 14.1201 15.2 12.0606 15.2 9.52012H14.2ZM10.6 13.1201V12.1201C9.16406 12.1201 8 10.9561 8 9.52012H7H6C6 12.0606 8.05949 14.1201 10.6 14.1201V13.1201ZM7 9.52012H8C8 8.08418 9.16406 6.92012 10.6 6.92012V5.92012V4.92012C8.05949 4.92012 6 6.97961 6 9.52012H7ZM10.6 5.92012V6.92012C12.0359 6.92012 13.2 8.08418 13.2 9.52012H14.2H15.2C15.2 6.97961 13.1405 4.92012 10.6 4.92012V5.92012ZM17.8 18.04V17.04H3.4V18.04V19.04H17.8V18.04Z"
+        fill="currentColor"
+        transform="translate(1.4 2.48)"
+      />
+    </svg>
+  );
+}
+
+function ChannelMessageTypingIcon({
+  size = 24,
+  ...props
+}: Omit<IconProps, "name">) {
+  return (
+    <svg
+      aria-hidden="true"
+      fill="none"
+      height={size}
+      viewBox="0 0 24 24"
+      width={size}
+      xmlns="http://www.w3.org/2000/svg"
+      {...props}
+    >
+      <path
+        d="M5.49957 10.0846V10M9.99915 10.0846V10M14.4987 10.0846V10M18.9983 10C18.9983 11.2938 18.7253 12.5238 18.2338 13.6356L19 18.9991L14.4039 17.85C13.1019 18.5823 11.5993 19 9.99915 19C5.02906 19 1 14.9706 1 10C1 5.02944 5.02906 1 9.99915 1C14.9692 1 18.9983 5.02944 18.9983 10Z"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="2"
+        transform="translate(2 2)"
+      />
+    </svg>
+  );
+}
+
+function ChannelNaverBlogIcon({
+  size = 24,
+  ...props
+}: Omit<IconProps, "name">) {
+  return (
+    <svg
+      aria-hidden="true"
+      fill="none"
+      height={size}
+      viewBox="0 0 24 24"
+      width={size}
+      xmlns="http://www.w3.org/2000/svg"
+      {...props}
+    >
+      <path
+        d="M1 9V17H9.1C11.2539 17 13 15.2091 13 13C13 10.7909 11.2539 9 9.1 9H1ZM1 9H7.9C10.0539 9 11.8 7.20914 11.8 5C11.8 2.79086 10.0539 1 7.9 1H1V9Z"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="2"
+        transform="translate(5 3)"
+      />
+    </svg>
+  );
+}
+
+function ChannelYoutubeIcon({ size = 24, ...props }: Omit<IconProps, "name">) {
+  return (
+    <svg
+      aria-hidden="true"
+      fill="none"
+      height={size}
+      viewBox="0 0 24 24"
+      width={size}
+      xmlns="http://www.w3.org/2000/svg"
+      {...props}
+    >
+      <path
+        d="M12.8132 8.59017L12.2084 7.79381L12.1945 7.80435L12.181 7.81537L12.8132 8.59017ZM12.8132 7.5867L12.1616 8.34523L12.2058 8.38324L12.2542 8.41585L12.8132 7.5867ZM9.36609 4.62535L10.0177 3.86682L9.98991 3.84293L9.96043 3.82114L9.36609 4.62535ZM8.64342 5.06767L9.64342 5.06518L9.6434 5.05768L9.64327 5.05018L8.64342 5.06767ZM8.65787 10.8847L7.65787 10.8872L7.65793 10.9115L7.65917 10.9357L8.65787 10.8847ZM9.40704 11.3695L9.94946 12.2096L9.99617 12.1795L10.0392 12.1443L9.40704 11.3695ZM10 15V14C8.39751 14 6.68794 13.9993 5.25788 13.8756C4.54284 13.8137 3.93417 13.7239 3.46393 13.6003C2.96071 13.4682 2.75866 13.3329 2.70836 13.2807L1.98852 13.9749L1.26867 14.669C1.71263 15.1294 2.36139 15.3786 2.95582 15.5347C3.58323 15.6995 4.31902 15.8018 5.08554 15.8681C6.6186 16.0007 8.42051 16 10 16V15ZM1 8H1.66893e-06C1.66893e-06 9.62263 -0.00197566 10.9367 0.131865 11.969C0.268967 13.0265 0.564206 13.9385 1.26867 14.669L1.98852 13.9749L2.70836 13.2807C2.42431 12.9862 2.22529 12.5606 2.11527 11.7119C2.00198 10.8381 2 9.6772 2 8H1ZM19 8H18C18 9.6772 17.998 10.8381 17.8847 11.7119C17.7747 12.5606 17.5757 12.9862 17.2916 13.2807L18.0115 13.9749L18.7313 14.669C19.4358 13.9385 19.731 13.0265 19.8681 11.969C20.002 10.9367 20 9.62263 20 8H19ZM10 15V16C11.5795 16 13.3814 16.0007 14.9145 15.8681C15.681 15.8018 16.4168 15.6995 17.0442 15.5347C17.6386 15.3786 18.2874 15.1294 18.7313 14.669L18.0115 13.9749L17.2916 13.2807C17.2413 13.3329 17.0393 13.4682 16.5361 13.6003C16.0658 13.7239 15.4572 13.8137 14.7421 13.8756C13.3121 13.9993 11.6025 14 10 14V15ZM10 1V2C11.6025 2 13.3121 2.00074 14.7421 2.12442C15.4572 2.18627 16.0658 2.27615 16.5361 2.39967C17.0393 2.53184 17.2413 2.6671 17.2916 2.71926L18.0115 2.02513L18.7313 1.33099C18.2874 0.870594 17.6386 0.621422 17.0442 0.465284C16.4168 0.300485 15.681 0.198157 14.9145 0.13186C13.3814 -0.000734806 11.5795 1.19209e-07 10 1.19209e-07V1ZM19 8H20C20 6.37737 20.002 5.06335 19.8681 4.03098C19.731 2.97346 19.4358 2.06155 18.7313 1.33099L18.0115 2.02513L17.2916 2.71926C17.5757 3.01383 17.7747 3.43944 17.8847 4.28812C17.998 5.16195 18 6.3228 18 8H19ZM10 1V1.19209e-07C8.42051 1.19209e-07 6.6186 -0.000734806 5.08554 0.13186C4.31902 0.198157 3.58323 0.300485 2.95582 0.465284C2.36139 0.621422 1.71263 0.870594 1.26867 1.33099L1.98852 2.02513L2.70836 2.71926C2.75866 2.6671 2.96071 2.53184 3.46393 2.39967C3.93417 2.27615 4.54284 2.18627 5.25788 2.12442C6.68794 2.00074 8.39751 2 10 2V1ZM1 8H2C2 6.3228 2.00198 5.16195 2.11527 4.28812C2.22529 3.43944 2.42431 3.01383 2.70836 2.71926L1.98852 2.02513L1.26867 1.33099C0.564206 2.06155 0.268967 2.97346 0.131865 4.03098C-0.00197566 5.06335 1.66893e-06 6.37737 1.66893e-06 8H1ZM12.8132 8.59017L13.418 9.38653C13.7497 9.13463 14.144 8.69786 14.1432 8.07277C14.1425 7.42875 13.7263 6.99627 13.3722 6.75756L12.8132 7.5867L12.2542 8.41585C12.3394 8.47327 12.1436 8.37512 12.1432 8.0751C12.1429 7.79401 12.3175 7.71091 12.2084 7.79381L12.8132 8.59017ZM12.8132 7.5867L13.4649 6.82817L10.0177 3.86682L9.36609 4.62535L8.71445 5.38388L12.1616 8.34523L12.8132 7.5867ZM9.36609 4.62535L9.96043 3.82114C9.59609 3.55188 8.98736 3.33671 8.38878 3.66278C7.79225 3.98773 7.63538 4.61694 7.64357 5.08516L8.64342 5.06767L9.64327 5.05018C9.64182 4.96762 9.66762 5.24364 9.34551 5.4191C9.02134 5.59569 8.77876 5.43475 8.77175 5.42957L9.36609 4.62535ZM8.64342 5.06767L7.64342 5.07015L7.65787 10.8872L8.65787 10.8847L9.65787 10.8823L9.64342 5.06518L8.64342 5.06767ZM8.65787 10.8847L7.65917 10.9357C7.67801 11.3048 7.78362 11.9479 8.35457 12.3037C8.99207 12.7009 9.63565 12.4122 9.94946 12.2096L9.40704 11.3695L8.86461 10.5294C8.83011 10.5517 8.86231 10.5221 8.95404 10.5073C9.06239 10.4897 9.23825 10.4978 9.41224 10.6062C9.57496 10.7076 9.63836 10.8361 9.65541 10.8785C9.67123 10.9178 9.66061 10.9129 9.65657 10.8338L8.65787 10.8847ZM9.40704 11.3695L10.0392 12.1443L13.4454 9.36497L12.8132 8.59017L12.181 7.81537L8.77483 10.5947L9.40704 11.3695Z"
+        fill="currentColor"
+        transform="translate(2 4)"
       />
     </svg>
   );
@@ -543,6 +716,12 @@ const icons = {
   "book-open": BookOpenIcon,
   calendar: CalendarIcon,
   camera: CameraIcon,
+  "channel-arrow-right": ChannelArrowRightIcon,
+  "channel-home-02": ChannelHome02Icon,
+  "channel-instagram": ChannelInstagramIcon,
+  "channel-message-typing": ChannelMessageTypingIcon,
+  "channel-naver-blog": ChannelNaverBlogIcon,
+  "channel-youtube": ChannelYoutubeIcon,
   "chevron-down": ChevronDownIcon,
   "credit-card": CreditCardIcon,
   "dots-horizontal": DotsHorizontalIcon,
@@ -550,6 +729,7 @@ const icons = {
   "file-text": FileTextIcon,
   flag: FlagIcon,
   "folder-up-02": FolderUp02Icon,
+  "home-02": Home02Icon,
   megaphone: MegaphoneIcon,
   "menu-04": Menu04Icon,
   "message-typing": MessageTypingIcon,

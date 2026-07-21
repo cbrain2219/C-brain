@@ -285,6 +285,11 @@
   background: #f6f8fb;
 }
 
+.mobileNavLinkActive {
+  color: var(--landing-brand-500);
+  font-weight: 700;
+}
+
 .heroGradientButton::before {
   content: "";
   position: absolute;
@@ -1103,6 +1108,42 @@
   height: 60px;
 }
 
+.reviewLogoCloudCompany {
+  gap: 20px;
+}
+
+.reviewLogoCloudCompany .featuredClientLogos {
+  width: min(100%, 826px);
+  flex-direction: row;
+  justify-content: center;
+}
+
+.reviewLogoCloudCompany .featuredClientLogo {
+  width: 270px;
+  height: 90px;
+  min-height: 90px;
+  border-radius: 12px;
+}
+
+.reviewLogoCloudCompany .reviewClientLogoRows {
+  gap: 12px;
+}
+
+.reviewLogoCloudCompany .reviewClientLogoRow {
+  flex-wrap: nowrap;
+  justify-content: center;
+}
+
+.reviewLogoCloudCompany .reviewClientLogo {
+  width: 160px;
+  height: 53px;
+  border-radius: 8px;
+}
+
+.reviewLogoMarqueeCompany {
+  display: none;
+}
+
 .partnerLogoImage {
   display: block;
   width: var(--partner-logo-width);
@@ -1110,6 +1151,21 @@
   max-width: 100%;
   max-height: 100%;
   object-fit: contain;
+}
+
+@media (max-width: 1375px) {
+  .reviewLogoCloudCompany.reviewLogoCloudStatic {
+    display: none;
+  }
+
+  .reviewLogoMarqueeCompany {
+    width: 100cqw;
+    margin-left: calc(50% - 50cqw);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    overflow: hidden;
+  }
 }
 
 @media (max-width: 1200px) {
@@ -2874,6 +2930,10 @@
     letter-spacing: -0.24px;
     color: var(--landing-gray-800);
     white-space: nowrap;
+  }
+
+  .header:not(.headerScrolled) .navLink:not(.navLinkActive) {
+    color: var(--_50, #f8fafc);
   }
 
   .navLinkActive {
