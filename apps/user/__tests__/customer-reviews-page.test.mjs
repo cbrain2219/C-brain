@@ -12,7 +12,10 @@ const landingReviewPath = new URL(
   "../app/_components/CustomerReviewSection.tsx",
   import.meta.url,
 );
+const packagePath = new URL("../package.json", import.meta.url);
+const rootPackagePath = new URL("../../../package.json", import.meta.url);
 const stylesPath = new URL("../app/page.module.css", import.meta.url);
+const turboConfigPath = new URL("../../../turbo.json", import.meta.url);
 const heroImagePath = new URL(
   "../public/figma-assets/review-hero-office.png",
   import.meta.url,
@@ -80,6 +83,7 @@ test("customer review content is shared between landing and reviews page", async
   const landingReviewSource = await readFile(landingReviewPath, "utf8");
 
   assert.match(contentSource, /export const customerTestimonials/);
+  assert.match(contentSource, /export const customerInterviewRecords/);
   assert.match(contentSource, /export const customerInterviews/);
   assert.match(contentSource, /export const featuredCustomerInterview/);
   assert.match(pageSource, /customerTestimonials/);
@@ -120,6 +124,10 @@ test("customer reviews page uses shared navigation and CTA", async () => {
   assert.match(pageSource, /openGraph:/);
   assert.match(pageSource, /twitter:/);
   assert.match(headerSource, /label: "고객 후기", href: "\/reviews"/);
+  assert.match(
+    headerSource,
+    /if \(href === "\/reviews"\) return pathname\.startsWith\("\/reviews"\);/,
+  );
   assert.match(pageSource, /import \{ CtaSection \}/);
   assert.match(pageSource, /<CtaSection/);
   assert.match(pageSource, /secondaryAction=\{\{/);
@@ -158,9 +166,9 @@ test("customer interviews follow the P/T/F/M responsive section variants", async
   const pageSource = await readFile(pagePath, "utf8");
   const stylesSource = await readFile(stylesPath, "utf8");
 
-  const interviewIds = contentSource.match(/id: "/g) ?? [];
+  const interviewSlugs = contentSource.match(/slug: "/g) ?? [];
 
-  assert.equal(interviewIds.length, 3);
+  assert.equal(interviewSlugs.length, 3);
   assert.equal(pageSource.match(/<FeaturedInterview/g)?.length, 1);
   assert.doesNotMatch(pageSource, /reviewsFeaturedStandalone/);
   assert.doesNotMatch(pageSource, /reviewsFeaturedInline/);
@@ -205,10 +213,7 @@ test("customer interview markup stays semantic and uses admin video alt text", a
   const pageSource = await readFile(pagePath, "utf8");
   const stylesSource = await readFile(stylesPath, "utf8");
 
-  assert.equal(contentSource.match(/detailSlug: "/g)?.length, 4);
-  assert.match(contentSource, /detailSlug: "seojin-instech"/);
-  assert.match(contentSource, /detailSlug: "ninebell-healthcare"/);
-  assert.match(contentSource, /detailSlug: "chungkang-college"/);
+  assert.match(contentSource, /detailSlug: record\.slug/);
   assert.match(contentSource, /videoAlt:/);
   assert.match(pageSource, /alt=\{featuredCustomerInterview\.videoAlt\}/);
   assert.match(pageSource, /alt=\{interview\.videoAlt\}/);
@@ -248,36 +253,59 @@ test("customer interview markup stays semantic and uses admin video alt text", a
 
 test("customer interview data stays consistent for dynamic admin content", async () => {
   const contentSource = await readFile(contentPath, "utf8");
-  const interviewsBlock = extractConstArray(
+  const recordsBlock = extractConstArray(
     contentSource,
-    "customerInterviews",
+    "customerInterviewRecords",
   );
-  const linkedSlugs = [...contentSource.matchAll(/detailSlug: "([^"]+)"/g)].map(
-    (match) => match[1],
+  const chungkangQuoteMatches = contentSource.match(
+    /완료보고서를 선보이면서 긍정적인 피드백을 받을 정도로 퀄리티가 좋았습니다\./g,
   );
-  const detailSlugs = new Set(
-    [...contentSource.matchAll(/slug: "([^"]+)"/g)].map((match) => match[1]),
-  );
-  const interviewDetailSlugs = [
-    ...interviewsBlock.matchAll(/detailSlug: "([^"]+)"/g),
-  ].map((match) => match[1]);
 
   assert.match(
     contentSource,
-    /export const featuredCustomerInterview = \{[\s\S]*company: "서진인스텍"[\s\S]*detailSlug: "seojin-instech"/,
+    /export const customerInterviews = customerInterviewRecords\.map/,
   );
-  for (const slug of linkedSlugs) {
-    assert.ok(detailSlugs.has(slug), `${slug} should have a detail page`);
-  }
+  assert.match(
+    contentSource,
+    /export const customerInterviewDetails = customerInterviewRecords\.map/,
+  );
+  assert.match(contentSource, /id: record\.slug/);
+  assert.match(contentSource, /detailSlug: record\.slug/);
+  assert.match(contentSource, /quote: getCustomerInterviewQuote\(record\)/);
+  assert.match(contentSource, /thumbnail: record\.thumbnail/);
+  assert.match(contentSource, /videoAlt: record\.videoAlt/);
+  assert.match(
+    contentSource,
+    /const featuredCustomerInterviewRecord = customerInterviewRecords\.find/,
+  );
   assert.equal(
-    new Set(interviewDetailSlugs).size,
-    interviewDetailSlugs.length,
-    "interview cards should not repeat placeholder detail slugs",
+    chungkangQuoteMatches?.length,
+    1,
+    "card and detail should not keep separate 청강 quote copies",
   );
-  assert.doesNotMatch(interviewsBlock, /-repeat/);
+  assert.doesNotMatch(
+    recordsBlock,
+    /완료 보고서를 선보이면 긍정의 피드백을 받을 정도로 퀄리티가 좋았습니다\./,
+  );
   assert.match(
     contentSource,
     /slug: "chungkang-college"[\s\S]*thumbnail: reviewInterviewEducationImage/,
+  );
+});
+
+test("customer review tests are connected to workspace scripts", async () => {
+  const packageSource = await readFile(packagePath, "utf8");
+  const rootPackageSource = await readFile(rootPackagePath, "utf8");
+  const turboSource = await readFile(turboConfigPath, "utf8");
+
+  assert.match(rootPackageSource, /"test": "turbo run test"/);
+  assert.match(
+    packageSource,
+    /"test": "node --test __tests__\/\*\.test\.mjs"/,
+  );
+  assert.match(
+    turboSource,
+    /"test": \{[\s\S]*"dependsOn": \["\^test"\]/,
   );
 });
 

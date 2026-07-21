@@ -65,62 +65,33 @@ export type CustomerInterviewDetailSeo = {
   title: string;
 };
 
-export const featuredCustomerInterview = {
-  company: "서진인스텍",
-  title: "서진인스텍 — 씨브레인 고객 인터뷰",
-  headline: "처음 맡겼는데 결과물이 기대 이상이였어요.",
-  headlineLines: ["처음 맡겼는데", "결과물이 기대 이상이였어요."],
-  body: [
-    "서진인스텍은 전시회와 영업 현장에서 활용할 카탈로그·브로슈어 제작을 씨브레인에 의뢰한 사례입니다.",
-    "고객이 직접 말하는 결과",
-    "서진인스텍",
-  ],
-  quote: "빠른 피드백과 함께 원하는 부분을 잘 반영해 주셔서 만족합니다.",
-  detailSlug: "seojin-instech",
-  meta: "서진인스텍 · 카탈로그 · 브로슈어",
-  thumbnail: reviewInterviewImage,
-  videoAlt: "서진인스텍 카탈로그 브로슈어 제작 고객 인터뷰 영상",
-} as const;
+type CustomerInterviewFeaturedConfig = {
+  headlineLines: readonly string[];
+};
 
-export const customerInterviews = [
-  {
-    id: "seojin-instech",
-    category: "제조",
-    company: "서진인스텍",
-    title: "서진인스텍 — 씨브레인 고객 인터뷰",
-    quote: "빠른 피드백과 함께 원하는 부분을 잘 반영해 주셔서 만족합니다.",
-    detailSlug: "seojin-instech",
-    meta: "서진인스텍 · 카탈로그 · 브로슈어",
-    thumbnail: reviewInterviewImage,
-    videoAlt: "서진인스텍 카탈로그 브로슈어 제작 고객 인터뷰 영상",
-  },
-  {
-    id: "ninebell-healthcare",
-    category: "헬스케어",
-    company: "나인벨 헬스케어",
-    title: "나인벨 헬스케어 — 씨브레인 고객 인터뷰",
-    quote:
-      "효율적인 커뮤니케이션과 고품질 디자인으로 만족스러운 결과물을 얻었습니다.",
-    detailSlug: "ninebell-healthcare",
-    meta: "나인벨 헬스케어 · 브로슈어 · 리플렛",
-    thumbnail: reviewInterviewHealthcareImage,
-    videoAlt: "나인벨 헬스케어 브로슈어 리플렛 제작 고객 인터뷰 영상",
-  },
-  {
-    id: "chungkang-college",
-    category: "교육",
-    company: "청강문화산업대학교",
-    title: "청강문화산업대학교 — 씨브레인 고객 인터뷰",
-    quote:
-      "완료 보고서를 선보이면 긍정의 피드백을 받을 정도로 퀄리티가 좋았습니다.",
-    detailSlug: "chungkang-college",
-    meta: "청강문화산업대학교 · 보고서 · 책자",
-    thumbnail: reviewInterviewEducationImage,
-    videoAlt: "청강문화산업대학교 보고서 책자 제작 고객 인터뷰 영상",
-  },
-] as const;
+export type CustomerInterviewRecord = CustomerInterviewDetail & {
+  featured?: CustomerInterviewFeaturedConfig;
+  industry: string;
+};
 
-export const customerInterviewDetails = [
+export type CustomerInterviewCard = {
+  category: string;
+  company: string;
+  detailSlug: string;
+  id: string;
+  meta: string;
+  quote: string;
+  thumbnail: string;
+  title: string;
+  videoAlt: string;
+};
+
+export type FeaturedCustomerInterview = CustomerInterviewCard & {
+  body: readonly [string, string, string];
+  headlineLines: readonly string[];
+};
+
+export const customerInterviewRecords = [
   {
     author: "씨브레인",
     category: "고객 인터뷰",
@@ -180,6 +151,10 @@ export const customerInterviewDetails = [
     projectInfoTitle: "프로젝트 정보",
     seoDescription:
       "서진인스텍의 카탈로그·브로슈어 제작 사례와 씨브레인 고객 인터뷰를 확인하세요.",
+    featured: {
+      headlineLines: ["처음 맡겼는데", "결과물이 기대 이상이였어요."],
+    },
+    industry: "제조",
     slug: "seojin-instech",
     thumbnail: reviewInterviewImage,
     title: "[카탈로그·브로슈어 제작] 서진인스텍이 씨브레인을 선택한 이유",
@@ -244,6 +219,7 @@ export const customerInterviewDetails = [
     projectInfoTitle: "프로젝트 정보",
     seoDescription:
       "나인벨 헬스케어의 브로슈어·리플렛 제작 사례와 씨브레인 고객 인터뷰를 확인하세요.",
+    industry: "헬스케어",
     slug: "ninebell-healthcare",
     thumbnail: reviewInterviewHealthcareImage,
     title: "[브로슈어·리플렛 제작] 나인벨 헬스케어가 씨브레인을 선택한 이유",
@@ -308,6 +284,7 @@ export const customerInterviewDetails = [
     projectInfoTitle: "프로젝트 정보",
     seoDescription:
       "청강문화산업대학교 게임콘텐츠스쿨의 게임 졸업 프로젝트 완료보고서 제작 사례와 씨브레인 고객 인터뷰를 확인하세요.",
+    industry: "교육",
     slug: "chungkang-college",
     thumbnail: reviewInterviewEducationImage,
     title:
@@ -315,7 +292,107 @@ export const customerInterviewDetails = [
     videoAlt:
       "청강문화산업대학교 게임콘텐츠스쿨 완료보고서 제작 고객 인터뷰 영상",
   },
-] as const satisfies readonly CustomerInterviewDetail[];
+] as const satisfies readonly CustomerInterviewRecord[];
+
+function getCustomerInterviewQuote(record: CustomerInterviewRecord) {
+  return (
+    record.content.find((block) => block.type === "quote")?.text ??
+    record.seoDescription
+  );
+}
+
+function getCustomerInterviewIntro(record: CustomerInterviewRecord) {
+  return (
+    record.content.find((block) => block.type === "paragraph")?.text ??
+    record.seoDescription
+  );
+}
+
+function getCustomerInterviewProjectValue(
+  record: CustomerInterviewRecord,
+  label: string,
+) {
+  return record.projectInfo.find((item) => item.label === label)?.value;
+}
+
+function getCustomerInterviewMeta(record: CustomerInterviewRecord) {
+  const projectName = getCustomerInterviewProjectValue(record, "제작물");
+
+  return projectName ? `${record.company} · ${projectName}` : record.company;
+}
+
+function getCustomerInterviewCardTitle(record: CustomerInterviewRecord) {
+  return `${record.company} — 씨브레인 고객 인터뷰`;
+}
+
+function toCustomerInterviewCard(
+  record: CustomerInterviewRecord,
+): CustomerInterviewCard {
+  return {
+    category: record.industry,
+    company: record.company,
+    detailSlug: record.slug,
+    id: record.slug,
+    meta: getCustomerInterviewMeta(record),
+    quote: getCustomerInterviewQuote(record),
+    thumbnail: record.thumbnail,
+    title: getCustomerInterviewCardTitle(record),
+    videoAlt: record.videoAlt,
+  };
+}
+
+function toCustomerInterviewDetail(
+  record: CustomerInterviewRecord,
+): CustomerInterviewDetail {
+  return {
+    author: record.author,
+    category: record.category,
+    company: record.company,
+    content: record.content,
+    keywords: record.keywords,
+    projectInfo: record.projectInfo,
+    projectInfoTitle: record.projectInfoTitle,
+    seoDescription: record.seoDescription,
+    slug: record.slug,
+    thumbnail: record.thumbnail,
+    title: record.title,
+    videoAlt: record.videoAlt,
+  };
+}
+
+function createFeaturedCustomerInterview(
+  record: CustomerInterviewRecord | undefined,
+): FeaturedCustomerInterview {
+  if (!record?.featured) {
+    throw new Error("대표 고객 인터뷰 데이터가 필요합니다.");
+  }
+
+  return {
+    ...toCustomerInterviewCard(record),
+    body: [
+      getCustomerInterviewIntro(record),
+      "고객이 직접 말하는 결과",
+      record.company,
+    ],
+    headlineLines: record.featured.headlineLines,
+  };
+}
+
+export const customerInterviews = customerInterviewRecords.map(
+  toCustomerInterviewCard,
+);
+
+export const customerInterviewDetails = customerInterviewRecords.map(
+  toCustomerInterviewDetail,
+);
+
+const featuredCustomerInterviewRecord = customerInterviewRecords.find(
+  (record) => "featured" in record,
+);
+
+export const featuredCustomerInterview = createFeaturedCustomerInterview(
+  featuredCustomerInterviewRecord,
+);
 
 export function getCustomerInterviewDetailBySlug(
   slug: string,

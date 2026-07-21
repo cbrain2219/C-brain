@@ -125,6 +125,7 @@ export function Header() {
   const isNavItemCurrentPage = (href: string) => {
     if (href === "/notice") return isNoticePage;
     if (href === "/portfolio") return pathname.startsWith("/portfolio");
+    if (href === "/reviews") return pathname.startsWith("/reviews");
     return pathname === href;
   };
 
