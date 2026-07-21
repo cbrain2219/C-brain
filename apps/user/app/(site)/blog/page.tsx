@@ -1,10 +1,18 @@
 import { PageHero } from "../../../components/PageHero";
 
 import { BlogBoard } from "./_components/BlogBoard";
+import { resolveBlogCategory } from "./_constants/blogCategories";
 import { blogPosts } from "./_data/blogPosts";
 import styles from "./page.module.css";
 
-export default function BlogPage() {
+type BlogPageProps = {
+  searchParams: Promise<{ category?: string }>;
+};
+
+export default async function BlogPage({ searchParams }: BlogPageProps) {
+  const { category } = await searchParams;
+  const activeCategory = resolveBlogCategory(category);
+
   return (
     <div className={styles.page}>
       <PageHero
@@ -20,11 +28,12 @@ export default function BlogPage() {
         }
         title={
           <span className={styles.title}>
-            홍보물 제작 · 디자인 · 인쇄 실무 꿀팁
+            홍보물 제작
+            <br className={styles.heroMobileBreak} /> 디자인 · 인쇄 실무 꿀팁
           </span>
         }
       />
-      <BlogBoard posts={blogPosts} />
+      <BlogBoard activeCategory={activeCategory} posts={blogPosts} />
     </div>
   );
 }

@@ -1,38 +1,58 @@
 "use client";
 
-import type { MouseEvent } from "react";
-import { Fragment, useState } from "react";
+import Link from "next/link";
+import { Fragment } from "react";
 
 import { HorizontalDragScroll } from "../../../../components/HorizontalDragScroll";
 
-import { BLOG_CATEGORIES, type BlogCategoryFilter } from "../_constants/blogCategories";
+import {
+  BLOG_CATEGORIES,
+  type BlogCategoryFilter,
+} from "../_constants/blogCategories";
 import type { BlogPost } from "../_types/blog";
 import { filterBlogPosts } from "../_utils/filterBlogPosts";
 import { BlogCard } from "./BlogCard";
 import { BlogConsultCard } from "./BlogConsultCard";
 import { BlogFeaturedCard } from "./BlogFeaturedCard";
+import { BlogHistoryBoundary } from "./BlogHistoryBoundary";
 import { BlogPopularList } from "./BlogPopularList";
 import styles from "../page.module.css";
 
 type BlogBoardProps = {
+  activeCategory: BlogCategoryFilter;
   posts: readonly BlogPost[];
 };
 
-export function BlogBoard({ posts }: BlogBoardProps) {
-  const [activeCategory, setActiveCategory] =
-    useState<BlogCategoryFilter>("전체");
+const FEATURED_SLIDE_COUNT = 3;
+
+function getCategoryHref(category: BlogCategoryFilter) {
+  if (category === "전체") return "/blog";
+
+  const params = new URLSearchParams({ category });
+  return `/blog?${params.toString()}`;
+}
+
+function getBlogDetailHref(post: BlogPost, category: BlogCategoryFilter) {
+  if (category === "전체") return `/blog/${post.slug}`;
+
+  const params = new URLSearchParams({ category });
+  return `/blog/${post.slug}?${params.toString()}`;
+}
+
+function getFeaturedSlides(posts: readonly BlogPost[]) {
+  return posts.slice(0, FEATURED_SLIDE_COUNT);
+}
+
+export function BlogBoard({ activeCategory, posts }: BlogBoardProps) {
   const visiblePosts = filterBlogPosts(posts, activeCategory);
-  const featuredPost =
-    visiblePosts.find((post) => post.featured) ?? visiblePosts[0];
+  const featuredSlides = getFeaturedSlides(visiblePosts);
+  const featuredPost = featuredSlides[0];
   const ordinaryPosts = visiblePosts.filter(
     (post) => post.id !== featuredPost?.id,
   );
   const popularPosts = posts.filter((post) => post.popularRank !== undefined);
   const consultPlacementIndex = Math.min(3, ordinaryPosts.length - 1);
-
-  const handleCategoryChange = (event: MouseEvent<HTMLButtonElement>) => {
-    setActiveCategory(event.currentTarget.value as BlogCategoryFilter);
-  };
+  const listHref = getCategoryHref(activeCategory);
 
   return (
     <section className={styles.blogBoard} aria-labelledby="blog-board-title">
@@ -44,56 +64,81 @@ export function BlogBoard({ posts }: BlogBoardProps) {
           </h2>
         </header>
 
-        <HorizontalDragScroll
-          ariaLabel="블로그 카테고리"
-          className={styles.blogCategoryScroll}
+        <nav
+          aria-label="블로그 카테고리"
+          className={styles.blogCategoryNavigation}
         >
-          <div className={styles.blogCategoryList} role="group">
-            {BLOG_CATEGORIES.map((category) => (
-              <button
-                aria-pressed={activeCategory === category}
-                className={styles.blogCategoryButton}
-                key={category}
-                onClick={handleCategoryChange}
-                type="button"
-                value={category}
-              >
-                {category}
-              </button>
-            ))}
-          </div>
-        </HorizontalDragScroll>
+          <HorizontalDragScroll
+            ariaLabel="블로그 카테고리 스크롤"
+            className={styles.blogCategoryScroll}
+          >
+            <ul className={styles.blogCategoryList}>
+              {BLOG_CATEGORIES.map((category) => (
+                <li key={category}>
+                  <Link
+                    aria-current={activeCategory === category ? "page" : undefined}
+                    className={styles.blogCategoryButton}
+                    href={getCategoryHref(category)}
+                    scroll={false}
+                  >
+                    {category}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </HorizontalDragScroll>
+        </nav>
 
-        {featuredPost ? (
-          <div className={styles.blogBoardLayout}>
-            <div className={styles.blogBoardContent}>
-              <BlogFeaturedCard post={featuredPost} />
-              <div className={styles.blogOrdinaryGrid}>
-                {ordinaryPosts.map((post, index) => (
-                  <Fragment key={post.id}>
-                    <BlogCard post={post} />
-                    {index === consultPlacementIndex ? (
-                      <BlogConsultCard
-                        className={styles.blogConsultCardInFlow}
+        <BlogHistoryBoundary listHref={listHref}>
+          {featuredPost ? (
+            <div className={styles.blogBoardLayout}>
+              <div className={styles.blogBoardContent}>
+                <BlogFeaturedCard
+                  getDetailHref={(post) =>
+                    getBlogDetailHref(post, activeCategory)
+                  }
+                  posts={featuredSlides}
+                />
+                <ul className={styles.blogOrdinaryGrid}>
+                  {ordinaryPosts.map((post, index) => (
+                    <Fragment key={post.id}>
+                      <BlogCard
+                        detailHref={getBlogDetailHref(post, activeCategory)}
+                        post={post}
                       />
-                    ) : null}
-                  </Fragment>
-                ))}
-                {ordinaryPosts.length === 0 ? (
-                  <BlogConsultCard className={styles.blogConsultCardInFlow} />
-                ) : null}
+                      {index === consultPlacementIndex ? (
+                        <li className={styles.blogConsultCardInFlow}>
+                          <BlogConsultCard />
+                        </li>
+                      ) : null}
+                    </Fragment>
+                  ))}
+                  {ordinaryPosts.length === 0 ? (
+                    <li className={styles.blogConsultCardInFlow}>
+                      <BlogConsultCard />
+                    </li>
+                  ) : null}
+                </ul>
               </div>
+              <aside
+                className={styles.blogSidebar}
+                aria-label="블로그 부가 정보"
+              >
+                <BlogConsultCard className={styles.blogConsultCardSidebar} />
+                <BlogPopularList
+                  getDetailHref={(post) =>
+                    getBlogDetailHref(post, activeCategory)
+                  }
+                  posts={popularPosts}
+                />
+              </aside>
             </div>
-            <aside className={styles.blogSidebar} aria-label="블로그 부가 정보">
-              <BlogConsultCard className={styles.blogConsultCardSidebar} />
-              <BlogPopularList posts={popularPosts} />
-            </aside>
-          </div>
-        ) : (
-          <p className={styles.blogEmptyState}>
-            선택한 카테고리의 게시글을 준비하고 있습니다.
-          </p>
-        )}
+          ) : (
+            <p className={styles.blogEmptyState}>
+              선택한 카테고리의 게시글을 준비하고 있습니다.
+            </p>
+          )}
+        </BlogHistoryBoundary>
       </div>
     </section>
   );

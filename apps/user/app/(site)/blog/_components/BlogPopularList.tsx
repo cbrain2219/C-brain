@@ -1,12 +1,18 @@
+import Link from "next/link";
+
 import type { BlogPost } from "../_types/blog";
 
 import styles from "../page.module.css";
 
 type BlogPopularListProps = {
+  getDetailHref: (post: BlogPost) => string;
   posts: readonly BlogPost[];
 };
 
-export function BlogPopularList({ posts }: BlogPopularListProps) {
+export function BlogPopularList({
+  getDetailHref,
+  posts,
+}: BlogPopularListProps) {
   const popularPosts = [...posts]
     .sort((first, second) => first.popularRank! - second.popularRank!)
     .slice(0, 5);
@@ -19,8 +25,15 @@ export function BlogPopularList({ posts }: BlogPopularListProps) {
       <ol className={styles.blogPopularItems}>
         {popularPosts.map((post) => (
           <li className={styles.blogPopularItem} key={post.id}>
-            <span className={styles.blogPopularRank}>{post.popularRank}</span>
-            <span className={styles.blogPopularTitle}>{post.title}</span>
+            <Link
+              aria-label={`${post.title} 상세 보기`}
+              className={styles.blogPopularLink}
+              data-blog-detail-href={getDetailHref(post)}
+              href={getDetailHref(post)}
+            >
+              <span className={styles.blogPopularRank}>{post.popularRank}</span>
+              <span className={styles.blogPopularTitle}>{post.title}</span>
+            </Link>
           </li>
         ))}
       </ol>

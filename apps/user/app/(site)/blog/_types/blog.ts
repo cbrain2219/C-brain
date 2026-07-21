@@ -7,14 +7,44 @@ export const BLOG_CATEGORY_VALUES = [
 
 export type BlogCategory = (typeof BLOG_CATEGORY_VALUES)[number];
 
+export type BlogContentBlock =
+  | {
+      id: string;
+      text: string;
+      type: "paragraph" | "heading";
+    }
+  | {
+      id: string;
+      items: readonly string[];
+      start?: number;
+      type: "orderedList" | "unorderedList";
+    }
+  | {
+      alt: string;
+      id: string;
+      label?: string;
+      src?: string;
+      type: "image";
+      visibleOn?: "desktop";
+    };
+
+export type BlogPostDetail = {
+  body: readonly BlogContentBlock[];
+  keywords: readonly string[];
+  seoDescription: string;
+};
+
 export type BlogPost = {
   id: string;
+  slug: string;
   category: BlogCategory;
   title: string;
   summary: string;
   publishedAt: string;
+  publishedAtIso: string;
   author: string;
   image: string;
   featured: boolean;
   popularRank?: number;
+  detail: BlogPostDetail;
 };
