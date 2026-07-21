@@ -93,6 +93,15 @@ export type FeaturedCustomerInterview = CustomerInterviewCard & {
   headlineLines: readonly string[];
 };
 
+export type CustomerTestimonial = {
+  body: string;
+  company: string;
+  id: string;
+  name: string;
+  publishedAt: string;
+  title: string;
+};
+
 export const customerInterviewRecords = [
   {
     author: "씨브레인",
@@ -154,9 +163,6 @@ export const customerInterviewRecords = [
     publishedAt: "2026-07-01T00:00:00+09:00",
     seoDescription:
       "서진인스텍의 카탈로그·브로슈어 제작 사례와 씨브레인 고객 인터뷰를 확인하세요.",
-    featured: {
-      headlineLines: ["처음 맡겼는데", "결과물이 기대 이상이였어요."],
-    },
     industry: "제조",
     slug: "seojin-instech",
     thumbnail: reviewInterviewImage,
@@ -299,6 +305,9 @@ export const customerInterviewRecords = [
   },
 ] as const satisfies readonly CustomerInterviewRecord[];
 
+const customerInterviewRecordList: readonly CustomerInterviewRecord[] =
+  customerInterviewRecords;
+
 function getCustomerInterviewQuote(record: CustomerInterviewRecord) {
   return (
     record.content.find((block) => block.type === "quote")?.text ??
@@ -370,9 +379,11 @@ function toCustomerInterviewDetail(
 function createFeaturedCustomerInterview(
   record: CustomerInterviewRecord | undefined,
 ): FeaturedCustomerInterview {
-  if (!record?.featured) {
-    throw new Error("대표 고객 인터뷰 데이터가 필요합니다.");
+  if (!record) {
+    throw new Error("고객 인터뷰 데이터가 필요합니다.");
   }
+
+  const quote = getCustomerInterviewQuote(record);
 
   return {
     ...toCustomerInterviewCard(record),
@@ -381,7 +392,7 @@ function createFeaturedCustomerInterview(
       "고객이 직접 말하는 결과",
       record.company,
     ],
-    headlineLines: record.featured.headlineLines,
+    headlineLines: record.featured?.headlineLines ?? [quote],
   };
 }
 
@@ -393,9 +404,23 @@ export const customerInterviewDetails = customerInterviewRecords.map(
   toCustomerInterviewDetail,
 );
 
-const featuredCustomerInterviewRecord = customerInterviewRecords.find(
-  (record) => "featured" in record,
-);
+function getLatestCustomerInterviewRecord() {
+  return customerInterviewRecordList.reduce<CustomerInterviewRecord | undefined>(
+    (latestRecord, record) => {
+      if (!latestRecord) return record;
+
+      return Date.parse(record.publishedAt) >
+        Date.parse(latestRecord.publishedAt)
+        ? record
+        : latestRecord;
+    },
+    undefined,
+  );
+}
+
+const featuredCustomerInterviewRecord = customerInterviewRecordList.find(
+  (record) => record.featured,
+) ?? getLatestCustomerInterviewRecord();
 
 export const featuredCustomerInterview = createFeaturedCustomerInterview(
   featuredCustomerInterviewRecord,
@@ -420,32 +445,50 @@ export function getCustomerInterviewDetailSeo(
 export const customerTestimonials = [
   {
     body: "씨브레인에 카탈로그 제작할 때 당사의 브로슈어 니즈를 정확하게 파악해서 만족스러운 결과물이 나왔습니다. 9월 전시회를 앞두고 시간이 많지 않은 상황에서 빠른 인쇄를 해주셔서 감사했습니다.",
-    name: "최수* 책임님",
     company: "서진인스텍 · 제조업 · 경기도 성남",
+    id: "seojin-instech-catalog-review",
+    name: "최수* 책임님",
+    publishedAt: "2026-07-01T00:00:00+09:00",
+    title: "서진인스텍 카탈로그 제작 후기",
   },
   {
     body: "씨브레인의 가장 큰 장점은 가독성 있는 브로슈어 디자인입니다. 빠른 피드백과 원하는 방향을 신속하게 파악하여 효율적인 커뮤니케이션과 고품질 브로셔 디자인으로 만족스러운 결과물을 얻을 수 있었습니다.",
-    name: "김윤* 팀장님",
     company: "나인벨 헬스케어 · 헬스케어/제조업 · 경기도 성남",
+    id: "ninebell-healthcare-brochure-review",
+    name: "김윤* 팀장님",
+    publishedAt: "2026-07-08T00:00:00+09:00",
+    title: "나인벨 헬스케어 브로슈어 제작 후기",
   },
   {
     body: "씨브레인에 학생들의 졸업 작품 완료 보고서 인쇄 제작을 의뢰했습니다. 표지와 내지의 퀄리티가 정말 좋았고, 인쇄는 3일 만에 완성되었습니다. 시간적으로나 퀄리티 측면에서 지난해보다 매우 만족스럽게 진행되었습니다.",
-    name: "김현* 교수님",
     company: "청강문화산업대학교 · 교육기관 · 경기도 이천",
+    id: "chungkang-college-report-review",
+    name: "김현* 교수님",
+    publishedAt: "2026-07-15T00:00:00+09:00",
+    title: "청강문화산업대학교 완료보고서 제작 후기",
   },
   {
     body: "브로슈어에 담아야 할 정보가 많았는데, 복잡한 내용을 보기 쉽게 정리해 주셔서 영업 현장에서 바로 활용하기 좋았습니다.",
-    name: "이수* 매니저님",
     company: "바이오 기업 · 제품 카탈로그 · 서울",
+    id: "bio-company-product-catalog-review",
+    name: "이수* 매니저님",
+    publishedAt: "2026-07-16T00:00:00+09:00",
+    title: "바이오 기업 제품 카탈로그 제작 후기",
   },
   {
     body: "담당 디자이너와 바로 소통할 수 있어서 수정 방향을 설명하기 편했습니다. 초안부터 납품까지 진행 상황이 명확했습니다.",
-    name: "박민* 과장님",
     company: "IT 기업 · 회사소개서 · 판교",
+    id: "it-company-profile-review",
+    name: "박민* 과장님",
+    publishedAt: "2026-07-18T00:00:00+09:00",
+    title: "IT 기업 회사소개서 제작 후기",
   },
   {
     body: "정찰제라 예산을 잡기 쉬웠고, 디자인과 인쇄를 한 번에 맡길 수 있어 내부 일정 관리 부담이 줄었습니다.",
-    name: "정다* 주임님",
     company: "공공기관 · 행사 홍보물 · 대전",
+    id: "public-agency-promotion-review",
+    name: "정다* 주임님",
+    publishedAt: "2026-07-20T00:00:00+09:00",
+    title: "공공기관 행사 홍보물 제작 후기",
   },
-] as const;
+] as const satisfies readonly CustomerTestimonial[];

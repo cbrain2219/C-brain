@@ -174,7 +174,7 @@ export function CustomerReviewSection() {
     >
       <div className={styles.reviewGrid}>
         {customerTestimonials.slice(0, 3).map((review) => (
-          <article className={styles.reviewCard} key={review.name}>
+          <article className={styles.reviewCard} key={review.id}>
             <div className={styles.reviewContent}>
               <p className={styles.reviewStars} aria-label="별점 5점">
                 ★★★★★

@@ -271,6 +271,24 @@ test("customer interview data stays consistent for dynamic admin content", async
     contentSource,
     /export const customerInterviewDetails = customerInterviewRecords\.map/,
   );
+  assert.match(
+    contentSource,
+    /function getLatestCustomerInterviewRecord\(/,
+  );
+  assert.match(
+    contentSource,
+    /Date\.parse\(latestRecord\.publishedAt\)/,
+  );
+  assert.match(
+    contentSource,
+    /const customerInterviewRecordList: readonly CustomerInterviewRecord\[\] =\s*customerInterviewRecords;/,
+  );
+  assert.match(
+    contentSource,
+    /const featuredCustomerInterviewRecord =\s*customerInterviewRecordList\.find[\s\S]*\?\? getLatestCustomerInterviewRecord\(\);/,
+  );
+  assert.doesNotMatch(recordsBlock, /featured:/);
+  assert.doesNotMatch(contentSource, /대표 고객 인터뷰 데이터가 필요합니다/);
   assert.match(contentSource, /publishedAt: record\.publishedAt/);
   assert.match(contentSource, /id: record\.slug/);
   assert.match(contentSource, /detailSlug: record\.slug/);
@@ -279,7 +297,7 @@ test("customer interview data stays consistent for dynamic admin content", async
   assert.match(contentSource, /videoAlt: record\.videoAlt/);
   assert.match(
     contentSource,
-    /const featuredCustomerInterviewRecord = customerInterviewRecords\.find/,
+    /const featuredCustomerInterviewRecord = customerInterviewRecordList\.find/,
   );
   assert.equal(
     chungkangQuoteMatches?.length,
@@ -308,6 +326,42 @@ test("customer reviews page renders all dynamic interviews and testimonials", as
   assert.doesNotMatch(pageSource, /customerTestimonials\.filter/);
   assert.doesNotMatch(stylesSource, /\.reviewsInterviewCard:nth-child/);
   assert.doesNotMatch(stylesSource, /\.reviewsTestimonialCard:nth-child/);
+});
+
+test("customer testimonials are ready for dynamic admin data", async () => {
+  const contentSource = await readFile(contentPath, "utf8");
+  const pageSource = await readFile(pagePath, "utf8");
+  const testimonialsBlock = extractConstArray(
+    contentSource,
+    "customerTestimonials",
+  );
+
+  assert.match(contentSource, /export type CustomerTestimonial/);
+  assert.match(testimonialsBlock, /id: "/);
+  assert.match(testimonialsBlock, /publishedAt: "/);
+  assert.match(testimonialsBlock, /title: "/);
+  assert.match(pageSource, /key=\{review\.id\}/);
+  assert.match(
+    pageSource,
+    /aria-label=\{`\$\{review\.title\} 고객 후기`\}/,
+  );
+  assert.doesNotMatch(
+    pageSource,
+    /key=\{`\$\{review\.name\}-\$\{review\.company\}`\}/,
+  );
+});
+
+test("customer reviews hero content styles stay consolidated", async () => {
+  const stylesSource = await readFile(stylesPath, "utf8");
+
+  assert.doesNotMatch(
+    stylesSource,
+    /\.reviewsHeroContent\s*\{\s*width: min\(100%, 390px\);\s*margin: 0 auto;\s*\}\s*\.reviewsHeroContent\s*\{/,
+  );
+  assert.match(
+    stylesSource,
+    /\.reviewsHeroContent\s*\{[\s\S]*width: min\(100%, 390px\);[\s\S]*margin: 0 auto;[\s\S]*position: relative;[\s\S]*display: flex;[\s\S]*flex-direction: column;[\s\S]*gap: 20px;/,
+  );
 });
 
 test("customer review tests are connected to workspace scripts", async () => {

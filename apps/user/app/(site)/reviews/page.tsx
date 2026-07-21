@@ -226,10 +226,10 @@ export default function CustomerReviewsPage() {
               {customerTestimonials.map((review) => (
                 <li
                   className={styles.reviewsTestimonialCard}
-                  key={`${review.name}-${review.company}`}
+                  key={review.id}
                 >
                   <article
-                    aria-label={`${review.name} 고객 후기`}
+                    aria-label={`${review.title} 고객 후기`}
                     className={styles.reviewsTestimonialArticle}
                   >
                     <div className={styles.reviewsTestimonialContent}>
