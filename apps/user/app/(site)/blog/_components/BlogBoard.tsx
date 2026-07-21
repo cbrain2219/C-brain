@@ -41,8 +41,11 @@ function getBlogDetailHref(post: BlogPost, category: BlogCategoryFilter) {
 
 function getBannerSlides(posts: readonly BlogPost[]) {
   const bannerPosts = posts
-    .filter((post) => post.bannerRank !== undefined)
-    .sort((first, second) => first.bannerRank! - second.bannerRank!);
+    .filter(
+      (post): post is BlogPost & { bannerRank: number } =>
+        typeof post.bannerRank === "number",
+    )
+    .sort((first, second) => first.bannerRank - second.bannerRank);
 
   return (bannerPosts.length > 0 ? bannerPosts : posts).slice(
     0,
@@ -57,7 +60,6 @@ export function BlogBoard({ activeCategory, posts }: BlogBoardProps) {
   const ordinaryPosts = visiblePosts.filter(
     (post) => post.id !== featuredPost?.id,
   );
-  const popularPosts = posts.filter((post) => post.popularRank !== undefined);
   const consultPlacementIndex = Math.min(3, ordinaryPosts.length - 1);
   const listHref = getCategoryHref(activeCategory);
 
@@ -136,7 +138,7 @@ export function BlogBoard({ activeCategory, posts }: BlogBoardProps) {
                   getDetailHref={(post) =>
                     getBlogDetailHref(post, activeCategory)
                   }
-                  posts={popularPosts}
+                  posts={posts}
                 />
               </aside>
             </div>

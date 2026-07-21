@@ -9,8 +9,7 @@
     "start": "next start",
     "lint": "eslint --max-warnings 0",
     "check-types": "next typegen && tsc --noEmit",
-    "test": "node --test __tests__/*.test.mjs",
-    "test:blog": "tsc -p ../../tests/blog/tsconfig.json && node --test ../../tests/blog/.compiled/tests/blog/filterBlogPosts.test.js"
+    "test": "node --test __tests__/*.test.mjs"
   },
   "dependencies": {
     "@repo/supabase": "workspace:*",

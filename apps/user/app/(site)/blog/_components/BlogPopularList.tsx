@@ -14,7 +14,11 @@ export function BlogPopularList({
   posts,
 }: BlogPopularListProps) {
   const popularPosts = [...posts]
-    .sort((first, second) => first.popularRank! - second.popularRank!)
+    .filter(
+      (post): post is BlogPost & { popularRank: number } =>
+        typeof post.popularRank === "number",
+    )
+    .sort((first, second) => first.popularRank - second.popularRank)
     .slice(0, 5);
 
   return (

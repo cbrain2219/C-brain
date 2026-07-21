@@ -196,7 +196,9 @@ test("blog data mirrors admin landing, banner, and popular settings", async () =
   assert.doesNotMatch(posts, /featured:/);
   assert.match(board, /getBannerSlides/);
   assert.match(board, /post\.bannerRank/);
+  assert.doesNotMatch(board, /bannerRank!/);
   assert.match(popularList, /post\.popularRank/);
+  assert.doesNotMatch(popularList, /popularRank!/);
 });
 
 test("blog list uses semantic navigation and article lists without changing visual hooks", async () => {
