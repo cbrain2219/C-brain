@@ -1,4 +1,5 @@
-import { NavLink } from 'react-router-dom'
+import { NavLink, useNavigate } from 'react-router-dom'
+import { supabase } from '../lib/supabase'
 import './AdminHeader.css'
 
 const menuItems = [
@@ -13,6 +14,13 @@ const menuItems = [
 ] as const
 
 export function AdminHeader() {
+  const navigate = useNavigate()
+
+  async function handleSignOut() {
+    await supabase.auth.signOut()
+    navigate('/login', { replace: true })
+  }
+
   return (
     <header className="admin-header">
       <div className="admin-header__left">
@@ -61,6 +69,13 @@ export function AdminHeader() {
         <a className="admin-header__action pretendard-bold-14" href="/">
           씨브레인 홈페이지
         </a>
+        <button
+          className="admin-header__logout pretendard-bold-14"
+          onClick={handleSignOut}
+          type="button"
+        >
+          로그아웃
+        </button>
       </div>
     </header>
   )

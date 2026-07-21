@@ -20,6 +20,9 @@ importers:
 
   apps/admin:
     dependencies:
+      '@repo/supabase':
+        specifier: workspace:*
+        version: link:../../packages/supabase
       react:
         specifier: ^19.2.7
         version: 19.2.7
