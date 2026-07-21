@@ -41,6 +41,8 @@ function getReviewDetailStructuredData(
       name: detail.author,
     },
     description: detail.seoDescription,
+    dateModified: detail.publishedAt,
+    datePublished: detail.publishedAt,
     headline: detail.title,
     publisher: {
       "@type": "Organization",
@@ -101,6 +103,7 @@ export async function generateMetadata({
       description: seo.description,
       images: socialImage ? [socialImage] : undefined,
       locale: "ko_KR",
+      publishedTime: detail.publishedAt,
       siteName: "C-Brain",
       title: seo.title,
       type: "article",
@@ -141,6 +144,8 @@ export default async function CustomerReviewDetailPage({
       itemType="https://schema.org/Article"
     >
       <meta content={detail.seoDescription} itemProp="description" />
+      <meta content={detail.publishedAt} itemProp="datePublished" />
+      <meta content={detail.publishedAt} itemProp="dateModified" />
       {imageUrl ? <meta content={imageUrl} itemProp="image" /> : null}
       <script
         dangerouslySetInnerHTML={{

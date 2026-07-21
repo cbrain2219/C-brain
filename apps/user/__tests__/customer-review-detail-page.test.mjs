@@ -43,6 +43,7 @@ test("customer review detail page follows portfolio detail route conventions", a
     source,
     /alternates: canonicalUrl \? \{ canonical: canonicalUrl \} : undefined/,
   );
+  assert.match(source, /publishedTime: detail\.publishedAt/);
   assert.match(
     source,
     /return siteUrl \? new URL\(path, siteUrl\)\.toString\(\) : undefined/,
@@ -50,6 +51,8 @@ test("customer review detail page follows portfolio detail route conventions", a
   assert.match(source, /if \(pageUrl\)/);
   assert.match(source, /if \(imageUrl\)/);
   assert.doesNotMatch(source, /mainEntityOfPage: pageUrl/);
+  assert.match(source, /datePublished: detail\.publishedAt/);
+  assert.match(source, /dateModified: detail\.publishedAt/);
   assert.match(source, /type: "article"/);
   assert.match(source, /getCustomerInterviewDetailBySlug/);
   assert.match(source, /getCustomerInterviewDetailSeo/);
@@ -67,6 +70,14 @@ test("customer review detail page keeps semantic article markup and admin video 
     /<article[\s\S]*className=\{styles\.reviewDetailPage\}[\s\S]*itemScope[\s\S]*itemType="https:\/\/schema\.org\/Article"/,
   );
   assert.match(source, /itemProp="description"/);
+  assert.match(
+    source,
+    /<meta content=\{detail\.publishedAt\} itemProp="datePublished" \/>/,
+  );
+  assert.match(
+    source,
+    /<meta content=\{detail\.publishedAt\} itemProp="dateModified" \/>/,
+  );
   assert.match(source, /itemProp="image"/);
   assert.match(source, /<header className=\{styles\.reviewDetailHeader\}>/);
   assert.match(source, /itemProp="articleSection"/);
@@ -117,12 +128,14 @@ test("customer review detail content captures the Figma interview detail copy", 
   await stat(playIconPath);
 
   assert.match(content, /export type CustomerInterviewDetail/);
+  assert.match(content, /publishedAt: string/);
   assert.match(content, /export const customerInterviewDetails/);
   assert.match(content, /export function getCustomerInterviewDetailBySlug/);
   assert.match(content, /export function getCustomerInterviewDetailSeo/);
   assert.match(content, /slug: "seojin-instech"/);
   assert.match(content, /slug: "ninebell-healthcare"/);
   assert.match(content, /slug: "chungkang-college"/);
+  assert.match(content, /publishedAt: "2026-07-01T00:00:00\+09:00"/);
   assert.match(
     content,
     /게임 졸업작품 완료보고서\] 청강문화산업대학교가 씨브레인을 선택한 이유/,

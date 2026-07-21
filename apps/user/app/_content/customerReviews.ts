@@ -52,6 +52,7 @@ export type CustomerInterviewDetail = {
   keywords: readonly string[];
   projectInfo: readonly CustomerInterviewProjectInfo[];
   projectInfoTitle: string;
+  publishedAt: string;
   seoDescription: string;
   slug: string;
   thumbnail: string;
@@ -80,6 +81,7 @@ export type CustomerInterviewCard = {
   detailSlug: string;
   id: string;
   meta: string;
+  publishedAt: string;
   quote: string;
   thumbnail: string;
   title: string;
@@ -149,6 +151,7 @@ export const customerInterviewRecords = [
       },
     ],
     projectInfoTitle: "프로젝트 정보",
+    publishedAt: "2026-07-01T00:00:00+09:00",
     seoDescription:
       "서진인스텍의 카탈로그·브로슈어 제작 사례와 씨브레인 고객 인터뷰를 확인하세요.",
     featured: {
@@ -217,6 +220,7 @@ export const customerInterviewRecords = [
       },
     ],
     projectInfoTitle: "프로젝트 정보",
+    publishedAt: "2026-07-08T00:00:00+09:00",
     seoDescription:
       "나인벨 헬스케어의 브로슈어·리플렛 제작 사례와 씨브레인 고객 인터뷰를 확인하세요.",
     industry: "헬스케어",
@@ -282,6 +286,7 @@ export const customerInterviewRecords = [
       },
     ],
     projectInfoTitle: "프로젝트 정보",
+    publishedAt: "2026-07-15T00:00:00+09:00",
     seoDescription:
       "청강문화산업대학교 게임콘텐츠스쿨의 게임 졸업 프로젝트 완료보고서 제작 사례와 씨브레인 고객 인터뷰를 확인하세요.",
     industry: "교육",
@@ -334,6 +339,7 @@ function toCustomerInterviewCard(
     detailSlug: record.slug,
     id: record.slug,
     meta: getCustomerInterviewMeta(record),
+    publishedAt: record.publishedAt,
     quote: getCustomerInterviewQuote(record),
     thumbnail: record.thumbnail,
     title: getCustomerInterviewCardTitle(record),
@@ -352,6 +358,7 @@ function toCustomerInterviewDetail(
     keywords: record.keywords,
     projectInfo: record.projectInfo,
     projectInfoTitle: record.projectInfoTitle,
+    publishedAt: record.publishedAt,
     seoDescription: record.seoDescription,
     slug: record.slug,
     thumbnail: record.thumbnail,

@@ -168,7 +168,7 @@ test("customer interviews follow the P/T/F/M responsive section variants", async
 
   const interviewSlugs = contentSource.match(/slug: "/g) ?? [];
 
-  assert.equal(interviewSlugs.length, 3);
+  assert.ok(interviewSlugs.length >= 3);
   assert.equal(pageSource.match(/<FeaturedInterview/g)?.length, 1);
   assert.doesNotMatch(pageSource, /reviewsFeaturedStandalone/);
   assert.doesNotMatch(pageSource, /reviewsFeaturedInline/);
@@ -214,6 +214,8 @@ test("customer interview markup stays semantic and uses admin video alt text", a
   const stylesSource = await readFile(stylesPath, "utf8");
 
   assert.match(contentSource, /detailSlug: record\.slug/);
+  assert.match(contentSource, /publishedAt: string/);
+  assert.match(contentSource, /publishedAt: record\.publishedAt/);
   assert.match(contentSource, /videoAlt:/);
   assert.match(pageSource, /alt=\{featuredCustomerInterview\.videoAlt\}/);
   assert.match(pageSource, /alt=\{interview\.videoAlt\}/);
@@ -269,6 +271,7 @@ test("customer interview data stays consistent for dynamic admin content", async
     contentSource,
     /export const customerInterviewDetails = customerInterviewRecords\.map/,
   );
+  assert.match(contentSource, /publishedAt: record\.publishedAt/);
   assert.match(contentSource, /id: record\.slug/);
   assert.match(contentSource, /detailSlug: record\.slug/);
   assert.match(contentSource, /quote: getCustomerInterviewQuote\(record\)/);
@@ -291,6 +294,20 @@ test("customer interview data stays consistent for dynamic admin content", async
     contentSource,
     /slug: "chungkang-college"[\s\S]*thumbnail: reviewInterviewEducationImage/,
   );
+});
+
+test("customer reviews page renders all dynamic interviews and testimonials", async () => {
+  const pageSource = await readFile(pagePath, "utf8");
+  const stylesSource = await readFile(stylesPath, "utf8");
+
+  assert.match(pageSource, /customerInterviews\.map/);
+  assert.match(pageSource, /customerTestimonials\.map/);
+  assert.doesNotMatch(pageSource, /customerInterviews\.slice/);
+  assert.doesNotMatch(pageSource, /customerTestimonials\.slice/);
+  assert.doesNotMatch(pageSource, /customerInterviews\.filter/);
+  assert.doesNotMatch(pageSource, /customerTestimonials\.filter/);
+  assert.doesNotMatch(stylesSource, /\.reviewsInterviewCard:nth-child/);
+  assert.doesNotMatch(stylesSource, /\.reviewsTestimonialCard:nth-child/);
 });
 
 test("customer review tests are connected to workspace scripts", async () => {
