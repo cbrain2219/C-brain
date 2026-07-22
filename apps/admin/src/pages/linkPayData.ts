@@ -41,19 +41,17 @@ export function createInitialLinkPayForm(): LinkPayFormState {
 }
 
 export function toPaymentLinkInput(form: LinkPayFormState): PaymentLinkInput {
-  const amountText = form.amount.replace(/\D/g, '')
-  const amount = Number(amountText)
+  const amountText = form.amount.replaceAll(',', '')
   const clientName = form.client.trim()
   const paymentName = form.paymentName.trim()
 
-  if (
-    !clientName ||
-    !paymentName ||
-    !amountText ||
-    !Number.isSafeInteger(amount) ||
-    amount < 1 ||
-    amount > 999_999_999_999
-  ) {
+  if (!clientName || !paymentName || !/^\d+$/.test(amountText)) {
+    throw new Error('링크페이 정보를 확인해주세요.')
+  }
+
+  const amount = Number(amountText)
+
+  if (!Number.isSafeInteger(amount) || amount < 1 || amount > 999_999_999_999) {
     throw new Error('링크페이 정보를 확인해주세요.')
   }
 

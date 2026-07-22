@@ -48,6 +48,20 @@ test('payment link input rejects empty text and invalid amount', () => {
   }
 })
 
+test('payment link input rejects malformed numeric text', () => {
+  for (const amount of ['-1', '1.5', '1e3']) {
+    assert.throws(
+      () =>
+        toPaymentLinkInput({
+          amount,
+          client: '고객사',
+          paymentName: '결제명',
+        }),
+      { message: '링크페이 정보를 확인해주세요.' },
+    )
+  }
+})
+
 test('database rows map to editable form and formatted list values', () => {
   assert.deepEqual(toLinkPayFormState(paymentLink), {
     amount: '120,000',
