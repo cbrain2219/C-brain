@@ -36,6 +36,30 @@ test("payment links migration defines the minimal admin contract", async () => {
   assert.match(migration, /create policy "admins select payment links"/);
   assert.match(migration, /create policy "admins insert payment links"/);
   assert.match(migration, /create policy "admins update payment links"/);
+  assert.match(
+    migration,
+    /revoke insert, update on public\.payment_links from authenticated;/,
+  );
+  assert.match(
+    migration,
+    /grant select on public\.payment_links to authenticated;/,
+  );
+  assert.match(
+    migration,
+    /grant insert \(client_name, payment_name, amount\)\s+on public\.payment_links to authenticated;/,
+  );
+  assert.match(
+    migration,
+    /grant update \(client_name, payment_name, amount\)\s+on public\.payment_links to authenticated;/,
+  );
+  assert.match(
+    migration,
+    /grant all on public\.payment_links to service_role;/,
+  );
+  assert.doesNotMatch(
+    migration,
+    /grant (?:insert|update) on public\.payment_links to authenticated;/,
+  );
   assert.doesNotMatch(migration, /anon/);
   assert.doesNotMatch(migration, /delete payment links/);
   assert.match(types, /payment_link_status: "pending" \| "paid"/);

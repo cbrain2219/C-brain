@@ -84,3 +84,11 @@ with check (
       and profiles.role = 'admin'
   )
 );
+
+revoke insert, update on public.payment_links from authenticated;
+grant select on public.payment_links to authenticated;
+grant insert (client_name, payment_name, amount)
+on public.payment_links to authenticated;
+grant update (client_name, payment_name, amount)
+on public.payment_links to authenticated;
+grant all on public.payment_links to service_role;
