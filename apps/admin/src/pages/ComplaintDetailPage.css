@@ -32,6 +32,25 @@
   gap: 16px;
 }
 
+.complaint-detail__status-control {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.complaint-detail__status-select {
+  min-height: 40px;
+  padding: 8px 12px;
+  border: 1px solid var(--admin-gray-100);
+  border-radius: 12px;
+  background: var(--admin-surface);
+  color: var(--admin-gray-800);
+}
+
+.complaint-detail__status-select:disabled {
+  color: var(--admin-gray-400);
+}
+
 .complaint-detail__title,
 .complaint-detail__section-title,
 .complaint-detail__empty-copy,

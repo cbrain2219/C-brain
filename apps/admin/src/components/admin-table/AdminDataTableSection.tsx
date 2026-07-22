@@ -1,6 +1,8 @@
 import { useEffect, useId, useState } from 'react'
-import type { CSSProperties, ReactNode } from 'react'
+import type { CSSProperties, DragEvent, ReactNode } from 'react'
+import { Link } from 'react-router-dom'
 import './AdminDataTableSection.css'
+import { moveItem } from './adminTableOrdering'
 
 const ADMIN_TABLE_DESIGN_WIDTH = 1376
 const ADMIN_TABLE_VIEWPORT_PADDING = 64
@@ -39,9 +41,15 @@ export type AdminDataTableSectionProps<Row> = {
   readonly columns: readonly AdminTableColumn<Row>[]
   readonly emptyMessage?: string
   readonly filters: readonly AdminTableFilter[]
+  readonly filterValues?: Readonly<Record<string, string>>
   readonly getRowKey: (row: Row) => string
+  readonly isAcceptDrag?: boolean
+  readonly onFilterValueChange?: (filterId: string, value: string) => void
+  readonly onRowsReorder?: (rows: readonly Row[]) => void
+  readonly onSearchValueChange?: (value: string) => void
   readonly rows: readonly Row[]
   readonly search: AdminTableSearch
+  readonly searchValue?: string
   readonly title: string
 }
 
@@ -120,7 +128,6 @@ function ChevronDownIcon() {
     </svg>
   )
 }
-
 function SearchIcon() {
   return (
     <svg
@@ -169,13 +176,22 @@ export function AdminDataTableSection<Row>({
   columns,
   emptyMessage = '표시할 데이터가 없습니다.',
   filters,
+  filterValues,
   getRowKey,
+  isAcceptDrag = false,
+  onFilterValueChange,
+  onRowsReorder,
+  onSearchValueChange,
   rows,
   search,
+  searchValue,
   title,
 }: AdminDataTableSectionProps<Row>) {
   const titleId = useId()
   const layout = useAdminTableLayout()
+  const [draggedRowKey, setDraggedRowKey] = useState<string | null>(null)
+  const [dragOverRowKey, setDragOverRowKey] = useState<string | null>(null)
+  const isDragEnabled = isAcceptDrag && onRowsReorder !== undefined
   const gridTemplateColumns = columns.map((column) => column.track).join(' ')
   const layoutHeight = ADMIN_TABLE_BASE_HEIGHT + ADMIN_TABLE_ROW_HEIGHT * rows.length
   const frameStyle = {
@@ -190,6 +206,38 @@ export function AdminDataTableSection<Row>({
     '--admin-data-table-columns': gridTemplateColumns,
   }
 
+  function clearDragState() {
+    setDraggedRowKey(null)
+    setDragOverRowKey(null)
+  }
+
+  function handleDragStart(event: DragEvent<HTMLDivElement>, rowKey: string) {
+    event.dataTransfer.effectAllowed = 'move'
+    event.dataTransfer.setData('text/plain', rowKey)
+    setDraggedRowKey(rowKey)
+  }
+
+  function handleDragOver(event: DragEvent<HTMLDivElement>, rowKey: string) {
+    if (!draggedRowKey || draggedRowKey === rowKey) return
+
+    event.preventDefault()
+    event.dataTransfer.dropEffect = 'move'
+    setDragOverRowKey(rowKey)
+  }
+
+  function handleDrop(event: DragEvent<HTMLDivElement>, targetRowKey: string) {
+    event.preventDefault()
+
+    const sourceRowKey = draggedRowKey ?? event.dataTransfer.getData('text/plain')
+    const sourceIndex = rows.findIndex((row) => getRowKey(row) === sourceRowKey)
+    const targetIndex = rows.findIndex((row) => getRowKey(row) === targetRowKey)
+
+    if (sourceIndex >= 0 && targetIndex >= 0 && sourceIndex !== targetIndex) {
+      onRowsReorder?.(moveItem(rows, sourceIndex, targetIndex))
+    }
+
+    clearDragState()
+  }
   return (
     <div className="admin-data-table-frame" style={frameStyle}>
       <section className="admin-data-table-section" style={sectionStyle} aria-labelledby={titleId}>
@@ -208,6 +256,8 @@ export function AdminDataTableSection<Row>({
                       className="admin-data-table-filter__select pretendard-medium-14"
                       disabled={filter.options.length === 0}
                       name={filter.id}
+                      onChange={(event) => onFilterValueChange?.(filter.id, event.currentTarget.value)}
+                      value={filterValues?.[filter.id]}
                     >
                       {filter.options.length === 0 ? (
                         <option>생성된 태그 없음</option>
@@ -231,8 +281,10 @@ export function AdminDataTableSection<Row>({
                   <input
                     aria-label={search.placeholder}
                     className="admin-data-table-search__input pretendard-medium-14"
+                    onChange={(event) => onSearchValueChange?.(event.currentTarget.value)}
                     placeholder={search.placeholder}
                     type="search"
+                    value={searchValue}
                   />
                 </span>
               </label>
@@ -250,15 +302,36 @@ export function AdminDataTableSection<Row>({
 
             <div className="admin-data-table__body" role="rowgroup">
               {rows.length > 0 ? (
-                rows.map((row) => (
-                  <div className="admin-data-table__row" key={getRowKey(row)} role="row">
-                    {columns.map((column) => (
-                      <div className="admin-data-table__cell pretendard-medium-14" key={column.id} role="cell">
-                        {column.renderCell(row)}
-                      </div>
-                    ))}
-                  </div>
-                ))
+                rows.map((row) => {
+                  const rowKey = getRowKey(row)
+                  const rowClassName = [
+                    'admin-data-table__row',
+                    isDragEnabled ? 'admin-data-table__row--draggable' : '',
+                    draggedRowKey === rowKey ? 'admin-data-table__row--dragging' : '',
+                    dragOverRowKey === rowKey ? 'admin-data-table__row--drag-over' : '',
+                  ]
+                    .filter(Boolean)
+                    .join(' ')
+
+                  return (
+                    <div
+                      className={rowClassName}
+                      draggable={isDragEnabled}
+                      key={rowKey}
+                      onDragEnd={isDragEnabled ? clearDragState : undefined}
+                      onDragOver={isDragEnabled ? (event) => handleDragOver(event, rowKey) : undefined}
+                      onDragStart={isDragEnabled ? (event) => handleDragStart(event, rowKey) : undefined}
+                      onDrop={isDragEnabled ? (event) => handleDrop(event, rowKey) : undefined}
+                      role="row"
+                    >
+                      {columns.map((column) => (
+                        <div className="admin-data-table__cell pretendard-medium-14" key={column.id} role="cell">
+                          {column.renderCell(row)}
+                        </div>
+                      ))}
+                    </div>
+                  )
+                })
               ) : (
                 <div className="admin-data-table__empty pretendard-medium-14">{emptyMessage}</div>
               )}
@@ -267,10 +340,10 @@ export function AdminDataTableSection<Row>({
         </div>
 
         {bottomAction ? (
-          <a className="admin-data-table-section__action pretendard-bold-14" href={bottomAction.href}>
+          <Link className="admin-data-table-section__action pretendard-bold-14" to={bottomAction.href}>
             <PackageIcon />
             <span>{bottomAction.label}</span>
-          </a>
+          </Link>
         ) : null}
       </section>
     </div>

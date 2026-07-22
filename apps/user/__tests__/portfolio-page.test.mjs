@@ -10,10 +10,15 @@ const galleryPath = new URL(
   "../app/(site)/portfolio/PortfolioGallery.tsx",
   import.meta.url,
 );
+const listPagePath = new URL(
+  "../app/(site)/portfolio/page.tsx",
+  import.meta.url,
+);
 const landingPortfolioPath = new URL(
   "../app/_components/PortfolioSection.tsx",
   import.meta.url,
 );
+const landingStylesPath = new URL("../app/page.module.css", import.meta.url);
 const detailPagePath = new URL(
   "../app/(site)/portfolio/[slug]/page.tsx",
   import.meta.url,
@@ -54,6 +59,44 @@ test("portfolio cards expose semantic project markup and descriptive alt text", 
   assert.match(gallery, /<figcaption[^>]*>/);
   assert.match(gallery, /alt=\{item\.imageAlt\}/);
   assert.match(landingPortfolio, /alt=\{item\.imageAlt\}/);
+});
+
+test("portfolio list and landing render a clear empty state", async () => {
+  const [gallery, landingPortfolio, listStyles, landingStyles] =
+    await Promise.all([
+      readFile(galleryPath, "utf8"),
+      readFile(landingPortfolioPath, "utf8"),
+      readFile(stylesPath, "utf8"),
+      readFile(landingStylesPath, "utf8"),
+    ]);
+
+  assert.match(gallery, /activeItems\.length > 0/);
+  assert.match(landingPortfolio, /items\.length > 0/);
+  assert.match(gallery, /등록된 포트폴리오가 없습니다\./);
+  assert.match(landingPortfolio, /등록된 포트폴리오가 없습니다\./);
+  assert.match(listStyles, /\.emptyState/);
+  assert.match(landingStyles, /\.contentEmptyState/);
+});
+
+test("portfolio loaders keep fixtures for missing env and fail closed on query errors", async () => {
+  const [listPage, detailPage, landingPortfolio] = await Promise.all([
+    readFile(listPagePath, "utf8"),
+    readFile(detailPagePath, "utf8"),
+    readFile(landingPortfolioPath, "utf8"),
+  ]);
+
+  assert.match(listPage, /if \(!supabase\)[\s\S]*return portfolioItems/);
+  assert.match(detailPage, /if \(!supabase\)[\s\S]*return portfolioItems/);
+  assert.match(
+    landingPortfolio,
+    /if \(!supabase\)[\s\S]*return featuredPortfolioItems/,
+  );
+
+  for (const source of [listPage, detailPage, landingPortfolio]) {
+    assert.match(source, /catch \(error\)/);
+    assert.match(source, /console\.error\(/);
+    assert.match(source, /return \[\]/);
+  }
 });
 
 test("portfolio detail metadata and related cards reuse representative image semantics", async () => {

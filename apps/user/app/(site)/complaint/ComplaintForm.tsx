@@ -1,5 +1,7 @@
 "use client";
 
+import { createBrowserSupabaseClient } from "@repo/supabase/client";
+import { STORAGE_BUCKETS } from "@repo/supabase/files";
 import {
   type ChangeEvent,
   type KeyboardEvent,
@@ -17,10 +19,17 @@ import {
 import { Icon } from "../../../components/Icon";
 import styles from "../../page.module.css";
 import {
+  COMPLAINT_ATTACHMENT_ACCEPT,
   getAcceptedAttachmentFiles,
   getDisplayAttachmentFiles,
   MAX_COMPLAINT_ATTACHMENT_COUNT,
 } from "./attachments";
+import {
+  createComplaintSubmissionPayload,
+  createComplaintUploadRequest,
+  serviceOptions,
+  type ComplaintUploadedAttachment,
+} from "./complaintSubmission";
 import {
   complaintTypeOptions,
   getComplaintTypeDescription,
@@ -37,18 +46,6 @@ import {
   type PhoneVerificationResult,
 } from "./phoneVerification";
 
-const serviceOptions = [
-  "브로슈어 · 카탈로그",
-  "리플렛 · 팜플렛",
-  "포스터 · 전단지",
-  "배너 · 족자 · 현수막",
-  "명함 · 봉투",
-  "로고",
-  "패키지 · 쇼핑백",
-  "촬영",
-  "기타",
-];
-
 type ComplaintFormValues = {
   complaintType: string;
   detail: string;
@@ -58,6 +55,7 @@ type ComplaintFormValues = {
   privacy: boolean;
   service: string;
   verificationCode: string;
+  website: string;
 };
 
 const complaintFormDefaultValues: ComplaintFormValues = {
@@ -66,9 +64,10 @@ const complaintFormDefaultValues: ComplaintFormValues = {
   email: "",
   name: "",
   phone: "",
-  privacy: true,
+  privacy: false,
   service: "",
   verificationCode: "",
+  website: "",
 };
 
 export function ComplaintForm() {
@@ -77,6 +76,8 @@ export function ComplaintForm() {
   const [phoneVerificationResult, setPhoneVerificationResult] =
     useState<PhoneVerificationResult | null>(null);
   const [attachmentFiles, setAttachmentFiles] = useState<File[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submissionError, setSubmissionError] = useState<string | null>(null);
   const fieldRefs = useRef<
     Partial<Record<RequiredComplaintFieldName, HTMLElement>>
   >({});
@@ -135,8 +136,135 @@ export function ComplaintForm() {
     }
   };
 
-  const handleValidSubmit: SubmitHandler<ComplaintFormValues> = () => {
-    successDialogRef.current?.showModal();
+  const handleValidSubmit: SubmitHandler<ComplaintFormValues> = async (
+    values,
+  ) => {
+    const fallbackError =
+      "접수 저장에 실패했습니다. 입력 내용을 유지했으니 다시 시도해주세요.";
+
+    setSubmissionError(null);
+    setIsSubmitting(true);
+
+    const submissionId = crypto.randomUUID();
+    let uploadedAttachments: ComplaintUploadedAttachment[] = [];
+    let uploadPaths: string[] = [];
+    let finalizationStarted = false;
+
+    try {
+      if (attachmentFiles.length > 0) {
+        const uploadResponse = await fetch("/api/complaints/uploads", {
+          body: JSON.stringify(
+            createComplaintUploadRequest(submissionId, attachmentFiles, values),
+          ),
+          headers: { "Content-Type": "application/json" },
+          method: "POST",
+        });
+        const uploadResult = (await uploadResponse
+          .json()
+          .catch(() => null)) as {
+          error?: unknown;
+          uploads?: { path: string; token: string }[];
+        } | null;
+
+        if (!uploadResponse.ok) {
+          throw new Error(
+            typeof uploadResult?.error === "string"
+              ? uploadResult.error
+              : fallbackError,
+          );
+        }
+
+        if (
+          !Array.isArray(uploadResult?.uploads) ||
+          uploadResult.uploads.length !== attachmentFiles.length ||
+          uploadResult.uploads.some(
+            ({ path, token }) =>
+              typeof path !== "string" || typeof token !== "string",
+          )
+        ) {
+          throw new Error(fallbackError);
+        }
+
+        uploadPaths = uploadResult.uploads.map(({ path }) => path);
+
+        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+        const publishableKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+
+        if (!supabaseUrl || !publishableKey) throw new Error(fallbackError);
+
+        const client = createBrowserSupabaseClient({
+          publishableKey,
+          url: supabaseUrl,
+        });
+        const uploadResults = await Promise.allSettled(
+          uploadResult.uploads.map(async ({ path, token }, index) => {
+            const file = attachmentFiles[index];
+            if (!file) throw new Error(fallbackError);
+            const { error } = await client.storage
+              .from(STORAGE_BUCKETS.privateAttachments)
+              .uploadToSignedUrl(path, token, file, {
+                contentType: file.type,
+                upsert: false,
+              });
+
+            if (error) throw error;
+
+            return {
+              name: file.name,
+              path,
+              size: file.size,
+              type: file.type,
+            };
+          }),
+        );
+
+        if (uploadResults.some(({ status }) => status === "rejected")) {
+          throw new Error("첨부 파일 업로드에 실패했습니다.");
+        }
+
+        uploadedAttachments = uploadResults.flatMap((result) =>
+          result.status === "fulfilled" ? [result.value] : [],
+        );
+      }
+
+      finalizationStarted = true;
+      const response = await fetch("/api/complaints", {
+        body: JSON.stringify(
+          createComplaintSubmissionPayload(
+            values,
+            submissionId,
+            uploadedAttachments,
+          ),
+        ),
+        headers: { "Content-Type": "application/json" },
+        method: "POST",
+      });
+
+      if (!response.ok) {
+        const result = (await response.json().catch(() => null)) as {
+          error?: unknown;
+        } | null;
+        throw new Error(
+          typeof result?.error === "string" ? result.error : fallbackError,
+        );
+      }
+
+      successDialogRef.current?.showModal();
+    } catch (error) {
+      if (!finalizationStarted && uploadPaths.length > 0) {
+        await fetch("/api/complaints/uploads", {
+          body: JSON.stringify({ paths: uploadPaths, submissionId }),
+          headers: { "Content-Type": "application/json" },
+          method: "DELETE",
+        }).catch(() => undefined);
+      }
+
+      const message = error instanceof Error ? error.message : fallbackError;
+      setSubmissionError(message);
+      window.alert(message);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleInvalidSubmit: SubmitErrorHandler<ComplaintFormValues> = (
@@ -256,6 +384,15 @@ export function ComplaintForm() {
         noValidate
         onSubmit={handleSubmit(handleValidSubmit, handleInvalidSubmit)}
       >
+        <label aria-hidden="true" className={styles.complaintHoneypot}>
+          <span>웹사이트</span>
+          <input
+            {...register("website")}
+            autoComplete="off"
+            tabIndex={-1}
+            type="text"
+          />
+        </label>
         <div className={styles.complaintFields}>
           <div className={styles.complaintFieldGrid}>
             <label
@@ -465,6 +602,7 @@ export function ComplaintForm() {
                   <span>PNG, JPEG, WEBP 등 / 최대 50MB 제한</span>
                 </span>
                 <input
+                  accept={COMPLAINT_ATTACHMENT_ACCEPT}
                   aria-label="첨부 파일 업로드"
                   multiple
                   name="attachments"
@@ -523,15 +661,33 @@ export function ComplaintForm() {
               <span className={styles.complaintConsentBox} />
               <span>개인정보 수집 및 이용 동의</span>
             </label>
-            <a href="#privacy-policy" rel="noreferrer" target="_blank">
-              보기
-            </a>
+            <details className={styles.complaintPrivacyDetails}>
+              <summary aria-label="개인정보 수집 및 이용 안내 보기">
+                보기
+              </summary>
+              <p>
+                수집 항목: 이름, 이메일, 휴대폰 번호, 이용 서비스, 불편 유형,
+                상세 내용, 첨부 파일. 수집 목적: 불편 접수 처리 및 회신. 보유 및
+                파기: 관련 법령과 개인정보 처리방침에 따릅니다.
+              </p>
+            </details>
           </div>
+
+          {submissionError ? (
+            <p aria-live="assertive" role="alert" style={{ color: "#f53333" }}>
+              {submissionError}
+            </p>
+          ) : null}
         </div>
 
-        <button className={styles.complaintSubmitButton} type="submit">
+        <button
+          aria-busy={isSubmitting}
+          className={styles.complaintSubmitButton}
+          disabled={isSubmitting}
+          type="submit"
+        >
           <Icon name="edit-03" size={24} />
-          <span>불편사항 접수하기</span>
+          <span>{isSubmitting ? "접수 중" : "불편사항 접수하기"}</span>
         </button>
       </form>
 

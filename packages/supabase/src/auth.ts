@@ -1,8 +1,8 @@
 import type { User } from "@supabase/supabase-js";
 
-import { unwrapSupabaseData } from "./result.js";
-import type { CBrainSupabaseClient } from "./server.js";
-import type { TableRow } from "./types.js";
+import { unwrapSupabaseData } from "./result.ts";
+import type { CBrainSupabaseClient } from "./server.ts";
+import type { TableRow } from "./types.ts";
 
 export async function getCurrentUser(client: CBrainSupabaseClient) {
   const { data, error } = await client.auth.getUser();
@@ -39,11 +39,12 @@ export async function getCurrentProfile(client: CBrainSupabaseClient) {
 export async function requireAdmin(
   client: CBrainSupabaseClient,
 ): Promise<TableRow<"profiles">> {
-  await requireUser(client);
+  const user = await requireUser(client);
 
   const { data, error } = await client
     .from("profiles")
     .select("*")
+    .eq("id", user.id)
     .eq("role", "admin")
     .single();
   const profile = unwrapSupabaseData(data, error);

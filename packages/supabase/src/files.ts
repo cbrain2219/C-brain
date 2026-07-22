@@ -1,6 +1,6 @@
-import { requireAdmin } from "./auth.js";
-import { assertSupabaseSuccess, unwrapSupabaseData } from "./result.js";
-import type { CBrainSupabaseClient } from "./server.js";
+import { requireAdmin } from "./auth.ts";
+import { assertSupabaseSuccess, unwrapSupabaseData } from "./result.ts";
+import type { CBrainSupabaseClient } from "./server.ts";
 
 export const STORAGE_BUCKETS = {
   privateAttachments: "private-attachments",
@@ -10,6 +10,21 @@ export const STORAGE_BUCKETS = {
 export type StorageBucket =
   (typeof STORAGE_BUCKETS)[keyof typeof STORAGE_BUCKETS];
 export type UploadBody = ArrayBuffer | Blob | FormData | string;
+
+export function createStoragePath(scope: string, fileName: string) {
+  const safeScope = scope
+    .split("/")
+    .map((segment) => segment.replace(/[^a-zA-Z0-9_-]/g, ""))
+    .filter(Boolean)
+    .join("/");
+  const extension = (fileName.includes(".") ? fileName.split(".").pop() : "")
+    ?.toLowerCase()
+    .replace(/[^a-z0-9]/g, "");
+
+  if (!safeScope) throw new Error("A storage scope is required.");
+
+  return `${safeScope}/${crypto.randomUUID()}.${extension || "bin"}`;
+}
 
 export async function uploadFile(
   client: CBrainSupabaseClient,
@@ -39,6 +54,48 @@ export async function createSignedFileUrl(
     .createSignedUrl(path, expiresInSeconds);
 
   return unwrapSupabaseData(data, error);
+}
+
+export async function createSignedFileUpload(
+  client: CBrainSupabaseClient,
+  bucket: StorageBucket,
+  path: string,
+) {
+  const { data, error } = await client.storage
+    .from(bucket)
+    .createSignedUploadUrl(path);
+
+  return unwrapSupabaseData(data, error);
+}
+
+export async function getFileInfo(
+  client: CBrainSupabaseClient,
+  bucket: StorageBucket,
+  path: string,
+): Promise<{ contentType?: string; size?: number }> {
+  const { data, error } = await client.storage.from(bucket).info(path);
+
+  return unwrapSupabaseData(data, error);
+}
+
+export function getPublicAssetUrl(
+  client: CBrainSupabaseClient,
+  path: string,
+) {
+  return getPublicFileUrl(client, STORAGE_BUCKETS.publicAssets, path);
+}
+
+export function createPrivateAttachmentUrl(
+  client: CBrainSupabaseClient,
+  path: string,
+  expiresInSeconds = 60 * 10,
+) {
+  return createSignedFileUrl(
+    client,
+    STORAGE_BUCKETS.privateAttachments,
+    path,
+    expiresInSeconds,
+  );
 }
 
 export function getPublicFileUrl(

@@ -1,8 +1,8 @@
 import { createClient } from "@supabase/supabase-js";
 
-import { getServerSupabaseEnv } from "./env.js";
-import type { CBrainSupabaseClient } from "./server.js";
-import type { Database } from "./types.js";
+import { getServerSupabaseEnv } from "./env.ts";
+import type { CBrainSupabaseClient } from "./server.ts";
+import type { Database } from "./types.ts";
 
 export function createAdminSupabaseClient(): CBrainSupabaseClient {
   if (typeof window !== "undefined") {

@@ -1,42 +1,28 @@
-import { useId, useState } from 'react'
+import { createProduct, deleteProduct, getAdminProduct, updateProduct } from '@repo/supabase'
+import { AlertDialog } from '@base-ui/react/alert-dialog'
+import { useEffect, useId, useState } from 'react'
 import type { ChangeEvent, FormEvent } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
+import { toast } from 'sonner'
 import { AdminIcon } from '../components/AdminIcon'
 import { AdminFormLayout } from '../components/admin-form/AdminFormLayout'
 import { AdminTypeCombobox } from '../components/admin-form/AdminTypeCombobox'
+import { supabase } from '../lib/supabase'
+import {
+  createInitialProductForm,
+  formatNumericValue,
+  getMissingUnitPriceKey,
+  getUnitPriceKey,
+  toProductFormState,
+  toProductMutationInput,
+} from './productData'
 import './ProductFormPage.css'
 
 type Step = 1 | 2
 type OptionGroup = 'paperTypes' | 'pageCounts' | 'orderQuantities'
 type OptionValueMode = 'text' | 'digits' | 'formatted'
 
-type ProductFormState = {
-  designPrintEstimate: string
-  orderQuantities: string[]
-  pageCounts: string[]
-  paperTypes: string[]
-  planningEstimate: string
-  productType: string
-  unitPrices: Record<string, string>
-}
-
 const defaultProductTypes = ['일반상품']
-
-const initialFormState: ProductFormState = {
-  designPrintEstimate: '',
-  orderQuantities: [''],
-  pageCounts: [''],
-  paperTypes: [''],
-  planningEstimate: '',
-  productType: '',
-  unitPrices: {},
-}
-
-function formatNumericValue(value: string) {
-  const digits = value.replace(/\D/g, '').replace(/^0+(?=\d)/, '')
-
-  return digits.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
-}
 
 function sanitizeOptionValue(value: string, mode: OptionValueMode) {
   if (mode === 'digits') return value.replace(/\D/g, '')
@@ -45,8 +31,10 @@ function sanitizeOptionValue(value: string, mode: OptionValueMode) {
   return value
 }
 
-function getUnitPriceKey(paperIndex: number, pageIndex: number, quantityIndex: number) {
-  return `${paperIndex}:${pageIndex}:${quantityIndex}`
+function getSubmitIntent(event: FormEvent<HTMLFormElement>) {
+  const submitter = (event.nativeEvent as SubmitEvent).submitter
+
+  return submitter instanceof HTMLButtonElement ? submitter.value : ''
 }
 
 type PriceFieldProps = {
@@ -190,15 +178,70 @@ export function ProductFormPage() {
   const { productId } = useParams<{ productId: string }>()
   const isEditing = productId !== undefined
   const [step, setStep] = useState<Step>(1)
-  const [form, setForm] = useState<ProductFormState>(initialFormState)
+  const [form, setForm] = useState(createInitialProductForm)
   const [productTypes, setProductTypes] = useState<string[]>([...defaultProductTypes])
   const [selectedPaperIndex, setSelectedPaperIndex] = useState(0)
   const [selectedPageIndex, setSelectedPageIndex] = useState(0)
   const [validationMessage, setValidationMessage] = useState('')
   const [productTypeError, setProductTypeError] = useState('')
+  const [isLoadingProduct, setIsLoadingProduct] = useState(isEditing)
+  const [loadError, setLoadError] = useState('')
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
+  const [isSaving, setIsSaving] = useState(false)
+  const [saveError, setSaveError] = useState('')
+  const [productTypeInputKey, setProductTypeInputKey] = useState(0)
 
   const pageTitle = isEditing ? '상품 수정' : '신규 상품 등록'
   const submitLabel = isEditing ? '수정하기' : '등록하기'
+
+  useEffect(() => {
+    let isCurrent = true
+    const id = productId
+
+    if (!id) return
+
+    async function loadProduct(id: string) {
+      setIsLoadingProduct(true)
+      setLoadError('')
+
+      try {
+        const product = await getAdminProduct(supabase, id)
+
+        if (!isCurrent) return
+
+        setForm(toProductFormState(product))
+        setProductTypeInputKey((current) => current + 1)
+        setProductTypes((current) => {
+          const normalizedProductType = product.type.trim().replace(/\s+/g, ' ')
+          const hasProductType = current.some(
+            (productType) =>
+              productType.trim().replace(/\s+/g, ' ').toLocaleLowerCase('ko-KR') ===
+              normalizedProductType.toLocaleLowerCase('ko-KR'),
+          )
+
+          return hasProductType ? current : [...current, product.type]
+        })
+        setStep(1)
+        setSelectedPaperIndex(0)
+        setSelectedPageIndex(0)
+        setValidationMessage('')
+        setProductTypeError('')
+      } catch {
+        if (!isCurrent) return
+        setLoadError('상품 정보를 불러오지 못했습니다.')
+        toast.error('상품 정보를 불러오지 못했습니다.')
+      } finally {
+        if (isCurrent) setIsLoadingProduct(false)
+      }
+    }
+
+    void loadProduct(id)
+
+    return () => {
+      isCurrent = false
+    }
+  }, [productId])
 
   function updateOption(group: OptionGroup, index: number, value: string) {
     setForm((current) => ({
@@ -206,6 +249,7 @@ export function ProductFormPage() {
       [group]: current[group].map((option, optionIndex) =>
         optionIndex === index ? value : option,
       ),
+      unitPrices: {},
     }))
   }
 
@@ -244,6 +288,55 @@ export function ProductFormPage() {
     setProductTypeError('')
   }
 
+  async function persist(status: 'draft' | 'published') {
+    if (isSaving || isDeleting) return
+
+    setIsSaving(true)
+    setSaveError('')
+
+    try {
+      const input = toProductMutationInput(form, status)
+      const product = productId
+        ? await updateProduct(supabase, productId, input)
+        : await createProduct(supabase, input)
+
+      toast.success(status === 'draft' ? '임시저장했습니다.' : '상품을 저장했습니다.')
+
+      if (status === 'draft') {
+        navigate('/products/' + product.id, { replace: true })
+        return
+      }
+
+      navigate('/products')
+    } catch {
+      setSaveError('상품을 저장하지 못했습니다. 입력값과 권한을 확인해주세요.')
+      toast.error('상품을 저장하지 못했습니다.')
+      window.alert('상품을 저장하지 못했습니다. 다시 시도해주세요.')
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
+  async function handleDelete() {
+    if (!productId || isSaving || isDeleting) return
+
+    setIsDeleteDialogOpen(false)
+    setIsDeleting(true)
+    setSaveError('')
+
+    try {
+      await deleteProduct(supabase, productId)
+      toast.success('상품을 삭제했습니다.')
+      navigate('/products', { replace: true })
+    } catch {
+      setSaveError('상품을 삭제하지 못했습니다. 권한을 확인해주세요.')
+      toast.error('상품을 삭제하지 못했습니다.')
+      window.alert('상품을 삭제하지 못했습니다. 다시 시도해주세요.')
+    } finally {
+      setIsDeleting(false)
+    }
+  }
+
   function handleStepOneSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
 
@@ -252,6 +345,11 @@ export function ProductFormPage() {
       window.requestAnimationFrame(() => {
         document.getElementById(`${formId}-product-type`)?.focus()
       })
+      return
+    }
+
+    if (getSubmitIntent(event) === 'draft') {
+      void persist('draft')
       return
     }
 
@@ -277,36 +375,89 @@ export function ProductFormPage() {
   function handleFinalSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
 
-    for (let paperIndex = 0; paperIndex < form.paperTypes.length; paperIndex += 1) {
-      for (let pageIndex = 0; pageIndex < form.pageCounts.length; pageIndex += 1) {
-        for (
-          let quantityIndex = 0;
-          quantityIndex < form.orderQuantities.length;
-          quantityIndex += 1
-        ) {
-          const key = getUnitPriceKey(paperIndex, pageIndex, quantityIndex)
+    if (getSubmitIntent(event) === 'draft') {
+      void persist('draft')
+      return
+    }
 
-          if (!form.unitPrices[key]) {
-            setSelectedPaperIndex(paperIndex)
-            setSelectedPageIndex(pageIndex)
-            setValidationMessage('모든 단가 견적을 입력해주세요.')
-            window.requestAnimationFrame(() => {
-              const input = document.getElementById(`${formId}-unit-price-${quantityIndex}`)
+    const missingUnitPriceKey = getMissingUnitPriceKey(form)
 
-              if (input instanceof HTMLInputElement) {
-                input.focus()
-                input.reportValidity()
-              }
-            })
-            return
-          }
-        }
-      }
+    if (missingUnitPriceKey) {
+      const [paperIndex, pageIndex, quantityIndex] = missingUnitPriceKey.split(':').map(Number)
+
+      setSelectedPaperIndex(paperIndex)
+      setSelectedPageIndex(pageIndex)
+      setValidationMessage('모든 단가 견적을 입력해주세요.')
+      window.requestAnimationFrame(() => {
+        document.getElementById(`${formId}-unit-price-${quantityIndex}`)?.focus()
+      })
+      return
     }
 
     setValidationMessage('')
-    navigate('/products')
+    void persist('published')
   }
+
+  if (isLoadingProduct || loadError) {
+    return (
+      <AdminFormLayout
+        actions={
+          <Link className="admin-form__button admin-form__button--outline" to="/products">
+            목록으로
+          </Link>
+        }
+        onSubmit={(event) => event.preventDefault()}
+        title={pageTitle}
+      >
+        <p className="product-form-validation-message" role={loadError ? 'alert' : 'status'}>
+          {loadError || '상품 정보를 불러오는 중입니다.'}
+        </p>
+      </AdminFormLayout>
+    )
+  }
+
+  const saveErrorAlert = saveError ? (
+    <p className="product-form-validation-message" role="alert">
+      {saveError}
+    </p>
+  ) : null
+  const deleteButton = isEditing ? (
+    <AlertDialog.Root open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+      <AlertDialog.Trigger
+        className="admin-form__button admin-form__button--danger"
+        disabled={isSaving || isDeleting}
+        type="button"
+      >
+        삭제
+      </AlertDialog.Trigger>
+      <AlertDialog.Portal>
+        <AlertDialog.Backdrop className="product-delete-dialog__backdrop" />
+        <AlertDialog.Viewport className="product-delete-dialog__viewport">
+          <AlertDialog.Popup className="product-delete-dialog">
+            <AlertDialog.Title className="product-delete-dialog__title">
+              상품을 삭제할까요?
+            </AlertDialog.Title>
+            <AlertDialog.Description className="product-delete-dialog__description">
+              삭제한 상품은 복구할 수 없습니다.
+            </AlertDialog.Description>
+            <div className="product-delete-dialog__actions">
+              <AlertDialog.Close className="product-delete-dialog__button" type="button">
+                취소
+              </AlertDialog.Close>
+              <button
+                className="product-delete-dialog__button product-delete-dialog__button--danger"
+                disabled={isDeleting}
+                onClick={() => void handleDelete()}
+                type="button"
+              >
+                삭제
+              </button>
+            </div>
+          </AlertDialog.Popup>
+        </AlertDialog.Viewport>
+      </AlertDialog.Portal>
+    </AlertDialog.Root>
+  ) : null
 
   return step === 1 ? (
     <AdminFormLayout
@@ -316,10 +467,23 @@ export function ProductFormPage() {
             목록으로
           </Link>
           <div className="admin-form__actions-group">
-            <button className="admin-form__button admin-form__button--outline" type="button">
+            {deleteButton}
+            <button
+              className="admin-form__button admin-form__button--outline"
+              disabled={isSaving || isDeleting}
+              name="intent"
+              type="submit"
+              value="draft"
+            >
               임시저장
             </button>
-            <button className="admin-form__button admin-form__button--solid" type="submit">
+            <button
+              className="admin-form__button admin-form__button--solid"
+              disabled={isSaving || isDeleting}
+              name="intent"
+              type="submit"
+              value="next"
+            >
               <span>다음으로</span>
               <AdminIcon name="arrow-right" />
             </button>
@@ -329,6 +493,26 @@ export function ProductFormPage() {
       onSubmit={handleStepOneSubmit}
       title={pageTitle}
     >
+      {saveErrorAlert}
+      <label className="product-form-field">
+        <span className="product-form-field__label">상품명</span>
+        <span className="product-form-control">
+          <input
+            autoComplete="off"
+            className="product-form-control__input"
+            name="name"
+            onChange={(event) => {
+              const name = event.currentTarget.value
+
+              setForm((current) => ({ ...current, name }))
+            }}
+            placeholder="상품명을 입력해주세요."
+            required
+            type="text"
+            value={form.name}
+          />
+        </span>
+      </label>
       <div className="product-form-field">
               <label
                 className="product-form-field__label"
@@ -348,6 +532,7 @@ export function ProductFormPage() {
                 onCommit={commitProductType}
                 options={productTypes}
                 placeholder="상품 유형을 선택하거나 입력해주세요."
+                key={productTypeInputKey}
                 value={form.productType}
               />
               {productTypeError ? (
@@ -433,10 +618,23 @@ export function ProductFormPage() {
             뒤로가기
           </button>
           <div className="admin-form__actions-group">
-            <button className="admin-form__button admin-form__button--outline" type="button">
+            {deleteButton}
+            <button
+              className="admin-form__button admin-form__button--outline"
+              disabled={isSaving || isDeleting}
+              name="intent"
+              type="submit"
+              value="draft"
+            >
               임시저장
             </button>
-            <button className="admin-form__button admin-form__button--solid" type="submit">
+            <button
+              className="admin-form__button admin-form__button--solid"
+              disabled={isSaving || isDeleting}
+              name="intent"
+              type="submit"
+              value="publish"
+            >
               <span>{submitLabel}</span>
               <AdminIcon name="arrow-right" />
             </button>
@@ -446,6 +644,7 @@ export function ProductFormPage() {
       onSubmit={handleFinalSubmit}
       title={pageTitle}
     >
+      {saveErrorAlert}
       <fieldset className="product-form-tab-field">
               <legend className="product-form-field__label">용지 선택</legend>
               <div className="product-form-tabs">
@@ -531,7 +730,6 @@ export function ProductFormPage() {
                           name={`unitPrice-${key}`}
                           onChange={(event) => handleUnitPriceChange(key, event)}
                           pattern="[0-9,]+"
-                          required
                           type="text"
                           value={form.unitPrices[key] ?? ''}
                         />

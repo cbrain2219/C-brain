@@ -170,7 +170,7 @@
 }
 
 .admin-data-table__heading:not(:last-child)::after {
-  content: '';
+  content: "";
   position: absolute;
   top: 10px;
   right: 0;
@@ -197,6 +197,18 @@
 
 .admin-data-table__row:hover {
   background: var(--admin-gray-50);
+}
+
+.admin-data-table__row--draggable {
+  cursor: grab;
+}
+
+.admin-data-table__row--dragging {
+  opacity: 0.4;
+}
+
+.admin-data-table__row--drag-over {
+  box-shadow: inset 0 0 0 2px var(--admin-brand-500);
 }
 
 .admin-data-table__status {

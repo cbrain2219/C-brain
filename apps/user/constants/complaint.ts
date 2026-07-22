@@ -5,3 +5,10 @@ const COMPLAINT_ATTACHMENT_BYTES_IN_MEGABYTE =
 export const MAX_COMPLAINT_ATTACHMENT_COUNT = 10;
 export const MAX_COMPLAINT_ATTACHMENT_SIZE_BYTES =
   50 * COMPLAINT_ATTACHMENT_BYTES_IN_MEGABYTE;
+export const COMPLAINT_ATTACHMENT_ACCEPT =
+  "image/jpeg,image/png,image/webp";
+export const COMPLAINT_ATTACHMENT_MIME_TYPES = [
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+] as const;

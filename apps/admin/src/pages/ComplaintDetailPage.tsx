@@ -1,8 +1,22 @@
+import {
+  createSignedFileUrl,
+  getAdminInquiry,
+  STORAGE_BUCKETS,
+  updateInquiryStatus,
+} from '@repo/supabase'
+import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { toast } from 'sonner'
 import '../components/admin-form/AdminFormLayout.css'
 import '../components/admin-table/AdminDataTableSection.css'
-import { complaintStatusLabels, getComplaintRecord } from './complaintData'
+import { supabase } from '../lib/supabase'
+import {
+  complaintStatusLabels,
+  complaintStatuses,
+  isComplaintStatus,
+  toComplaintRecord,
+} from './complaintData'
+import type { ComplaintRecord } from './complaintData'
 import './ComplaintDetailPage.css'
 
 type DetailFieldProps = {
@@ -42,9 +56,79 @@ function DetailField({ copyable = false, label, value }: DetailFieldProps) {
 
 export function ComplaintDetailPage() {
   const { complaintId } = useParams<{ complaintId: string }>()
-  const complaint = getComplaintRecord(complaintId)
+  const [complaint, setComplaint] = useState<ComplaintRecord | null>(null)
+  const [isLoading, setIsLoading] = useState(Boolean(complaintId))
+  const [loadError, setLoadError] = useState('')
+  const [isUpdatingStatus, setIsUpdatingStatus] = useState(false)
 
-  if (!complaint) {
+  useEffect(() => {
+    let isCurrent = true
+
+    async function loadComplaint(id: string) {
+      setIsLoading(true)
+      setLoadError('')
+
+      try {
+        const inquiry = await getAdminInquiry(supabase, id)
+        const attachmentResults = await Promise.allSettled(
+          (inquiry.inquiry_attachments ?? []).map(async (attachment) => {
+            const { signedUrl } = await createSignedFileUrl(
+              supabase,
+              STORAGE_BUCKETS.privateAttachments,
+              attachment.path,
+            )
+
+            return [attachment.id, signedUrl] as const
+          }),
+        )
+        const attachmentDownloadUrls = Object.fromEntries(
+          attachmentResults.flatMap((result) =>
+            result.status === 'fulfilled' ? [result.value] : [],
+          ),
+        )
+
+        if (isCurrent) {
+          setComplaint(toComplaintRecord(inquiry, attachmentDownloadUrls))
+          if (attachmentResults.some((result) => result.status === 'rejected')) {
+            toast.error('일부 첨부 파일을 불러오지 못했습니다.')
+          }
+        }
+      } catch {
+        if (!isCurrent) return
+        setLoadError('접수 내역을 불러오지 못했습니다. 잠시 후 다시 시도해주세요.')
+        toast.error('접수 내역을 불러오지 못했습니다.')
+      } finally {
+        if (isCurrent) setIsLoading(false)
+      }
+    }
+
+    if (complaintId) void loadComplaint(complaintId)
+
+    return () => {
+      isCurrent = false
+    }
+  }, [complaintId])
+
+  async function handleStatusChange(value: string) {
+    if (!complaint || !isComplaintStatus(value) || value === complaint.status) return
+
+    setIsUpdatingStatus(true)
+
+    try {
+      await updateInquiryStatus(supabase, complaint.id, value)
+      setComplaint((current) => (current ? { ...current, status: value } : current))
+      toast.success('처리상태를 변경했습니다.')
+    } catch {
+      toast.error('처리상태를 변경하지 못했습니다.')
+      window.alert('처리상태를 변경하지 못했습니다. 다시 시도해주세요.')
+    } finally {
+      setIsUpdatingStatus(false)
+    }
+  }
+
+  if (!complaintId || isLoading || !complaint) {
+    const errorMessage = complaintId ? loadError : '접수 내역을 찾을 수 없습니다.'
+
     return (
       <main className="complaint-detail-page" aria-labelledby="complaint-detail-title">
         <section className="complaint-detail complaint-detail--empty">
@@ -54,8 +138,11 @@ export function ComplaintDetailPage() {
           >
             불편접수 상세
           </h1>
-          <p className="complaint-detail__empty-copy pretendard-medium-16">
-            접수 내역을 찾을 수 없습니다.
+          <p
+            className="complaint-detail__empty-copy pretendard-medium-16"
+            role={errorMessage ? 'alert' : 'status'}
+          >
+            {errorMessage || '접수 내역을 불러오는 중입니다.'}
           </p>
           <Link
             className="admin-form__button admin-form__button--outline"
@@ -84,6 +171,22 @@ export function ComplaintDetailPage() {
               <span>{complaintStatusLabels[complaint.status]}</span>
             </span>
           </div>
+
+          <label className="complaint-detail__status-control">
+            <span className="pretendard-bold-14">처리상태</span>
+            <select
+              className="complaint-detail__status-select pretendard-medium-14"
+              disabled={isUpdatingStatus}
+              onChange={(event) => void handleStatusChange(event.currentTarget.value)}
+              value={complaint.status}
+            >
+              {complaintStatuses.map((status) => (
+                <option key={status} value={status}>
+                  {complaintStatusLabels[status]}
+                </option>
+              ))}
+            </select>
+          </label>
         </header>
 
         <section
@@ -149,24 +252,41 @@ export function ComplaintDetailPage() {
           >
             첨부 파일
           </h2>
-          <ul className="complaint-detail__attachment-list">
-            {complaint.attachments.map((attachment) => (
-              <li key={attachment.id}>
-                <a
-                  className="complaint-detail__attachment"
-                  download={attachment.name}
-                  href={attachment.downloadUrl}
-                >
-                  <span className="complaint-detail__attachment-name pretendard-medium-14">
-                    {attachment.name}
-                  </span>
-                  <span className="complaint-detail__attachment-size pretendard-medium-12">
-                    {attachment.sizeLabel}
-                  </span>
-                </a>
-              </li>
-            ))}
-          </ul>
+          {complaint.attachments.length > 0 ? (
+            <ul className="complaint-detail__attachment-list">
+              {complaint.attachments.map((attachment) => (
+                <li key={attachment.id}>
+                  {attachment.downloadUrl ? (
+                    <a
+                      className="complaint-detail__attachment"
+                      download={attachment.name}
+                      href={attachment.downloadUrl}
+                    >
+                      <span className="complaint-detail__attachment-name pretendard-medium-14">
+                        {attachment.name}
+                      </span>
+                      <span className="complaint-detail__attachment-size pretendard-medium-12">
+                        {attachment.sizeLabel}
+                      </span>
+                    </a>
+                  ) : (
+                    <div className="complaint-detail__attachment">
+                      <span className="complaint-detail__attachment-name pretendard-medium-14">
+                        {attachment.name}
+                      </span>
+                      <span className="complaint-detail__attachment-size pretendard-medium-12">
+                        다운로드 불가
+                      </span>
+                    </div>
+                  )}
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="complaint-detail__empty-copy pretendard-medium-14">
+              첨부된 파일이 없습니다.
+            </p>
+          )}
         </section>
 
         <div className="complaint-detail__bottom-actions">

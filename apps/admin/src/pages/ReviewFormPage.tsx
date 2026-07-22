@@ -1,9 +1,33 @@
+import {
+  createReview,
+  deleteReview,
+  getAdminReview,
+  updateReview,
+} from '@repo/supabase'
 import { useEffect, useId, useRef, useState } from 'react'
 import type { ChangeEvent, DragEvent, FormEvent, RefObject } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
+import { toast } from 'sonner'
 import { AdminIcon } from '../components/AdminIcon'
+import { AdminDeleteDialog } from '../components/admin-form/AdminDeleteDialog'
 import { AdminFormLayout } from '../components/admin-form/AdminFormLayout'
 import { AdminTypeCombobox } from '../components/admin-form/AdminTypeCombobox'
+import {
+  deletePublicAssets,
+  getPublicAssetUrl,
+  uploadPublicAsset,
+} from '../lib/adminAssets'
+import { supabase } from '../lib/supabase'
+import { getSubmitIntent } from './contentListState'
+import {
+  createInitialReviewForm,
+  toReviewFormState,
+  toReviewMutationInput,
+} from './reviewData'
+import type {
+  ReviewContentMode,
+  ReviewFormState,
+} from './reviewData'
 import {
   getReviewVideoError,
   isReviewType,
@@ -13,40 +37,6 @@ import {
 import type { ReviewType } from './reviewFormState'
 import './BlogFormPage.css'
 import './ReviewFormPage.css'
-
-type ReviewContentMode = 'html' | 'text'
-
-type ReviewFormState = {
-  readonly company: string
-  readonly content: string
-  readonly contentMode: ReviewContentMode
-  readonly isLandingEnabled: boolean
-  readonly manager: string
-  readonly publishedAt: string
-  readonly seoDescription: string
-  readonly slug: string
-  readonly title: string
-  readonly type: ReviewType | ''
-  readonly video: File | null
-  readonly videoAlt: string
-  readonly videoPreviewUrl: string | null
-}
-
-const initialReviewForm: ReviewFormState = {
-  company: '',
-  content: '',
-  contentMode: 'html',
-  isLandingEnabled: true,
-  manager: '',
-  publishedAt: '',
-  seoDescription: '',
-  slug: '',
-  title: '',
-  type: '',
-  video: null,
-  videoAlt: '',
-  videoPreviewUrl: null,
-}
 
 const contentModes = ['html', 'text'] as const
 
@@ -269,15 +259,18 @@ function VideoField({
             </>
           )}
         </button>
-        {video ? (
+        {videoPreviewUrl ? (
           <button
-            aria-label={`${video.name} 삭제`}
+            aria-label={`${video?.name ?? '등록된 영상'} 삭제`}
             className="blog-form__thumbnail-chip"
             onClick={onClear}
             type="button"
           >
-            <span className="blog-form__thumbnail-file-name" title={video.name}>
-              {video.name}
+            <span
+              className="blog-form__thumbnail-file-name"
+              title={video?.name ?? '등록된 영상'}
+            >
+              {video?.name ?? '등록된 영상'}
             </span>
             <AdminIcon name="x-close" size={20} />
           </button>
@@ -320,7 +313,9 @@ function LandingSetting({ checked, onChange }: LandingSettingProps) {
           </span>
           <span>랜딩 설정</span>
         </span>
-        <span className="blog-form-setting__count">3개 등록됨</span>
+        <span className="blog-form-setting__count">
+          {checked ? '랜딩에 게시됨' : '랜딩 미게시'}
+        </span>
       </span>
     </label>
   )
@@ -505,10 +500,17 @@ export function ReviewFormPage() {
   const navigate = useNavigate()
   const { reviewId } = useParams<{ reviewId: string }>()
   const isEditing = reviewId !== undefined
-  const [form, setForm] = useState<ReviewFormState>(initialReviewForm)
+  const [form, setForm] = useState<ReviewFormState>(createInitialReviewForm)
   const [slugError, setSlugError] = useState('')
   const [typeError, setTypeError] = useState('')
   const [videoError, setVideoError] = useState('')
+  const [isLoadingReview, setIsLoadingReview] = useState(isEditing)
+  const [isSaving, setIsSaving] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
+  const [loadError, setLoadError] = useState('')
+  const [saveError, setSaveError] = useState('')
+  const [originalVideoPath, setOriginalVideoPath] = useState<string | null>(null)
+  const [typeInputKey, setTypeInputKey] = useState(0)
 
   const pageTitle = isEditing
     ? `${form.type || '인터뷰 · 후기'} 수정`
@@ -521,6 +523,48 @@ export function ReviewFormPage() {
     },
     [],
   )
+
+  useEffect(() => {
+    let isCurrent = true
+    const id = reviewId
+
+    if (!id) return
+
+    async function loadReview(id: string) {
+      setIsLoadingReview(true)
+      setLoadError('')
+
+      try {
+        const review = await getAdminReview(supabase, id)
+
+        if (!isCurrent) return
+
+        if (videoPreviewUrl.current) {
+          URL.revokeObjectURL(videoPreviewUrl.current)
+          videoPreviewUrl.current = null
+        }
+
+        setForm(toReviewFormState(review, getPublicAssetUrl(review.video_path)))
+        setOriginalVideoPath(review.video_path)
+        setSlugError('')
+        setTypeError('')
+        setVideoError('')
+        setTypeInputKey((current) => current + 1)
+      } catch {
+        if (!isCurrent) return
+        setLoadError('인터뷰 · 후기 정보를 불러오지 못했습니다.')
+        toast.error('인터뷰 · 후기 정보를 불러오지 못했습니다.')
+      } finally {
+        if (isCurrent) setIsLoadingReview(false)
+      }
+    }
+
+    void loadReview(id)
+
+    return () => {
+      isCurrent = false
+    }
+  }, [reviewId])
 
   function updateForm<Key extends keyof ReviewFormState>(
     key: Key,
@@ -562,13 +606,101 @@ export function ReviewFormPage() {
 
   function clearVideo() {
     releaseVideoPreview()
-    setForm((current) => ({ ...current, video: null, videoPreviewUrl: null }))
+    setForm((current) => ({
+      ...current,
+      video: null,
+      videoPath: null,
+      videoPreviewUrl: null,
+    }))
     setVideoError('')
     if (videoInput.current) videoInput.current.value = ''
   }
 
+  async function persist(status: 'draft' | 'published') {
+    if (isSaving || isDeleting) return
+
+    setIsSaving(true)
+    setSaveError('')
+
+    let uploadedPath: string | null = null
+
+    try {
+      toReviewMutationInput(form, status, form.videoPath)
+
+      if (form.type === '인터뷰' && form.video) {
+        uploadedPath = await uploadPublicAsset('reviews', form.video)
+      }
+
+      const nextVideoPath =
+        form.type === '인터뷰' ? uploadedPath ?? form.videoPath : null
+      const input = toReviewMutationInput(form, status, nextVideoPath)
+
+      if (reviewId) await updateReview(supabase, reviewId, input)
+      else await createReview(supabase, input)
+
+      if (originalVideoPath && originalVideoPath !== nextVideoPath) {
+        try {
+          await deletePublicAssets([originalVideoPath])
+        } catch {
+          toast.error('기존 영상 파일을 정리하지 못했습니다.')
+          window.alert('리뷰는 저장했지만 기존 영상 파일을 정리하지 못했습니다.')
+        }
+      }
+
+      toast.success(status === 'draft' ? '임시저장했습니다.' : '인터뷰 · 후기를 저장했습니다.')
+      navigate('/reviews', { replace: status === 'draft' })
+    } catch (error) {
+      if (uploadedPath) {
+        try {
+          await deletePublicAssets([uploadedPath])
+        } catch {
+          // The failed save remains the actionable error; orphan cleanup can be retried in Storage.
+        }
+      }
+
+      const message = error instanceof Error ? error.message : '저장하지 못했습니다.'
+
+      setSaveError(message)
+      toast.error('인터뷰 · 후기를 저장하지 못했습니다.')
+      window.alert('인터뷰 · 후기를 저장하지 못했습니다. 입력값과 권한을 확인해주세요.')
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
+  async function handleDelete() {
+    if (!reviewId || isSaving || isDeleting) return
+
+    setIsDeleting(true)
+    setSaveError('')
+
+    try {
+      await deleteReview(supabase, reviewId)
+
+      if (originalVideoPath) {
+        try {
+          await deletePublicAssets([originalVideoPath])
+        } catch {
+          toast.error('영상 파일을 정리하지 못했습니다.')
+          window.alert('리뷰는 삭제했지만 영상 파일을 정리하지 못했습니다.')
+        }
+      }
+
+      toast.success('인터뷰 · 후기를 삭제했습니다.')
+      navigate('/reviews', { replace: true })
+    } catch {
+      setSaveError('인터뷰 · 후기를 삭제하지 못했습니다.')
+      toast.error('인터뷰 · 후기를 삭제하지 못했습니다.')
+      window.alert('인터뷰 · 후기를 삭제하지 못했습니다. 다시 시도해주세요.')
+    } finally {
+      setIsDeleting(false)
+    }
+  }
+
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
+
+    const intent = getSubmitIntent(event)
 
     if (!form.type) {
       setTypeError('인터뷰 · 후기 유형을 선택해주세요.')
@@ -578,7 +710,11 @@ export function ReviewFormPage() {
       return
     }
 
-    if (form.type === '인터뷰' && !isValidInterviewSlug(form.slug)) {
+    if (
+      intent !== 'draft' &&
+      form.type === '인터뷰' &&
+      !isValidInterviewSlug(form.slug)
+    ) {
       setSlugError('Slug는 영문과 하이픈만 입력할 수 있습니다.')
       window.requestAnimationFrame(() => {
         document.getElementById(`${formId}-slug`)?.focus()
@@ -587,7 +723,25 @@ export function ReviewFormPage() {
     }
 
     setSlugError('')
-    navigate('/reviews')
+    void persist(intent === 'draft' ? 'draft' : 'published')
+  }
+
+  if (isLoadingReview || loadError) {
+    return (
+      <AdminFormLayout
+        actions={
+          <Link className="admin-form__button admin-form__button--outline" to="/reviews">
+            목록으로
+          </Link>
+        }
+        onSubmit={(event) => event.preventDefault()}
+        title={pageTitle}
+      >
+        <p className="blog-form__error" role={loadError ? 'alert' : 'status'}>
+          {loadError || '인터뷰 · 후기 정보를 불러오는 중입니다.'}
+        </p>
+      </AdminFormLayout>
+    )
   }
 
   const actions = (
@@ -599,15 +753,30 @@ export function ReviewFormPage() {
         목록으로
       </Link>
       <div className="admin-form__actions-group">
+        {isEditing ? (
+          <AdminDeleteDialog
+            disabled={isSaving}
+            isDeleting={isDeleting}
+            itemLabel="인터뷰 · 후기"
+            onConfirm={handleDelete}
+          />
+        ) : null}
         <button
           className="admin-form__button admin-form__button--outline"
-          type="button"
+          disabled={isSaving || isDeleting}
+          formNoValidate
+          name="intent"
+          type="submit"
+          value="draft"
         >
           임시저장
         </button>
         <button
           className="admin-form__button admin-form__button--solid"
+          disabled={isSaving || isDeleting}
+          name="intent"
           type="submit"
+          value="publish"
         >
           <span>{submitLabel}</span>
           <AdminIcon name="arrow-right" />
@@ -622,6 +791,11 @@ export function ReviewFormPage() {
       onSubmit={handleSubmit}
       title={pageTitle}
     >
+      {saveError ? (
+        <p className="blog-form__error" role="alert">
+          {saveError}
+        </p>
+      ) : null}
       <label className="blog-form__field" htmlFor={`${formId}-type`}>
         <span className="blog-form__label">인터뷰 · 후기 유형</span>
         <AdminTypeCombobox
@@ -642,6 +816,7 @@ export function ReviewFormPage() {
           options={reviewTypes}
           placeholder="인터뷰 · 후기 유형을 선택해주세요."
           readOnly
+          key={typeInputKey}
           value={form.type}
         />
         {typeError ? (

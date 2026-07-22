@@ -31,9 +31,26 @@ test("notice data feeds pinned, regular, filtered, and detail views", async () =
   assert.match(data, /const noticeFixtures = \[/);
   assert.match(data, /isPinned: true/);
   assert.match(data, /isPinned: false/);
+  assert.match(data, /listPublishedPosts\(client, "notice"\)/);
+  assert.match(data, /getPublishedPost\(client, "notice", id\)/);
+  assert.match(data, /createUserSupabaseClient\(\)/);
   assert.match(data, /activeCategory === "all"/);
-  assert.match(data, /Date\.parse/);
-  assert.match(data, /noticeFixtures\.find\(\(notice\) => notice\.id === id\)/);
+  assert.match(data, /Number\(secondPost\.is_pinned\) - Number\(firstPost\.is_pinned\)/);
+  assert.match(data, /firstPost\.sort_order - secondPost\.sort_order/);
+  assert.match(data, /item\.id === id/);
+  assert.doesNotMatch(data, /dangerouslySetInnerHTML/);
+});
+
+test("notice loaders keep fixtures for missing env and fail closed on query errors", async () => {
+  const data = await source("data");
+
+  assert.match(data, /if \(!client\) return \[\.\.\.noticeFixtures\]/);
+  assert.match(data, /if \(!client\) return noticeFixtures\.find/);
+  assert.match(data, /console\.error\("Failed to load published notices\./);
+  assert.match(data, /console\.error\("Failed to load published notice detail\./);
+  assert.match(data, /catch \(error\)/);
+  assert.match(data, /return \[\]/);
+  assert.match(data, /return undefined/);
 });
 
 test("notice list keeps category, pinned, detail-link, and shared-icon contracts", async () => {
@@ -63,6 +80,7 @@ test("notice detail keeps metadata, 404, structured content, and list return", a
   ]);
 
   assert.match(page, /notFound\(\)/);
+  assert.match(page, /await getNoticeById\(id\)/);
   assert.match(page, /title: `\$\{notice\.title\} \| 씨브레인`/);
   assert.match(article, /<time dateTime=\{notice\.publishedAt\}>/);
   assert.match(article, /notice\.content\.map/);

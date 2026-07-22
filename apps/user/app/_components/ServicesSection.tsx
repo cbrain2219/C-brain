@@ -1,11 +1,27 @@
 import { Button } from "@repo/ui/button";
+import {
+  getLowestProductUnitPrice,
+  listPublishedProducts,
+} from "@repo/supabase";
+import type { PublicProduct } from "@repo/supabase";
 import { type CSSProperties } from "react";
 
 import { Icon } from "../../components/Icon";
+import type { IconName } from "../../components/Icon";
 import { SectionLayout } from "../../components/SectionLayout";
+import { createUserSupabaseClient } from "../../lib/supabase";
 import styles from "../page.module.css";
 
-const services = [
+type ServiceCard = {
+  description: string;
+  icon: IconName;
+  id?: string;
+  isQuote: boolean;
+  price: string;
+  title: string;
+};
+
+const fallbackServices: readonly ServiceCard[] = [
   {
     icon: "book-open",
     title: "브로슈어 · 카탈로그",
@@ -72,7 +88,38 @@ const services = [
     isQuote: true,
     price: "상담 후 견적",
   },
-] as const;
+];
+
+const priceFormatter = new Intl.NumberFormat("ko-KR");
+
+function toServiceCard(product: PublicProduct): ServiceCard {
+  const lowestPrice = getLowestProductUnitPrice(product.unit_prices);
+
+  return {
+    description: product.type,
+    icon: "package",
+    id: product.id,
+    isQuote: lowestPrice === null,
+    price:
+      lowestPrice === null
+        ? "상담 후 견적"
+        : `${priceFormatter.format(lowestPrice)}원 ~`,
+    title: product.name,
+  };
+}
+
+async function loadLandingServices() {
+  const client = await createUserSupabaseClient();
+
+  if (!client) return undefined;
+
+  try {
+    return await listPublishedProducts(client);
+  } catch (error) {
+    console.error("Failed to load published products.", error);
+    return [];
+  }
+}
 
 const textButtonStyle: CSSProperties = {
   height: 20,
@@ -102,7 +149,11 @@ const consultButtonStyle: CSSProperties = {
   letterSpacing: "-0.21px",
 };
 
-export function ServicesSection() {
+export async function ServicesSection() {
+  const products = await loadLandingServices();
+  const services =
+    products === undefined ? fallbackServices : products.map(toServiceCard);
+
   return (
     <SectionLayout
       badge="서비스"
@@ -117,7 +168,10 @@ export function ServicesSection() {
       <div className={styles.serviceBody}>
         <div className={styles.serviceGrid}>
           {services.map((service) => (
-            <article className={styles.serviceCard} key={service.title}>
+            <article
+              className={styles.serviceCard}
+              key={service.id ?? service.title}
+            >
               <div className={styles.serviceContent}>
                 <span
                   className={`${styles.serviceIcon} ${service.isQuote ? styles.serviceQuoteIcon : ""}`}

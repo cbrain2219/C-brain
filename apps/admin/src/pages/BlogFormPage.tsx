@@ -1,54 +1,29 @@
+import { createPost, deletePost, getAdminPost, listAdminPosts, updatePost } from '@repo/supabase'
 import { useEffect, useId, useRef, useState } from 'react'
 import type { ChangeEvent, DragEvent, FormEvent } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
+import { toast } from 'sonner'
 import { AdminIcon } from '../components/AdminIcon'
+import { AdminDeleteDialog } from '../components/admin-form/AdminDeleteDialog'
 import { AdminFormLayout } from '../components/admin-form/AdminFormLayout'
 import { AdminTypeCombobox } from '../components/admin-form/AdminTypeCombobox'
+import { deletePublicAssets, getPublicAssetUrl, uploadPublicAsset } from '../lib/adminAssets'
+import { supabase } from '../lib/supabase'
+import {
+  createInitialBlogForm,
+  getBlogSettingCounts,
+  toBlogFormState,
+  toBlogMutationInput,
+} from './blogData'
+import type { BlogFormState, BlogSettingCounts, BlogStatus } from './blogData'
+import { getSubmitIntent } from './contentListState'
 import {
   getPortfolioImageError as getImageUploadError,
   isValidPortfolioSlug as isValidEnglishSlug,
 } from './portfolioFormState'
 import './BlogFormPage.css'
 
-type BlogContentMode = 'html' | 'text'
-
-type BlogFormState = {
-  readonly content: string
-  readonly contentMode: BlogContentMode
-  readonly isBannerEnabled: boolean
-  readonly isFeaturedEnabled: boolean
-  readonly isLandingEnabled: boolean
-  readonly publishedAt: string
-  readonly seoDescription: string
-  readonly slug: string
-  readonly thumbnail: File | null
-  readonly thumbnailAlt: string
-  readonly thumbnailPreviewUrl: string | null
-  readonly title: string
-  readonly type: string
-}
-
-const initialBlogForm: BlogFormState = {
-  content: '',
-  contentMode: 'html',
-  isBannerEnabled: true,
-  isFeaturedEnabled: false,
-  isLandingEnabled: true,
-  publishedAt: '',
-  seoDescription: '',
-  slug: '',
-  thumbnail: null,
-  thumbnailAlt: '',
-  thumbnailPreviewUrl: null,
-  title: '',
-  type: '',
-}
-
-const blogSettingCounts = {
-  banner: 2,
-  featured: 5,
-  landing: 3,
-} as const
+const emptyBlogSettingCounts: BlogSettingCounts = { banner: 0, featured: 0, landing: 0 }
 
 type SettingRowProps = {
   readonly checked: boolean
@@ -88,22 +63,81 @@ function SettingRow({ checked, count, label, onChange }: SettingRowProps) {
 export function BlogFormPage() {
   const formId = useId().replaceAll(':', '')
   const thumbnailInput = useRef<HTMLInputElement | null>(null)
-  const thumbnailPreviewUrl = useRef<string | null>(null)
+  const thumbnailObjectUrl = useRef<string | null>(null)
   const navigate = useNavigate()
   const { blogId } = useParams<{ blogId: string }>()
   const isEditing = blogId !== undefined
-  const [form, setForm] = useState<BlogFormState>(initialBlogForm)
+  const [form, setForm] = useState<BlogFormState>(createInitialBlogForm)
   const [blogTypes, setBlogTypes] = useState<string[]>([])
+  const [blogSettingCounts, setBlogSettingCounts] =
+    useState<BlogSettingCounts>(emptyBlogSettingCounts)
   const [slugError, setSlugError] = useState('')
   const [thumbnailError, setThumbnailError] = useState('')
   const [typeError, setTypeError] = useState('')
+  const [persistedThumbnailPath, setPersistedThumbnailPath] = useState<string | null>(null)
+  const [isLoadingBlog, setIsLoadingBlog] = useState(true)
+  const [loadError, setLoadError] = useState('')
+  const [isSaving, setIsSaving] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
+  const [saveError, setSaveError] = useState('')
 
   const pageTitle = isEditing ? '블로그 수정' : '신규 블로그 등록'
   const submitLabel = isEditing ? '수정하기' : '등록하기'
 
+  useEffect(() => {
+    let isCurrent = true
+
+    async function loadBlog() {
+      setIsLoadingBlog(true)
+      setLoadError('')
+
+      try {
+        const [posts, post] = await Promise.all([
+          listAdminPosts(supabase, 'blog'),
+          blogId ? getAdminPost(supabase, blogId, 'blog') : Promise.resolve(null),
+        ])
+
+        if (!isCurrent) return
+
+        setBlogTypes([...new Set(posts.map((item) => item.type))])
+        setBlogSettingCounts(getBlogSettingCounts(posts))
+
+        if (post) {
+          setForm(toBlogFormState(post, getPublicAssetUrl(post.thumbnail_path)))
+          setPersistedThumbnailPath(post.thumbnail_path)
+          setBlogTypes((current) =>
+            current.includes(post.type) ? current : [...current, post.type],
+          )
+        } else {
+          setForm(createInitialBlogForm())
+          setPersistedThumbnailPath(null)
+        }
+      } catch {
+        if (!isCurrent) return
+
+        if (blogId) {
+          setLoadError('블로그 정보를 불러오지 못했습니다.')
+          toast.error('블로그 정보를 불러오지 못했습니다.')
+        } else {
+          setBlogTypes([])
+          setBlogSettingCounts(emptyBlogSettingCounts)
+          toast.error('기존 블로그 설정 현황을 불러오지 못했습니다.')
+        }
+      } finally {
+        if (isCurrent) setIsLoadingBlog(false)
+      }
+    }
+
+    void loadBlog()
+
+    return () => {
+      isCurrent = false
+    }
+  }, [blogId])
+
   useEffect(
     () => () => {
-      if (thumbnailPreviewUrl.current) URL.revokeObjectURL(thumbnailPreviewUrl.current)
+      if (thumbnailObjectUrl.current) URL.revokeObjectURL(thumbnailObjectUrl.current)
     },
     [],
   )
@@ -113,17 +147,20 @@ export function BlogFormPage() {
   }
 
   function commitBlogType(nextType: string) {
-    if (!blogTypes.includes(nextType)) setBlogTypes((current) => [...current, nextType])
+    const type = nextType.trim()
 
-    updateForm('type', nextType)
+    if (!type) return
+    if (!blogTypes.includes(type)) setBlogTypes((current) => [...current, type])
+
+    updateForm('type', type)
     setTypeError('')
   }
 
   function releaseThumbnailPreview() {
-    if (!thumbnailPreviewUrl.current) return
+    if (!thumbnailObjectUrl.current) return
 
-    URL.revokeObjectURL(thumbnailPreviewUrl.current)
-    thumbnailPreviewUrl.current = null
+    URL.revokeObjectURL(thumbnailObjectUrl.current)
+    thumbnailObjectUrl.current = null
   }
 
   function setThumbnail(file: File | undefined) {
@@ -140,14 +177,19 @@ export function BlogFormPage() {
 
     const previewUrl = URL.createObjectURL(file)
 
-    thumbnailPreviewUrl.current = previewUrl
+    thumbnailObjectUrl.current = previewUrl
     setForm((current) => ({ ...current, thumbnail: file, thumbnailPreviewUrl: previewUrl }))
     setThumbnailError('')
   }
 
   function clearThumbnail() {
     releaseThumbnailPreview()
-    setForm((current) => ({ ...current, thumbnail: null, thumbnailPreviewUrl: null }))
+    setForm((current) => ({
+      ...current,
+      thumbnail: null,
+      thumbnailPath: null,
+      thumbnailPreviewUrl: null,
+    }))
     setThumbnailError('')
 
     if (thumbnailInput.current) thumbnailInput.current.value = ''
@@ -160,6 +202,79 @@ export function BlogFormPage() {
   function handleThumbnailDrop(event: DragEvent<HTMLButtonElement>) {
     event.preventDefault()
     setThumbnail(event.dataTransfer.files[0])
+  }
+
+  async function persist(status: BlogStatus) {
+    if (isSaving || isDeleting) return
+
+    let uploadedThumbnailPath: string | null = null
+
+    setIsSaving(true)
+    setSaveError('')
+
+    try {
+      if (form.thumbnail) {
+        uploadedThumbnailPath = await uploadPublicAsset('blog-thumbnails', form.thumbnail)
+      }
+
+      const nextThumbnailPath = uploadedThumbnailPath ?? form.thumbnailPath
+      const input = toBlogMutationInput(form, status, nextThumbnailPath)
+
+      if (blogId) {
+        await updatePost(supabase, blogId, input)
+      } else {
+        await createPost(supabase, input)
+      }
+
+      if (persistedThumbnailPath && persistedThumbnailPath !== nextThumbnailPath) {
+        try {
+          await deletePublicAssets([persistedThumbnailPath])
+        } catch {
+          toast.error('기존 썸네일 파일을 정리하지 못했습니다.')
+          window.alert('블로그는 저장됐지만 기존 썸네일 파일을 정리하지 못했습니다.')
+        }
+      }
+
+      toast.success(status === 'draft' ? '임시저장했습니다.' : '블로그를 저장했습니다.')
+      navigate('/blog', { replace: status === 'draft' })
+    } catch {
+      if (uploadedThumbnailPath) {
+        await deletePublicAssets([uploadedThumbnailPath]).catch(() => undefined)
+      }
+
+      setSaveError('블로그를 저장하지 못했습니다. 입력값과 권한을 확인해주세요.')
+      toast.error('블로그를 저장하지 못했습니다.')
+      window.alert('블로그를 저장하지 못했습니다. 다시 시도해주세요.')
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
+  async function handleDelete() {
+    if (!blogId || isSaving || isDeleting) return
+
+    setIsDeleting(true)
+    setSaveError('')
+
+    try {
+      await deletePost(supabase, blogId)
+
+      try {
+        await deletePublicAssets([persistedThumbnailPath])
+      } catch {
+        toast.error('썸네일 파일을 정리하지 못했습니다.')
+        window.alert('블로그는 삭제됐지만 썸네일 파일을 정리하지 못했습니다.')
+      }
+
+      toast.success('블로그를 삭제했습니다.')
+      navigate('/blog', { replace: true })
+    } catch {
+      setSaveError('블로그를 삭제하지 못했습니다. 권한을 확인해주세요.')
+      toast.error('블로그를 삭제하지 못했습니다.')
+      window.alert('블로그를 삭제하지 못했습니다. 다시 시도해주세요.')
+    } finally {
+      setIsDeleting(false)
+    }
   }
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -182,7 +297,25 @@ export function BlogFormPage() {
     }
 
     setSlugError('')
-    navigate('/blog')
+    void persist(getSubmitIntent(event) === 'draft' ? 'draft' : 'published')
+  }
+
+  if (isLoadingBlog || loadError) {
+    return (
+      <AdminFormLayout
+        actions={
+          <Link className="admin-form__button admin-form__button--outline" to="/blog">
+            목록으로
+          </Link>
+        }
+        onSubmit={(event) => event.preventDefault()}
+        title={pageTitle}
+      >
+        <p className="blog-form__error" role={loadError ? 'alert' : 'status'}>
+          {loadError || '블로그 정보를 불러오는 중입니다.'}
+        </p>
+      </AdminFormLayout>
+    )
   }
 
   const formActions = (
@@ -191,10 +324,30 @@ export function BlogFormPage() {
         목록으로
       </Link>
       <div className="admin-form__actions-group">
-        <button className="admin-form__button admin-form__button--outline" type="button">
+        {isEditing ? (
+          <AdminDeleteDialog
+            disabled={isSaving}
+            isDeleting={isDeleting}
+            itemLabel="블로그"
+            onConfirm={handleDelete}
+          />
+        ) : null}
+        <button
+          className="admin-form__button admin-form__button--outline"
+          disabled={isSaving || isDeleting}
+          name="intent"
+          type="submit"
+          value="draft"
+        >
           임시저장
         </button>
-        <button className="admin-form__button admin-form__button--solid" type="submit">
+        <button
+          className="admin-form__button admin-form__button--solid"
+          disabled={isSaving || isDeleting}
+          name="intent"
+          type="submit"
+          value="published"
+        >
           <span>{submitLabel}</span>
           <AdminIcon name="arrow-right" />
         </button>
@@ -204,6 +357,12 @@ export function BlogFormPage() {
 
   return (
     <AdminFormLayout actions={formActions} onSubmit={handleSubmit} title={pageTitle}>
+      {saveError ? (
+        <p className="blog-form__error" role="alert">
+          {saveError}
+        </p>
+      ) : null}
+
       <label className="blog-form__field" htmlFor={formId + '-type'}>
         <span className="blog-form__label">블로그 유형</span>
         <AdminTypeCombobox
@@ -354,15 +513,18 @@ export function BlogFormPage() {
               </>
             )}
           </button>
-          {form.thumbnail ? (
+          {form.thumbnailPreviewUrl ? (
             <button
-              aria-label={form.thumbnail.name + ' 삭제'}
+              aria-label={(form.thumbnail?.name ?? '현재 썸네일') + ' 삭제'}
               className="blog-form__thumbnail-chip"
               onClick={clearThumbnail}
               type="button"
             >
-              <span className="blog-form__thumbnail-file-name" title={form.thumbnail.name}>
-                {form.thumbnail.name}
+              <span
+                className="blog-form__thumbnail-file-name"
+                title={form.thumbnail?.name ?? form.thumbnailPath ?? '현재 썸네일'}
+              >
+                {form.thumbnail?.name ?? form.thumbnailPath?.split('/').at(-1) ?? '현재 썸네일'}
               </span>
               <AdminIcon name="x-close" size={20} />
             </button>
@@ -400,7 +562,7 @@ export function BlogFormPage() {
             onClick={() => updateForm('contentMode', 'text')}
             type="button"
           >
-            TEXT Editer 작성
+            TEXT Editor 작성
           </button>
         </div>
         <textarea

@@ -13,6 +13,7 @@
     "./files": "./src/files.ts",
     "./inquiries": "./src/inquiries.ts",
     "./portfolio": "./src/portfolio.ts",
+    "./reviews": "./src/reviews.ts",
     "./server": "./src/server.ts",
     "./services": "./src/services.ts",
     "./settings": "./src/settings.ts",
@@ -20,7 +21,8 @@
   },
   "scripts": {
     "lint": "eslint . --max-warnings 0",
-    "check-types": "tsc --noEmit"
+    "check-types": "tsc --noEmit",
+    "test": "node --experimental-strip-types --test tests/*.test.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.8.0",

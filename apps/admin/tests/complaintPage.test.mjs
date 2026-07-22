@@ -1,10 +1,6 @@
 import assert from 'node:assert/strict'
 import { readFile } from 'node:fs/promises'
 import test from 'node:test'
-import {
-  complaintRecords,
-  getComplaintRecord,
-} from '../src/pages/complaintData.ts'
 
 const appPath = new URL('../src/App.tsx', import.meta.url)
 const detailPagePath = new URL('../src/pages/ComplaintDetailPage.tsx', import.meta.url)
@@ -37,15 +33,17 @@ test('complaint list exposes intake-backed columns without an admin create actio
     '상세',
   ])
   assert.match(pageSource, /title="불편접수 현황"/)
-  assert.match(pageSource, /emptyMessage="접수된 불편사항이 없습니다\."/)
+  assert.match(pageSource, /'접수된 불편사항이 없습니다\.'/)
   assert.match(
     pageSource,
     /placeholder: '접수자 또는 접수 내용으로 검색해주세요\.'/,
   )
-  assert.match(
-    pageSource,
-    /options: \[\s*'불편 유형을 선택해주세요\.',\s*'대표에게 제보하기',\s*'불친절한 서비스',\s*'결과물의 결함',\s*'기타',\s*\]/,
-  )
+  assert.match(pageSource, /listAdminInquiries\(supabase\)/)
+  assert.match(pageSource, /inquiries\.map\(toComplaintRow\)/)
+  assert.match(pageSource, /filterValues=\{\{ status: filters\.status, type: filters\.type \}\}/)
+  assert.match(pageSource, /onFilterValueChange=\{handleFilterValueChange\}/)
+  assert.match(pageSource, /searchValue=\{filters\.query\}/)
+  assert.doesNotMatch(pageSource, /isAcceptDrag/)
   assert.doesNotMatch(pageSource, /bottomAction=/)
   assert.match(
     appSource,
@@ -59,16 +57,6 @@ test('complaint list exposes intake-backed columns without an admin create actio
     tableStylesSource,
     /\.admin-data-table__summary-cell\s*\{[\s\S]*?overflow:\s*hidden;[\s\S]*?text-overflow:\s*ellipsis;/,
   )
-})
-
-test('complaint fixture supports list and detail lookup', () => {
-  const complaint = complaintRecords[0]
-
-  assert.equal(complaint.id, 'complaint-20260720-001')
-  assert.equal(complaint.attachments.length, 2)
-  assert.ok(complaint.attachments.every((attachment) => attachment.downloadUrl))
-  assert.equal(getComplaintRecord(complaint.id), complaint)
-  assert.equal(getComplaintRecord('missing'), undefined)
 })
 
 test('complaint detail exposes admin-only intake information', async () => {
@@ -101,6 +89,20 @@ test('complaint detail exposes admin-only intake information', async () => {
   assert.match(detailSource, /copyable label="휴대폰 번호"/)
   assert.match(detailSource, /download=\{attachment\.name\}/)
   assert.match(detailSource, /href=\{attachment\.downloadUrl\}/)
+  assert.match(detailSource, /getAdminInquiry\(supabase, id\)/)
+  assert.match(detailSource, /createSignedFileUrl\(/)
+  assert.match(detailSource, /STORAGE_BUCKETS\.privateAttachments/)
+  assert.match(detailSource, /Promise\.allSettled\(/)
+  assert.match(detailSource, /result\.status === 'fulfilled'/)
+  assert.match(detailSource, /attachment\.downloadUrl \?/)
+  assert.match(detailSource, /일부 첨부 파일을 불러오지 못했습니다\./)
+  assert.match(detailSource, /다운로드 불가/)
+  assert.match(detailSource, /updateInquiryStatus\(supabase, complaint\.id, value\)/)
+  assert.match(detailSource, /toast\.success\('처리상태를 변경했습니다\.'\)/)
+  assert.match(detailSource, /toast\.error\('처리상태를 변경하지 못했습니다\.'\)/)
+  assert.match(detailSource, /window\.alert\('처리상태를 변경하지 못했습니다\. 다시 시도해주세요\.'\)/)
+  assert.match(detailSource, /value=\{complaint\.status\}/)
   assert.match(detailSource, /complaint-detail__bottom-actions/)
+  assert.match(detailStyles, /\.complaint-detail__status-select/)
   assert.match(detailStyles, /@media \(max-width: 720px\)/)
 })

@@ -1,54 +1,26 @@
+import { listAdminInquiries } from '@repo/supabase'
+import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
+import { toast } from 'sonner'
 import { AdminDataTableSection } from '../components/admin-table/AdminDataTableSection'
 import type {
   AdminTableColumn,
   AdminTableFilter,
 } from '../components/admin-table/AdminDataTableSection'
-import { complaintRecords, complaintStatusLabels } from './complaintData'
-import type { ComplaintStatus } from './complaintData'
+import { supabase } from '../lib/supabase'
+import {
+  complaintStatusLabels,
+  filterComplaintRows,
+  toComplaintRow,
+} from './complaintData'
+import type { ComplaintFilters, ComplaintRow } from './complaintData'
 import './PortfolioPage.css'
 
-type ComplaintRow = {
-  readonly attachmentCount: number
-  readonly complaintType: string
-  readonly createdAt: string
-  readonly detail: string
-  readonly detailHref: string
-  readonly id: string
-  readonly name: string
-  readonly service: string
-  readonly status: ComplaintStatus
+const initialFilters: ComplaintFilters = {
+  query: '',
+  status: '전체',
+  type: '전체',
 }
-
-const complaintRows: readonly ComplaintRow[] = complaintRecords.map((complaint) => ({
-  attachmentCount: complaint.attachments.length,
-  complaintType: complaint.complaintType,
-  createdAt: complaint.createdAt,
-  detail: complaint.detail,
-  detailHref: `/complaints/${complaint.id}`,
-  id: complaint.id,
-  name: complaint.name,
-  service: complaint.service,
-  status: complaint.status,
-}))
-
-const complaintFilters = [
-  {
-    id: 'status',
-    label: '처리상태',
-    options: ['전체', '접수', '처리 중', '처리 완료'],
-  },
-  {
-    id: 'type',
-    label: '불편 유형',
-    options: [
-      '불편 유형을 선택해주세요.',
-      '대표에게 제보하기',
-      '불친절한 서비스',
-      '결과물의 결함',
-      '기타',
-    ],
-  },
-] satisfies readonly AdminTableFilter[]
 
 function renderComplaintStatus(row: ComplaintRow) {
   return (
@@ -110,27 +82,83 @@ const complaintColumns = [
     header: '상세',
     id: 'detailLink',
     renderCell: (row) => (
-      <a className="admin-data-table__link" href={row.detailHref}>
+      <Link className="admin-data-table__link" to={row.detailHref}>
         상세
-      </a>
+      </Link>
     ),
     track: '80fr',
   },
 ] satisfies readonly AdminTableColumn<ComplaintRow>[]
 
 export function ComplaintPage() {
+  const [rows, setRows] = useState<ComplaintRow[]>([])
+  const [filters, setFilters] = useState(initialFilters)
+  const [isLoading, setIsLoading] = useState(true)
+  const [loadError, setLoadError] = useState('')
+
+  useEffect(() => {
+    let isCurrent = true
+
+    async function loadComplaints() {
+      try {
+        const inquiries = await listAdminInquiries(supabase)
+
+        if (isCurrent) setRows(inquiries.map(toComplaintRow))
+      } catch {
+        if (!isCurrent) return
+        setLoadError('불편접수 내역을 불러오지 못했습니다. 잠시 후 다시 시도해주세요.')
+        toast.error('불편접수 내역을 불러오지 못했습니다.')
+      } finally {
+        if (isCurrent) setIsLoading(false)
+      }
+    }
+
+    void loadComplaints()
+
+    return () => {
+      isCurrent = false
+    }
+  }, [])
+
+  const complaintFilters = [
+    {
+      id: 'status',
+      label: '처리상태',
+      options: ['전체', ...Object.values(complaintStatusLabels)],
+    },
+    {
+      id: 'type',
+      label: '불편 유형',
+      options: ['전체', ...new Set(rows.map((row) => row.complaintType))],
+    },
+  ] satisfies readonly AdminTableFilter[]
+  const filteredRows = filterComplaintRows(rows, filters)
+
+  function handleFilterValueChange(filterId: string, value: string) {
+    if (filterId !== 'status' && filterId !== 'type') return
+
+    setFilters((current) => ({ ...current, [filterId]: value }))
+  }
+
   return (
     <main className="portfolio-page" aria-label="불편접수 관리">
       <AdminDataTableSection
         columns={complaintColumns}
-        emptyMessage="접수된 불편사항이 없습니다."
+        emptyMessage={
+          loadError ||
+          (isLoading ? '불편접수 내역을 불러오는 중입니다.' : '접수된 불편사항이 없습니다.')
+        }
         filters={complaintFilters}
+        filterValues={{ status: filters.status, type: filters.type }}
         getRowKey={(row) => row.id}
-        rows={complaintRows}
+        onFilterValueChange={handleFilterValueChange}
+        onSearchValueChange={(query) => setFilters((current) => ({ ...current, query }))}
+        rows={filteredRows}
         search={{
           label: '검색',
           placeholder: '접수자 또는 접수 내용으로 검색해주세요.',
         }}
+        searchValue={filters.query}
         title="불편접수 현황"
       />
     </main>

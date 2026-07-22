@@ -28,8 +28,11 @@ test("notice admin exposes create and edit routes with notice-specific controls"
   assert.match(formSource, /type="date"/);
   assert.match(formSource, /pattern="\[a-z0-9-\]\+"/);
   assert.match(formSource, /allowCustomValue/);
-  assert.match(formSource, /setNoticeTypes\(\(current\) => \[\.\.\.current, nextType\]\)/);
-  assert.ok(formSource.includes('rawValue.replace(/[^a-z0-9-]/g, "")'));
+  assert.match(
+    formSource,
+    /setNoticeTypes\(\(current\) => mergeNoticeTypes\(current, type\)\)/,
+  );
+  assert.ok(formSource.includes("rawValue.replace(/[^a-z0-9-]/g, '')"));
   assert.match(formSource, /영문 소문자, 숫자, 하이픈만 입력해주세요\./);
   assert.match(formSource, /aria-invalid=\{slugError \? true : undefined\}/);
   assert.match(formStylesSource, /\.blog-form__control--date \{\n  cursor: pointer;/);

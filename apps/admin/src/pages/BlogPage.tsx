@@ -1,49 +1,22 @@
+import { listAdminPosts, reorderPosts } from '@repo/supabase'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { Link } from 'react-router-dom'
+import { toast } from 'sonner'
 import { renderAdminContentStatus, renderAdminPublicationState } from '../components/admin-table/AdminContentTableCells'
-import type { AdminContentStatus, AdminPublicationState } from '../components/admin-table/AdminContentTableCells'
 import { AdminDataTableSection } from '../components/admin-table/AdminDataTableSection'
 import type { AdminTableColumn, AdminTableFilter } from '../components/admin-table/AdminDataTableSection'
-import { contentTypeFilterOptions, getUserTagOptions } from '../components/admin-table/adminTableFilters'
+import { supabase } from '../lib/supabase'
+import { filterBlogRows, toBlogListRow } from './blogData'
+import type { BlogListRow, BlogStatusLabel } from './blogData'
 import './PortfolioPage.css'
 
-type BlogBannerState = AdminPublicationState | 'zero'
-
-type BlogRow = {
-  readonly bannerStatus: BlogBannerState
-  readonly createdAt: string
-  readonly detailHref: string
-  readonly id: string
-  readonly landingStatus: AdminPublicationState
-  readonly popularStatus: AdminPublicationState
-  readonly status: AdminContentStatus
-  readonly title: string
-  readonly type: string
-  readonly views: string
-}
-
-const blogRows: readonly BlogRow[] = []
-
-const blogFilters = [
-  { id: 'type', label: '유형 필터', options: contentTypeFilterOptions },
-  {
-    id: 'status',
-    label: '상태 필터',
-    options: getUserTagOptions(blogRows.map((row) => row.type)),
-  },
-] satisfies readonly AdminTableFilter[]
-
-function renderBannerStatus(status: BlogBannerState) {
-  if (status === 'zero') {
-    return <span>0</span>
-  }
-
-  return renderAdminPublicationState(status)
-}
+const statusFilterOptions = ['전체', '임시저장', '게시됨'] as const
 
 const blogColumns = [
   {
     header: '상태',
     id: 'status',
-    renderCell: (row) => renderAdminContentStatus(row.status),
+    renderCell: (row) => renderAdminContentStatus(row.publicationStatus),
     track: '120fr',
   },
   {
@@ -73,7 +46,7 @@ const blogColumns = [
   {
     header: '배너',
     id: 'banner',
-    renderCell: (row) => renderBannerStatus(row.bannerStatus),
+    renderCell: (row) => renderAdminPublicationState(row.bannerStatus),
     track: '120fr',
   },
   {
@@ -92,24 +65,118 @@ const blogColumns = [
     header: '상세',
     id: 'detail',
     renderCell: (row) => (
-      <a className="admin-data-table__link" href={row.detailHref}>
+      <Link className="admin-data-table__link" to={row.detailHref}>
         상세
-      </a>
+      </Link>
     ),
     track: '120fr',
   },
-] satisfies readonly AdminTableColumn<BlogRow>[]
+] satisfies readonly AdminTableColumn<BlogListRow>[]
 
 export function BlogPage() {
+  const [rows, setRows] = useState<readonly BlogListRow[]>([])
+  const [filters, setFilters] = useState<{ status: BlogStatusLabel | '전체'; type: string }>({
+    status: '전체',
+    type: '전체',
+  })
+  const [query, setQuery] = useState('')
+  const [isLoading, setIsLoading] = useState(true)
+  const [isReordering, setIsReordering] = useState(false)
+  const [loadError, setLoadError] = useState('')
+  const isReorderingRef = useRef(false)
+
+  const blogFilters = useMemo(
+    () =>
+      [
+        { id: 'type', label: '유형 필터', options: ['전체', ...new Set(rows.map((row) => row.type))] },
+        { id: 'status', label: '상태 필터', options: statusFilterOptions },
+      ] satisfies readonly AdminTableFilter[],
+    [rows],
+  )
+  const filteredRows = useMemo(
+    () => filterBlogRows(rows, { ...filters, query }),
+    [filters, query, rows],
+  )
+
+  useEffect(() => {
+    let isCurrent = true
+
+    void listAdminPosts(supabase, 'blog')
+      .then((posts) => {
+        if (isCurrent) setRows(posts.map(toBlogListRow))
+      })
+      .catch(() => {
+        if (!isCurrent) return
+        setLoadError('블로그를 불러오지 못했습니다. 잠시 후 다시 시도해주세요.')
+        toast.error('블로그 목록을 불러오지 못했습니다.')
+      })
+      .finally(() => {
+        if (isCurrent) setIsLoading(false)
+      })
+
+    return () => {
+      isCurrent = false
+    }
+  }, [])
+
+  function handleFilterValueChange(filterId: string, value: string) {
+    if (filterId === 'status') {
+      setFilters((current) => ({ ...current, status: value as BlogStatusLabel | '전체' }))
+      return
+    }
+
+    if (filterId === 'type') setFilters((current) => ({ ...current, type: value }))
+  }
+
+  async function handleRowsReorder(nextRows: readonly BlogListRow[]) {
+    if (isReorderingRef.current) return
+
+    const previousRows = rows
+    isReorderingRef.current = true
+    setIsReordering(true)
+    setRows(nextRows)
+
+    try {
+      await reorderPosts(
+        supabase,
+        'blog',
+        nextRows.map((row) => row.id),
+      )
+      toast.success('블로그 순서를 변경했습니다.')
+    } catch {
+      setRows(previousRows)
+      toast.error('블로그 순서를 저장하지 못했습니다.')
+      window.alert('블로그 순서를 저장하지 못했습니다. 다시 시도해주세요.')
+    } finally {
+      isReorderingRef.current = false
+      setIsReordering(false)
+    }
+  }
+
+  const isAcceptDrag =
+    !isLoading &&
+    !isReordering &&
+    !loadError &&
+    !query.trim() &&
+    filters.status === '전체' &&
+    filters.type === '전체'
+
   return (
     <main className="portfolio-page" aria-label="블로그 관리">
       <AdminDataTableSection
         bottomAction={{ href: '/blog/new', label: '신규 블로그 등록' }}
         columns={blogColumns}
+        emptyMessage={loadError || (isLoading ? '블로그를 불러오는 중입니다.' : '조회할 데이터가 없습니다.')}
         filters={blogFilters}
+        filterValues={filters}
         getRowKey={(row) => row.id}
-        rows={blogRows}
+        isAcceptDrag={isAcceptDrag}
+        onFilterValueChange={handleFilterValueChange}
+        onRowsReorder={handleRowsReorder}
+        onSearchValueChange={setQuery}
+        rows={filteredRows}
         search={{ label: '검색', placeholder: '블로그 제목으로 검색해주세요.' }}
+        searchValue={query}
         title="블로그 등록 현황"
       />
     </main>

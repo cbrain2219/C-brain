@@ -1,3 +1,5 @@
+import type { TableRow } from "@repo/supabase/types";
+
 export type PortfolioCategoryId =
   | "brochure-catalog"
   | "leaflet-pamphlet"
@@ -415,6 +417,126 @@ export const portfolioItems = [
 
 export const featuredPortfolioItems = portfolioItems.slice(0, 12);
 
+type PortfolioAssetUrlResolver = (path: string) => string;
+
+type StoredPortfolioImage = {
+  alt: string;
+  path: string;
+};
+
+function isPortfolioImagePath(path: string) {
+  if (path.startsWith("/")) return path.length > 1 && !path.startsWith("//");
+
+  return (
+    !path.startsWith(".") &&
+    !path.includes("\\") &&
+    !/^[a-z][a-z\d+.-]*:/i.test(path)
+  );
+}
+
+export function parsePortfolioImages(value: unknown): StoredPortfolioImage[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value.flatMap((image) => {
+    if (!image || typeof image !== "object") {
+      return [];
+    }
+
+    const { alt, path } = image as Record<string, unknown>;
+
+    const normalizedPath = typeof path === "string" ? path.trim() : "";
+
+    return normalizedPath && isPortfolioImagePath(normalizedPath)
+      ? [{ alt: typeof alt === "string" ? alt.trim() : "", path: normalizedPath }]
+      : [];
+  });
+}
+
+function getPortfolioCategoryId(type: string): PortfolioCategoryId {
+  return (
+    portfolioCategories.find(
+      (category) => category.id === type || category.label === type,
+    )?.id ?? portfolioCategories[0].id
+  );
+}
+
+function getPortfolioAssetUrl(
+  path: string,
+  resolveAssetUrl: PortfolioAssetUrlResolver,
+) {
+  return path.startsWith("/") ? path : resolveAssetUrl(path);
+}
+
+function getPortfolioPlainText(
+  content: string,
+  contentMode: TableRow<"portfolio_items">["content_mode"],
+) {
+  if (contentMode === "text") return content;
+
+  return content
+    .replaceAll("&nbsp;", " ")
+    .replaceAll("&amp;", "&")
+    .replaceAll("&lt;", "<")
+    .replaceAll("&gt;", ">")
+    .replaceAll("&quot;", '"')
+    .replaceAll("&#39;", "'")
+    .replace(/<(script|style)\b[^>]*>[\s\S]*?<\/\1>/gi, "")
+    .replace(/<br\s*\/?>/gi, "\n")
+    .replace(/<\/(?:div|h[1-6]|li|ol|p|section|ul)>/gi, "\n")
+    .replace(/<[^>]+>/g, "");
+}
+
+export function mapPortfolioRows(
+  rows: readonly TableRow<"portfolio_items">[],
+  resolveAssetUrl: PortfolioAssetUrlResolver,
+): PortfolioItem[] {
+  const pinnedRows = rows.filter((row) => row.is_pinned);
+  const unpinnedRows = rows.filter((row) => !row.is_pinned);
+
+  return [...pinnedRows, ...unpinnedRows].flatMap((row) => {
+    const client = row.client_name?.trim() || "씨브레인";
+    const storedImages = parsePortfolioImages(row.images);
+
+    if (!storedImages.length && row.image_path) {
+      storedImages.push(
+        ...parsePortfolioImages([{ alt: "", path: row.image_path }]),
+      );
+    }
+
+    if (!storedImages.length) return [];
+
+    const detailImages = storedImages.map(({ alt, path }) => ({
+      alt: alt || `${client} ${row.title} 제작 사례`,
+      src: getPortfolioAssetUrl(path, resolveAssetUrl),
+    }));
+    const representativeImage = detailImages[0];
+    if (!representativeImage) return [];
+
+    const description = getPortfolioPlainText(
+      row.content,
+      row.content_mode,
+    ).trim();
+
+    return [{
+      author: "씨브레인",
+      categoryId: getPortfolioCategoryId(row.type.trim()),
+      client,
+      description:
+        description || row.summary?.trim() || defaultPortfolioDescription,
+      detailImages,
+      image: representativeImage.src,
+      imageAlt: representativeImage.alt,
+      slug: row.slug,
+      summary:
+        row.summary?.trim() ||
+        `${client}의 제작 목적과 브랜드 톤에 맞춰 완성한 ${row.title}입니다.`,
+      title: row.title,
+    }];
+  });
+}
+
 const portfolioCategoryIds = new Set<PortfolioCategoryId>(
   portfolioCategories.map((category) => category.id),
 );
@@ -460,22 +582,24 @@ export function getPortfolioDetailHref(
 
 export function getPortfolioItemBySlug(
   slug: string,
+  items: readonly PortfolioItem[] = portfolioItems,
 ): PortfolioItem | undefined {
-  return portfolioItems.find((item) => item.slug === slug);
+  return items.find((item) => item.slug === slug);
 }
 
 export function getRelatedPortfolioItems(
   currentSlug: string,
   limit = 3,
+  items: readonly PortfolioItem[] = portfolioItems,
 ): PortfolioItem[] {
-  const currentItem = getPortfolioItemBySlug(currentSlug);
+  const currentItem = getPortfolioItemBySlug(currentSlug, items);
   const sameCategoryItems = currentItem
-    ? portfolioItems.filter(
+    ? items.filter(
         (item) =>
           item.slug !== currentSlug && item.categoryId === currentItem.categoryId,
       )
     : [];
-  const fallbackItems = portfolioItems.filter(
+  const fallbackItems = items.filter(
     (item) =>
       item.slug !== currentSlug &&
       !sameCategoryItems.some((relatedItem) => relatedItem.slug === item.slug),
@@ -486,8 +610,9 @@ export function getRelatedPortfolioItems(
 
 export function getPortfolioDetailBySlug(
   slug: string,
+  items: readonly PortfolioItem[] = portfolioItems,
 ): PortfolioDetail | undefined {
-  const item = getPortfolioItemBySlug(slug);
+  const item = getPortfolioItemBySlug(slug, items);
 
   if (!item) {
     return undefined;
@@ -496,7 +621,7 @@ export function getPortfolioDetailBySlug(
   return {
     categoryLabel: getPortfolioCategoryLabel(item.categoryId),
     item,
-    relatedItems: getRelatedPortfolioItems(item.slug),
+    relatedItems: getRelatedPortfolioItems(item.slug, 3, items),
   };
 }
 

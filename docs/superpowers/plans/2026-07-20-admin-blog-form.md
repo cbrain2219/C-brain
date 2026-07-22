@@ -401,7 +401,7 @@ The empty state must match Figma's `이미지 추가`, ALT input, folder icon, `
 
 - [ ] **Step 4: Render content mode, SEO description, settings, and existing action semantics.**
 
-Use a textarea for both content modes; there is no editor specification or package to add. Keep the Figma label spelling `TEXT Editer 작성`.
+Use a textarea for both content modes; there is no editor specification or package to add. Use the corrected label spelling `TEXT Editor 작성`.
 
 ```tsx
       <fieldset className="blog-form__content-field">
@@ -421,7 +421,7 @@ Use a textarea for both content modes; there is no editor specification or packa
             onClick={() => updateForm('contentMode', 'text')}
             type="button"
           >
-            TEXT Editer 작성
+            TEXT Editor 작성
           </button>
         </div>
         <textarea

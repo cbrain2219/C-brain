@@ -1,7 +1,7 @@
-import { requireAdmin } from "./auth.js";
-import { assertSupabaseSuccess, unwrapSupabaseData } from "./result.js";
-import type { CBrainSupabaseClient } from "./server.js";
-import type { TableInsert, TableUpdate } from "./types.js";
+import { requireAdmin } from "./auth.ts";
+import { assertSupabaseSuccess, unwrapSupabaseData } from "./result.ts";
+import type { CBrainSupabaseClient } from "./server.ts";
+import type { TableInsert, TableUpdate } from "./types.ts";
 
 export async function listPublishedPortfolioItems(
   client: CBrainSupabaseClient,
@@ -10,7 +10,8 @@ export async function listPublishedPortfolioItems(
     .from("portfolio_items")
     .select("*")
     .eq("status", "published")
-    .order("published_at", { ascending: false });
+    .order("sort_order", { ascending: true })
+    .order("id", { ascending: true });
 
   return unwrapSupabaseData(data, error);
 }
@@ -24,9 +25,11 @@ export async function getPublishedPortfolioItem(
     .select("*")
     .eq("slug", slug)
     .eq("status", "published")
-    .single();
+    .maybeSingle();
 
-  return unwrapSupabaseData(data, error);
+  if (error) throw new Error(error.message);
+
+  return data;
 }
 
 export async function listAdminPortfolioItems(client: CBrainSupabaseClient) {
@@ -35,7 +38,23 @@ export async function listAdminPortfolioItems(client: CBrainSupabaseClient) {
   const { data, error } = await client
     .from("portfolio_items")
     .select("*")
-    .order("created_at", { ascending: false });
+    .order("sort_order", { ascending: true })
+    .order("id", { ascending: true });
+
+  return unwrapSupabaseData(data, error);
+}
+
+export async function getAdminPortfolioItem(
+  client: CBrainSupabaseClient,
+  id: string,
+) {
+  await requireAdmin(client);
+
+  const { data, error } = await client
+    .from("portfolio_items")
+    .select("*")
+    .eq("id", id)
+    .single();
 
   return unwrapSupabaseData(data, error);
 }
@@ -79,6 +98,19 @@ export async function deletePortfolioItem(
   await requireAdmin(client);
 
   const { error } = await client.from("portfolio_items").delete().eq("id", id);
+
+  assertSupabaseSuccess(error);
+}
+
+export async function reorderPortfolioItems(
+  client: CBrainSupabaseClient,
+  portfolioItemIds: readonly string[],
+) {
+  await requireAdmin(client);
+
+  const { error } = await client.rpc("reorder_portfolio_items", {
+    portfolio_item_ids: [...portfolioItemIds],
+  });
 
   assertSupabaseSuccess(error);
 }

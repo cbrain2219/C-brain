@@ -234,6 +234,17 @@
   list-style: none;
 }
 
+.emptyState {
+  min-height: 180px;
+  color: var(--landing-gray-500);
+  font-family: "Pretendard GOV Variable", var(--font-sans);
+  font-size: 14px;
+  line-height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .portfolioItem,
 .portfolioItem article {
   min-width: 0;

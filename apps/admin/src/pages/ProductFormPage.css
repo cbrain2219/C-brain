@@ -211,6 +211,82 @@
   line-height: 18px;
 }
 
+.product-delete-dialog__backdrop {
+  position: fixed;
+  z-index: 100;
+  inset: 0;
+  background: var(--admin-overlay);
+}
+
+.product-delete-dialog__viewport {
+  position: fixed;
+  z-index: 101;
+  inset: 0;
+  padding: 20px;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.product-delete-dialog {
+  width: 280px;
+  padding: 16px;
+  border: 1px solid var(--admin-gray-100);
+  border-radius: 16px;
+  background: var(--admin-surface);
+  box-shadow: 0 12px 24px rgb(30 41 59 / 16%);
+  color: var(--admin-gray-800);
+  pointer-events: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.product-delete-dialog__title {
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 21px;
+  letter-spacing: -0.015em;
+}
+
+.product-delete-dialog__description {
+  color: var(--admin-gray-600);
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 18px;
+  letter-spacing: -0.015em;
+}
+
+.product-delete-dialog__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.product-delete-dialog__button {
+  height: 36px;
+  padding: 0 12px;
+  border: 1px solid var(--admin-gray-100);
+  border-radius: 12px;
+  background: var(--admin-surface);
+  color: var(--admin-gray-600);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 21px;
+  letter-spacing: -0.015em;
+  cursor: pointer;
+}
+
+.product-delete-dialog__button--danger {
+  border-color: var(--admin-error-500);
+  background: var(--admin-error-500);
+  color: var(--admin-text-inverse);
+}
+
 @media (max-width: 720px) {
   .product-form-option-toggle {
     padding: 0 12px;

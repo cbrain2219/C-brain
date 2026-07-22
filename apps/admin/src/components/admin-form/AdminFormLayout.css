@@ -72,9 +72,20 @@
   color: var(--admin-text-inverse);
 }
 
+.admin-form__button--danger {
+  border: 1px solid var(--admin-error-500);
+  background: var(--admin-surface);
+  color: var(--admin-error-500);
+}
+
 .admin-form__button--outline:hover {
   border-color: var(--admin-brand-600);
   color: var(--admin-brand-600);
+}
+
+.admin-form__button--danger:hover {
+  background: var(--admin-error-500);
+  color: var(--admin-text-inverse);
 }
 
 .admin-form__button--solid:hover {

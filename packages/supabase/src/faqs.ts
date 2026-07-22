@@ -1,7 +1,7 @@
-import { requireAdmin } from "./auth.js";
-import { assertSupabaseSuccess, unwrapSupabaseData } from "./result.js";
-import type { CBrainSupabaseClient } from "./server.js";
-import type { TableInsert, TableUpdate } from "./types.js";
+import { requireAdmin } from "./auth.ts";
+import { assertSupabaseSuccess, unwrapSupabaseData } from "./result.ts";
+import type { CBrainSupabaseClient } from "./server.ts";
+import type { TableInsert, TableUpdate } from "./types.ts";
 
 export async function listPublishedFaqs(client: CBrainSupabaseClient) {
   const { data, error } = await client

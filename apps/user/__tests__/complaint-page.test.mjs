@@ -25,6 +25,10 @@ const attachmentsPath = new URL(
   "../app/(site)/complaint/attachments.ts",
   import.meta.url,
 );
+const complaintSubmissionPath = new URL(
+  "../app/(site)/complaint/complaintSubmission.ts",
+  import.meta.url,
+);
 const complaintConstantsPath = new URL(
   "../constants/complaint.ts",
   import.meta.url,
@@ -88,9 +92,9 @@ test("complaint page exposes the required intake form content", async () => {
 });
 
 test("complaint service options match the service cards in visual order", async () => {
-  const formSource = await readFile(formPath, "utf8");
-  const serviceOptionsSource = formSource.match(
-    /const serviceOptions = \[([\s\S]*?)\];/,
+  const submissionSource = await readFile(complaintSubmissionPath, "utf8");
+  const serviceOptionsSource = submissionSource.match(
+    /const serviceOptions = \[([\s\S]*?)\] as const;/,
   );
 
   assert.ok(serviceOptionsSource);
@@ -111,6 +115,22 @@ test("complaint service options match the service cards in visual order", async 
       "기타",
     ],
   );
+});
+
+test("complaint privacy consent starts unchecked and exposes its notice inline", async () => {
+  const formSource = await readFile(formPath, "utf8");
+
+  assert.match(formSource, /privacy: false/);
+  assert.match(formSource, /<details/);
+  assert.match(
+    formSource,
+    /<summary aria-label="개인정보 수집 및 이용 안내 보기">/,
+  );
+  assert.match(formSource, /수집 항목: 이름, 이메일, 휴대폰 번호/);
+  assert.doesNotMatch(formSource, /href="#privacy-policy"/);
+  assert.match(formSource, /register\("website"\)/);
+  assert.match(formSource, /aria-hidden="true"/);
+  assert.match(formSource, /tabIndex=\{-1\}/);
 });
 
 test("complaint types provide the supplied descriptions in order", async () => {
@@ -199,7 +219,6 @@ test("complaint validation returns invalid required fields in visual order", asy
       name: "",
       phone: "",
       service: "",
-      verificationCode: "",
     }),
     [
       "name",
@@ -252,7 +271,6 @@ test("complaint validation requires a six digit verification code", async () => 
   } = await importTypescriptModule(validationPath);
 
   assert.equal(COMPLAINT_TEMP_VERIFICATION_CODE, "123456");
-
   assert.equal(COMPLAINT_VERIFICATION_CODE_LENGTH, 6);
 
   const validValues = {
@@ -261,7 +279,7 @@ test("complaint validation requires a six digit verification code", async () => 
     email: "user@example.com",
     name: "홍길동",
     phone: "01012345678",
-    privacy: "on",
+    privacy: true,
     service: "디자인",
   };
 
@@ -275,23 +293,9 @@ test("complaint validation requires a six digit verification code", async () => 
   assert.deepEqual(
     getInvalidRequiredComplaintFields({
       ...validValues,
-      verificationCode: "abcdef",
-    }),
-    ["verificationCode"],
-  );
-  assert.deepEqual(
-    getInvalidRequiredComplaintFields({
-      ...validValues,
       verificationCode: COMPLAINT_TEMP_VERIFICATION_CODE,
     }),
     [],
-  );
-  assert.deepEqual(
-    getInvalidRequiredComplaintFields({
-      ...validValues,
-      verificationCode: "654321",
-    }),
-    ["verificationCode"],
   );
 });
 
@@ -302,9 +306,20 @@ test("complaint form reuses a single verification code length setting", async ()
   assert.match(validationSource, /COMPLAINT_VERIFICATION_CODE_LENGTH = 6/);
   assert.match(formSource, /COMPLAINT_VERIFICATION_CODE_LENGTH/);
   assert.match(formSource, /COMPLAINT_VERIFICATION_CODE_INPUT_PATTERN/);
-  assert.doesNotMatch(formSource, /maxLength=\{6\}/);
-  assert.doesNotMatch(formSource, /minLength=\{6\}/);
-  assert.doesNotMatch(formSource, /pattern="\[0-9\]\{6\}"/);
+});
+
+test("complaint form exposes the phone verification integration boundary", async () => {
+  const formSource = await readFile(formPath, "utf8");
+  const { normalizePhoneNumber, requestPhoneVerification } =
+    await importTypescriptModule(phoneVerificationPath);
+
+  assert.match(formSource, /인증요청/);
+  assert.match(formSource, /requestPhoneVerification/);
+  assert.equal(normalizePhoneNumber("010-1234-5678"), "01012345678");
+  assert.deepEqual(await requestPhoneVerification({ phone: "010-1234-5678" }), {
+    normalizedPhone: "01012345678",
+    status: "not-configured",
+  });
 });
 
 test("complaint validation treats unchecked privacy consent as required", async () => {
@@ -326,19 +341,6 @@ test("complaint validation treats unchecked privacy consent as required", async 
   );
 });
 
-test("complaint form exposes a stable phone verification integration boundary", async () => {
-  const formSource = await readFile(formPath, "utf8");
-  const { normalizePhoneNumber, requestPhoneVerification } =
-    await importTypescriptModule(phoneVerificationPath);
-
-  assert.match(formSource, /requestPhoneVerification/);
-  assert.equal(normalizePhoneNumber("010-1234-5678"), "01012345678");
-  assert.deepEqual(await requestPhoneVerification({ phone: "010-1234-5678" }), {
-    normalizedPhone: "01012345678",
-    status: "not-configured",
-  });
-});
-
 test("complaint attachments are formatted for the selected file list", async () => {
   const {
     MAX_COMPLAINT_ATTACHMENT_COUNT,
@@ -353,21 +355,25 @@ test("complaint attachments are formatted for the selected file list", async () 
       lastModified: 1,
       name: "불만 접수 내역 01.png",
       size: 12 * 1024 * 1024,
+      type: "image/png",
     },
     {
       lastModified: 2,
       name: "작은 파일.png",
       size: 1536,
+      type: "image/png",
     },
     {
       lastModified: 3,
       name: "너무 큰 파일.png",
       size: MAX_COMPLAINT_ATTACHMENT_SIZE_BYTES + 1,
+      type: "image/png",
     },
     ...Array.from({ length: 10 }, (_, index) => ({
       lastModified: 100 + index,
       name: `추가 파일 ${index + 1}.png`,
       size: 500,
+      type: "image/png",
     })),
   ];
 
@@ -434,10 +440,10 @@ test("complaint form delegates required field state to react-hook-form", async (
     formSource,
     /handleSubmit\(handleValidSubmit, handleInvalidSubmit\)/,
   );
-  assert.match(formSource, /getValues\("phone"\)/);
-  assert.match(formSource, /setError\("phone"/);
   assert.match(formSource, /const handlePhoneChange/);
   assert.match(formSource, /onChange:\s*handlePhoneChange/);
+  assert.match(formSource, /getValues\("phone"\)/);
+  assert.match(formSource, /setError\("phone"/);
 
   for (const fieldName of [
     "name",

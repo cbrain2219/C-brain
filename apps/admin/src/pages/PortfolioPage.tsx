@@ -1,43 +1,33 @@
+import { listAdminPortfolioItems, reorderPortfolioItems } from '@repo/supabase'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { Link } from 'react-router-dom'
+import { toast } from 'sonner'
 import { AdminDataTableSection } from '../components/admin-table/AdminDataTableSection'
 import type {
   AdminTableColumn,
   AdminTableFilter,
 } from '../components/admin-table/AdminDataTableSection'
-import {
-  contentTypeFilterOptions,
-  getUserTagOptions,
-} from '../components/admin-table/adminTableFilters'
-import { portfolioRows } from './portfolioData'
+import { supabase } from '../lib/supabase'
+import { filterPortfolioRows, toPortfolioListRow } from './portfolioData'
 import type { PortfolioRow } from './portfolioData'
 import './PortfolioPage.css'
 
-const portfolioStatusContent = {
-  draft: {
-    className: 'admin-data-table__status admin-data-table__status--draft',
-    label: '임시저장',
-  },
-  published: {
-    className: 'admin-data-table__status',
-    label: '게시됨',
-  },
-} as const
-
-const portfolioFilters = [
-  { id: 'type', label: '유형 필터', options: contentTypeFilterOptions },
-  {
-    id: 'status',
-    label: '상태 필터',
-    options: getUserTagOptions(portfolioRows.map((row) => row.type)),
-  },
-] satisfies readonly AdminTableFilter[]
+const statusFilterOptions = ['전체', '임시저장', '게시됨', '보관됨'] as const
 
 function renderStatus(row: PortfolioRow) {
-  const status = portfolioStatusContent[row.status]
+  const label =
+    row.status === 'published' ? '게시됨' : row.status === 'archived' ? '보관됨' : '임시저장'
 
   return (
-    <span className={status.className}>
+    <span
+      className={
+        row.status === 'published'
+          ? 'admin-data-table__status'
+          : 'admin-data-table__status admin-data-table__status--draft'
+      }
+    >
       <span className="admin-data-table__status-dot" />
-      <span>{status.label}</span>
+      <span>{label}</span>
     </span>
   )
 }
@@ -97,24 +87,116 @@ const portfolioColumns = [
     header: '상세',
     id: 'detail',
     renderCell: (row) => (
-      <a className="admin-data-table__link" href={row.detailHref}>
+      <Link className="admin-data-table__link" to={row.detailHref}>
         상세
-      </a>
+      </Link>
     ),
     track: '120fr',
   },
 ] satisfies readonly AdminTableColumn<PortfolioRow>[]
 
 export function PortfolioPage() {
+  const [rows, setRows] = useState<readonly PortfolioRow[]>([])
+  const [filters, setFilters] = useState({ status: '전체', type: '전체' })
+  const [query, setQuery] = useState('')
+  const [isLoading, setIsLoading] = useState(true)
+  const [isReordering, setIsReordering] = useState(false)
+  const [loadError, setLoadError] = useState('')
+  const isReorderingRef = useRef(false)
+  const portfolioFilters = useMemo(
+    () =>
+      [
+        {
+          id: 'type',
+          label: '유형 필터',
+          options: ['전체', ...new Set(rows.map((row) => row.type))],
+        },
+        { id: 'status', label: '상태 필터', options: statusFilterOptions },
+      ] satisfies readonly AdminTableFilter[],
+    [rows],
+  )
+  const filteredRows = useMemo(
+    () => filterPortfolioRows(rows, { ...filters, query }),
+    [filters, query, rows],
+  )
+
+  useEffect(() => {
+    let isCurrent = true
+
+    void listAdminPortfolioItems(supabase)
+      .then((items) => {
+        if (isCurrent) setRows(items.map(toPortfolioListRow))
+      })
+      .catch(() => {
+        if (!isCurrent) return
+        setLoadError('포트폴리오를 불러오지 못했습니다. 잠시 후 다시 시도해주세요.')
+        toast.error('포트폴리오 목록을 불러오지 못했습니다.')
+      })
+      .finally(() => {
+        if (isCurrent) setIsLoading(false)
+      })
+
+    return () => {
+      isCurrent = false
+    }
+  }, [])
+
+  function handleFilterValueChange(filterId: string, value: string) {
+    if (filterId === 'status' || filterId === 'type') {
+      setFilters((current) => ({ ...current, [filterId]: value }))
+    }
+  }
+
+  async function handleRowsReorder(nextRows: readonly PortfolioRow[]) {
+    if (isReorderingRef.current) return
+
+    const previousRows = rows
+    isReorderingRef.current = true
+    setIsReordering(true)
+    setRows(nextRows)
+
+    try {
+      await reorderPortfolioItems(
+        supabase,
+        nextRows.map((row) => row.id),
+      )
+      toast.success('포트폴리오 순서를 변경했습니다.')
+    } catch {
+      setRows(previousRows)
+      toast.error('포트폴리오 순서를 저장하지 못했습니다.')
+      window.alert('포트폴리오 순서를 저장하지 못했습니다. 다시 시도해주세요.')
+    } finally {
+      isReorderingRef.current = false
+      setIsReordering(false)
+    }
+  }
+
+  const isAcceptDrag =
+    !isLoading &&
+    !isReordering &&
+    !loadError &&
+    !query.trim() &&
+    filters.status === '전체' &&
+    filters.type === '전체'
+
   return (
     <main className="portfolio-page" aria-label="포트폴리오 관리">
       <AdminDataTableSection
         bottomAction={{ href: '/portfolio/new', label: '신규 포폴 등록' }}
         columns={portfolioColumns}
+        emptyMessage={
+          loadError || (isLoading ? '포트폴리오를 불러오는 중입니다.' : '조회할 데이터가 없습니다.')
+        }
         filters={portfolioFilters}
+        filterValues={filters}
         getRowKey={(row) => row.id}
-        rows={portfolioRows}
+        isAcceptDrag={isAcceptDrag}
+        onFilterValueChange={handleFilterValueChange}
+        onRowsReorder={handleRowsReorder}
+        onSearchValueChange={setQuery}
+        rows={filteredRows}
         search={{ label: '검색', placeholder: '포트폴리오 제목으로 검색해주세요.' }}
+        searchValue={query}
         title="포트폴리오 등록 현황"
       />
     </main>

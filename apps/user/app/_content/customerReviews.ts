@@ -1,3 +1,11 @@
+import {
+  getPublicAssetUrl,
+  getPublishedReview,
+  listPublishedReviews,
+} from "@repo/supabase";
+
+import { createUserSupabaseClient } from "../../lib/supabase";
+
 export const reviewHeroImage = "/figma-assets/review-hero-office.png";
 
 export const reviewInterviewImage =
@@ -524,3 +532,210 @@ export const customerTestimonials = [
     title: "공공기관 행사 홍보물 제작 후기",
   },
 ] as const satisfies readonly CustomerTestimonial[];
+
+type PublishedReview = Awaited<ReturnType<typeof listPublishedReviews>>[number];
+type ReviewClient = Parameters<typeof getPublicAssetUrl>[0];
+
+export type CustomerReviewPageData = {
+  customerInterviews: CustomerInterviewCard[];
+  customerTestimonials: CustomerTestimonial[];
+  featuredCustomerInterview: FeaturedCustomerInterview | null;
+};
+
+async function loadPublishedReviews(client: ReviewClient) {
+  try {
+    return await listPublishedReviews(client);
+  } catch (error) {
+    console.error("Failed to load published reviews.", error);
+    return [];
+  }
+}
+
+function getPublishedAt(review: PublishedReview) {
+  return review.published_at ?? review.created_at;
+}
+
+function getReviewText(review: PublishedReview) {
+  const content =
+    review.content_mode === "html"
+      ? review.content
+          .replace(/<\s*(?:br\s*\/?|\/(?:p|div|li|h[1-6]))\s*>/gi, "\n")
+          .replace(/<[^>]*>/g, " ")
+      : review.content;
+
+  return content
+    .replace(/&(?:nbsp|#160);/gi, " ")
+    .replace(/&amp;/gi, "&")
+    .replace(/&lt;/gi, "<")
+    .replace(/&gt;/gi, ">")
+    .replace(/&quot;/gi, '"')
+    .replace(/&#39;|&apos;/gi, "'")
+    .split(/\n+/)
+    .map((line) => line.replace(/\s+/g, " ").trim())
+    .filter(Boolean);
+}
+
+function getReviewVideoUrl(client: ReviewClient, review: PublishedReview) {
+  return review.video_path
+    ? getPublicAssetUrl(client, review.video_path)
+    : undefined;
+}
+
+function toPublishedInterviewDetail(
+  client: ReviewClient,
+  review: PublishedReview,
+): CustomerInterviewDetail | undefined {
+  const slug = review.slug?.trim();
+  if (review.kind !== "interview" || !slug) return undefined;
+
+  const paragraphs = getReviewText(review);
+  const content: CustomerInterviewContentBlock[] = (
+    paragraphs.length > 0 ? paragraphs : [review.company]
+  ).map((text, index) => ({
+    id: `${review.id}-paragraph-${index}`,
+    text,
+    type: "paragraph",
+  }));
+  const summary = paragraphs[0] ?? review.company;
+  const title = review.title?.trim() || `${review.company} 고객 인터뷰`;
+  const videoUrl = getReviewVideoUrl(client, review);
+
+  return {
+    author: "씨브레인",
+    category: "고객 인터뷰",
+    company: review.company,
+    content,
+    keywords: ["씨브레인", "고객 인터뷰", review.company],
+    projectInfo: [
+      {
+        id: "client",
+        label: "의뢰처",
+        value: review.company,
+      },
+    ],
+    projectInfoTitle: "프로젝트 정보",
+    publishedAt: getPublishedAt(review),
+    seoDescription: review.seo_description?.trim() || summary,
+    slug,
+    thumbnail: reviewInterviewImage,
+    title,
+    videoAlt: review.video_alt?.trim() || `${title} 영상`,
+    ...(videoUrl ? { videoUrl } : {}),
+  };
+}
+
+function toPublishedInterviewCard(
+  detail: CustomerInterviewDetail,
+  review: PublishedReview,
+): CustomerInterviewCard {
+  return {
+    category: detail.category,
+    company: detail.company,
+    detailSlug: detail.slug,
+    id: review.id,
+    meta: detail.company,
+    publishedAt: detail.publishedAt,
+    quote: detail.content[0]?.text ?? detail.seoDescription,
+    thumbnail: detail.thumbnail,
+    title: detail.title,
+    videoAlt: detail.videoAlt,
+  };
+}
+
+function toPublishedTestimonial(
+  review: PublishedReview,
+): CustomerTestimonial | undefined {
+  if (review.kind !== "testimonial") return undefined;
+
+  const body = getReviewText(review).join("\n").trim();
+
+  return {
+    body: body || review.company,
+    company: review.company,
+    id: review.id,
+    name: review.manager?.trim() || review.company,
+    publishedAt: getPublishedAt(review),
+    title: review.title?.trim() || `${review.company} 고객 후기`,
+  };
+}
+
+function toFeaturedInterview(
+  card: CustomerInterviewCard,
+  detail: CustomerInterviewDetail,
+): FeaturedCustomerInterview {
+  return {
+    ...card,
+    body: [
+      detail.content[0]?.text ?? detail.seoDescription,
+      "고객이 직접 말하는 결과",
+      detail.company,
+    ],
+    headlineLines: [card.quote],
+  };
+}
+
+export async function getCustomerReviewPageData(): Promise<CustomerReviewPageData> {
+  const client = await createUserSupabaseClient();
+
+  if (!client) {
+    return {
+      customerInterviews: [...customerInterviews],
+      customerTestimonials: [...customerTestimonials],
+      featuredCustomerInterview,
+    };
+  }
+
+  const reviews = await loadPublishedReviews(client);
+  const interviewEntries = reviews.flatMap((review) => {
+    const detail = toPublishedInterviewDetail(client, review);
+    return detail
+      ? [{ card: toPublishedInterviewCard(detail, review), detail }]
+      : [];
+  });
+  const publishedTestimonials = reviews.flatMap((review) => {
+    const testimonial = toPublishedTestimonial(review);
+    return testimonial ? [testimonial] : [];
+  });
+  const featuredEntry = interviewEntries[0];
+
+  return {
+    customerInterviews: interviewEntries.map(({ card }) => card),
+    customerTestimonials: publishedTestimonials,
+    featuredCustomerInterview: featuredEntry
+      ? toFeaturedInterview(featuredEntry.card, featuredEntry.detail)
+      : null,
+  };
+}
+
+export async function getPublishedCustomerInterviewDetailBySlug(
+  slug: string,
+): Promise<CustomerInterviewDetail | undefined> {
+  const client = await createUserSupabaseClient();
+  if (!client) return getCustomerInterviewDetailBySlug(slug);
+
+  try {
+    const review = await getPublishedReview(client, slug);
+    return review ? toPublishedInterviewDetail(client, review) : undefined;
+  } catch (error) {
+    console.error("Failed to load published review detail.", error);
+    return undefined;
+  }
+}
+
+export async function getLandingCustomerTestimonials(): Promise<
+  CustomerTestimonial[]
+> {
+  const client = await createUserSupabaseClient();
+  if (!client) return customerTestimonials.slice(0, 3);
+
+  const reviews = await loadPublishedReviews(client);
+
+  return reviews
+    .filter(
+      (review) => review.kind === "testimonial" && review.is_landing_enabled,
+    )
+    .flatMap((review) => {
+      const testimonial = toPublishedTestimonial(review);
+      return testimonial ? [testimonial] : [];
+    });
+}

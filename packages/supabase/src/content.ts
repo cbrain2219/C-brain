@@ -1,39 +1,71 @@
-import { requireAdmin } from "./auth.js";
-import { assertSupabaseSuccess, unwrapSupabaseData } from "./result.js";
-import type { CBrainSupabaseClient } from "./server.js";
-import type { TableInsert, TableUpdate } from "./types.js";
+import { requireAdmin } from "./auth.ts";
+import { assertSupabaseSuccess, unwrapSupabaseData } from "./result.ts";
+import type { CBrainSupabaseClient } from "./server.ts";
+import type { TableInsert, TableRow, TableUpdate } from "./types.ts";
 
-export async function listPublishedPosts(client: CBrainSupabaseClient) {
+type PostKind = TableRow<"posts">["kind"];
+
+export async function listPublishedPosts(
+  client: CBrainSupabaseClient,
+  kind: PostKind,
+) {
   const { data, error } = await client
     .from("posts")
     .select("*")
+    .eq("kind", kind)
     .eq("status", "published")
-    .order("published_at", { ascending: false });
+    .order("sort_order", { ascending: true })
+    .order("id", { ascending: true });
 
   return unwrapSupabaseData(data, error);
 }
 
 export async function getPublishedPost(
   client: CBrainSupabaseClient,
+  kind: PostKind,
   slug: string,
 ) {
   const { data, error } = await client
     .from("posts")
     .select("*")
+    .eq("kind", kind)
     .eq("slug", slug)
     .eq("status", "published")
-    .single();
+    .maybeSingle();
 
-  return unwrapSupabaseData(data, error);
+  if (error) throw new Error(error.message);
+
+  return data;
 }
 
-export async function listAdminPosts(client: CBrainSupabaseClient) {
+export async function listAdminPosts(
+  client: CBrainSupabaseClient,
+  kind: PostKind,
+) {
   await requireAdmin(client);
 
   const { data, error } = await client
     .from("posts")
     .select("*")
-    .order("created_at", { ascending: false });
+    .eq("kind", kind)
+    .order("sort_order", { ascending: true })
+    .order("id", { ascending: true });
+
+  return unwrapSupabaseData(data, error);
+}
+
+export async function getAdminPost(
+  client: CBrainSupabaseClient,
+  id: string,
+  kind?: PostKind,
+) {
+  await requireAdmin(client);
+
+  let query = client.from("posts").select("*").eq("id", id);
+
+  if (kind) query = query.eq("kind", kind);
+
+  const { data, error } = await query.single();
 
   return unwrapSupabaseData(data, error);
 }
@@ -74,6 +106,21 @@ export async function deletePost(client: CBrainSupabaseClient, id: string) {
   await requireAdmin(client);
 
   const { error } = await client.from("posts").delete().eq("id", id);
+
+  assertSupabaseSuccess(error);
+}
+
+export async function reorderPosts(
+  client: CBrainSupabaseClient,
+  kind: PostKind,
+  postIds: readonly string[],
+) {
+  await requireAdmin(client);
+
+  const { error } = await client.rpc("reorder_posts", {
+    post_ids: [...postIds],
+    post_kind: kind,
+  });
 
   assertSupabaseSuccess(error);
 }

@@ -1,3 +1,6 @@
+import { getPublishedPost, listPublishedPosts } from "@repo/supabase";
+
+import { createUserSupabaseClient } from "../../../../lib/supabase";
 import { noticeCategories } from "../_constants/noticeCategories";
 import type {
   NoticeCategoryValue,
@@ -77,6 +80,95 @@ const noticeFixtures = [
   },
 ] as const satisfies readonly NoticeDetail[];
 
+const noticeCategoryByType = {
+  "서비스 변경": "service",
+  "수상 · 소식": "news",
+  공지: "notice",
+  이벤트: "event",
+  "휴무 안내": "holiday",
+} as const satisfies Record<string, Exclude<NoticeCategoryValue, "all">>;
+
+type PublishedPost = Awaited<ReturnType<typeof listPublishedPosts>>[number];
+
+function toNoticeCategory(type: string): Exclude<NoticeCategoryValue, "all"> {
+  return noticeCategoryByType[type.trim() as keyof typeof noticeCategoryByType] ?? "notice";
+}
+
+function decodeHtmlEntities(value: string) {
+  return value
+    .replaceAll("&nbsp;", " ")
+    .replaceAll("&amp;", "&")
+    .replaceAll("&lt;", "<")
+    .replaceAll("&gt;", ">")
+    .replaceAll("&quot;", '"')
+    .replaceAll("&#39;", "'");
+}
+
+function toPlainText(content: string, contentMode: PublishedPost["content_mode"]) {
+  if (contentMode === "text") return content;
+
+  return decodeHtmlEntities(
+    content
+      .replace(/<(script|style)\b[^>]*>[\s\S]*?<\/\1>/gi, "")
+      .replace(/<br\s*\/?>/gi, "\n")
+      .replace(/<\/(?:div|h[1-6]|li|ol|p|section|ul)>/gi, "\n")
+      .replace(/<[^>]+>/g, ""),
+  );
+}
+
+function toNoticeContent(post: PublishedPost): NoticeDetail["content"] {
+  return toPlainText(post.content, post.content_mode)
+    .split(/\r?\n+/)
+    .map((text) => text.trim())
+    .filter(Boolean)
+    .map((text) => ({ text, type: "paragraph" as const }));
+}
+
+function toNoticeDetail(post: PublishedPost): NoticeDetail {
+  const content = toNoticeContent(post);
+  const firstParagraph = content[0]?.type === "paragraph" ? content[0].text : "";
+
+  return {
+    author: "씨브레인",
+    category: toNoticeCategory(post.type),
+    content,
+    excerpt: post.excerpt?.trim() || firstParagraph,
+    id: post.slug || post.id,
+    isPinned: post.is_pinned,
+    publishedAt: post.published_at ?? post.created_at,
+    title: post.title,
+  };
+}
+
+function comparePublishedPosts(firstPost: PublishedPost, secondPost: PublishedPost) {
+  return (
+    Number(secondPost.is_pinned) - Number(firstPost.is_pinned) ||
+    firstPost.sort_order - secondPost.sort_order ||
+    firstPost.id.localeCompare(secondPost.id)
+  );
+}
+
+function compareFixtureNotices(firstNotice: NoticeDetail, secondNotice: NoticeDetail) {
+  return (
+    Number(secondNotice.isPinned) - Number(firstNotice.isPinned) ||
+    Date.parse(secondNotice.publishedAt) - Date.parse(firstNotice.publishedAt)
+  );
+}
+
+async function listNotices(): Promise<NoticeDetail[]> {
+  const client = await createUserSupabaseClient();
+
+  if (!client) return [...noticeFixtures].sort(compareFixtureNotices);
+
+  try {
+    const posts = await listPublishedPosts(client, "notice");
+    return [...posts].sort(comparePublishedPosts).map(toNoticeDetail);
+  } catch (error) {
+    console.error("Failed to load published notices.", error);
+    return [];
+  }
+}
+
 export function resolveNoticeCategory(
   category: string | undefined,
 ): NoticeCategoryValue {
@@ -85,25 +177,39 @@ export function resolveNoticeCategory(
     : "all";
 }
 
-export function getNoticePageData(
+export async function getNoticePageData(
   activeCategory: NoticeCategoryValue,
-): NoticePageData {
+): Promise<NoticePageData> {
+  const notices = await listNotices();
   const filteredNotices =
     activeCategory === "all"
-      ? noticeFixtures
-      : noticeFixtures.filter((notice) => notice.category === activeCategory);
+      ? notices
+      : notices.filter((notice) => notice.category === activeCategory);
 
   return {
     categories: noticeCategories,
-    notices: [...filteredNotices].sort(
-      (firstNotice, secondNotice) =>
-        Date.parse(secondNotice.publishedAt) -
-        Date.parse(firstNotice.publishedAt),
-    ),
-    totalCount: noticeFixtures.length,
+    notices: filteredNotices,
+    totalCount: notices.length,
   };
 }
 
-export function getNoticeById(id: string): NoticeDetail | undefined {
-  return noticeFixtures.find((notice) => notice.id === id);
+export async function getNoticeById(
+  id: string,
+): Promise<NoticeDetail | undefined> {
+  const client = await createUserSupabaseClient();
+
+  if (!client) return noticeFixtures.find((notice) => notice.id === id);
+
+  try {
+    const postBySlug = await getPublishedPost(client, "notice", id);
+    if (postBySlug) return toNoticeDetail(postBySlug);
+
+    const posts = await listPublishedPosts(client, "notice");
+    const post = posts.find((item) => item.id === id);
+
+    return post ? toNoticeDetail(post) : undefined;
+  } catch (error) {
+    console.error("Failed to load published notice detail.", error);
+    return undefined;
+  }
 }

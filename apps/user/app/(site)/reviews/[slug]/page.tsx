@@ -6,7 +6,7 @@ import { notFound } from "next/navigation";
 import {
   customerInterviewDetails,
   type CustomerInterviewDetail,
-  getCustomerInterviewDetailBySlug,
+  getPublishedCustomerInterviewDetailBySlug as getCustomerInterviewDetailBySlug,
   getCustomerInterviewDetailSeo,
   reviewPlayLargeIcon,
 } from "../../../_content/customerReviews";
@@ -87,7 +87,7 @@ export async function generateMetadata({
   params,
 }: CustomerReviewDetailPageProps): Promise<Metadata> {
   const { slug } = await params;
-  const detail = getCustomerInterviewDetailBySlug(slug);
+  const detail = await getCustomerInterviewDetailBySlug(slug);
 
   if (!detail) {
     return {
@@ -134,7 +134,7 @@ export default async function CustomerReviewDetailPage({
   params,
 }: CustomerReviewDetailPageProps) {
   const { slug } = await params;
-  const detail = getCustomerInterviewDetailBySlug(slug);
+  const detail = await getCustomerInterviewDetailBySlug(slug);
 
   if (!detail) {
     notFound();

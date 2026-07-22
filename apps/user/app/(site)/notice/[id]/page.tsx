@@ -13,7 +13,7 @@ export async function generateMetadata({
   params,
 }: NoticeDetailPageProps): Promise<Metadata> {
   const { id } = await params;
-  const notice = getNoticeById(id);
+  const notice = await getNoticeById(id);
 
   if (!notice) {
     return { title: "공지사항을 찾을 수 없습니다 | 씨브레인" };
@@ -31,7 +31,7 @@ export default async function NoticeDetailPage({
 }: NoticeDetailPageProps) {
   const { id } = await params;
   const { from } = await searchParams;
-  const notice = getNoticeById(id);
+  const notice = await getNoticeById(id);
   const backCategory = resolveNoticeCategory(from);
 
   if (!notice) notFound();

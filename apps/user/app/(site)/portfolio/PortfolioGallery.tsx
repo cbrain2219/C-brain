@@ -158,45 +158,51 @@ export function PortfolioGallery({
         })}
       </HorizontalDragScroll>
 
-      <ul className={styles.portfolioGrid}>
-        {activeItems.map((item) => (
-          <li className={styles.portfolioItem} key={item.slug}>
-            <article>
-              <Link
-                aria-label={`${item.client} ${item.title} 상세 보기`}
-                className={styles.portfolioCard}
-                href={getPortfolioDetailHref(item, activeCategoryId)}
-                onClick={handlePortfolioCardClick}
-              >
-                <figure className={styles.portfolioFigure}>
-                  <div className={styles.portfolioImageFrame}>
-                    <Image
-                      alt={item.imageAlt}
-                      className={styles.portfolioImage}
-                      fill
-                      sizes="(min-width: 1080px) 333px, (min-width: 640px) 290px, calc(100vw - 40px)"
-                      src={item.image}
-                    />
-                  </div>
-                  <figcaption className={styles.portfolioCardBody}>
-                    <span className={styles.portfolioTag}>
-                      {
-                        categories.find(
-                          (category) => category.id === item.categoryId,
-                        )?.label
-                      }
-                    </span>
-                    <div className={styles.portfolioCardText}>
-                      <p>{item.client}</p>
-                      <h3>{item.title}</h3>
+      {activeItems.length > 0 ? (
+        <ul className={styles.portfolioGrid}>
+          {activeItems.map((item) => (
+            <li className={styles.portfolioItem} key={item.slug}>
+              <article>
+                <Link
+                  aria-label={`${item.client} ${item.title} 상세 보기`}
+                  className={styles.portfolioCard}
+                  href={getPortfolioDetailHref(item, activeCategoryId)}
+                  onClick={handlePortfolioCardClick}
+                >
+                  <figure className={styles.portfolioFigure}>
+                    <div className={styles.portfolioImageFrame}>
+                      <Image
+                        alt={item.imageAlt}
+                        className={styles.portfolioImage}
+                        fill
+                        sizes="(min-width: 1080px) 333px, (min-width: 640px) 290px, calc(100vw - 40px)"
+                        src={item.image}
+                      />
                     </div>
-                  </figcaption>
-                </figure>
-              </Link>
-            </article>
-          </li>
-        ))}
-      </ul>
+                    <figcaption className={styles.portfolioCardBody}>
+                      <span className={styles.portfolioTag}>
+                        {
+                          categories.find(
+                            (category) => category.id === item.categoryId,
+                          )?.label
+                        }
+                      </span>
+                      <div className={styles.portfolioCardText}>
+                        <p>{item.client}</p>
+                        <h3>{item.title}</h3>
+                      </div>
+                    </figcaption>
+                  </figure>
+                </Link>
+              </article>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className={styles.emptyState} role="status">
+          등록된 포트폴리오가 없습니다.
+        </p>
+      )}
     </div>
   );
 }

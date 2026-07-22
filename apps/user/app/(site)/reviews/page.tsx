@@ -4,10 +4,9 @@ import Link from "next/link";
 
 import { CtaSection } from "../../_components/CtaSection";
 import {
-  customerInterviews,
   customerReviewPageSeo,
-  customerTestimonials,
-  featuredCustomerInterview,
+  type FeaturedCustomerInterview,
+  getCustomerReviewPageData,
   reviewHeroImage,
   reviewPlayLargeIcon,
   reviewPlaySmallIcon,
@@ -54,7 +53,11 @@ function PlayButton({ size = "small" }: { size?: "large" | "small" }) {
   );
 }
 
-function FeaturedInterview() {
+function FeaturedInterview({
+  featuredCustomerInterview,
+}: {
+  featuredCustomerInterview: FeaturedCustomerInterview;
+}) {
   return (
     <article
       aria-label={`${featuredCustomerInterview.title} 대표 인터뷰`}
@@ -115,7 +118,13 @@ function FeaturedInterview() {
   );
 }
 
-export default function CustomerReviewsPage() {
+export default async function CustomerReviewsPage() {
+  const {
+    customerInterviews,
+    customerTestimonials,
+    featuredCustomerInterview,
+  } = await getCustomerReviewPageData();
+
   return (
     <>
       <section className={styles.reviewsPageHero}>
@@ -159,60 +168,70 @@ export default function CustomerReviewsPage() {
               </p>
             </div>
 
-            <FeaturedInterview />
+            {featuredCustomerInterview ? (
+              <FeaturedInterview
+                featuredCustomerInterview={featuredCustomerInterview}
+              />
+            ) : null}
 
-            <ul className={styles.reviewsInterviewGrid}>
-              {customerInterviews.map((interview) => {
-                const titleId = `customer-interview-${interview.id}-title`;
+            {customerInterviews.length > 0 ? (
+              <ul className={styles.reviewsInterviewGrid}>
+                {customerInterviews.map((interview) => {
+                  const titleId = `customer-interview-${interview.id}-title`;
 
-                return (
-                  <li
-                    className={styles.reviewsInterviewCard}
-                    key={interview.id}
-                  >
-                    <article
-                      aria-labelledby={titleId}
-                      className={styles.reviewsInterviewArticle}
+                  return (
+                    <li
+                      className={styles.reviewsInterviewCard}
+                      key={interview.id}
                     >
-                      <Link
-                        aria-label={`${interview.title} 상세 보기`}
-                        className={styles.reviewsInterviewLink}
-                        href={`/reviews/${interview.detailSlug}`}
+                      <article
+                        aria-labelledby={titleId}
+                        className={styles.reviewsInterviewArticle}
                       >
-                        <figure className={styles.reviewsInterviewMedia}>
-                          <Image
-                            alt={interview.videoAlt}
-                            className={styles.reviewsMediaImage}
-                            fill
-                            sizes="(min-width: 1080px) 341px, (min-width: 640px) 296px, 350px"
-                            src={interview.thumbnail}
-                          />
-                          <span
-                            className={styles.reviewsMediaOverlay}
-                            aria-hidden="true"
-                          />
-                          <PlayButton />
-                        </figure>
-                        <div className={styles.reviewsInterviewBody}>
-                          <p className={styles.reviewsCategory}>
-                            {interview.category}
-                          </p>
-                          <div className={styles.reviewsInterviewCopy}>
-                            <h3 id={titleId}>{interview.title}</h3>
-                            <blockquote>
-                              &quot;{interview.quote}&quot;
-                            </blockquote>
+                        <Link
+                          aria-label={`${interview.title} 상세 보기`}
+                          className={styles.reviewsInterviewLink}
+                          href={`/reviews/${interview.detailSlug}`}
+                        >
+                          <figure className={styles.reviewsInterviewMedia}>
+                            <Image
+                              alt={interview.videoAlt}
+                              className={styles.reviewsMediaImage}
+                              fill
+                              sizes="(min-width: 1080px) 341px, (min-width: 640px) 296px, 350px"
+                              src={interview.thumbnail}
+                            />
+                            <span
+                              className={styles.reviewsMediaOverlay}
+                              aria-hidden="true"
+                            />
+                            <PlayButton />
+                          </figure>
+                          <div className={styles.reviewsInterviewBody}>
+                            <p className={styles.reviewsCategory}>
+                              {interview.category}
+                            </p>
+                            <div className={styles.reviewsInterviewCopy}>
+                              <h3 id={titleId}>{interview.title}</h3>
+                              <blockquote>
+                                &quot;{interview.quote}&quot;
+                              </blockquote>
+                            </div>
                           </div>
-                        </div>
-                        <footer className={styles.reviewsCardMeta}>
-                          {interview.meta}
-                        </footer>
-                      </Link>
-                    </article>
-                  </li>
-                );
-              })}
-            </ul>
+                          <footer className={styles.reviewsCardMeta}>
+                            {interview.meta}
+                          </footer>
+                        </Link>
+                      </article>
+                    </li>
+                  );
+                })}
+              </ul>
+            ) : (
+              <p className={styles.contentEmptyState} role="status">
+                등록된 고객 인터뷰가 없습니다.
+              </p>
+            )}
           </section>
 
           <section
@@ -224,34 +243,37 @@ export default function CustomerReviewsPage() {
               <h2 id="customer-review-heading">실제 고객의 생생한 후기</h2>
             </div>
 
-            <ul className={styles.reviewsTestimonialGrid}>
-              {customerTestimonials.map((review) => (
-                <li
-                  className={styles.reviewsTestimonialCard}
-                  key={review.id}
-                >
-                  <article
-                    aria-label={`${review.title} 고객 후기`}
-                    className={styles.reviewsTestimonialArticle}
-                  >
-                    <div className={styles.reviewsTestimonialContent}>
-                      <p className={styles.reviewsStars} aria-label="별점 5점">
-                        ★★★★★
-                      </p>
-                      <blockquote>{review.body}</blockquote>
-                    </div>
-                    <span
-                      className={styles.reviewsDivider}
-                      aria-hidden="true"
-                    />
-                    <footer className={styles.reviewsTestimonialMeta}>
-                      <p>{review.name}</p>
-                      <span>{review.company}</span>
-                    </footer>
-                  </article>
-                </li>
-              ))}
-            </ul>
+            {customerTestimonials.length > 0 ? (
+              <ul className={styles.reviewsTestimonialGrid}>
+                {customerTestimonials.map((review) => (
+                  <li className={styles.reviewsTestimonialCard} key={review.id}>
+                    <article
+                      aria-label={`${review.title} 고객 후기`}
+                      className={styles.reviewsTestimonialArticle}
+                    >
+                      <div className={styles.reviewsTestimonialContent}>
+                        <p className={styles.reviewsStars} aria-label="별점 5점">
+                          ★★★★★
+                        </p>
+                        <blockquote>{review.body}</blockquote>
+                      </div>
+                      <span
+                        className={styles.reviewsDivider}
+                        aria-hidden="true"
+                      />
+                      <footer className={styles.reviewsTestimonialMeta}>
+                        <p>{review.name}</p>
+                        <span>{review.company}</span>
+                      </footer>
+                    </article>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className={styles.contentEmptyState} role="status">
+                등록된 고객 후기가 없습니다.
+              </p>
+            )}
           </section>
         </div>
       </section>

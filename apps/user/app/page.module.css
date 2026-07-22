@@ -928,6 +928,18 @@
   gap: 16px;
 }
 
+.contentEmptyState {
+  width: 100%;
+  min-height: 180px;
+  color: var(--landing-gray-500);
+  font-family: "Pretendard GOV Variable", var(--font-sans);
+  font-size: 14px;
+  line-height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .reviewCard {
   min-width: 0;
   border: 1px solid var(--landing-gray-100);
@@ -2210,6 +2222,7 @@
 .complaintConsent {
   min-height: 24px;
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
@@ -2297,9 +2310,36 @@
   display: none;
 }
 
-.complaintConsent a {
+.complaintPrivacyDetails summary {
   color: #a0aab8;
-  text-decoration: none;
+  cursor: pointer;
+  list-style: none;
+  white-space: nowrap;
+}
+
+.complaintPrivacyDetails summary::-webkit-details-marker {
+  display: none;
+}
+
+.complaintPrivacyDetails[open] {
+  flex: 1 0 100%;
+}
+
+.complaintPrivacyDetails p {
+  padding: 12px 16px;
+  border-radius: 8px;
+  background: var(--landing-gray-50);
+  color: var(--landing-gray-600);
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.complaintHoneypot {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  clip-path: inset(50%);
+  overflow: hidden;
   white-space: nowrap;
 }
 

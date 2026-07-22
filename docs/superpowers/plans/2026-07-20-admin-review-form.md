@@ -17,7 +17,7 @@
 - Retain controlled values when the operator switches type during the same session: company/date/content stay as shared values, and branch-exclusive values stay in state while hidden. Validate only the active branch; a future persistence payload must omit inactive branch fields.
 - Interview fields, in order: type, title, customer company, slug, authored date, one video plus video ALT text, content mode/body, SEO Description.
 - Review fields, in order: type, customer company, contact person, authored date, content mode/body, landing setting.
-- Use corrected product copy where the Figma source is internally inconsistent: `등록하기` instead of `동륵하기`, `TEXT Editor 작성` instead of `TEXT Editer 작성`, and `후기 내용` / `후기 내용을 입력해주세요.` on the review branch instead of the interview copy present in node `332:3972`.
+- Use corrected product copy where the Figma source is internally inconsistent: `등록하기` instead of `동륵하기`, `TEXT Editor 작성`, and `후기 내용` / `후기 내용을 입력해주세요.` on the review branch instead of the interview copy present in node `332:3972`.
 - Interview slug accepts English letters and hyphens only, matching the Figma placeholder and existing Portfolio/Blog rule. Reuse `isValidPortfolioSlug` through an interview-local helper rather than duplicating the regular expression.
 - Video upload is optional because the design has no required marker. If supplied, accept one `.mp4` or `.mov` file (MIME `video/mp4` or `video/quicktime`) up to exactly 500MB; reject all other files before storing them in state.
 - Use a native `<input type="date">`; do not add a date-picker package or custom calendar glyph. Use the existing `AdminIcon` registry for chevron, check, folder-up, close, and arrow-right icons; no Figma URL is needed.

@@ -1,10 +1,31 @@
+import {
+  createPortfolioItem,
+  deletePortfolioItem,
+  getAdminPortfolioItem,
+  listAdminPortfolioItems,
+  updatePortfolioItem,
+} from '@repo/supabase'
 import { useEffect, useId, useRef, useState } from 'react'
 import type { ChangeEvent, DragEvent, FormEvent } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
+import { toast } from 'sonner'
 import { AdminIcon } from '../components/AdminIcon'
+import { AdminDeleteDialog } from '../components/admin-form/AdminDeleteDialog'
 import { AdminFormLayout } from '../components/admin-form/AdminFormLayout'
 import { AdminTypeCombobox } from '../components/admin-form/AdminTypeCombobox'
-import { getPortfolioSettingCounts, portfolioRows } from './portfolioData'
+import {
+  deletePublicAssets,
+  getPublicAssetUrl,
+  uploadPublicAsset,
+} from '../lib/adminAssets'
+import { supabase } from '../lib/supabase'
+import { getSubmitIntent } from './contentListState'
+import {
+  getPortfolioSettingCounts,
+  toPortfolioFormValues,
+  toPortfolioListRow,
+  toPortfolioMutationInput,
+} from './portfolioData'
 import { getPortfolioImageError, isValidPortfolioSlug } from './portfolioFormState'
 import './PortfolioFormPage.css'
 
@@ -14,6 +35,7 @@ type PortfolioImageSlot = {
   readonly alt: string
   readonly file: File | null
   readonly id: string
+  readonly path: string | null
   readonly previewUrl: string | null
 }
 
@@ -41,7 +63,7 @@ const initialPortfolioForm: PortfolioFormState = {
   clientName: '',
   content: '',
   contentMode: 'html',
-  images: [{ alt: '', file: null, id: 'image-1', previewUrl: null }],
+  images: [{ alt: '', file: null, id: 'image-1', path: null, previewUrl: null }],
   isLandingEnabled: false,
   isPinned: true,
   slug: '',
@@ -96,9 +118,16 @@ export function PortfolioFormPage() {
   const [imageErrors, setImageErrors] = useState<Record<string, string>>({})
   const [slugError, setSlugError] = useState('')
   const [typeError, setTypeError] = useState('')
+  const [portfolioSettingCounts, setPortfolioSettingCounts] = useState({ landing: 0, pinned: 0 })
+  const [storedImagePaths, setStoredImagePaths] = useState<readonly string[]>([])
+  const [publishedAt, setPublishedAt] = useState<string | null>(null)
+  const [isLoadingPortfolio, setIsLoadingPortfolio] = useState(isEditing)
+  const [loadError, setLoadError] = useState('')
+  const [saveError, setSaveError] = useState('')
+  const [isSaving, setIsSaving] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
 
   const pageTitle = isEditing ? '포트폴리오 수정' : '신규 포트폴리오 등록'
-  const portfolioSettingCounts = getPortfolioSettingCounts(portfolioRows)
   const submitLabel = isEditing ? '수정하기' : '등록하기'
 
   useEffect(
@@ -107,6 +136,76 @@ export function PortfolioFormPage() {
     },
     [],
   )
+
+  useEffect(() => {
+    let isCurrent = true
+
+    void listAdminPortfolioItems(supabase)
+      .then((items) => {
+        if (!isCurrent) return
+        setPortfolioSettingCounts(getPortfolioSettingCounts(items.map(toPortfolioListRow)))
+      })
+      .catch(() => {
+        if (isCurrent) toast.error('포트폴리오 설정 현황을 불러오지 못했습니다.')
+      })
+
+    return () => {
+      isCurrent = false
+    }
+  }, [])
+
+  useEffect(() => {
+    let isCurrent = true
+    const id = portfolioId
+
+    if (!id) return
+
+    void getAdminPortfolioItem(supabase, id)
+      .then((item) => {
+        if (!isCurrent) return
+
+        const values = toPortfolioFormValues(item)
+        const { images, ...fields } = values
+        const imageSlots = images.map((image, index) => ({
+          ...image,
+          file: null,
+          id: `saved-image-${index}`,
+          previewUrl: getPublicAssetUrl(image.path),
+        }))
+
+        setForm({
+          ...fields,
+          images:
+            imageSlots.length > 0
+              ? imageSlots
+              : [{ alt: '', file: null, id: 'image-1', path: null, previewUrl: null }],
+        })
+        setStoredImagePaths(images.map((image) => image.path))
+        setPublishedAt(item.published_at)
+        setPortfolioTypes((current) =>
+          current.some(
+            (type) => type.toLocaleLowerCase('ko-KR') === item.type.toLocaleLowerCase('ko-KR'),
+          )
+            ? current
+            : [...current, item.type],
+        )
+        setImageErrors({})
+        setSlugError('')
+        setTypeError('')
+      })
+      .catch(() => {
+        if (!isCurrent) return
+        setLoadError('포트폴리오 정보를 불러오지 못했습니다.')
+        toast.error('포트폴리오 정보를 불러오지 못했습니다.')
+      })
+      .finally(() => {
+        if (isCurrent) setIsLoadingPortfolio(false)
+      })
+
+    return () => {
+      isCurrent = false
+    }
+  }, [portfolioId])
 
   function updateForm<Key extends Exclude<keyof PortfolioFormState, 'images'>>(
     key: Key,
@@ -143,7 +242,7 @@ export function PortfolioFormPage() {
   }
 
   function releasePreviewUrl(previewUrl: string | null) {
-    if (!previewUrl) return
+    if (!previewUrl || !previewUrls.current.has(previewUrl)) return
 
     URL.revokeObjectURL(previewUrl)
     previewUrls.current.delete(previewUrl)
@@ -164,7 +263,7 @@ export function PortfolioFormPage() {
     const previewUrl = URL.createObjectURL(file)
 
     previewUrls.current.add(previewUrl)
-    updateImage(slotId, (slot) => ({ ...slot, file, previewUrl }))
+    updateImage(slotId, (slot) => ({ ...slot, file, path: null, previewUrl }))
     setImageErrors((current) => {
       const nextErrors = { ...current }
 
@@ -175,7 +274,7 @@ export function PortfolioFormPage() {
 
   function clearImage(slotId: string) {
     releasePreviewUrl(form.images.find((slot) => slot.id === slotId)?.previewUrl ?? null)
-    updateImage(slotId, (slot) => ({ ...slot, file: null, previewUrl: null }))
+    updateImage(slotId, (slot) => ({ ...slot, file: null, path: null, previewUrl: null }))
 
     const fileInput = fileInputs.current[slotId]
 
@@ -185,7 +284,10 @@ export function PortfolioFormPage() {
   function addImageSlot() {
     setForm((current) => ({
       ...current,
-      images: [...current.images, { alt: '', file: null, id: crypto.randomUUID(), previewUrl: null }],
+      images: [
+        ...current.images,
+        { alt: '', file: null, id: crypto.randomUUID(), path: null, previewUrl: null },
+      ],
     }))
   }
 
@@ -212,6 +314,102 @@ export function PortfolioFormPage() {
     setImageFile(slotId, event.dataTransfer.files[0])
   }
 
+  async function persist(status: 'draft' | 'published') {
+    if (isSaving || isDeleting) return
+
+    if (
+      status === 'published' &&
+      !form.images.some((slot) => Boolean(slot.file || slot.path))
+    ) {
+      const message = '게시할 포트폴리오 이미지를 한 장 이상 등록해주세요.'
+
+      setSaveError(message)
+      toast.error(message)
+      window.alert(message)
+      return
+    }
+
+    setIsSaving(true)
+    setSaveError('')
+    const uploadedPaths: string[] = []
+    let didPersist = false
+
+    try {
+      const images = []
+
+      for (const slot of form.images) {
+        let path = slot.path
+
+        if (slot.file) {
+          path = await uploadPublicAsset('portfolio', slot.file)
+          uploadedPaths.push(path)
+        }
+
+        if (path) images.push({ alt: slot.alt, path })
+      }
+
+      const nextPublishedAt =
+        status === 'published' ? publishedAt || new Date().toISOString() : null
+      const input = toPortfolioMutationInput(form, images, status, nextPublishedAt)
+
+      if (portfolioId) {
+        await updatePortfolioItem(supabase, portfolioId, input)
+      } else {
+        await createPortfolioItem(supabase, input)
+      }
+
+      didPersist = true
+      const retainedPaths = new Set(images.map((image) => image.path))
+      const stalePaths = storedImagePaths.filter((path) => !retainedPaths.has(path))
+
+      try {
+        await deletePublicAssets(stalePaths)
+      } catch {
+        toast.error('포트폴리오는 저장됐지만 이전 이미지를 정리하지 못했습니다.')
+        window.alert('포트폴리오는 저장됐지만 이전 이미지를 정리하지 못했습니다.')
+      }
+
+      toast.success(status === 'draft' ? '임시저장했습니다.' : '포트폴리오를 저장했습니다.')
+      navigate('/portfolio', { replace: status === 'draft' })
+    } catch {
+      if (!didPersist) {
+        await deletePublicAssets(uploadedPaths).catch(() => undefined)
+      }
+      setSaveError('포트폴리오를 저장하지 못했습니다. 입력값과 권한을 확인해주세요.')
+      toast.error('포트폴리오를 저장하지 못했습니다.')
+      window.alert('포트폴리오를 저장하지 못했습니다. 다시 시도해주세요.')
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
+  async function handleDelete() {
+    if (!portfolioId || isSaving || isDeleting) return
+
+    setIsDeleting(true)
+    setSaveError('')
+
+    try {
+      await deletePortfolioItem(supabase, portfolioId)
+
+      try {
+        await deletePublicAssets(storedImagePaths)
+      } catch {
+        toast.error('포트폴리오는 삭제됐지만 이미지를 정리하지 못했습니다.')
+        window.alert('포트폴리오는 삭제됐지만 이미지를 정리하지 못했습니다.')
+      }
+
+      toast.success('포트폴리오를 삭제했습니다.')
+      navigate('/portfolio', { replace: true })
+    } catch {
+      setSaveError('포트폴리오를 삭제하지 못했습니다. 권한을 확인해주세요.')
+      toast.error('포트폴리오를 삭제하지 못했습니다.')
+      window.alert('포트폴리오를 삭제하지 못했습니다. 다시 시도해주세요.')
+    } finally {
+      setIsDeleting(false)
+    }
+  }
+
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
 
@@ -232,7 +430,25 @@ export function PortfolioFormPage() {
     }
 
     setSlugError('')
-    navigate('/portfolio')
+    void persist(getSubmitIntent(event) === 'draft' ? 'draft' : 'published')
+  }
+
+  if (isLoadingPortfolio || loadError) {
+    return (
+      <AdminFormLayout
+        actions={
+          <Link className="admin-form__button admin-form__button--outline" to="/portfolio">
+            목록으로
+          </Link>
+        }
+        onSubmit={(event) => event.preventDefault()}
+        title={pageTitle}
+      >
+        <p className="portfolio-form__error" role={loadError ? 'alert' : 'status'}>
+          {loadError || '포트폴리오 정보를 불러오는 중입니다.'}
+        </p>
+      </AdminFormLayout>
+    )
   }
 
   return (
@@ -243,11 +459,31 @@ export function PortfolioFormPage() {
             목록으로
           </Link>
           <div className="admin-form__actions-group">
-            <button className="admin-form__button admin-form__button--outline" type="button">
+            {isEditing ? (
+              <AdminDeleteDialog
+                disabled={isSaving}
+                isDeleting={isDeleting}
+                itemLabel="포트폴리오"
+                onConfirm={handleDelete}
+              />
+            ) : null}
+            <button
+              className="admin-form__button admin-form__button--outline"
+              disabled={isSaving || isDeleting}
+              name="intent"
+              type="submit"
+              value="draft"
+            >
               임시저장
             </button>
-            <button className="admin-form__button admin-form__button--solid" type="submit">
-              <span>{submitLabel}</span>
+            <button
+              className="admin-form__button admin-form__button--solid"
+              disabled={isSaving || isDeleting}
+              name="intent"
+              type="submit"
+              value="publish"
+            >
+              <span>{isSaving ? '저장 중' : submitLabel}</span>
               <AdminIcon name="arrow-right" />
             </button>
           </div>
@@ -256,6 +492,11 @@ export function PortfolioFormPage() {
       onSubmit={handleSubmit}
       title={pageTitle}
     >
+      {saveError ? (
+        <p className="portfolio-form__error" role="alert">
+          {saveError}
+        </p>
+      ) : null}
       <label className="portfolio-form__field" htmlFor={formId + '-type'}>
         <span className="portfolio-form__label">포트폴리오 유형</span>
         <AdminTypeCombobox
@@ -345,7 +586,7 @@ export function PortfolioFormPage() {
           {form.images.map((slot) => {
             const inputId = formId + '-' + slot.id
             const errorMessage = imageErrors[slot.id]
-            const imageFileName = slot.file?.name ?? '선택한 이미지'
+            const imageFileName = slot.file?.name ?? slot.path?.split('/').pop() ?? '선택한 이미지'
             const uploadCopy = '파일을 드래그 또는 클릭 후 파일 업로드 (0/1)'
 
             return (
@@ -368,12 +609,11 @@ export function PortfolioFormPage() {
                       autoComplete="off"
                       className="portfolio-form__alt-input"
                       id={inputId + '-alt'}
-                      onChange={(event) =>
-                        updateImage(slot.id, (current) => ({
-                          ...current,
-                          alt: event.currentTarget.value,
-                        }))
-                      }
+                      onChange={(event) => {
+                        const alt = event.currentTarget.value
+
+                        updateImage(slot.id, (current) => ({ ...current, alt }))
+                      }}
                       placeholder="IMAGE ALT TAG를 입력해주세요."
                       type="text"
                       value={slot.alt}

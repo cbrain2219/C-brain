@@ -1,7 +1,7 @@
-import { requireAdmin } from "./auth.js";
-import { unwrapSupabaseData } from "./result.js";
-import type { CBrainSupabaseClient } from "./server.js";
-import type { Json } from "./types.js";
+import { requireAdmin } from "./auth.ts";
+import { unwrapSupabaseData } from "./result.ts";
+import type { CBrainSupabaseClient } from "./server.ts";
+import type { Json } from "./types.ts";
 
 export async function listPublicSettings(client: CBrainSupabaseClient) {
   const { data, error } = await client
