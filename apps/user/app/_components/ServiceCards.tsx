@@ -1,10 +1,10 @@
 "use client";
 
 import { Button } from "@repo/ui/button";
-import { type CSSProperties } from "react";
+import { type CSSProperties, type KeyboardEvent } from "react";
 
 import { Icon } from "../../components/Icon";
-import { services } from "../_content/services";
+import { type ServiceItem, services } from "../_content/services";
 import styles from "../page.module.css";
 
 const textButtonStyle: CSSProperties = {
@@ -36,11 +36,13 @@ const consultButtonStyle: CSSProperties = {
 };
 
 type ServiceCardsProps = {
-  onQuoteServiceSelect?: (serviceTitle: string) => void;
+  onDirectServiceSelect?: (service: ServiceItem) => void;
+  onQuoteServiceSelect?: (service: ServiceItem) => void;
   showConsultAction?: boolean;
 };
 
 export function ServiceCards({
+  onDirectServiceSelect,
   onQuoteServiceSelect,
   showConsultAction = false,
 }: ServiceCardsProps) {
@@ -48,18 +50,32 @@ export function ServiceCards({
     <>
       <div className={styles.serviceGrid}>
         {services.map((service) => {
-          const quoteCardClickHandler =
-            service.isQuote && onQuoteServiceSelect
-              ? () => onQuoteServiceSelect(service.title)
+          const cardClickHandler = service.isQuote
+            ? onQuoteServiceSelect
+              ? () => onQuoteServiceSelect(service)
+              : undefined
+            : onDirectServiceSelect
+              ? () => onDirectServiceSelect(service)
               : undefined;
+          const handleCardKeyDown = cardClickHandler
+            ? (event: KeyboardEvent<HTMLElement>) => {
+                if (event.key === "Enter" || event.key === " ") {
+                  event.preventDefault();
+                  cardClickHandler();
+                }
+              }
+            : undefined;
 
           return (
             <article
               className={`${styles.serviceCard} ${
-                quoteCardClickHandler ? styles.serviceCardClickable : ""
+                cardClickHandler ? styles.serviceCardClickable : ""
               }`}
-              key={service.title}
-              onClick={quoteCardClickHandler}
+              key={service.id}
+              onClick={cardClickHandler}
+              onKeyDown={handleCardKeyDown}
+              role={cardClickHandler ? "button" : undefined}
+              tabIndex={cardClickHandler ? 0 : undefined}
             >
               <div className={styles.serviceContent}>
                 <span
@@ -82,10 +98,10 @@ export function ServiceCards({
                 {service.isQuote ? null : <strong>{service.price}</strong>}
                 <Button
                   onClick={
-                    quoteCardClickHandler
+                    cardClickHandler
                       ? (event) => {
                           event.stopPropagation();
-                          quoteCardClickHandler();
+                          cardClickHandler();
                         }
                       : undefined
                   }

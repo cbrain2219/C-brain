@@ -34,6 +34,7 @@ export type IconName =
   | "megaphone"
   | "menu-04"
   | "message-typing"
+  | "order-option-back"
   | "package"
   | "pen-tool"
   | "pin"
@@ -100,6 +101,28 @@ function ArrowRightIcon({ size = 24, ...props }: Omit<IconProps, "name">) {
         strokeLinecap="round"
         strokeLinejoin="round"
         strokeWidth="1.5"
+      />
+    </svg>
+  );
+}
+
+function OrderOptionBackIcon({ size = 18, ...props }: Omit<IconProps, "name">) {
+  return (
+    <svg
+      aria-hidden="true"
+      fill="none"
+      height={(size * 16) / 18}
+      viewBox="0 0 18 16"
+      width={size}
+      xmlns="http://www.w3.org/2000/svg"
+      {...props}
+    >
+      <path
+        d="M7.66667 1L1 8L7.66667 15M1 8L17 8"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="2"
       />
     </svg>
   );
@@ -513,10 +536,7 @@ function ChannelYoutubeIcon({ size = 24, ...props }: Omit<IconProps, "name">) {
         x="3"
         y="6"
       />
-      <path
-        d="M10 9.5L15 12L10 14.5V9.5Z"
-        fill="currentColor"
-      />
+      <path d="M10 9.5L15 12L10 14.5V9.5Z" fill="currentColor" />
     </svg>
   );
 }
@@ -717,6 +737,7 @@ const icons = {
   megaphone: MegaphoneIcon,
   "menu-04": Menu04Icon,
   "message-typing": MessageTypingIcon,
+  "order-option-back": OrderOptionBackIcon,
   package: PackageIcon,
   "pen-tool": PenToolIcon,
   pin: PinIcon,

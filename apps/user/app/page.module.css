@@ -302,6 +302,12 @@
   font-weight: 700;
 }
 
+@media (max-width: 639px) {
+  :global(body[data-order-option-active="true"]) .header {
+    display: none;
+  }
+}
+
 .heroGradientButton::before {
   content: "";
   position: absolute;
