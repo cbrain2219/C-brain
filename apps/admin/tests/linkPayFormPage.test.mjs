@@ -21,6 +21,14 @@ test('LinkPay creation route exposes the Figma fields and numeric amount input',
   assert.match(formSource, /updatePaymentLink/)
   assert.match(formSource, /toPaymentLinkInput/)
   assert.match(formSource, /disabled=\{isSaving\}/)
+  assert.match(
+    formSource,
+    /<LinkPayForm key=\{linkPayId \?\? 'new'\} linkPayId=\{linkPayId\} \/>/,
+  )
+  assert.match(formSource, /const isMounted = useRef\(true\)/)
+  assert.match(formSource, /isMounted\.current = false/)
+  assert.equal(formSource.match(/if \(!isMounted\.current\) return/g)?.length, 2)
+  assert.match(formSource, /if \(isMounted\.current\) setIsSaving\(false\)/)
   assert.match(formSource, /신규 링크페이 등록/)
   assert.match(formSource, /고객사명/)
   assert.match(formSource, /결제명/)

@@ -3,7 +3,7 @@ import {
   getAdminPaymentLink,
   updatePaymentLink,
 } from '@repo/supabase'
-import { useEffect, useId, useState } from 'react'
+import { useEffect, useId, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { toast } from 'sonner'
@@ -21,15 +21,33 @@ import './BlogFormPage.css'
 import './LinkPayFormPage.css'
 
 export function LinkPayFormPage() {
+  const { linkPayId } = useParams<{ linkPayId: string }>()
+
+  return <LinkPayForm key={linkPayId ?? 'new'} linkPayId={linkPayId} />
+}
+
+type LinkPayFormProps = {
+  readonly linkPayId: string | undefined
+}
+
+function LinkPayForm({ linkPayId }: LinkPayFormProps) {
   const formId = useId().replaceAll(':', '')
   const navigate = useNavigate()
-  const { linkPayId } = useParams<{ linkPayId: string }>()
   const isEditing = linkPayId !== undefined
+  const isMounted = useRef(true)
   const [form, setForm] = useState(createInitialLinkPayForm)
   const [isLoading, setIsLoading] = useState(isEditing)
   const [isSaving, setIsSaving] = useState(false)
   const [loadError, setLoadError] = useState('')
   const [saveError, setSaveError] = useState('')
+
+  useEffect(() => {
+    isMounted.current = true
+
+    return () => {
+      isMounted.current = false
+    }
+  }, [])
 
   useEffect(() => {
     let isCurrent = true
@@ -75,14 +93,18 @@ export function LinkPayFormPage() {
         await createPaymentLink(supabase, input)
       }
 
+      if (!isMounted.current) return
+
       toast.success(isEditing ? '링크페이를 수정했습니다.' : '링크페이를 생성했습니다.')
       navigate('/linkpay')
     } catch {
+      if (!isMounted.current) return
+
       setSaveError('링크페이를 저장하지 못했습니다. 입력값과 권한을 확인해주세요.')
       toast.error('링크페이를 저장하지 못했습니다.')
       window.alert('링크페이를 저장하지 못했습니다. 다시 시도해주세요.')
     } finally {
-      setIsSaving(false)
+      if (isMounted.current) setIsSaving(false)
     }
   }
 
