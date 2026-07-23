@@ -1,4 +1,6 @@
+import { JsonLdScript } from "../../_components/JsonLdScript";
 import { createPageMetadata } from "../../_content/seo";
+import { createStaticPageStructuredData } from "../../_content/structured-data";
 import styles from "../privacy-collection/page.module.css";
 
 export const metadata = createPageMetadata("privacyPolicy");
@@ -6,6 +8,7 @@ export const metadata = createPageMetadata("privacyPolicy");
 export default function PrivacyPolicyPage() {
   return (
     <main className={styles.legalPage}>
+      <JsonLdScript data={createStaticPageStructuredData("privacyPolicy")} />
       <section className={styles.legalSection}>
         <p className={styles.legalKicker}>개인정보 처리방침</p>
         <h1>개인정보 처리방침</h1>

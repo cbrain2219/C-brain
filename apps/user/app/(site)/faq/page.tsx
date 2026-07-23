@@ -2,8 +2,10 @@ import { Accordion } from "@repo/ui/accordion";
 import type { CSSProperties } from "react";
 
 import { CtaSection } from "../../_components/CtaSection";
+import { JsonLdScript } from "../../_components/JsonLdScript";
 import { faqCategories } from "../../_content/faqs";
 import { createPageMetadata } from "../../_content/seo";
+import { createFaqPageStructuredData } from "../../_content/structured-data";
 import { FaqCategoryNavigation } from "./FaqCategoryNavigation";
 import styles from "./page.module.css";
 
@@ -54,6 +56,7 @@ export default function FaqPage() {
 
   return (
     <div className={styles.faqPage} data-faq-page>
+      <JsonLdScript data={createFaqPageStructuredData()} />
       <div className={styles.faqLayout}>
         <FaqCategoryNavigation
           categories={categoryNavItems}

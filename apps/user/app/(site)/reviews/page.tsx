@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 import { CtaSection } from "../../_components/CtaSection";
+import { JsonLdScript } from "../../_components/JsonLdScript";
 import {
   type FeaturedCustomerInterview,
   getCustomerReviewPageData,
@@ -11,6 +12,7 @@ import {
   reviewQuoteMarkIcon,
 } from "../../_content/customerReviews";
 import { createPageMetadata } from "../../_content/seo";
+import { createStaticPageStructuredData } from "../../_content/structured-data";
 import styles from "../../page.module.css";
 
 export const metadata = createPageMetadata("reviews");
@@ -110,6 +112,11 @@ export default async function CustomerReviewsPage() {
 
   return (
     <>
+      <JsonLdScript
+        data={createStaticPageStructuredData("reviews", {
+          pageType: "CollectionPage",
+        })}
+      />
       <section className={styles.reviewsPageHero}>
         <Image
           alt="씨브레인 편집디자인 팀이 고객 브로슈어 시안을 함께 검토하는 사무실 장면"

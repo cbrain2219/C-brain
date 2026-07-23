@@ -1,5 +1,91 @@
 import type { IconName } from "../../components/Icon";
 
+export const companyLinks = {
+  homepage: "https://cbrain.kr",
+  instagram: "https://instagram.com/cbrain_design_group",
+  kakao: "https://pf.kakao.com/_JAFAG",
+  naverBlog: "https://blog.naver.com/cbrain_design_group",
+  youtube: "https://www.youtube.com/@CreateDesigngroup",
+} as const;
+
+export const companySocialLinks = [
+  {
+    id: "naverBlog",
+    label: "네이버 블로그",
+    href: companyLinks.naverBlog,
+  },
+  {
+    id: "instagram",
+    label: "인스타그램",
+    href: companyLinks.instagram,
+  },
+  {
+    id: "youtube",
+    label: "유튜브",
+    href: companyLinks.youtube,
+  },
+] as const;
+
+export type CompanySocialLink = (typeof companySocialLinks)[number];
+
+export const companyProfile = {
+  address: {
+    country: "KR",
+    full: "경기도 성남시 중원구 사기막골로 99 센트럴비즈타워2차 B타워 218호",
+    lines: [
+      "경기도 성남시 중원구 사기막골로 99",
+      "센트럴비즈타워2차 B타워 218호 (13201)",
+    ],
+    locality: "성남시 중원구",
+    postalCode: "13201",
+    region: "경기도",
+    streetAddress: "사기막골로 99 센트럴비즈타워2차 B타워 218호",
+  },
+  alternateNames: ["C-Brain", "씨브레인 디자인 그룹"],
+  branches: {
+    ilsan: "경기도 고양시 일산동구 장발산로 15 드림월드빌딩 415호",
+  },
+  businessRegistrationNumber: "120-07-84415",
+  displayName: "씨브레인 (C-Brain)",
+  email: "jhy@cbrain.kr",
+  foundedYear: "2000",
+  logo: {
+    main: {
+      alt: "씨브레인",
+      footerHeight: 21,
+      src: "/figma-assets/cbrain-logo-main.svg",
+      width: 77,
+    },
+    tagline: {
+      alt: "크리에이티브 디자인 그룹",
+      footerHeight: 4,
+      src: "/figma-assets/cbrain-logo-tagline.svg",
+      width: 76,
+    },
+  },
+  mailOrderSalesNumber: "2022-성남중원-0006",
+  name: "씨브레인",
+  operatingHours: {
+    companyInfoLines: [
+      "월~목 8:00–17:00 / 금 8:00–16:00",
+      "점심시간 11:00–12:30",
+    ],
+    footerLunch: "점심시간 : 11:00 - 12:30",
+    footerWeekday: "월~목 : 8:00 - 17:00 / 금 : 8:00 - 16:00",
+  },
+  phone: "070-8830-2219",
+  privacyManager: {
+    email: "jhy@cbrain.kr",
+    name: "김훈",
+  },
+  productionRooms: {
+    osan: "경기도 오산시 독산성로 232번길 14-24",
+    paju: "경기도 파주시 산업단지길 179",
+    seongsu: "서울특별시 성동구 성수일로80",
+  },
+  representative: "정혜영",
+} as const;
+
 export const companyMetrics = [
   { label: "업력", value: "26년", description: "2000년 씨브레인 설립" },
   {
@@ -197,43 +283,40 @@ export const companyChannels: {
     icon: "channel-message-typing",
     title: "카카오톡 1:1 상담",
     description: "빠른 견적 및 상담",
-    href: "https://pf.kakao.com/_JAFAG",
+    href: companyLinks.kakao,
   },
   {
     icon: "channel-home-02",
     title: "공식 홈페이지",
     description: "cbrain.kr",
-    href: "https://cbrain.kr",
+    href: companyLinks.homepage,
   },
   {
     icon: "channel-naver-blog",
     title: "네이버 블로그",
     description: "제작 가이드 & 노하우",
-    href: "https://blog.naver.com/cbrain_design_group",
+    href: companyLinks.naverBlog,
   },
   {
     icon: "channel-instagram",
     title: "인스타그램",
     description: "포트폴리오 & 디자인 꿀팁",
-    href: "https://instagram.com/cbrain_design_group",
+    href: companyLinks.instagram,
   },
   {
     icon: "channel-youtube",
     title: "유튜브",
     description: "회사소개 & 고객인터뷰",
-    href: "https://www.youtube.com/@CreateDesigngroup",
+    href: companyLinks.youtube,
   },
 ];
 
 export const companyInfoRows = [
-  { label: "회사명", value: "씨브레인 (C-Brain)" },
-  { label: "대표자", value: "정혜영" },
+  { label: "회사명", value: companyProfile.displayName },
+  { label: "대표자", value: companyProfile.representative },
   {
     label: "소재지",
-    value: [
-      "경기도 성남시 중원구 사기막골로 99",
-      "센트럴비즈타워2차 B타워 218호 (13201)",
-    ],
+    value: companyProfile.address.lines,
   },
   {
     label: "취급 서비스",
@@ -243,12 +326,12 @@ export const companyInfoRows = [
     ],
   },
   { label: "서비스 지역", value: "전국 납품 가능" },
-  { label: "전화", value: "070-8830-2219" },
+  { label: "전화", value: companyProfile.phone },
   {
     label: "운영시간",
-    value: ["월~목 8:00–17:00 / 금 8:00–16:00", "점심시간 11:00–12:30"],
+    value: companyProfile.operatingHours.companyInfoLines,
   },
-  { label: "이메일", value: "jhy@cbrain.kr" },
-  { label: "사업자등록번호", value: "120-07-84415" },
-  { label: "통신판매 신고번호", value: "2022-성남중원-0006" },
+  { label: "이메일", value: companyProfile.email },
+  { label: "사업자등록번호", value: companyProfile.businessRegistrationNumber },
+  { label: "통신판매 신고번호", value: companyProfile.mailOrderSalesNumber },
 ] as const;

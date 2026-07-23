@@ -3,13 +3,14 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { JsonLdScript } from "../../../_components/JsonLdScript";
 import {
   customerInterviewDetails,
-  type CustomerInterviewDetail,
   getPublishedCustomerInterviewDetailBySlug as getCustomerInterviewDetailBySlug,
   getCustomerInterviewDetailSeo,
   reviewPlayLargeIcon,
 } from "../../../_content/customerReviews";
+import { createArticleStructuredData } from "../../../_content/structured-data";
 import styles from "./page.module.css";
 
 type CustomerReviewDetailPageProps = {
@@ -20,61 +21,6 @@ type CustomerReviewDetailPageProps = {
 
 function getAbsoluteUrl(path: string, siteUrl: string | undefined) {
   return siteUrl ? new URL(path, siteUrl).toString() : undefined;
-}
-
-function getReviewDetailStructuredData(
-  detail: CustomerInterviewDetail,
-  pageUrl: string | undefined,
-  imageUrl: string | undefined,
-  videoUrl: string | undefined,
-) {
-  const data: Record<string, unknown> = {
-    "@context": "https://schema.org",
-    "@type": "Article",
-    about: detail.projectInfo.map((item) => ({
-      "@type": "PropertyValue",
-      name: item.label,
-      value: item.value,
-    })),
-    articleSection: detail.category,
-    author: {
-      "@type": "Organization",
-      name: detail.author,
-    },
-    description: detail.seoDescription,
-    dateModified: detail.publishedAt,
-    datePublished: detail.publishedAt,
-    headline: detail.title,
-    publisher: {
-      "@type": "Organization",
-      name: "C-Brain",
-    },
-  };
-
-  if (pageUrl) {
-    data.mainEntityOfPage = pageUrl;
-  }
-
-  if (imageUrl) {
-    data.image = imageUrl;
-  }
-
-  if (videoUrl) {
-    data.video = {
-      "@type": "VideoObject",
-      contentUrl: videoUrl,
-      description: detail.videoAlt,
-      name: detail.title,
-      uploadDate: detail.publishedAt,
-      ...(imageUrl ? { thumbnailUrl: imageUrl } : {}),
-    };
-  }
-
-  return data;
-}
-
-function stringifyJsonLd(data: unknown) {
-  return JSON.stringify(data).replace(/</g, "\\u003c");
 }
 
 export function generateStaticParams() {
@@ -141,18 +87,11 @@ export default async function CustomerReviewDetailPage({
   }
 
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
-  const pageUrl = getAbsoluteUrl(`/reviews/${detail.slug}`, siteUrl);
   const imageUrl = getAbsoluteUrl(detail.thumbnail, siteUrl);
   const videoUrl = detail.videoUrl;
   const absoluteVideoUrl = videoUrl
     ? getAbsoluteUrl(videoUrl, siteUrl)
     : undefined;
-  const structuredData = getReviewDetailStructuredData(
-    detail,
-    pageUrl,
-    imageUrl,
-    absoluteVideoUrl,
-  );
 
   return (
     <article
@@ -164,11 +103,30 @@ export default async function CustomerReviewDetailPage({
       <meta content={detail.publishedAt} itemProp="datePublished" />
       <meta content={detail.publishedAt} itemProp="dateModified" />
       {imageUrl ? <meta content={imageUrl} itemProp="image" /> : null}
-      <script
-        dangerouslySetInnerHTML={{
-          __html: stringifyJsonLd(structuredData),
-        }}
-        type="application/ld+json"
+      <JsonLdScript
+        data={createArticleStructuredData({
+          about: detail.projectInfo.map((item) => ({
+            name: item.label,
+            value: item.value,
+          })),
+          authorName: detail.author,
+          dateModified: detail.publishedAt,
+          datePublished: detail.publishedAt,
+          description: detail.seoDescription,
+          headline: detail.title,
+          imagePath: detail.thumbnail,
+          section: detail.category,
+          urlPath: `/reviews/${detail.slug}`,
+          video: absoluteVideoUrl
+            ? {
+                contentUrl: absoluteVideoUrl,
+                description: detail.videoAlt,
+                name: detail.title,
+                thumbnailUrl: imageUrl,
+                uploadDate: detail.publishedAt,
+              }
+            : undefined,
+        })}
       />
       <div className={styles.reviewDetailInner}>
         <header className={styles.reviewDetailHeader}>

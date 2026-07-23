@@ -1,6 +1,8 @@
 import { PageHero } from "../../../components/PageHero";
 import { SectionLayout } from "../../../components/SectionLayout";
+import { JsonLdScript } from "../../_components/JsonLdScript";
 import { createPageMetadata } from "../../_content/seo";
+import { createStaticPageStructuredData } from "../../_content/structured-data";
 import { NoticeBoard } from "./_components/NoticeBoard";
 import { getNoticePageData, resolveNoticeCategory } from "./_data/notices";
 import styles from "./page.module.css";
@@ -18,6 +20,11 @@ export default async function NoticePage({ searchParams }: NoticePageProps) {
 
   return (
     <>
+      <JsonLdScript
+        data={createStaticPageStructuredData("notice", {
+          pageType: "CollectionPage",
+        })}
+      />
       <PageHero
         backgroundAlt="편집디자인 전문회사 씨브레인 로고"
         backgroundImage="/figma-assets/notice-hero-background.webp"

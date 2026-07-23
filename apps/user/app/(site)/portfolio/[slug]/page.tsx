@@ -6,6 +6,7 @@ import { getPublicAssetUrl } from "@repo/supabase/files";
 import { listPublishedPortfolioItems } from "@repo/supabase/portfolio";
 import { cache } from "react";
 
+import { JsonLdScript } from "../../../_components/JsonLdScript";
 import {
   getPortfolioCategoryIdFromValue,
   getPortfolioCategoryLabel,
@@ -16,6 +17,7 @@ import {
   mapPortfolioRows,
   portfolioItems,
 } from "../../../_content/portfolio";
+import { createCreativeWorkStructuredData } from "../../../_content/structured-data";
 import { createUserSupabaseClient } from "../../../../lib/supabase";
 import styles from "./page.module.css";
 
@@ -114,6 +116,16 @@ export default async function PortfolioDetailPage({
 
   return (
     <article className={styles.detailPage}>
+      <JsonLdScript
+        data={createCreativeWorkStructuredData({
+          authorName: item.author,
+          category: categoryLabel,
+          description: item.description,
+          imagePath: item.image,
+          name: `${item.client} ${item.title}`,
+          urlPath: `/portfolio/${item.slug}`,
+        })}
+      />
       <div className={styles.detailInner}>
         <header className={styles.detailHeader}>
           <p className={styles.categoryBadge}>{categoryLabel}</p>

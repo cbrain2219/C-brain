@@ -5,7 +5,9 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { CtaSection } from "../../_components/CtaSection";
+import { JsonLdScript } from "../../_components/JsonLdScript";
 import type { OrderSelectionSummary, OrderStepId } from "../../_content/order";
+import { createStaticPageStructuredData } from "../../_content/structured-data";
 import type { ServiceItem } from "../../_content/services";
 import type { OrderPaymentSubmitPayload } from "./OrderCustomerInfoStep";
 import { OrderFlowSection } from "./OrderFlowSection";
@@ -66,6 +68,7 @@ export default function OrderPage() {
       className={styles.orderPage}
       data-order-option-active={selectedDirectService ? "true" : undefined}
     >
+      <JsonLdScript data={createStaticPageStructuredData("order")} />
       {selectedDirectService ? null : (
         <section className={styles.hero}>
           <Image

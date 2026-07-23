@@ -48,21 +48,19 @@ test("customer review detail page follows portfolio detail route conventions", a
     source,
     /return siteUrl \? new URL\(path, siteUrl\)\.toString\(\) : undefined/,
   );
-  assert.match(source, /if \(pageUrl\)/);
-  assert.match(source, /if \(imageUrl\)/);
-  assert.match(source, /if \(videoUrl\)/);
-  assert.doesNotMatch(source, /mainEntityOfPage: pageUrl/);
+  assert.match(source, /JsonLdScript/);
+  assert.match(source, /createArticleStructuredData/);
   assert.match(source, /datePublished: detail\.publishedAt/);
   assert.match(source, /dateModified: detail\.publishedAt/);
-  assert.match(source, /data\.video = \{/);
-  assert.match(source, /contentUrl: videoUrl/);
+  assert.match(source, /contentUrl: absoluteVideoUrl/);
+  assert.match(source, /thumbnailUrl: imageUrl/);
   assert.match(source, /type: "article"/);
   assert.match(source, /getCustomerInterviewDetailBySlug/);
   assert.match(source, /getCustomerInterviewDetailSeo/);
   assert.match(source, /customerInterviewDetails\.map/);
-  assert.match(source, /type="application\/ld\+json"/);
-  assert.match(source, /getReviewDetailStructuredData/);
-  assert.match(source, /stringifyJsonLd/);
+  assert.doesNotMatch(source, /type="application\/ld\+json"/);
+  assert.doesNotMatch(source, /getReviewDetailStructuredData/);
+  assert.doesNotMatch(source, /stringifyJsonLd/);
 });
 
 test("customer review detail page keeps semantic article markup and admin video alt text", async () => {

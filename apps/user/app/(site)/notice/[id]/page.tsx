@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
+import { JsonLdScript } from "../../../_components/JsonLdScript";
+import { createArticleStructuredData } from "../../../_content/structured-data";
 import { getNoticeById, resolveNoticeCategory } from "../_data/notices";
 import { NoticeDetailArticle } from "./_components/NoticeDetailArticle";
 
@@ -37,10 +39,23 @@ export default async function NoticeDetailPage({
   if (!notice) notFound();
 
   return (
-    <NoticeDetailArticle
-      backCategory={backCategory}
-      notice={notice}
-      restoreListHistory={from === backCategory}
-    />
+    <>
+      <JsonLdScript
+        data={createArticleStructuredData({
+          authorName: notice.author,
+          dateModified: notice.publishedAt,
+          datePublished: notice.publishedAt,
+          description: notice.excerpt,
+          headline: notice.title,
+          section: notice.category,
+          urlPath: `/notice/${notice.id}`,
+        })}
+      />
+      <NoticeDetailArticle
+        backCategory={backCategory}
+        notice={notice}
+        restoreListHistory={from === backCategory}
+      />
+    </>
   );
 }

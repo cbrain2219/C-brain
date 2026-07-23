@@ -14,6 +14,8 @@ import {
   getRelatedBlogPosts,
 } from "../_data/blogPosts";
 import type { BlogContentBlock, BlogPost } from "../_types/blog";
+import { JsonLdScript } from "../../../_components/JsonLdScript";
+import { createBlogPostingStructuredData } from "../../../_content/structured-data";
 import { BlogDetailBackLink } from "./BlogDetailBackLink";
 import styles from "./page.module.css";
 
@@ -46,44 +48,6 @@ function getBlogDetailHref(post: BlogPost, category: BlogCategoryFilter) {
 
 function getAbsoluteUrl(path: string, siteUrl: string | undefined) {
   return siteUrl ? new URL(path, siteUrl).toString() : undefined;
-}
-
-function stringifyJsonLd(data: unknown) {
-  return JSON.stringify(data).replace(/</g, "\\u003c");
-}
-
-function getBlogDetailStructuredData(
-  post: BlogPost,
-  pageUrl: string | undefined,
-  imageUrl: string | undefined,
-) {
-  const data: Record<string, unknown> = {
-    "@context": "https://schema.org",
-    "@type": "Article",
-    articleSection: post.category,
-    author: {
-      "@type": "Organization",
-      name: post.author,
-    },
-    dateModified: post.publishedAtIso,
-    datePublished: post.publishedAtIso,
-    description: post.detail.seoDescription,
-    headline: post.title,
-    publisher: {
-      "@type": "Organization",
-      name: "C-Brain",
-    },
-  };
-
-  if (pageUrl) {
-    data.mainEntityOfPage = pageUrl;
-  }
-
-  if (imageUrl) {
-    data.image = imageUrl;
-  }
-
-  return data;
 }
 
 function renderBlogContentBlock(block: BlogContentBlock) {
@@ -214,9 +178,7 @@ export default async function BlogDetailPage({
   const listHref = getBlogListHref(activeCategory);
   const relatedPosts = getRelatedBlogPosts(post.slug);
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
-  const pageUrl = getAbsoluteUrl(`/blog/${post.slug}`, siteUrl);
   const imageUrl = getAbsoluteUrl(post.image, siteUrl);
-  const structuredData = getBlogDetailStructuredData(post, pageUrl, imageUrl);
 
   return (
     <article
@@ -228,11 +190,17 @@ export default async function BlogDetailPage({
       <meta content={post.publishedAtIso} itemProp="datePublished" />
       <meta content={post.publishedAtIso} itemProp="dateModified" />
       {imageUrl ? <meta content={imageUrl} itemProp="image" /> : null}
-      <script
-        dangerouslySetInnerHTML={{
-          __html: stringifyJsonLd(structuredData),
-        }}
-        type="application/ld+json"
+      <JsonLdScript
+        data={createBlogPostingStructuredData({
+          authorName: post.author,
+          dateModified: post.publishedAtIso,
+          datePublished: post.publishedAtIso,
+          description: post.detail.seoDescription,
+          headline: post.title,
+          imagePath: post.image,
+          section: post.category,
+          urlPath: `/blog/${post.slug}`,
+        })}
       />
       <div className={styles.blogDetailInner}>
         <header className={styles.blogDetailHeader}>

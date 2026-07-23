@@ -4,17 +4,20 @@ import { CtaSection } from "../_components/CtaSection";
 import { CustomerReviewSection } from "../_components/CustomerReviewSection";
 import { FaqSection } from "../_components/FaqSection";
 import { Hero } from "../_components/Hero";
+import { JsonLdScript } from "../_components/JsonLdScript";
 import { Metrics } from "../_components/Metrics";
 import { PortfolioSection } from "../_components/PortfolioSection";
 import { ServicesSection } from "../_components/ServicesSection";
 import { landingFaqs } from "../_content/faqs";
 import { createPageMetadata } from "../_content/seo";
+import { createHomeStructuredData } from "../_content/structured-data";
 
 export const metadata = createPageMetadata("home");
 
 export default function Home() {
   return (
     <>
+      <JsonLdScript data={createHomeStructuredData()} />
       <Hero />
       <Metrics />
       <PortfolioSection />

@@ -3,6 +3,7 @@ import { getPublicAssetUrl } from "@repo/supabase/files";
 import { listPublishedPortfolioItems } from "@repo/supabase/portfolio";
 
 import { CtaSection } from "../../_components/CtaSection";
+import { JsonLdScript } from "../../_components/JsonLdScript";
 import {
   getPortfolioCategoryIdFromValue,
   mapPortfolioRows,
@@ -10,6 +11,7 @@ import {
   portfolioItems,
 } from "../../_content/portfolio";
 import { createPageMetadata } from "../../_content/seo";
+import { createStaticPageStructuredData } from "../../_content/structured-data";
 import { createUserSupabaseClient } from "../../../lib/supabase";
 import { PortfolioGallery } from "./PortfolioGallery";
 import styles from "./page.module.css";
@@ -49,6 +51,11 @@ export default async function PortfolioPage({ searchParams }: PortfolioPageProps
 
   return (
     <div className={styles.portfolioPage}>
+      <JsonLdScript
+        data={createStaticPageStructuredData("portfolio", {
+          pageType: "CollectionPage",
+        })}
+      />
       <section className={styles.hero}>
         <Image
           alt="MBC 베이비페어 박람회 포스터 디자인 및 인쇄 제작 사례, 핑크 톤 베이비 일러스트가 돋보이는 행사 홍보물"

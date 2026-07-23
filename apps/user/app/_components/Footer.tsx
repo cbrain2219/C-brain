@@ -1,34 +1,60 @@
 import Image from "next/image";
 import Link from "next/link";
 
+import {
+  type CompanySocialLink,
+  companyProfile,
+  companySocialLinks,
+} from "../_content/company";
 import styles from "../page.module.css";
 
-const socials = [
-  {
-    href: "https://instagram.com/cbrain_design_group",
+const footerSocialOrder = [
+  "instagram",
+  "naverBlog",
+  "youtube",
+] as const satisfies CompanySocialLink["id"][];
+
+const footerSocialIconById = {
+  instagram: {
     icon: "/figma-assets/footer-instagram.png",
-    imageClassName: styles.socialIconImageInstagram,
+    imageClassName: styles.socialIconImageInstagram!,
     imageHeight: 20,
     imageWidth: 20,
-    label: "인스타그램",
   },
-  {
-    href: "https://blog.naver.com/cbrain_design_group",
+  naverBlog: {
     icon: "/figma-assets/footer-naver-blog.png",
-    imageClassName: styles.socialIconImageBlog,
+    imageClassName: styles.socialIconImageBlog!,
     imageHeight: 29,
     imageWidth: 38,
-    label: "네이버 블로그",
   },
-  {
-    href: "https://www.youtube.com/@CreateDesigngroup",
+  youtube: {
     icon: "/figma-assets/footer-youtube.png",
-    imageClassName: styles.socialIconImageYoutube,
+    imageClassName: styles.socialIconImageYoutube!,
     imageHeight: 14,
     imageWidth: 20,
-    label: "유튜브",
   },
-];
+} as const satisfies Record<
+  CompanySocialLink["id"],
+  {
+    icon: string;
+    imageClassName: string;
+    imageHeight: number;
+    imageWidth: number;
+  }
+>;
+
+const socials = footerSocialOrder.map((id) => {
+  const social = companySocialLinks.find((link) => link.id === id);
+
+  if (!social) {
+    throw new Error(`Missing footer social link: ${id}`);
+  }
+
+  return {
+    ...social,
+    ...footerSocialIconById[id],
+  };
+});
 
 const policies = [
   { href: "#", label: "이용약관" },
@@ -42,16 +68,16 @@ export function Footer() {
       <div className={styles.footerTop}>
         <Link aria-label="씨브레인 홈" className={styles.footerLogo} href="/">
           <Image
-            alt="씨브레인"
-            height={21}
-            src="/figma-assets/cbrain-logo-main.svg"
-            width={77}
+            alt={companyProfile.logo.main.alt}
+            height={companyProfile.logo.main.footerHeight}
+            src={companyProfile.logo.main.src}
+            width={companyProfile.logo.main.width}
           />
           <Image
-            alt="크리에이티브 디자인 그룹"
-            height={4}
-            src="/figma-assets/cbrain-logo-tagline.svg"
-            width={76}
+            alt={companyProfile.logo.tagline.alt}
+            height={companyProfile.logo.tagline.footerHeight}
+            src={companyProfile.logo.tagline.src}
+            width={companyProfile.logo.tagline.width}
           />
         </Link>
         <div className={styles.socialLinks}>
@@ -93,9 +119,9 @@ export function Footer() {
         </div>
         <div className={styles.customerCenter}>
           <p className={styles.customerCenterLabel}>고객센터</p>
-          <p>전화번호 : 070-8830-2219</p>
-          <p>월~목 : 8:00 - 17:00 / 금 : 8:00 - 16:00</p>
-          <p>점심시간 : 11:00 - 12:30</p>
+          <p>전화번호 : {companyProfile.phone}</p>
+          <p>{companyProfile.operatingHours.footerWeekday}</p>
+          <p>{companyProfile.operatingHours.footerLunch}</p>
         </div>
       </div>
 
@@ -103,18 +129,17 @@ export function Footer() {
 
       <div className={styles.companyInfo}>
         <p>
-          씨브레인 | 대표자명 : 정혜영 | 사업자 등록번호 : 120-07-84415
+          {`${companyProfile.name} | 대표자명 : ${companyProfile.representative} | 사업자 등록번호 : ${companyProfile.businessRegistrationNumber}`}
         </p>
-        <p>통신판매 신고번호 : 2022-성남중원-0006</p>
+        <p>통신판매 신고번호 : {companyProfile.mailOrderSalesNumber}</p>
+        <p>본사 : {companyProfile.address.full}</p>
+        <p>일산지사 : {companyProfile.branches.ilsan}</p>
+        <p>성수동 출고실(인쇄물) : {companyProfile.productionRooms.seongsu}</p>
+        <p>파주 출고실(인쇄물) : {companyProfile.productionRooms.paju}</p>
+        <p>오산 출고실(실사) : {companyProfile.productionRooms.osan}</p>
         <p>
-          본사 : 경기도 성남시 중원구 사기막골로 99 센트럴비즈타워2차 B타워
-          218호
+          {`개인정보관리책임자 : ${companyProfile.privacyManager.name}(${companyProfile.privacyManager.email})`}
         </p>
-        <p>일산지사 : 경기도 고양시 일산동구 장발산로 15 드림월드빌딩 415호</p>
-        <p>성수동 출고실(인쇄물) : 서울특별시 성동구 성수일로80</p>
-        <p>파주 출고실(인쇄물) : 경기도 파주시 산업단지길 179</p>
-        <p>오산 출고실(실사) : 경기도 오산시 독산성로 232번길 14-24</p>
-        <p>개인정보관리책임자 : 김훈(jhy@cbrain.kr)</p>
         <p className={styles.copyrightText}>
           Copyright ⓒ 2026 C-Brain. All rights reserved.
         </p>

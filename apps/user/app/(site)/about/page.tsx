@@ -1,6 +1,7 @@
 import Image from "next/image";
 
 import { Icon } from "../../../components/Icon";
+import { JsonLdScript } from "../../_components/JsonLdScript";
 import { PartnerLogoCloud } from "../../_components/PartnerLogoCloud";
 import {
   companyChannels,
@@ -12,6 +13,7 @@ import {
   companyTimelineDesktop,
 } from "../../_content/company";
 import { createPageMetadata } from "../../_content/seo";
+import { createStaticPageStructuredData } from "../../_content/structured-data";
 import styles from "./page.module.css";
 
 export const metadata = createPageMetadata("about");
@@ -82,6 +84,12 @@ function HistoryTimeline({
 export default function AboutPage() {
   return (
     <>
+      <JsonLdScript
+        data={createStaticPageStructuredData("about", {
+          includeOrganization: true,
+          pageType: "AboutPage",
+        })}
+      />
       <section className={styles.hero}>
         <Image
           alt="편집디자인 전문회사 씨브레인 로고"

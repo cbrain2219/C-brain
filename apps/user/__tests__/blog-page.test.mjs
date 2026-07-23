@@ -33,6 +33,7 @@ const paths = {
   posts: new URL("../app/(site)/blog/_data/blogPosts.ts", import.meta.url),
   types: new URL("../app/(site)/blog/_types/blog.ts", import.meta.url),
   header: new URL("../app/_components/Header.tsx", import.meta.url),
+  company: new URL("../app/_content/company.ts", import.meta.url),
   historyBoundary: new URL(
     "../app/(site)/blog/_components/BlogHistoryBoundary.tsx",
     import.meta.url,
@@ -79,6 +80,24 @@ test("blog list page exposes SEO metadata", async () => {
   assert.match(page, /import \{ createPageMetadata \} from "..\/..\/_content\/seo"/);
   assert.match(page, /export const metadata = createPageMetadata\("blog"\)/);
   assert.doesNotMatch(page, /siteName: "C-Brain"/);
+});
+
+test("header keeps logo presentation details local instead of importing company profile", async () => {
+  const [header, company] = await Promise.all([
+    source("header"),
+    source("company"),
+  ]);
+
+  assert.doesNotMatch(header, /companyProfile/);
+  assert.match(header, /alt="씨브레인"/);
+  assert.match(header, /src="\/figma-assets\/cbrain-logo-main\.svg"/);
+  assert.match(header, /height=\{20\}/);
+  assert.match(header, /width=\{77\}/);
+  assert.match(header, /alt="크리에이티브 디자인 그룹"/);
+  assert.match(header, /src="\/figma-assets\/cbrain-logo-tagline\.svg"/);
+  assert.match(header, /height=\{4\}/);
+  assert.match(header, /width=\{76\}/);
+  assert.doesNotMatch(company, /headerHeight/);
 });
 
 test("blog featured carousel supports configurable autoplay and hover pause", async () => {

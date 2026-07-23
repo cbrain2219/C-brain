@@ -21,6 +21,10 @@ const complaintTypesPath = new URL(
   import.meta.url,
 );
 const footerPath = new URL("../app/_components/Footer.tsx", import.meta.url);
+const companyContentPath = new URL(
+  "../app/_content/company.ts",
+  import.meta.url,
+);
 const attachmentsPath = new URL(
   "../app/(site)/complaint/attachments.ts",
   import.meta.url,
@@ -420,53 +424,98 @@ test("complaint attachment limits are managed from shared constants", async () =
 
 test("footer logo images rely on image dimensions without duplicate inline sizing", async () => {
   const footerSource = await readFile(footerPath, "utf8");
+  const { companyProfile } = await importTypescriptModule(companyContentPath);
 
   assert.match(
     footerSource,
     /<Link aria-label="씨브레인 홈" className=\{styles\.footerLogo\} href="\/">/,
   );
-  assert.match(footerSource, /height=\{21\}/);
-  assert.match(footerSource, /width=\{77\}/);
-  assert.match(footerSource, /height=\{4\}/);
-  assert.match(footerSource, /width=\{76\}/);
+  assert.equal(companyProfile.logo.main.footerHeight, 21);
+  assert.equal(companyProfile.logo.main.width, 77);
+  assert.equal(companyProfile.logo.tagline.footerHeight, 4);
+  assert.equal(companyProfile.logo.tagline.width, 76);
+  assert.match(footerSource, /companyProfile\.logo\.main\.footerHeight/);
+  assert.match(footerSource, /companyProfile\.logo\.main\.width/);
+  assert.match(footerSource, /companyProfile\.logo\.tagline\.footerHeight/);
+  assert.match(footerSource, /companyProfile\.logo\.tagline\.width/);
   assert.doesNotMatch(footerSource, /style=\{\{ height: 21, width: 77 \}\}/);
   assert.doesNotMatch(footerSource, /style=\{\{ height: 4, width: 76 \}\}/);
 });
 
 test("footer contains current C-Brain business information", async () => {
   const footerSource = await readFile(footerPath, "utf8");
-  const normalizedFooterSource = footerSource.replace(/\s+/g, " ");
+  const { companyProfile } = await importTypescriptModule(companyContentPath);
 
-  for (const text of [
-    "전화번호 : 070-8830-2219",
-    "월~목 : 8:00 - 17:00 / 금 : 8:00 - 16:00",
-    "점심시간 : 11:00 - 12:30",
-    "씨브레인 | 대표자명 : 정혜영 | 사업자 등록번호 : 120-07-84415",
-    "통신판매 신고번호 : 2022-성남중원-0006",
-    "본사 : 경기도 성남시 중원구 사기막골로 99 센트럴비즈타워2차 B타워 218호",
-    "일산지사 : 경기도 고양시 일산동구 장발산로 15 드림월드빌딩 415호",
-    "성수동 출고실(인쇄물) : 서울특별시 성동구 성수일로80",
-    "파주 출고실(인쇄물) : 경기도 파주시 산업단지길 179",
-    "오산 출고실(실사) : 경기도 오산시 독산성로 232번길 14-24",
-    "개인정보관리책임자 : 김훈(jhy@cbrain.kr)",
-  ]) {
-    assert.ok(normalizedFooterSource.includes(text));
-  }
+  assert.equal(companyProfile.name, "씨브레인");
+  assert.equal(companyProfile.representative, "정혜영");
+  assert.equal(companyProfile.phone, "070-8830-2219");
+  assert.equal(companyProfile.businessRegistrationNumber, "120-07-84415");
+  assert.equal(companyProfile.mailOrderSalesNumber, "2022-성남중원-0006");
+  assert.equal(companyProfile.privacyManager.email, "jhy@cbrain.kr");
+
+  assert.match(footerSource, /companyProfile/);
+  assert.match(footerSource, /companyProfile\.phone/);
+  assert.match(footerSource, /companyProfile\.operatingHours\.footerWeekday/);
+  assert.match(footerSource, /companyProfile\.representative/);
+  assert.match(footerSource, /companyProfile\.businessRegistrationNumber/);
+  assert.match(footerSource, /companyProfile\.mailOrderSalesNumber/);
+  assert.match(footerSource, /companyProfile\.address\.full/);
+  assert.match(footerSource, /companyProfile\.branches\.ilsan/);
+  assert.match(footerSource, /companyProfile\.productionRooms\.seongsu/);
+  assert.match(footerSource, /companyProfile\.productionRooms\.paju/);
+  assert.match(footerSource, /companyProfile\.productionRooms\.osan/);
+  assert.match(footerSource, /companyProfile\.privacyManager\.email/);
+  assert.doesNotMatch(footerSource, /070-8830-2219/);
+  assert.doesNotMatch(footerSource, /120-07-84415/);
+  assert.doesNotMatch(footerSource, /2022-성남중원-0006/);
 });
 
 test("footer social links point to C-Brain channels", async () => {
   const footerSource = await readFile(footerPath, "utf8");
+  const { companySocialLinks } = await importTypescriptModule(companyContentPath);
 
-  for (const href of [
-    "https://instagram.com/cbrain_design_group",
-    "https://blog.naver.com/cbrain_design_group",
-    "https://www.youtube.com/@CreateDesigngroup",
-  ]) {
-    assert.match(footerSource, new RegExp(`href: "${href}"`));
-  }
+  assert.deepEqual(
+    companySocialLinks.map((link) => link.href),
+    [
+      "https://blog.naver.com/cbrain_design_group",
+      "https://instagram.com/cbrain_design_group",
+      "https://www.youtube.com/@CreateDesigngroup",
+    ],
+  );
 
+  assert.match(footerSource, /companySocialLinks/);
+  assert.match(footerSource, /href=\{social\.href\}/);
+  assert.doesNotMatch(footerSource, /https:\/\/instagram\.com\/cbrain_design_group/);
+  assert.doesNotMatch(footerSource, /https:\/\/blog\.naver\.com\/cbrain_design_group/);
+  assert.doesNotMatch(footerSource, /https:\/\/www\.youtube\.com\/@CreateDesigngroup/);
   assert.match(footerSource, /target="_blank"/);
   assert.match(footerSource, /rel="noopener noreferrer"/);
+});
+
+test("company profile feeds reusable company info rows", async () => {
+  const companySource = await readFile(companyContentPath, "utf8");
+  const { companyInfoRows, companyProfile } =
+    await importTypescriptModule(companyContentPath);
+
+  assert.match(companySource, /export const companyProfile/);
+  assert.match(companySource, /companyProfile\.phone/);
+  assert.match(companySource, /companyProfile\.email/);
+  assert.match(companySource, /companyProfile\.address\.lines/);
+  assert.match(companySource, /companyProfile\.businessRegistrationNumber/);
+  assert.match(companySource, /companyProfile\.mailOrderSalesNumber/);
+
+  assert.deepEqual(
+    companyInfoRows.find((row) => row.label === "전화")?.value,
+    companyProfile.phone,
+  );
+  assert.deepEqual(
+    companyInfoRows.find((row) => row.label === "이메일")?.value,
+    companyProfile.email,
+  );
+  assert.deepEqual(
+    companyInfoRows.find((row) => row.label === "소재지")?.value,
+    companyProfile.address.lines,
+  );
 });
 
 test("complaint form delegates required field state to react-hook-form", async () => {
