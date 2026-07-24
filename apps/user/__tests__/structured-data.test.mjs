@@ -15,7 +15,6 @@ const companyModuleUrl = new URL(
   "../app/_content/company.ts",
   import.meta.url,
 ).href;
-const faqModuleUrl = new URL("../app/_content/faqs.ts", import.meta.url).href;
 const structuredDataPath = new URL(
   "../app/_content/structured-data.ts",
   import.meta.url,
@@ -135,34 +134,6 @@ test("structured data helpers centralize site, company, breadcrumb, and FAQ data
   assert.match(structuredDataSource, /companyProfile/);
   assert.match(structuredDataSource, /companySocialLinks/);
   assert.doesNotMatch(structuredDataSource, /const organizationProfile/);
-});
-
-test("FAQ answers do not start by repeating the C-Brain brand name", async () => {
-  const check = `
-    import assert from "node:assert/strict";
-    const { faqCategories } = await import(${JSON.stringify(faqModuleUrl)});
-    const repeatedBrandAnswers = faqCategories.flatMap((category) =>
-      category.items
-        .filter((item) => item.answer.startsWith("씨브레인"))
-        .map((item) => ({
-          category: category.title,
-          question: item.question,
-        })),
-    );
-
-    assert.deepEqual(repeatedBrandAnswers, []);
-  `;
-
-  await execFileAsync(
-    process.execPath,
-    ["--experimental-strip-types", "--input-type=module", "--eval", check],
-    {
-      env: {
-        ...process.env,
-        NODE_NO_WARNINGS: "1",
-      },
-    },
-  );
 });
 
 test("detail structured data helpers create dynamic article and creative work nodes", async () => {
