@@ -1,7 +1,8 @@
-import { Button } from "@repo/ui/button";
+import { Button, ButtonLink } from "@repo/ui/button";
 
 import { Icon } from "../../components/Icon";
 import { PageHero } from "../../components/PageHero";
+import { KAKAO_CHANNEL_URL } from "../_content/contact";
 import styles from "../page.module.css";
 import { createGradientBorderButtonStyle } from "./buttonStyles";
 
@@ -22,13 +23,16 @@ export function Hero() {
     <PageHero
       actions={
         <>
-          <Button
+          <ButtonLink
             className={styles.heroGradientButton}
+            href={KAKAO_CHANNEL_URL}
+            rel="noreferrer"
             rightIcon={<Icon name="message-typing" size={16} />}
             style={kakaoButtonStyle}
+            target="_blank"
           >
             실시간 카톡상담
-          </Button>
+          </ButtonLink>
           <Button
             className={styles.heroGradientButton}
             rightIcon={<Icon name="arrow-right" size={16} />}

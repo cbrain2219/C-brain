@@ -1,4 +1,5 @@
 import {
+  type AnchorHTMLAttributes,
   type ButtonHTMLAttributes,
   type CSSProperties,
   type ReactNode,
@@ -9,6 +10,13 @@ type ButtonVariant = "solid" | "outline";
 type ButtonSize = "md" | "sm";
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+  size?: ButtonSize;
+  variant?: ButtonVariant;
+  leftIcon?: ReactNode;
+  rightIcon?: ReactNode;
+}
+
+export interface ButtonLinkProps extends AnchorHTMLAttributes<HTMLAnchorElement> {
   size?: ButtonSize;
   variant?: ButtonVariant;
   leftIcon?: ReactNode;
@@ -28,6 +36,7 @@ const baseStyle: CSSProperties = {
   fontWeight: 700,
   lineHeight: "21px",
   letterSpacing: 0,
+  textDecoration: "none",
   whiteSpace: "nowrap",
   cursor: "pointer",
 };
@@ -104,3 +113,39 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
 );
 
 Button.displayName = "Button";
+
+export const ButtonLink = forwardRef<HTMLAnchorElement, ButtonLinkProps>(
+  (
+    {
+      children,
+      className,
+      leftIcon,
+      rightIcon,
+      size = "md",
+      style,
+      variant = "solid",
+      ...props
+    },
+    ref,
+  ) => {
+    return (
+      <a
+        {...props}
+        ref={ref}
+        className={className}
+        style={{
+          ...baseStyle,
+          ...sizeStyles[size],
+          ...variantStyles[variant],
+          ...style,
+        }}
+      >
+        {leftIcon ? <span style={iconStyle}>{leftIcon}</span> : null}
+        {children}
+        {rightIcon ? <span style={iconStyle}>{rightIcon}</span> : null}
+      </a>
+    );
+  },
+);
+
+ButtonLink.displayName = "ButtonLink";

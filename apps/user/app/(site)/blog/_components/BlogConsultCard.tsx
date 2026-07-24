@@ -1,6 +1,7 @@
-import { Button } from "@repo/ui/button";
+import { ButtonLink } from "@repo/ui/button";
 
 import { Icon } from "../../../../components/Icon";
+import { KAKAO_CHANNEL_URL } from "../../../_content/contact";
 
 import styles from "../page.module.css";
 
@@ -30,12 +31,15 @@ export function BlogConsultCard({ className }: BlogConsultCardProps) {
           견적·납기·디자인 질문을 바로 물어보세요
         </p>
       </div>
-      <Button
+      <ButtonLink
         className={styles.blogConsultButton}
+        href={KAKAO_CHANNEL_URL}
+        rel="noreferrer"
         rightIcon={<Icon name="arrow-right" size={16} />}
+        target="_blank"
       >
         지금 상담 시작하기
-      </Button>
+      </ButtonLink>
     </aside>
   );
 }

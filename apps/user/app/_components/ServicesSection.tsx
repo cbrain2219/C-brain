@@ -1,9 +1,10 @@
-import { Button } from "@repo/ui/button";
+import { Button, ButtonLink } from "@repo/ui/button";
 import { type CSSProperties } from "react";
 
 import { Icon } from "../../components/Icon";
 import type { IconName } from "../../components/Icon";
 import { SectionLayout } from "../../components/SectionLayout";
+import { KAKAO_CHANNEL_URL } from "../_content/contact";
 import styles from "../page.module.css";
 
 type ServiceCard = {
@@ -142,16 +143,24 @@ export function ServicesSection() {
                 className={`${styles.serviceMeta} ${service.isQuote ? styles.serviceMetaQuote : ""}`}
               >
                 {service.isQuote ? null : <strong>{service.price}</strong>}
-                <Button
-                  rightIcon={<Icon name="arrow-right" size={16} />}
-                  style={
-                    service.isQuote ? quoteButtonStyle : serviceButtonStyle
-                  }
-                >
-                  {service.isQuote
-                    ? "견적 후 주문(카카오톡)"
-                    : "정찰제 즉시결제"}
-                </Button>
+                {service.isQuote ? (
+                  <ButtonLink
+                    href={KAKAO_CHANNEL_URL}
+                    rel="noreferrer"
+                    rightIcon={<Icon name="arrow-right" size={16} />}
+                    style={quoteButtonStyle}
+                    target="_blank"
+                  >
+                    견적 후 주문(카카오톡)
+                  </ButtonLink>
+                ) : (
+                  <Button
+                    rightIcon={<Icon name="arrow-right" size={16} />}
+                    style={serviceButtonStyle}
+                  >
+                    정찰제 즉시결제
+                  </Button>
+                )}
               </div>
             </article>
           ))}
@@ -166,23 +175,29 @@ export function ServicesSection() {
                 <p>카카오톡으로 1:1 상담이 가능합니다.</p>
               </div>
             </div>
-            <Button
+            <ButtonLink
+              href={KAKAO_CHANNEL_URL}
+              rel="noreferrer"
               rightIcon={<Icon name="arrow-right" size={16} />}
               style={consultButtonStyle}
+              target="_blank"
             >
               실시간 카톡상담
-            </Button>
+            </ButtonLink>
           </article>
         </div>
 
         <div className={styles.consultBox}>
           <p className={styles.consultPrompt}>주문 전 상담이 필요하신가요?</p>
-          <Button
+          <ButtonLink
+            href={KAKAO_CHANNEL_URL}
+            rel="noreferrer"
             rightIcon={<Icon name="arrow-right" size={16} />}
             style={consultButtonStyle}
+            target="_blank"
           >
             실시간 카톡상담
-          </Button>
+          </ButtonLink>
         </div>
       </div>
     </SectionLayout>

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useEffect } from "react";
 
 import { Icon } from "../../../components/Icon";
+import { KAKAO_CHANNEL_URL } from "../../_content/contact";
 import {
   type OrderSelectionSummary,
   formatOrderCurrency,
@@ -63,7 +64,6 @@ type OrderPaymentResultProps = OrderPaymentResultCommonProps &
   );
 
 const resultStepIndex = 3;
-const kakaoChannelUrl = "https://pf.kakao.com/_JAFAG";
 
 const defaultFailureResultData: OrderPaymentFailureData = {
   failureReason: "결제가 정상적으로 완료되지 않았습니다.",
@@ -254,7 +254,7 @@ function OrderResultActions({
       </Link>
       <a
         className={`${styles.resultActionButton} ${styles.resultActionKakao}`}
-        href={kakaoChannelUrl}
+        href={KAKAO_CHANNEL_URL}
         rel="noreferrer"
         target="_blank"
       >

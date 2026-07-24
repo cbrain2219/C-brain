@@ -4,6 +4,7 @@ import { type MouseEvent, useEffect, useMemo, useState } from "react";
 
 import { HorizontalDragScroll } from "../../../components/HorizontalDragScroll";
 import { Icon } from "../../../components/Icon";
+import { KAKAO_CHANNEL_URL } from "../../_content/contact";
 import styles from "./page.module.css";
 
 type FaqCategoryNavItem = {
@@ -151,7 +152,12 @@ export function FaqCategoryNavigation({
               <p>찾으시는 내용이 없다면?</p>
               <strong>실시간 카톡상담</strong>
             </div>
-            <a className={styles.sidebarContactButton} href="#faq-contact">
+            <a
+              className={styles.sidebarContactButton}
+              href={KAKAO_CHANNEL_URL}
+              rel="noreferrer"
+              target="_blank"
+            >
               지금 상담 시작하기
               <Icon name="arrow-right" size={24} />
             </a>

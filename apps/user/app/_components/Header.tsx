@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@repo/ui/button";
+import { Button, ButtonLink } from "@repo/ui/button";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -13,6 +13,7 @@ import {
 } from "react";
 
 import { Icon } from "../../components/Icon";
+import { KAKAO_CHANNEL_URL } from "../_content/contact";
 import styles from "../page.module.css";
 import { createGradientBorderButtonStyle } from "./buttonStyles";
 
@@ -181,7 +182,14 @@ export function Header() {
 
       <div className={styles.headerActions}>
         <Button style={priceButtonStyle}>정찰제 가격 보기</Button>
-        <Button style={kakaoButtonStyle}>실시간 카톡상담</Button>
+        <ButtonLink
+          href={KAKAO_CHANNEL_URL}
+          rel="noreferrer"
+          style={kakaoButtonStyle}
+          target="_blank"
+        >
+          실시간 카톡상담
+        </ButtonLink>
       </div>
 
       <button

@@ -1,8 +1,9 @@
-import { Button } from "@repo/ui/button";
+import { ButtonLink } from "@repo/ui/button";
 import Link from "next/link";
 import type { CSSProperties, ReactNode } from "react";
 
 import { Icon } from "../../components/Icon";
+import { KAKAO_CHANNEL_URL } from "../_content/contact";
 import styles from "./CtaSection.module.css";
 import { createGradientBorderButtonStyle } from "./buttonStyles";
 
@@ -66,10 +67,15 @@ export function CtaSection({
           ) : null}
         </div>
         <div className={styles.actions}>
-          <Button style={kakaoButtonStyle}>
+          <ButtonLink
+            href={KAKAO_CHANNEL_URL}
+            rel="noreferrer"
+            style={kakaoButtonStyle}
+            target="_blank"
+          >
             <span>실시간 카톡상담</span>
             <Icon className={styles.icon} name="message-typing" size={24} />
-          </Button>
+          </ButtonLink>
           {secondaryAction ? (
             <Link
               className={styles.secondaryAction}

@@ -64,6 +64,7 @@ test("order page route, content, responsive styles, and navigation are wired", (
   const dialogPath = "apps/user/app/(site)/order/OrderConsultDialog.tsx";
   const stylesPath = "apps/user/app/(site)/order/page.module.css";
   const contentPath = "apps/user/app/_content/order.ts";
+  const contactPath = "apps/user/app/_content/contact.ts";
 
   assert.equal(existsSync(path.join(repoRoot, routePath)), true);
   assert.equal(existsSync(path.join(repoRoot, flowSectionPath)), true);
@@ -73,6 +74,7 @@ test("order page route, content, responsive styles, and navigation are wired", (
   assert.equal(existsSync(path.join(repoRoot, dialogPath)), true);
   assert.equal(existsSync(path.join(repoRoot, stylesPath)), true);
   assert.equal(existsSync(path.join(repoRoot, contentPath)), true);
+  assert.equal(existsSync(path.join(repoRoot, contactPath)), true);
 
   const routeSource = read(routePath);
   const flowSectionSource = read(flowSectionPath);
@@ -83,6 +85,7 @@ test("order page route, content, responsive styles, and navigation are wired", (
   const stylesSource = read(stylesPath);
   const landingStylesSource = read("apps/user/app/page.module.css");
   const contentSource = read(contentPath);
+  const contactSource = read(contactPath);
   const headerSource = read("apps/user/app/_components/Header.tsx");
   const iconSource = read("apps/user/components/Icon.tsx");
   const orderMethodsSource = extractBetween(
@@ -396,7 +399,8 @@ test("order page route, content, responsive styles, and navigation are wired", (
   assert.match(dialogSource, /event\.target === event\.currentTarget/);
   assert.match(dialogSource, /맞춤·대량·촬영/);
   assert.match(dialogSource, /카카오톡 1:1 상담으로 이동합니다/);
-  assert.match(dialogSource, /https:\/\/pf\.kakao\.com\/_JAFAG/);
+  assert.match(dialogSource, /href=\{KAKAO_CHANNEL_URL\}/);
+  assert.match(contactSource, /https:\/\/pf\.kakao\.com\/_JAFAG/);
   assert.match(stylesSource, /\.stepList\s*\{[^}]*display:\s*none/s);
   assert.match(orderInnerRule, /width:\s*100%/);
   assert.match(
@@ -874,7 +878,7 @@ test("order payment success and failure result routes are wired", () => {
   assert.match(resultSource, /다시 결제하기/);
   assert.equal(countMatches(guideLinesSource, /\n\s*["']/g), 4);
   assert.match(guideLinesSource, /아래 \[결제완료 상담하기\]/);
-  assert.match(resultSource, /https:\/\/pf\.kakao\.com\/_JAFAG/);
+  assert.match(resultSource, /href=\{KAKAO_CHANNEL_URL\}/);
   assert.match(resultSource, /target="_blank"/);
   assert.match(resultSource, /rel="noreferrer"/);
   assert.match(stylesSource, /\.resultPage\s*\{/);

@@ -4,9 +4,8 @@ import type { MouseEvent } from "react";
 import { useEffect } from "react";
 
 import { Icon } from "../../../components/Icon";
+import { KAKAO_CHANNEL_URL } from "../../_content/contact";
 import styles from "./page.module.css";
-
-const kakaoChannelUrl = "https://pf.kakao.com/_JAFAG";
 
 type OrderConsultDialogProps = {
   isOpen: boolean;
@@ -76,7 +75,7 @@ export function OrderConsultDialog({
           </div>
           <a
             className={styles.consultDialogAction}
-            href={kakaoChannelUrl}
+            href={KAKAO_CHANNEL_URL}
             rel="noreferrer"
             target="_blank"
           >

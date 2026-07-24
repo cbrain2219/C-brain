@@ -1,5 +1,7 @@
 import type { IconName } from "../../components/Icon";
 
+import { KAKAO_CHANNEL_URL } from "./contact";
+
 export const companyMetrics = [
   { label: "업력", value: "26년", description: "2000년 씨브레인 설립" },
   {
@@ -197,7 +199,7 @@ export const companyChannels: {
     icon: "channel-message-typing",
     title: "카카오톡 1:1 상담",
     description: "빠른 견적 및 상담",
-    href: "https://pf.kakao.com/_JAFAG",
+    href: KAKAO_CHANNEL_URL,
   },
   {
     icon: "channel-home-02",

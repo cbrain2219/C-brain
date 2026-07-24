@@ -1,9 +1,10 @@
 "use client";
 
-import { Button } from "@repo/ui/button";
+import { ButtonLink } from "@repo/ui/button";
 import { type CSSProperties } from "react";
 
 import { Icon } from "../../components/Icon";
+import { KAKAO_CHANNEL_URL } from "../_content/contact";
 import { type ServiceItem, services } from "../_content/services";
 import styles from "../page.module.css";
 
@@ -113,12 +114,15 @@ export function ServiceCards({
                 <p>카카오톡으로 1:1 상담이 가능합니다.</p>
               </div>
             </div>
-            <Button
+            <ButtonLink
+              href={KAKAO_CHANNEL_URL}
+              rel="noreferrer"
               rightIcon={<Icon name="arrow-right" size={16} />}
               style={consultButtonStyle}
+              target="_blank"
             >
               실시간 카톡상담
-            </Button>
+            </ButtonLink>
           </article>
         ) : null}
       </div>
@@ -126,12 +130,15 @@ export function ServiceCards({
       {showConsultAction ? (
         <div className={styles.consultBox}>
           <p className={styles.consultPrompt}>주문 전 상담이 필요하신가요?</p>
-          <Button
+          <ButtonLink
+            href={KAKAO_CHANNEL_URL}
+            rel="noreferrer"
             rightIcon={<Icon name="arrow-right" size={16} />}
             style={consultButtonStyle}
+            target="_blank"
           >
             실시간 카톡상담
-          </Button>
+          </ButtonLink>
         </div>
       ) : null}
     </>
