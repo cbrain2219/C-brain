@@ -10,7 +10,7 @@
   --faq-header-offset: 80px;
   --faq-mobile-category-height: 52px;
 
-  padding-top: 80px;
+  padding-top: var(--faq-header-offset);
   background: #ffffff;
   color: var(--landing-gray-800);
   container-type: inline-size;
@@ -268,6 +268,12 @@
   flex: 1 1 auto;
   word-break: keep-all;
   overflow-wrap: anywhere;
+}
+
+@media (max-width: 1099px) {
+  .faqPage {
+    --faq-header-offset: 64px;
+  }
 }
 
 @media (min-width: 640px) {
