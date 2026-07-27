@@ -460,6 +460,33 @@ test("customer reviews page progressively reveals testimonials after the first s
   assert.doesNotMatch(stylesSource, /\.reviewsTestimonialCard:nth-child/);
 });
 
+test("customer review cards use an 8px gap until the PC breakpoint", async () => {
+  const stylesSource = await readFile(stylesPath, "utf8");
+  const baseTestimonialGrid = extractCssBlock(
+    stylesSource,
+    ".reviewsTestimonialGrid",
+  );
+  const desktopMedia = extractCssBlock(
+    stylesSource,
+    "@media (min-width: 1080px)",
+  );
+  const pcMedia = extractCssBlock(
+    stylesSource,
+    "@media (min-width: 1440px)",
+  );
+
+  assert.match(baseTestimonialGrid, /gap: 8px;/);
+  assert.doesNotMatch(baseTestimonialGrid, /gap: 20px;/);
+  assert.doesNotMatch(
+    desktopMedia,
+    /\.reviewsTestimonialGrid\s*\{[^}]*gap: 20px;/s,
+  );
+  assert.match(
+    pcMedia,
+    /\.reviewsTestimonialGrid\s*\{[^}]*gap: 20px;/s,
+  );
+});
+
 test("customer testimonials are ready for dynamic admin data", async () => {
   const contentSource = await readFile(contentPath, "utf8");
   const testimonialListSource = await readFile(testimonialListPath, "utf8");

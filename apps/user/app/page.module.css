@@ -1577,17 +1577,10 @@
 .reviewsTestimonialGrid {
   display: grid;
   grid-template-columns: 1fr;
+  gap: 8px;
   margin: 0;
   padding: 0;
   list-style: none;
-}
-
-.reviewsInterviewGrid {
-  gap: 8px;
-}
-
-.reviewsTestimonialGrid {
-  gap: 20px;
 }
 
 .reviewsTestimonialList {
@@ -3184,6 +3177,10 @@
 
   .reviewsInterviewGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
+  }
+
+  .reviewsTestimonialGrid {
     gap: 20px;
   }
 
