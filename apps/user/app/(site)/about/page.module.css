@@ -601,10 +601,10 @@
   margin: 0;
   color: #1e293b;
   font-family: var(--font-sans);
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 500;
   letter-spacing: -0.015em;
-  line-height: 20px;
+  line-height: 24px;
 }
 
 .reasonGrid {
@@ -720,10 +720,10 @@
 .historyHeading p {
   color: #f8fafc;
   font-family: var(--font-sans);
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 500;
   letter-spacing: -0.015em;
-  line-height: 20px;
+  line-height: 24px;
 }
 
 .historySection .sectionBadge {
@@ -1513,7 +1513,7 @@
   .bodyCopy,
   .sectionHeading p,
   .historyHeading p {
-    font-size: 14px;
+    font-size: 16px;
     line-height: 24px;
   }
 
@@ -1571,7 +1571,7 @@
   }
 
   .historyHeading p {
-    line-height: 20px;
+    line-height: 24px;
   }
 
   .historyCallout {

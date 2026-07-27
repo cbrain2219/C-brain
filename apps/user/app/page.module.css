@@ -448,6 +448,8 @@
   max-width: 371px;
   font-family: var(--font-sans);
   font-size: 16px;
+  font-weight: 500;
+  line-height: 24px;
   letter-spacing: -0.24px;
 }
 
@@ -470,6 +472,7 @@
   max-width: 358px;
   font-size: 16px;
   font-weight: 500;
+  line-height: 24px;
 }
 
 .portfolioContent {
@@ -1728,6 +1731,7 @@
 .blogDescription {
   max-width: 371px;
   font-size: 16px;
+  font-weight: 500;
   line-height: 24px;
   letter-spacing: -0.24px;
   color: var(--landing-gray-800);
@@ -1848,8 +1852,9 @@
 }
 
 .faqDescription {
-  font-size: 14px;
-  line-height: 20px;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 24px;
   letter-spacing: -0.21px;
   color: var(--landing-gray-800);
 }
