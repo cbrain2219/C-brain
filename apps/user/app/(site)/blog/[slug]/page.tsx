@@ -283,17 +283,25 @@ export default async function BlogDetailPage({
                           />
                         </div>
                         <figcaption className={styles.moreBlogCardBody}>
-                          <span className={styles.moreBlogTag}>
-                            {relatedPost.category}
-                          </span>
-                          <div className={styles.moreBlogText}>
-                            <h3 id={`more-blog-${relatedPost.id}-title`}>
-                              {relatedPost.title}
-                            </h3>
-                            <p>{relatedPost.summary}</p>
+                          <div className={styles.moreBlogCopy}>
+                            <span className={styles.moreBlogTag}>
+                              {relatedPost.category}
+                            </span>
+                            <div className={styles.moreBlogText}>
+                              <h3 id={`more-blog-${relatedPost.id}-title`}>
+                                {relatedPost.title}
+                              </h3>
+                              <p>{relatedPost.summary}</p>
+                            </div>
                           </div>
                           <footer className={styles.moreBlogMeta}>
-                            <span aria-hidden="true">C</span>
+                            <Image
+                              alt=""
+                              className={styles.moreBlogAuthorIcon}
+                              height={16}
+                              src="/figma-assets/cbrain-author.svg"
+                              width={16}
+                            />
                             <span>{relatedPost.author}</span>
                             <time dateTime={relatedPost.publishedAtIso}>
                               {relatedPost.publishedAt}

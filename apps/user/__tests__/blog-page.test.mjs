@@ -425,7 +425,10 @@ test("blog detail page keeps semantic article markup and list restoration", asyn
 });
 
 test("blog detail page marks related posts as complementary article links", async () => {
-  const detailPage = await source("detailPage");
+  const [detailPage, detailStyles] = await Promise.all([
+    source("detailPage"),
+    source("detailStyles"),
+  ]);
 
   assert.match(
     detailPage,
@@ -441,6 +444,14 @@ test("blog detail page marks related posts as complementary article links", asyn
     /<h3[\s\S]*id=\{`more-blog-\$\{relatedPost\.id\}-title`\}/,
   );
   assert.match(detailPage, /<footer className=\{styles\.moreBlogMeta\}>/);
+  assert.match(detailPage, /className=\{styles\.moreBlogAuthorIcon\}/);
+  assert.match(detailPage, /src="\/figma-assets\/cbrain-author\.svg"/);
+  assert.doesNotMatch(detailPage, /<span aria-hidden="true">C<\/span>/);
+  assert.match(detailPage, /className=\{styles\.moreBlogCopy\}/);
+  assert.match(detailStyles, /\.moreBlogCardBody\s*\{[\s\S]*gap: 20px;/);
+  assert.match(detailStyles, /\.moreBlogCopy\s*\{[\s\S]*gap: 8px;/);
+  assert.match(detailStyles, /\.moreBlogText\s*\{[\s\S]*gap: 4px;/);
+  assert.match(detailStyles, /\.moreBlogAuthorIcon\s*\{/);
 });
 
 test("blog detail styles match the P/T/F/M responsive detail frame", async () => {
