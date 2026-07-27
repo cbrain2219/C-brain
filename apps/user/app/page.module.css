@@ -1935,7 +1935,8 @@
 }
 
 .complaintInner {
-  width: min(100%, 350px);
+  width: 100%;
+  max-width: 100%;
   margin: 0 auto;
   display: grid;
   grid-template-columns: minmax(0, 1fr);
@@ -2752,10 +2753,6 @@
     width: min(100%, 560px);
   }
 
-  .complaintInner {
-    width: min(100%, 600px);
-  }
-
   .complaintFieldGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -2953,10 +2950,6 @@
     padding-bottom: 104px;
   }
 
-  .complaintInner {
-    width: min(100%, 640px);
-  }
-
   .footer {
     padding-left: 20px;
     padding-right: 20px;
@@ -3032,7 +3025,8 @@
   }
 
   .complaintInner {
-    width: 1360px;
+    width: 100%;
+    max-width: 1360px;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     align-items: start;
     gap: 20px;

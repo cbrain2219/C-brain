@@ -7,6 +7,7 @@ import {
   type KeyboardEvent,
   type MouseEvent,
   type SyntheticEvent,
+  useEffect,
   useRef,
   useState,
 } from "react";
@@ -70,6 +71,51 @@ const complaintFormDefaultValues: ComplaintFormValues = {
   website: "",
 };
 
+const complaintInputPlaceholders = {
+  default: {
+    email: "답변 받으실 이메일 주소를 입력해주세요.",
+    name: "성함을 입력해주세요.",
+    phone: "휴대폰 번호를 입력해주세요.(‘-’ 제외)",
+    verificationCode: `인증번호 ${COMPLAINT_VERIFICATION_CODE_LENGTH}자리를 입력해주세요.`,
+  },
+  compact: {
+    email: "이메일 주소를 입력...",
+    name: "성함을 입력...",
+    phone: "휴대폰 번...",
+    verificationCode: `인증번호 ${COMPLAINT_VERIFICATION_CODE_LENGTH}자리...`,
+  },
+} as const;
+
+type ComplaintInputPlaceholderField =
+  keyof typeof complaintInputPlaceholders.default;
+
+const complaintInputPlaceholderFields = Object.keys(
+  complaintInputPlaceholders.default,
+) as ComplaintInputPlaceholderField[];
+
+function getComplaintPlaceholderFitsInput(
+  input: HTMLInputElement,
+  placeholder: string,
+) {
+  const context = document.createElement("canvas").getContext("2d");
+  if (!context) return true;
+
+  const style = window.getComputedStyle(input);
+  context.font = [
+    style.fontStyle,
+    style.fontVariant,
+    style.fontWeight,
+    style.fontSize,
+    style.fontFamily,
+  ].join(" ");
+
+  const horizontalPadding =
+    Number.parseFloat(style.paddingLeft) + Number.parseFloat(style.paddingRight);
+  const availableWidth = input.clientWidth - horizontalPadding;
+
+  return context.measureText(placeholder).width <= availableWidth;
+}
+
 export function ComplaintForm() {
   const [isRequestingPhoneVerification, setIsRequestingPhoneVerification] =
     useState(false);
@@ -78,8 +124,14 @@ export function ComplaintForm() {
   const [attachmentFiles, setAttachmentFiles] = useState<File[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submissionError, setSubmissionError] = useState<string | null>(null);
+  const [compactPlaceholderFields, setCompactPlaceholderFields] = useState<
+    Partial<Record<ComplaintInputPlaceholderField, boolean>>
+  >({});
   const fieldRefs = useRef<
     Partial<Record<RequiredComplaintFieldName, HTMLElement>>
+  >({});
+  const placeholderInputRefs = useRef<
+    Partial<Record<ComplaintInputPlaceholderField, HTMLInputElement>>
   >({});
   const attachmentInputRef = useRef<HTMLInputElement>(null);
   const successDialogRef = useRef<HTMLDialogElement>(null);
@@ -104,8 +156,84 @@ export function ComplaintForm() {
     selectedComplaintType,
   );
 
+  useEffect(() => {
+    let isActive = true;
+    const syncCompactPlaceholders = () => {
+      if (!isActive) return;
+
+      setCompactPlaceholderFields((previousFields) => {
+        let hasChanged = false;
+        const nextFields: Partial<
+          Record<ComplaintInputPlaceholderField, boolean>
+        > = {};
+
+        for (const fieldName of complaintInputPlaceholderFields) {
+          const input = placeholderInputRefs.current[fieldName];
+          const usesCompactPlaceholder = input
+            ? !getComplaintPlaceholderFitsInput(
+                input,
+                complaintInputPlaceholders.default[fieldName],
+              )
+            : false;
+
+          if (usesCompactPlaceholder) {
+            nextFields[fieldName] = true;
+          }
+
+          if (Boolean(previousFields[fieldName]) !== usesCompactPlaceholder) {
+            hasChanged = true;
+          }
+        }
+
+        return hasChanged ? nextFields : previousFields;
+      });
+    };
+
+    syncCompactPlaceholders();
+    const resizeObserver =
+      typeof ResizeObserver === "undefined"
+        ? null
+        : new ResizeObserver(syncCompactPlaceholders);
+
+    for (const input of Object.values(placeholderInputRefs.current)) {
+      if (input) {
+        resizeObserver?.observe(input);
+      }
+    }
+
+    window.addEventListener("resize", syncCompactPlaceholders);
+    void document.fonts?.ready
+      .then(syncCompactPlaceholders)
+      .catch(() => undefined);
+
+    return () => {
+      isActive = false;
+      resizeObserver?.disconnect();
+      window.removeEventListener("resize", syncCompactPlaceholders);
+    };
+  }, []);
+
+  const getComplaintInputPlaceholder = (
+    fieldName: ComplaintInputPlaceholderField,
+  ) =>
+    compactPlaceholderFields[fieldName]
+      ? complaintInputPlaceholders.compact[fieldName]
+      : complaintInputPlaceholders.default[fieldName];
+
   const isFieldInvalid = (fieldName: RequiredComplaintFieldName) =>
     Boolean(errors[fieldName]);
+
+  const setPlaceholderInputRef = (
+    fieldName: ComplaintInputPlaceholderField,
+    node: HTMLInputElement | null,
+  ) => {
+    if (node) {
+      placeholderInputRefs.current[fieldName] = node;
+      return;
+    }
+
+    delete placeholderInputRefs.current[fieldName];
+  };
 
   const setFieldRef =
     (fieldName: RequiredComplaintFieldName) => (node: HTMLElement | null) => {
@@ -135,6 +263,21 @@ export function ComplaintForm() {
       clearErrors("phone");
     }
   };
+
+  const nameInputRegistration = register("name", {
+    validate: (value) => isComplaintRequiredFieldValid("name", value),
+  });
+  const emailInputRegistration = register("email", {
+    validate: (value) => isComplaintRequiredFieldValid("email", value),
+  });
+  const phoneInputRegistration = register("phone", {
+    onChange: handlePhoneChange,
+    validate: (value) => isComplaintRequiredFieldValid("phone", value),
+  });
+  const verificationCodeInputRegistration = register("verificationCode", {
+    validate: (value) =>
+      isComplaintRequiredFieldValid("verificationCode", value),
+  });
 
   const handleValidSubmit: SubmitHandler<ComplaintFormValues> = async (
     values,
@@ -402,13 +545,14 @@ export function ComplaintForm() {
             >
               <span>이름*</span>
               <input
-                {...register("name", {
-                  validate: (value) =>
-                    isComplaintRequiredFieldValid("name", value),
-                })}
+                {...nameInputRegistration}
                 aria-invalid={isFieldInvalid("name")}
                 autoComplete="name"
-                placeholder="성함을 입력해주세요."
+                placeholder={getComplaintInputPlaceholder("name")}
+                ref={(node) => {
+                  nameInputRegistration.ref(node);
+                  setPlaceholderInputRef("name", node);
+                }}
                 required
                 type="text"
               />
@@ -421,13 +565,14 @@ export function ComplaintForm() {
             >
               <span>이메일*</span>
               <input
-                {...register("email", {
-                  validate: (value) =>
-                    isComplaintRequiredFieldValid("email", value),
-                })}
+                {...emailInputRegistration}
                 aria-invalid={isFieldInvalid("email")}
                 autoComplete="email"
-                placeholder="답변 받으실 이메일 주소를 입력해주세요."
+                placeholder={getComplaintInputPlaceholder("email")}
+                ref={(node) => {
+                  emailInputRegistration.ref(node);
+                  setPlaceholderInputRef("email", node);
+                }}
                 required
                 type="email"
               />
@@ -443,15 +588,15 @@ export function ComplaintForm() {
               <span>휴대폰 번호*</span>
               <span className={styles.complaintPhoneRow}>
                 <input
-                  {...register("phone", {
-                    onChange: handlePhoneChange,
-                    validate: (value) =>
-                      isComplaintRequiredFieldValid("phone", value),
-                  })}
+                  {...phoneInputRegistration}
                   aria-invalid={isFieldInvalid("phone")}
                   autoComplete="tel"
                   inputMode="numeric"
-                  placeholder="휴대폰 번호를 입력해주세요.(‘-’ 제외)"
+                  placeholder={getComplaintInputPlaceholder("phone")}
+                  ref={(node) => {
+                    phoneInputRegistration.ref(node);
+                    setPlaceholderInputRef("phone", node);
+                  }}
                   required
                   type="tel"
                 />
@@ -479,16 +624,17 @@ export function ComplaintForm() {
                 휴대폰 인증번호
               </span>
               <input
-                {...register("verificationCode", {
-                  validate: (value) =>
-                    isComplaintRequiredFieldValid("verificationCode", value),
-                })}
+                {...verificationCodeInputRegistration}
                 aria-invalid={isFieldInvalid("verificationCode")}
                 inputMode="numeric"
                 maxLength={COMPLAINT_VERIFICATION_CODE_LENGTH}
                 minLength={COMPLAINT_VERIFICATION_CODE_LENGTH}
                 pattern={COMPLAINT_VERIFICATION_CODE_INPUT_PATTERN}
-                placeholder={`인증번호 ${COMPLAINT_VERIFICATION_CODE_LENGTH}자리를 입력해주세요.`}
+                placeholder={getComplaintInputPlaceholder("verificationCode")}
+                ref={(node) => {
+                  verificationCodeInputRegistration.ref(node);
+                  setPlaceholderInputRef("verificationCode", node);
+                }}
                 required
                 type="text"
               />

@@ -76,6 +76,34 @@ async function importTypescriptModule(path) {
   return import(`data:text/javascript;base64,${encoded}`);
 }
 
+function extractCssBlock(source, marker) {
+  const markerIndex = source.indexOf(marker);
+  assert.notEqual(markerIndex, -1, `${marker} marker should exist`);
+
+  const openIndex = source.indexOf("{", markerIndex);
+  assert.notEqual(openIndex, -1, `${marker} block should open`);
+
+  let depth = 0;
+
+  for (let index = openIndex; index < source.length; index += 1) {
+    const char = source[index];
+
+    if (char === "{") {
+      depth += 1;
+    }
+
+    if (char === "}") {
+      depth -= 1;
+    }
+
+    if (depth === 0) {
+      return source.slice(openIndex + 1, index);
+    }
+  }
+
+  assert.fail(`${marker} block should close`);
+}
+
 test("complaint page exposes the required intake form content", async () => {
   const source = `${await readFile(pagePath, "utf8")}\n${await readFile(
     formPath,
@@ -104,6 +132,52 @@ test("complaint page exposes the required intake form content", async () => {
       new RegExp(text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")),
     );
   }
+});
+
+test("complaint container fills the one-column layout width", async () => {
+  const stylesSource = await readFile(stylesPath, "utf8");
+  const baseComplaintInner = extractCssBlock(stylesSource, ".complaintInner");
+  const tabletMedia = extractCssBlock(stylesSource, "@media (min-width: 640px)");
+  const desktopMedia = extractCssBlock(
+    stylesSource,
+    "@media (min-width: 1080px)",
+  );
+  const pcMedia = extractCssBlock(stylesSource, "@media (min-width: 1440px)");
+
+  assert.match(baseComplaintInner, /width:\s*100%;/);
+  assert.match(baseComplaintInner, /max-width:\s*100%;/);
+  assert.doesNotMatch(
+    tabletMedia,
+    /\.complaintInner\s*\{[\s\S]*?width:\s*min\(100%,\s*600px\)/,
+  );
+  assert.doesNotMatch(
+    desktopMedia,
+    /\.complaintInner\s*\{[\s\S]*?width:\s*min\(100%,\s*640px\)/,
+  );
+  assert.match(
+    pcMedia,
+    /\.complaintInner\s*\{[\s\S]*?max-width:\s*1360px;/,
+  );
+});
+
+test("complaint text inputs use baseline-aligned compact placeholders", async () => {
+  const formSource = await readFile(formPath, "utf8");
+  const stylesSource = await readFile(stylesPath, "utf8");
+
+  assert.doesNotMatch(formSource, /COMPLAINT_COMPACT_PLACEHOLDER_MEDIA/);
+  assert.doesNotMatch(formSource, /matchMedia/);
+  assert.match(formSource, /ResizeObserver/);
+  assert.match(formSource, /getComplaintPlaceholderFitsInput/);
+  assert.match(formSource, /"휴대폰 번\.\.\."/);
+  assert.match(
+    formSource,
+    /`인증번호 \$\{COMPLAINT_VERIFICATION_CODE_LENGTH\}자리\.\.\.`/,
+  );
+  assert.doesNotMatch(stylesSource, /\.complaintField input\s*\{[^}]*…/);
+  assert.doesNotMatch(
+    stylesSource,
+    /\.complaintField input\s*\{[\s\S]*?text-overflow:\s*ellipsis;/,
+  );
 });
 
 test("complaint service options match the service cards in visual order", async () => {
