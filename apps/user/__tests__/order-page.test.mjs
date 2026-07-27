@@ -463,8 +463,40 @@ test("order page route, content, responsive styles, and navigation are wired", (
   assert.doesNotMatch(tabletMediaStyles, /\.heroInner,\s*\.orderInner/);
   assert.doesNotMatch(desktopMediaStyles, /\.heroInner,\s*\.orderInner/);
   assert.match(
+    stylesSource,
+    /\.heroInner\s*\{[\s\S]*?width:\s*min\(100%,\s*390px\);/,
+  );
+  assert.match(
+    tabletMediaStyles,
+    /\.heroInner\s*\{[\s\S]*?width:\s*min\(100%,\s*640px\);/,
+  );
+  assert.match(
+    desktopMediaStyles,
+    /\.heroInner\s*\{[\s\S]*?width:\s*min\(100%,\s*1080px\);/,
+  );
+  assert.match(
+    desktopMediaStyles,
+    /\.heroInner\s*\{[\s\S]*?padding-left:\s*80px;[\s\S]*?padding-right:\s*80px;/,
+  );
+  assert.doesNotMatch(
+    extractBlock(stylesSource, ".heroInner"),
+    /margin:\s*0 auto;/,
+  );
+  assert.doesNotMatch(
+    tabletMediaStyles,
+    /\.heroInner\s*\{[\s\S]*?margin:\s*0 auto;/,
+  );
+  assert.doesNotMatch(
+    desktopMediaStyles,
+    /\.heroInner\s*\{[\s\S]*?margin:\s*0 auto;/,
+  );
+  assert.match(
     pcMediaStyles,
     /\.heroInner,\s*\.orderInner\s*\{[\s\S]*?width:\s*1360px/,
+  );
+  assert.match(
+    pcMediaStyles,
+    /\.heroInner\s*\{[\s\S]*?margin:\s*0 auto;/,
   );
   assert.match(
     stylesSource,

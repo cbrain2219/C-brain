@@ -1255,7 +1255,6 @@
 
 .reviewsPageHero {
   min-height: 540px;
-  padding: 144px 20px 72px;
   position: relative;
   overflow: hidden;
   background: var(--landing-info-50);
@@ -1282,7 +1281,7 @@
 
 .reviewsHeroContent {
   width: min(100%, 390px);
-  margin: 0 auto;
+  padding: 144px 20px 72px;
   position: relative;
   display: flex;
   flex-direction: column;
@@ -2769,7 +2768,7 @@
   }
 
   .reviewsHeroContent {
-    width: min(100%, 600px);
+    width: min(100%, 640px);
   }
 
   .reviewsContent {
@@ -2883,12 +2882,15 @@
 
   .reviewsPageHero {
     min-height: 600px;
-    padding: 160px 0 104px;
   }
 
   .reviewsHeroContent,
   .reviewsContent {
     width: min(100%, 1080px);
+  }
+
+  .reviewsHeroContent {
+    padding: 160px 80px 104px;
   }
 
   .reviewsContent {
@@ -3135,6 +3137,8 @@
 
   .reviewsHeroContent {
     width: 1360px;
+    margin: 0 auto;
+    padding: 160px 0 104px;
   }
 
   .reviewsContent {

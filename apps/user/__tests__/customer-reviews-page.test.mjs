@@ -60,6 +60,28 @@ function extractConstArray(source, constName) {
   return source.slice(start, end);
 }
 
+function extractCssBlock(source, marker) {
+  const start = source.indexOf(marker);
+  assert.notEqual(start, -1, `${marker} block should exist`);
+
+  const openBrace = source.indexOf("{", start);
+  assert.notEqual(openBrace, -1, `${marker} block should open`);
+
+  let depth = 0;
+  for (let index = openBrace; index < source.length; index += 1) {
+    if (source[index] === "{") {
+      depth += 1;
+    } else if (source[index] === "}") {
+      depth -= 1;
+      if (depth === 0) {
+        return source.slice(openBrace + 1, index);
+      }
+    }
+  }
+
+  assert.fail(`${marker} block should close`);
+}
+
 test("customer reviews page exposes the Figma review page sections", async () => {
   const source = await readFile(pagePath, "utf8");
 
@@ -471,7 +493,54 @@ test("customer reviews hero content styles stay consolidated", async () => {
   );
   assert.match(
     stylesSource,
-    /\.reviewsHeroContent\s*\{[\s\S]*width: min\(100%, 390px\);[\s\S]*margin: 0 auto;[\s\S]*position: relative;[\s\S]*display: flex;[\s\S]*flex-direction: column;[\s\S]*gap: 20px;/,
+    /\.reviewsHeroContent\s*\{[\s\S]*width: min\(100%, 390px\);[\s\S]*padding: 144px 20px 72px;[\s\S]*position: relative;[\s\S]*display: flex;[\s\S]*flex-direction: column;[\s\S]*gap: 20px;/,
+  );
+  assert.doesNotMatch(
+    extractCssBlock(stylesSource, ".reviewsHeroContent"),
+    /margin:\s*0 auto;/,
+  );
+});
+
+test("customer reviews hero content follows the shared hero width scale", async () => {
+  const stylesSource = await readFile(stylesPath, "utf8");
+  const tabletStyles = extractCssBlock(stylesSource, "@media (min-width: 640px)");
+  const desktopStyles = extractCssBlock(
+    stylesSource,
+    "@media (min-width: 1080px)",
+  );
+  const pcStyles = extractCssBlock(stylesSource, "@media (min-width: 1440px)");
+
+  assert.match(
+    stylesSource,
+    /\.reviewsHeroContent\s*\{[\s\S]*width: min\(100%, 390px\);/,
+  );
+  assert.match(
+    stylesSource,
+    /\.reviewsHeroContent\s*\{[\s\S]*padding: 144px 20px 72px;/,
+  );
+  assert.match(
+    tabletStyles,
+    /\.reviewsHeroContent\s*\{[\s\S]*?width: min\(100%, 640px\);/,
+  );
+  assert.match(
+    desktopStyles,
+    /\.reviewsHeroContent,\s*\.reviewsContent\s*\{[\s\S]*?width: min\(100%, 1080px\);/,
+  );
+  assert.match(
+    desktopStyles,
+    /\.reviewsHeroContent\s*\{[\s\S]*?padding: 160px 80px 104px;/,
+  );
+  assert.match(
+    pcStyles,
+    /\.reviewsHeroContent\s*\{[\s\S]*?width: 1360px;/,
+  );
+  assert.match(
+    pcStyles,
+    /\.reviewsHeroContent\s*\{[\s\S]*?margin: 0 auto;/,
+  );
+  assert.match(
+    pcStyles,
+    /\.reviewsHeroContent\s*\{[\s\S]*?padding: 160px 0 104px;/,
   );
 });
 
