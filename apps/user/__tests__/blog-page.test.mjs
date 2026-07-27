@@ -484,6 +484,13 @@ test("blog detail page marks related posts as complementary article links", asyn
   );
   assert.match(moreBlogPreviewText, /"use client"/);
   assert.match(moreBlogPreviewText, /ResizeObserver/);
+  assert.match(moreBlogPreviewText, /typeof ResizeObserver === "undefined"/);
+  assert.match(
+    moreBlogPreviewText,
+    /const resizeObserver =\s*typeof ResizeObserver === "undefined"\s*\? null\s*: new ResizeObserver\(updateDisplayText\)/,
+  );
+  assert.match(moreBlogPreviewText, /resizeObserver\?\.observe\(element\)/);
+  assert.match(moreBlogPreviewText, /resizeObserver\?\.disconnect\(\)/);
   assert.match(moreBlogPreviewText, /mobileMaxLines/);
   assert.match(
     moreBlogPreviewText,

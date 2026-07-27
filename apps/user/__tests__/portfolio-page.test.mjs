@@ -100,6 +100,10 @@ test("portfolio detail returns to the landing section when opened from the landi
   assert.match(landingPortfolio, /initialCategoryId\?: PortfolioCategoryId/);
   assert.match(landingPortfolio, /landingPortfolioScrollStorageKey/);
   assert.match(landingPortfolio, /window\.sessionStorage\.setItem/);
+  assert.match(landingPortfolio, /try \{[\s\S]*?window\.sessionStorage\.setItem/);
+  assert.match(landingPortfolio, /try \{[\s\S]*?window\.sessionStorage\.getItem/);
+  assert.match(landingPortfolio, /try \{[\s\S]*?window\.sessionStorage\.removeItem/);
+  assert.match(landingPortfolio, /catch \{/);
   assert.match(landingPortfolio, /window\.scrollTo/);
   assert.match(landingPortfolio, /onClick=\{saveLandingPortfolioScroll\}/);
   assert.match(detailPage, /from\?: string \| string\[\]/);

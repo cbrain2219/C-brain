@@ -43,10 +43,14 @@ export function PortfolioSection({ initialCategoryId }: PortfolioSectionProps) {
   };
 
   const saveLandingPortfolioScroll = () => {
-    window.sessionStorage.setItem(
-      landingPortfolioScrollStorageKey,
-      String(window.scrollY),
-    );
+    try {
+      window.sessionStorage.setItem(
+        landingPortfolioScrollStorageKey,
+        String(window.scrollY),
+      );
+    } catch {
+      // Storage can be unavailable; navigation should still continue.
+    }
   };
 
   useEffect(() => {
@@ -56,12 +60,23 @@ export function PortfolioSection({ initialCategoryId }: PortfolioSectionProps) {
   useEffect(() => {
     if (window.location.hash !== "#portfolio") return;
 
-    const savedScrollY = window.sessionStorage.getItem(
-      landingPortfolioScrollStorageKey,
-    );
+    let savedScrollY: string | null;
+
+    try {
+      savedScrollY = window.sessionStorage.getItem(
+        landingPortfolioScrollStorageKey,
+      );
+    } catch {
+      return;
+    }
+
     if (!savedScrollY) return;
 
-    window.sessionStorage.removeItem(landingPortfolioScrollStorageKey);
+    try {
+      window.sessionStorage.removeItem(landingPortfolioScrollStorageKey);
+    } catch {
+      // If cleanup is blocked, keep the page usable and still restore once.
+    }
 
     const scrollY = Number.parseInt(savedScrollY, 10);
     if (!Number.isFinite(scrollY)) return;

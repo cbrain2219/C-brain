@@ -95,14 +95,17 @@ export function MoreBlogPreviewText({
     const element = textRef.current;
     if (!element) return undefined;
 
-    const resizeObserver = new ResizeObserver(updateDisplayText);
-    resizeObserver.observe(element);
+    const resizeObserver =
+      typeof ResizeObserver === "undefined"
+        ? null
+        : new ResizeObserver(updateDisplayText);
+    resizeObserver?.observe(element);
     const mediaQuery = window.matchMedia("(max-width: 480px)");
     mediaQuery.addEventListener("change", updateDisplayText);
     void document.fonts?.ready.then(updateDisplayText);
 
     return () => {
-      resizeObserver.disconnect();
+      resizeObserver?.disconnect();
       mediaQuery.removeEventListener("change", updateDisplayText);
     };
   }, [text, updateDisplayText]);
