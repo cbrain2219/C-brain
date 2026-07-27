@@ -875,7 +875,7 @@
 
 .reasonGrid {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 600px), 1fr));
   row-gap: 32px;
   column-gap: 8px;
 }
@@ -2707,11 +2707,6 @@
     display: none;
   }
 
-  .reasonGrid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    column-gap: 14px;
-  }
-
   .aboutContent {
     gap: 52px;
   }
@@ -2847,11 +2842,6 @@
 
   .serviceGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .reasonGrid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    column-gap: 8px;
   }
 
   .reviewGrid {
