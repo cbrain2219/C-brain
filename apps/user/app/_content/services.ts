@@ -1,5 +1,9 @@
 import type { IconName } from "../../components/Icon";
-import { formatOrderCurrency, orderProductRegistrations } from "./order";
+import {
+  type DirectOrderServiceId,
+  formatOrderCurrency,
+  orderProductRegistrations,
+} from "./order";
 
 export type ServiceItem = {
   description: string;
@@ -19,8 +23,6 @@ const serviceIcons = {
   "package-shopping-bag": "package",
   "poster-flyer": "megaphone",
 } as const satisfies Record<keyof typeof orderProductRegistrations, IconName>;
-
-type DirectOrderServiceId = keyof typeof orderProductRegistrations;
 
 const directOrderServiceIds = Object.keys(
   orderProductRegistrations,
@@ -63,3 +65,15 @@ export const services = [
     price: "상담 후 견적",
   },
 ] as const satisfies ReadonlyArray<ServiceItem>;
+
+export function getDirectServiceItemById(
+  serviceId: string | null | undefined,
+): ServiceItem | undefined {
+  if (!serviceId) {
+    return undefined;
+  }
+
+  return services.find(
+    (service) => service.id === serviceId && !service.isQuote,
+  );
+}

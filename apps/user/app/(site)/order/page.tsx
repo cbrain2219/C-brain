@@ -6,9 +6,16 @@ import { useEffect, useState } from "react";
 
 import { CtaSection } from "../../_components/CtaSection";
 import { JsonLdScript } from "../../_components/JsonLdScript";
-import type { OrderSelectionSummary, OrderStepId } from "../../_content/order";
+import {
+  type OrderSelectionSummary,
+  type OrderStepId,
+  orderServiceSearchParam,
+} from "../../_content/order";
 import { createStaticPageStructuredData } from "../../_content/structured-data";
-import type { ServiceItem } from "../../_content/services";
+import {
+  getDirectServiceItemById,
+  type ServiceItem,
+} from "../../_content/services";
 import type { OrderPaymentSubmitPayload } from "./OrderCustomerInfoStep";
 import { OrderFlowSection } from "./OrderFlowSection";
 import { submitOrderPayment } from "./payment";
@@ -50,6 +57,21 @@ export default function OrderPage() {
 
     router.push(result.redirectHref ?? fallbackHref);
   };
+
+  useEffect(() => {
+    const searchParams = new URLSearchParams(window.location.search);
+    const initialService = getDirectServiceItemById(
+      searchParams.get(orderServiceSearchParam),
+    );
+
+    if (!initialService) {
+      return;
+    }
+
+    setSelectedDirectService(initialService);
+    setSelectedOrderSummary(null);
+    setOrderStep("option");
+  }, []);
 
   useEffect(() => {
     if (!selectedDirectService) {

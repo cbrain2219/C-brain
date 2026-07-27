@@ -658,6 +658,7 @@
   color: inherit;
   font: inherit;
   text-align: left;
+  text-decoration: none;
   display: flex;
   flex-direction: column;
   justify-content: space-between;

@@ -1,19 +1,37 @@
-import { Button, ButtonLink } from "@repo/ui/button";
-import { type CSSProperties } from "react";
+"use client";
+
+import { ButtonLink } from "@repo/ui/button";
+import Link from "next/link";
+import { type CSSProperties, useState } from "react";
 
 import { Icon } from "../../components/Icon";
 import type { IconName } from "../../components/Icon";
 import { SectionLayout } from "../../components/SectionLayout";
+import { OrderConsultDialog } from "../(site)/order/OrderConsultDialog";
 import { KAKAO_CHANNEL_URL } from "../_content/contact";
+import {
+  type DirectOrderServiceId,
+  getOrderDirectServiceHref,
+} from "../_content/order";
 import styles from "../page.module.css";
 
-type ServiceCard = {
+type ServiceCardBase = {
   description: string;
   icon: IconName;
-  isQuote: boolean;
   price: string;
   title: string;
 };
+
+type DirectServiceCard = ServiceCardBase & {
+  isQuote: false;
+  orderServiceId: DirectOrderServiceId;
+};
+
+type QuoteServiceCard = ServiceCardBase & {
+  isQuote: true;
+};
+
+type ServiceCard = DirectServiceCard | QuoteServiceCard;
 
 const services = [
   {
@@ -22,6 +40,7 @@ const services = [
     description:
       "기업소개, 제품 카탈로그 등 핵심 홍보물.\n기획부터 인쇄까지 원스톱",
     isQuote: false,
+    orderServiceId: "brochure-catalog",
     price: "850,000원 ~",
   },
   {
@@ -29,6 +48,7 @@ const services = [
     title: "리플렛 · 팜플렛",
     description: "단면, 양면, 접지 등 다양한 형태의 소책자 및 안내물 제작",
     isQuote: false,
+    orderServiceId: "leaflet-pamphlet",
     price: "370,000원 ~",
   },
   {
@@ -36,6 +56,7 @@ const services = [
     title: "포스터 · 전단지",
     description: "행사·이벤트·홍보용 포스터와 전단지. 빠른 납기 대응 가능.",
     isQuote: false,
+    orderServiceId: "poster-flyer",
     price: "130,000원 ~",
   },
   {
@@ -43,6 +64,7 @@ const services = [
     title: "배너 · 족자 · 현수막",
     description: "박람회, 매장, 행사장용 대형 출력물. 설치·운송 상담 가능.",
     isQuote: false,
+    orderServiceId: "banner-display",
     price: "80,000원 ~",
   },
   {
@@ -50,6 +72,7 @@ const services = [
     title: "명함 · 봉투",
     description: "소량 명함부터 기업용 봉투 · 레터헤드까지 정찰제 가격 제공.",
     isQuote: false,
+    orderServiceId: "business-card-envelope",
     price: "50,000원 ~",
   },
   {
@@ -58,6 +81,7 @@ const services = [
     description:
       "브랜드의 첫인상을 결정하는 로고. 전략적 기획 + 감각적 디자인.",
     isQuote: false,
+    orderServiceId: "logo",
     price: "50,000원 ~",
   },
   {
@@ -85,12 +109,16 @@ const services = [
 ] as const satisfies readonly ServiceCard[];
 
 const textButtonStyle: CSSProperties = {
+  display: "inline-flex",
+  alignItems: "center",
+  gap: 4,
   height: 20,
   padding: 0,
   border: 0,
   background: "transparent",
   color: "#30bac3",
   fontSize: 14,
+  lineHeight: "20px",
 };
 
 const serviceButtonStyle: CSSProperties = {
@@ -115,70 +143,111 @@ const consultButtonStyle: CSSProperties = {
 };
 
 export function ServicesSection() {
+  const [isConsultDialogOpen, setIsConsultDialogOpen] = useState(false);
+  const openConsultDialog = () => setIsConsultDialogOpen(true);
+  const closeConsultDialog = () => setIsConsultDialogOpen(false);
+
   return (
-    <SectionLayout
-      badge="서비스"
-      badgeClassName={styles.serviceKicker}
-      description="투명한 정찰 견적으로 바로 주문하거나, 맞춤 견적 상담 후, 제작할 수 있습니다."
-      descriptionClassName={styles.serviceDescription}
-      id="services"
-      innerClassName={styles.serviceInner}
-      title="어떤 홍보물 제작이 필요하신가요?"
-      titleClassName={styles.serviceTitle}
-    >
-      <div className={styles.serviceBody}>
-        <div className={styles.serviceGrid}>
-          {services.map((service) => (
-            <article className={styles.serviceCard} key={service.title}>
-              <div className={styles.serviceContent}>
-                <span
-                  className={`${styles.serviceIcon} ${
-                    service.isQuote ? styles.serviceQuoteIcon : ""
-                  }`}
+    <>
+      <SectionLayout
+        badge="서비스"
+        badgeClassName={styles.serviceKicker}
+        description="투명한 정찰 견적으로 바로 주문하거나, 맞춤 견적 상담 후, 제작할 수 있습니다."
+        descriptionClassName={styles.serviceDescription}
+        id="services"
+        innerClassName={styles.serviceInner}
+        title="어떤 홍보물 제작이 필요하신가요?"
+        titleClassName={styles.serviceTitle}
+      >
+        <div className={styles.serviceBody}>
+          <div className={styles.serviceGrid}>
+            {services.map((service) => {
+              const serviceContent = (
+                <>
+                  <div className={styles.serviceContent}>
+                    <span
+                      className={`${styles.serviceIcon} ${
+                        service.isQuote ? styles.serviceQuoteIcon : ""
+                      }`}
+                    >
+                      <Icon name={service.icon} size={24} />
+                    </span>
+                    <div className={styles.serviceCopy}>
+                      <h3>{service.title}</h3>
+                      <p>{service.description}</p>
+                    </div>
+                  </div>
+                  <div
+                    className={`${styles.serviceMeta} ${
+                      service.isQuote ? styles.serviceMetaQuote : ""
+                    }`}
+                  >
+                    {service.isQuote ? null : <strong>{service.price}</strong>}
+                    {service.isQuote ? (
+                      <span style={quoteButtonStyle}>
+                        견적 후 주문(카카오톡)
+                        <Icon name="arrow-right" size={16} />
+                      </span>
+                    ) : (
+                      <span style={serviceButtonStyle}>
+                        정찰제 즉시결제
+                        <Icon name="arrow-right" size={16} />
+                      </span>
+                    )}
+                  </div>
+                </>
+              );
+
+              if (service.isQuote) {
+                return (
+                  <button
+                    aria-label={`${service.title} 견적 후 주문 상담 팝업 열기`}
+                    className={styles.serviceCard}
+                    key={service.title}
+                    onClick={openConsultDialog}
+                    type="button"
+                  >
+                    {serviceContent}
+                  </button>
+                );
+              }
+
+              return (
+                <Link
+                  aria-label={`${service.title} 정찰제 즉시결제 옵션 선택으로 이동`}
+                  className={styles.serviceCard}
+                  href={getOrderDirectServiceHref(service.orderServiceId)}
+                  key={service.title}
                 >
-                  <Icon name={service.icon} size={24} />
+                  {serviceContent}
+                </Link>
+              );
+            })}
+
+            <article className={styles.serviceConsultCard}>
+              <div className={styles.serviceContent}>
+                <span className={styles.serviceIcon}>
+                  <Icon name="message-typing" size={20} />
                 </span>
                 <div className={styles.serviceCopy}>
-                  <h3>{service.title}</h3>
-                  <p>{service.description}</p>
+                  <h3>주문 전 상담이 필요하신가요?</h3>
+                  <p>카카오톡으로 1:1 상담이 가능합니다.</p>
                 </div>
               </div>
-              <div
-                className={`${styles.serviceMeta} ${service.isQuote ? styles.serviceMetaQuote : ""}`}
+              <ButtonLink
+                href={KAKAO_CHANNEL_URL}
+                rel="noreferrer"
+                rightIcon={<Icon name="arrow-right" size={16} />}
+                style={consultButtonStyle}
+                target="_blank"
               >
-                {service.isQuote ? null : <strong>{service.price}</strong>}
-                {service.isQuote ? (
-                  <ButtonLink
-                    href={KAKAO_CHANNEL_URL}
-                    rel="noreferrer"
-                    rightIcon={<Icon name="arrow-right" size={16} />}
-                    style={quoteButtonStyle}
-                    target="_blank"
-                  >
-                    견적 후 주문(카카오톡)
-                  </ButtonLink>
-                ) : (
-                  <Button
-                    rightIcon={<Icon name="arrow-right" size={16} />}
-                    style={serviceButtonStyle}
-                  >
-                    정찰제 즉시결제
-                  </Button>
-                )}
-              </div>
+                실시간 카톡상담
+              </ButtonLink>
             </article>
-          ))}
+          </div>
 
-          <article className={styles.serviceConsultCard}>
-            <div className={styles.serviceContent}>
-              <span className={styles.serviceIcon}>
-                <Icon name="message-typing" size={20} />
-              </span>
-              <div className={styles.serviceCopy}>
-                <h3>주문 전 상담이 필요하신가요?</h3>
-                <p>카카오톡으로 1:1 상담이 가능합니다.</p>
-              </div>
-            </div>
+          <div className={styles.consultBox}>
+            <p className={styles.consultPrompt}>주문 전 상담이 필요하신가요?</p>
             <ButtonLink
               href={KAKAO_CHANNEL_URL}
               rel="noreferrer"
@@ -188,22 +257,13 @@ export function ServicesSection() {
             >
               실시간 카톡상담
             </ButtonLink>
-          </article>
+          </div>
         </div>
-
-        <div className={styles.consultBox}>
-          <p className={styles.consultPrompt}>주문 전 상담이 필요하신가요?</p>
-          <ButtonLink
-            href={KAKAO_CHANNEL_URL}
-            rel="noreferrer"
-            rightIcon={<Icon name="arrow-right" size={16} />}
-            style={consultButtonStyle}
-            target="_blank"
-          >
-            실시간 카톡상담
-          </ButtonLink>
-        </div>
-      </div>
-    </SectionLayout>
+      </SectionLayout>
+      <OrderConsultDialog
+        isOpen={isConsultDialogOpen}
+        onClose={closeConsultDialog}
+      />
+    </>
   );
 }

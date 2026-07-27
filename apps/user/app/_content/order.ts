@@ -3,6 +3,8 @@ type OrderMethodTone = "brand" | "quote";
 
 export type OrderStepId = "category" | "option" | "customer";
 
+export const orderServiceSearchParam = "service";
+
 export type OrderMethod = {
   description: string;
   id: string;
@@ -435,6 +437,15 @@ export const orderProductRegistrations = {
     unitPricesByQuantity: [1240, 940, 740, 663],
   }),
 } as const satisfies Record<string, AdminOrderProduct>;
+
+export type DirectOrderServiceId = keyof typeof orderProductRegistrations;
+
+export type OrderDirectServiceHref =
+  `/order?${typeof orderServiceSearchParam}=${DirectOrderServiceId}`;
+
+export const getOrderDirectServiceHref = (
+  serviceId: DirectOrderServiceId,
+): OrderDirectServiceHref => `/order?${orderServiceSearchParam}=${serviceId}`;
 
 export const orderOptionCatalog = Object.fromEntries(
   Object.entries(orderProductRegistrations).map(([serviceId, product]) => [

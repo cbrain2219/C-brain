@@ -11,6 +11,12 @@ const iconPath = new URL("../components/Icon.tsx", import.meta.url);
 test("landing services always render the nine design QA fixtures", async () => {
   const source = await readFile(sectionPath, "utf8");
 
+  assert.match(source, /"use client"/);
+  assert.match(source, /import Link from "next\/link"/);
+  assert.match(source, /useState/);
+  assert.match(source, /OrderConsultDialog/);
+  assert.match(source, /getOrderDirectServiceHref/);
+  assert.doesNotMatch(source, /getOrderQuoteConsultHref/);
   assert.doesNotMatch(source, /@repo\/supabase/);
   assert.doesNotMatch(source, /createUserSupabaseClient/);
   assert.doesNotMatch(source, /listPublishedProducts/);
@@ -36,10 +42,30 @@ test("landing services always render the nine design QA fixtures", async () => {
     source,
     /const quoteButtonStyle[\s\S]*?color: "var\(--landing-info-500\)"/,
   );
+  assert.doesNotMatch(source, /href=\{KAKAO_CHANNEL_URL\}[\s\S]*?견적 후 주문\(카카오톡\)/);
+  assert.doesNotMatch(source, /getOrderQuoteConsultHref\(\)/);
   assert.match(
     source,
-    /<ButtonLink[\s\S]*?href=\{KAKAO_CHANNEL_URL\}[\s\S]*?style=\{quoteButtonStyle\}[\s\S]*?견적 후 주문\(카카오톡\)/,
+    /const openConsultDialog = \(\) => setIsConsultDialogOpen\(true\)/,
   );
+  assert.match(
+    source,
+    /<button[\s\S]*?className=\{styles\.serviceCard\}[\s\S]*?onClick=\{openConsultDialog\}[\s\S]*?type="button"/,
+  );
+  assert.match(
+    source,
+    /<OrderConsultDialog[\s\S]*?isOpen=\{isConsultDialogOpen\}[\s\S]*?onClose=\{closeConsultDialog\}/,
+  );
+  assert.match(
+    source,
+    /href=\{getOrderDirectServiceHref\(service\.orderServiceId\)\}/,
+  );
+  assert.match(
+    source,
+    /<Link[\s\S]*?className=\{styles\.serviceCard\}/,
+  );
+  assert.match(source, /<span style=\{serviceButtonStyle\}>[\s\S]*?정찰제 즉시결제/);
+  assert.match(source, /<span style=\{quoteButtonStyle\}>[\s\S]*?견적 후 주문\(카카오톡\)/);
   assert.match(source, /service\.isQuote \? styles\.serviceQuoteIcon : ""/);
 });
 
