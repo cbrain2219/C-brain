@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { HorizontalDragScroll } from "../../components/HorizontalDragScroll";
 import { Icon } from "../../components/Icon";
@@ -19,10 +19,17 @@ import styles from "../page.module.css";
 import { createGradientBorderButtonStyle } from "./buttonStyles";
 
 const buttonStyle = createGradientBorderButtonStyle({ width: 184 });
+const landingPortfolioScrollStorageKey = "cbrain:landing-portfolio-scroll-y";
 
-export function PortfolioSection() {
+type PortfolioSectionProps = {
+  initialCategoryId?: PortfolioCategoryId;
+};
+
+export function PortfolioSection({ initialCategoryId }: PortfolioSectionProps) {
+  const initialActiveCategoryId =
+    initialCategoryId ?? portfolioCategories[0].id;
   const [activeCategoryId, setActiveCategoryId] = useState<PortfolioCategoryId>(
-    portfolioCategories[0].id,
+    initialActiveCategoryId,
   );
   const activePortfolioItems =
     activeCategoryId === portfolioCategories[0].id
@@ -34,6 +41,35 @@ export function PortfolioSection() {
   const handleCategoryClick = (categoryId: PortfolioCategoryId) => {
     setActiveCategoryId(categoryId);
   };
+
+  const saveLandingPortfolioScroll = () => {
+    window.sessionStorage.setItem(
+      landingPortfolioScrollStorageKey,
+      String(window.scrollY),
+    );
+  };
+
+  useEffect(() => {
+    setActiveCategoryId(initialActiveCategoryId);
+  }, [initialActiveCategoryId]);
+
+  useEffect(() => {
+    if (window.location.hash !== "#portfolio") return;
+
+    const savedScrollY = window.sessionStorage.getItem(
+      landingPortfolioScrollStorageKey,
+    );
+    if (!savedScrollY) return;
+
+    window.sessionStorage.removeItem(landingPortfolioScrollStorageKey);
+
+    const scrollY = Number.parseInt(savedScrollY, 10);
+    if (!Number.isFinite(scrollY)) return;
+
+    window.requestAnimationFrame(() => {
+      window.scrollTo({ behavior: "auto", left: 0, top: scrollY });
+    });
+  }, [initialActiveCategoryId]);
 
   return (
     <SectionLayout
@@ -79,8 +115,9 @@ export function PortfolioSection() {
             <Link
               aria-label={`${item.client} ${item.title} 상세 보기`}
               className={styles.portfolioCard}
-              href={getPortfolioDetailHref(item, activeCategoryId)}
+              href={getPortfolioDetailHref(item, activeCategoryId, "landing")}
               key={item.slug}
+              onClick={saveLandingPortfolioScroll}
             >
               <Image
                 alt={item.imageAlt}

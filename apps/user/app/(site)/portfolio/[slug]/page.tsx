@@ -9,6 +9,7 @@ import {
   getPortfolioCategoryLabel,
   getPortfolioDetailBySlug,
   getPortfolioDetailHref,
+  getPortfolioDetailSourceFromValue,
   getPortfolioDetailSeo,
   getPortfolioListHref,
   portfolioItems,
@@ -22,6 +23,7 @@ type PortfolioDetailPageProps = {
   }>;
   searchParams?: Promise<{
     category?: string | string[];
+    from?: string | string[];
   }>;
 };
 
@@ -96,7 +98,10 @@ export default async function PortfolioDetailPage({
   const listCategoryId =
     getPortfolioCategoryIdFromValue(resolvedSearchParams?.category) ??
     item.categoryId;
-  const listHref = getPortfolioListHref(listCategoryId);
+  const detailSource = getPortfolioDetailSourceFromValue(
+    resolvedSearchParams?.from,
+  );
+  const listHref = getPortfolioListHref(listCategoryId, detailSource);
 
   return (
     <article className={styles.detailPage}>
@@ -171,7 +176,11 @@ export default async function PortfolioDetailPage({
                   <Link
                     aria-label={`${relatedItem.client} ${relatedItem.title} 상세 보기`}
                     className={styles.relatedCard}
-                    href={getPortfolioDetailHref(relatedItem, listCategoryId)}
+                    href={getPortfolioDetailHref(
+                      relatedItem,
+                      listCategoryId,
+                      detailSource,
+                    )}
                   >
                     <figure className={styles.relatedFigure}>
                       <div className={styles.relatedImageFrame}>

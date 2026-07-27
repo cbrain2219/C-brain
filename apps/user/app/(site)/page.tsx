@@ -9,18 +9,31 @@ import { Metrics } from "../_components/Metrics";
 import { PortfolioSection } from "../_components/PortfolioSection";
 import { ServicesSection } from "../_components/ServicesSection";
 import { landingFaqs } from "../_content/faqs";
+import {
+  getPortfolioCategoryIdFromValue,
+  landingPortfolioCategorySearchParam,
+} from "../_content/portfolio";
 import { createPageMetadata } from "../_content/seo";
 import { createHomeStructuredData } from "../_content/structured-data";
 
 export const metadata = createPageMetadata("home");
 
-export default function Home() {
+type HomeProps = {
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
+};
+
+export default async function Home({ searchParams }: HomeProps) {
+  const resolvedSearchParams = await searchParams;
+  const initialPortfolioCategoryId = getPortfolioCategoryIdFromValue(
+    resolvedSearchParams?.[landingPortfolioCategorySearchParam],
+  );
+
   return (
     <>
       <JsonLdScript data={createHomeStructuredData()} />
       <Hero />
       <Metrics />
-      <PortfolioSection />
+      <PortfolioSection initialCategoryId={initialPortfolioCategoryId} />
       <ServicesSection />
       <AboutSection />
       <CustomerReviewSection />

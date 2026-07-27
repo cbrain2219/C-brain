@@ -46,12 +46,19 @@ export type PortfolioSeo = {
   title: string;
 };
 
+export const landingPortfolioCategorySearchParam = "portfolioCategory";
+
 export type PortfolioListHref =
+  | "/#portfolio"
   | "/portfolio"
-  | `/portfolio?category=${PortfolioCategoryId}`;
+  | `/portfolio?category=${PortfolioCategoryId}`
+  | `/?${typeof landingPortfolioCategorySearchParam}=${PortfolioCategoryId}#portfolio`;
+
+export type PortfolioDetailSource = "landing";
 
 export type PortfolioDetailHref =
-  `/portfolio/${string}?category=${PortfolioCategoryId}`;
+  | `/portfolio/${string}?category=${PortfolioCategoryId}`
+  | `/portfolio/${string}?category=${PortfolioCategoryId}&from=${PortfolioDetailSource}`;
 
 type PortfolioItemSeed = Omit<
   PortfolioItem,
@@ -549,9 +556,26 @@ export function getPortfolioCategoryLabel(
   return portfolioCategoryLabelById.get(categoryId) ?? "포트폴리오";
 }
 
+export function getPortfolioDetailSourceFromValue(
+  value: string | string[] | undefined,
+): PortfolioDetailSource | undefined {
+  const source = Array.isArray(value) ? value[0] : value;
+
+  return source === "landing" ? source : undefined;
+}
+
 export function getPortfolioListHref(
   categoryId?: PortfolioCategoryId,
+  source?: PortfolioDetailSource,
 ): PortfolioListHref {
+  if (source === "landing") {
+    if (!categoryId) {
+      return "/#portfolio";
+    }
+
+    return `/?${landingPortfolioCategorySearchParam}=${categoryId}#portfolio`;
+  }
+
   if (!categoryId) {
     return "/portfolio";
   }
@@ -562,7 +586,12 @@ export function getPortfolioListHref(
 export function getPortfolioDetailHref(
   item: PortfolioItem,
   categoryId: PortfolioCategoryId = item.categoryId,
+  source?: PortfolioDetailSource,
 ): PortfolioDetailHref {
+  if (source === "landing") {
+    return `/portfolio/${item.slug}?category=${categoryId}&from=${source}`;
+  }
+
   return `/portfolio/${item.slug}?category=${categoryId}`;
 }
 

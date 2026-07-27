@@ -14,6 +14,10 @@ const listPagePath = new URL(
   "../app/(site)/portfolio/page.tsx",
   import.meta.url,
 );
+const homePagePath = new URL(
+  "../app/(site)/page.tsx",
+  import.meta.url,
+);
 const landingPortfolioPath = new URL(
   "../app/_components/PortfolioSection.tsx",
   import.meta.url,
@@ -67,6 +71,43 @@ test("portfolio landing tabs filter cards on click", async () => {
   assert.match(landingPortfolio, /setActiveCategoryId\(categoryId\)/);
   assert.match(landingPortfolio, /aria-pressed=\{isActive\}/);
   assert.match(landingPortfolio, /activePortfolioItems\.map/);
+});
+
+test("portfolio detail returns to the landing section when opened from the landing page", async () => {
+  const [content, detailPage, homePage, landingPortfolio] = await Promise.all([
+    readFile(contentPath, "utf8"),
+    readFile(detailPagePath, "utf8"),
+    readFile(homePagePath, "utf8"),
+    readFile(landingPortfolioPath, "utf8"),
+  ]);
+
+  assert.match(
+    content,
+    /export const landingPortfolioCategorySearchParam = "portfolioCategory";/,
+  );
+  assert.match(content, /type PortfolioDetailSource = "landing"/);
+  assert.match(content, /return `\/\?\$\{landingPortfolioCategorySearchParam\}=\$\{categoryId\}#portfolio`;/);
+  assert.match(
+    landingPortfolio,
+    /getPortfolioDetailHref\(item, activeCategoryId, "landing"\)/,
+  );
+  assert.match(homePage, /getPortfolioCategoryIdFromValue/);
+  assert.match(homePage, /landingPortfolioCategorySearchParam/);
+  assert.match(
+    homePage,
+    /<PortfolioSection initialCategoryId=\{initialPortfolioCategoryId\} \/>/,
+  );
+  assert.match(landingPortfolio, /initialCategoryId\?: PortfolioCategoryId/);
+  assert.match(landingPortfolio, /landingPortfolioScrollStorageKey/);
+  assert.match(landingPortfolio, /window\.sessionStorage\.setItem/);
+  assert.match(landingPortfolio, /window\.scrollTo/);
+  assert.match(landingPortfolio, /onClick=\{saveLandingPortfolioScroll\}/);
+  assert.match(detailPage, /from\?: string \| string\[\]/);
+  assert.match(
+    detailPage,
+    /getPortfolioDetailSourceFromValue\(\s*resolvedSearchParams\?\.from,\s*\)/,
+  );
+  assert.match(detailPage, /getPortfolioListHref\(listCategoryId, detailSource\)/);
 });
 
 test("portfolio cards expose semantic project markup and descriptive alt text", async () => {
