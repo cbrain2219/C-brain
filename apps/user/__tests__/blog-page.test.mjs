@@ -294,11 +294,39 @@ test("blog category active tab uses a transparent-edge gradient underline", asyn
 });
 
 test("blog hero applies the Figma white dim below the fold breakpoint", async () => {
-  const styles = await source("styles");
+  const [page, styles] = await Promise.all([source("page"), source("styles")]);
 
+  assert.match(page, /overlayClassName=\{styles\.blogHeroOverlay\}/);
   assert.match(
     styles,
-    /@media \(max-width: 640px\)[\s\S]*\.page > section:first-child > div:nth-child\(2\)\s*\{[\s\S]*background: rgba\(255, 255, 255, 0\.8\)/,
+    /\.page \.blogHeroOverlay\s*\{[\s\S]*background: rgba\(255, 255, 255, 0\.8\)/,
+  );
+  assert.match(
+    styles,
+    /@media \(min-width: 641px\)[\s\S]*\.page \.blogHeroOverlay\s*\{[\s\S]*linear-gradient\(90deg, #ffffff 0%, rgba\(255, 255, 255, 0\) 100%\)/,
+  );
+});
+
+test("blog hero uses Figma image placement for each responsive frame", async () => {
+  const [page, styles] = await Promise.all([source("page"), source("styles")]);
+
+  assert.match(page, /backgroundClassName=\{styles\.blogHeroBackground\}/);
+  assert.doesNotMatch(page, /backgroundPosition="56% 24%"/);
+  assert.match(styles, /--blog-hero-image-left: -109\.75%;/);
+  assert.match(styles, /--blog-hero-image-top: 0;/);
+  assert.match(styles, /--blog-hero-image-width: 262\.94%;/);
+  assert.match(styles, /--blog-hero-image-height: 100%;/);
+  assert.match(
+    styles,
+    /@media \(min-width: 400px\)[\s\S]*--blog-hero-image-left: -24\.45%;[\s\S]*--blog-hero-image-width: 148\.9%;/,
+  );
+  assert.match(
+    styles,
+    /@media \(min-width: 641px\)[\s\S]*--blog-hero-image-left: -16\.12%;[\s\S]*--blog-hero-image-top: -10\.64%;[\s\S]*--blog-hero-image-width: 132\.24%;[\s\S]*--blog-hero-image-height: 143\.63%;/,
+  );
+  assert.match(
+    styles,
+    /@media \(min-width: 1440px\)[\s\S]*--blog-hero-image-left: 0;[\s\S]*--blog-hero-image-top: -23\.22%;[\s\S]*--blog-hero-image-width: 100%;[\s\S]*--blog-hero-image-height: 166\.99%;/,
   );
 });
 

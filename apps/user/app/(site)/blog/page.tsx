@@ -27,8 +27,8 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
       />
       <PageHero
         backgroundAlt="대전화병원 브로슈어 디자인 및 인쇄 제작 사례, 화이트 톤 표지와 병원 외관 사진을 활용한 내지 구성"
+        backgroundClassName={styles.blogHeroBackground}
         backgroundImage="/figma-assets/blog-hero-background.png"
-        backgroundPosition="center"
         badge="C · Brain Blog"
         description={
           <p className={styles.description}>
@@ -43,6 +43,7 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
             <br className={styles.heroMobileBreak} /> 디자인 · 인쇄 실무 꿀팁
           </span>
         }
+        overlayClassName={styles.blogHeroOverlay}
       />
       <BlogBoard activeCategory={activeCategory} posts={blogPosts} />
     </div>

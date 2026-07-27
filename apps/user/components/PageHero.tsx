@@ -6,9 +6,11 @@ import styles from "./PageHero.module.css";
 type PageHeroProps = {
   actions?: ReactNode;
   backgroundAlt: string;
+  backgroundClassName?: string;
   backgroundImage: string;
   backgroundPosition?: CSSProperties["backgroundPosition"];
   mobileBackgroundPosition?: CSSProperties["backgroundPosition"];
+  overlayClassName?: string;
   badge: ReactNode;
   description: ReactNode;
   title: ReactNode;
@@ -19,9 +21,11 @@ type PageHeroProps = {
 export function PageHero({
   actions,
   backgroundAlt,
+  backgroundClassName,
   backgroundImage,
   backgroundPosition = "center",
   mobileBackgroundPosition,
+  overlayClassName,
   badge,
   description,
   title,
@@ -32,7 +36,9 @@ export function PageHero({
     <section className={`${styles.hero} ${styles[variant]} ${styles[tone]}`}>
       <Image
         alt={backgroundAlt}
-        className={styles.background}
+        className={[styles.background, backgroundClassName]
+          .filter(Boolean)
+          .join(" ")}
         fill
         priority
         sizes="100vw"
@@ -45,7 +51,10 @@ export function PageHero({
           } as CSSProperties
         }
       />
-      <div aria-hidden="true" className={styles.overlay} />
+      <div
+        aria-hidden="true"
+        className={[styles.overlay, overlayClassName].filter(Boolean).join(" ")}
+      />
       <div className={styles.content}>
         <div className={styles.copy}>
           <p className={styles.badge}>{badge}</p>
