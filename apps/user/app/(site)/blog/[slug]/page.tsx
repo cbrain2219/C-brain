@@ -17,6 +17,7 @@ import type { BlogContentBlock, BlogPost } from "../_types/blog";
 import { JsonLdScript } from "../../../_components/JsonLdScript";
 import { createBlogPostingStructuredData } from "../../../_content/structured-data";
 import { BlogDetailBackLink } from "./BlogDetailBackLink";
+import { MoreBlogPreviewText } from "./MoreBlogPreviewText";
 import styles from "./page.module.css";
 
 type BlogDetailPageProps = {
@@ -288,10 +289,15 @@ export default async function BlogDetailPage({
                               {relatedPost.category}
                             </span>
                             <div className={styles.moreBlogText}>
-                              <h3 id={`more-blog-${relatedPost.id}-title`}>
-                                {relatedPost.title}
+                              <h3
+                                id={`more-blog-${relatedPost.id}-title`}
+                                title={relatedPost.title}
+                              >
+                                <MoreBlogPreviewText text={relatedPost.title} />
                               </h3>
-                              <p>{relatedPost.summary}</p>
+                              <p title={relatedPost.summary}>
+                                <MoreBlogPreviewText mobileMaxLines={2} text={relatedPost.summary} />
+                              </p>
                             </div>
                           </div>
                           <footer className={styles.moreBlogMeta}>

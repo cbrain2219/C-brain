@@ -322,20 +322,31 @@
   font-weight: 700;
   line-height: 24px;
   letter-spacing: -0.24px;
-  text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .moreBlogText p {
   overflow: hidden;
   color: var(--landing-gray-600);
-  display: -webkit-box;
+  display: block;
   font-size: 14px;
   font-weight: 500;
   line-height: 20px;
   letter-spacing: -0.21px;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
+  word-break: keep-all;
+}
+
+.moreBlogPreviewText {
+  max-width: 100%;
+  display: block;
+  overflow: hidden;
+  word-break: keep-all;
+  white-space: nowrap;
+}
+
+.moreBlogPreviewText[data-lines="2"] {
+  max-height: 40px;
+  white-space: normal;
 }
 
 .moreBlogMeta {
