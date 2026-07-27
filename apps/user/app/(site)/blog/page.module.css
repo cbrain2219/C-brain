@@ -496,19 +496,9 @@
   letter-spacing: 0;
 }
 
-.blogAuthorMark {
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  background: var(--landing-brand-500);
-  color: var(--landing-gray-50);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+.blogAuthorIcon {
+  display: block;
   flex: 0 0 auto;
-  font-size: 10px;
-  font-weight: 700;
-  line-height: 16px;
 }
 
 .blogAuthorName,

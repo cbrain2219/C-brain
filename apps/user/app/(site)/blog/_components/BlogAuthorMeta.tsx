@@ -1,3 +1,5 @@
+import Image from "next/image";
+
 import type { BlogPost } from "../_types/blog";
 
 import styles from "../page.module.css";
@@ -14,9 +16,13 @@ export function BlogAuthorMeta({
 }: BlogAuthorMetaProps) {
   return (
     <footer className={styles.blogAuthorMeta}>
-      <span aria-hidden="true" className={styles.blogAuthorMark}>
-        C
-      </span>
+      <Image
+        alt=""
+        className={styles.blogAuthorIcon}
+        height={16}
+        src="/figma-assets/cbrain-author.svg"
+        width={16}
+      />
       <span className={styles.blogAuthorName}>{author}</span>
       <time className={styles.blogPublishedAt} dateTime={publishedAtIso}>
         {publishedAt}

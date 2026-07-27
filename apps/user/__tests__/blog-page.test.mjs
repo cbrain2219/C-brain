@@ -263,6 +263,10 @@ test("blog list uses semantic navigation and article lists without changing visu
     authorMeta,
     /<footer className=\{styles\.blogAuthorMeta\}>/,
   );
+  assert.match(authorMeta, /import Image from "next\/image"/);
+  assert.match(authorMeta, /src="\/figma-assets\/cbrain-author\.svg"/);
+  assert.match(authorMeta, /className=\{styles\.blogAuthorIcon\}/);
+  assert.doesNotMatch(authorMeta, /blogAuthorMark/);
   assert.match(authorMeta, /dateTime=\{publishedAtIso\}/);
   assert.match(
     featuredCard,
@@ -392,6 +396,7 @@ test("blog detail page keeps semantic article markup and list restoration", asyn
     /<address[\s\S]*className=\{styles\.blogDetailAuthorLine\}[\s\S]*itemProp="author"[\s\S]*itemScope[\s\S]*itemType="https:\/\/schema\.org\/Organization"/,
   );
   assert.match(detailPage, /className=\{styles\.blogDetailAuthorIdentity\}/);
+  assert.match(detailPage, /src="\/figma-assets\/cbrain-author\.svg"/);
   assert.match(
     detailStyles,
     /\.blogDetailAuthorLine\s*\{[\s\S]*gap: 8px;/,
