@@ -23,6 +23,10 @@ const paths = {
     import.meta.url,
   ),
   listPage: new URL("../app/(site)/notice/page.tsx", import.meta.url),
+  listStyles: new URL(
+    "../app/(site)/notice/page.module.css",
+    import.meta.url,
+  ),
 };
 
 async function source(name) {
@@ -76,6 +80,26 @@ test("notice list keeps category, pinned, detail-link, and shared-icon contracts
   assert.doesNotMatch(item, /function PinIcon/);
   assert.match(icon, /\| "pin"/);
   assert.match(icon, /pin: PinIcon/);
+});
+
+test("notice active category underline stays visible while overlapping the rail", async () => {
+  const styles = await source("listStyles");
+  const categoryRailStyle = styles.match(/\.categoryRail\s*\{[\s\S]*?\}/)?.[0];
+
+  assert.match(
+    categoryRailStyle ?? "",
+    /background:\s*linear-gradient\(var\(--landing-gray-100\), var\(--landing-gray-100\)\)[\s\S]*center bottom\s*\/\s*100% 1px no-repeat;/,
+  );
+  assert.doesNotMatch(styles, /\.categoryRail::before/);
+  assert.doesNotMatch(styles, /\.categoryRail::after/);
+  assert.match(styles, /\.categoryLink:first-child\s*\{[\s\S]*?margin-left:\s*20px;/);
+  assert.match(styles, /\.categoryLink:last-child\s*\{[\s\S]*?margin-right:\s*20px;/);
+  assert.doesNotMatch(styles, /\.categoryLink\s*\{[\s\S]*?border-bottom:/);
+
+  assert.match(
+    styles,
+    /\.categoryLinkActive::after\s*\{[\s\S]*?bottom:\s*0;/,
+  );
 });
 
 test("notice detail keeps metadata, 404, structured content, and list return", async () => {

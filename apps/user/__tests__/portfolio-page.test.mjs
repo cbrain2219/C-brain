@@ -42,6 +42,22 @@ test("portfolio category hover excludes the active tab", async () => {
   assert.doesNotMatch(styles, /\.categoryButton:hover/);
 });
 
+test("portfolio active category underline stays visible while overlapping the rail", async () => {
+  const styles = await readFile(stylesPath, "utf8");
+  const categoryNavStyle = styles.match(/\.categoryNav\s*\{[\s\S]*?\}/)?.[0];
+
+  assert.match(
+    categoryNavStyle ?? "",
+    /background:\s*linear-gradient\(var\(--landing-gray-100\), var\(--landing-gray-100\)\)[\s\S]*center bottom\s*\/\s*100% 1px no-repeat;/,
+  );
+  assert.doesNotMatch(categoryNavStyle ?? "", /border-bottom:/);
+
+  assert.match(
+    styles,
+    /\.categoryButtonActive::after\s*\{[\s\S]*?bottom:\s*0;/,
+  );
+});
+
 test("portfolio cards expose semantic project markup and descriptive alt text", async () => {
   const content = await readFile(contentPath, "utf8");
   const gallery = await readFile(galleryPath, "utf8");

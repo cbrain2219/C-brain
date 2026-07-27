@@ -288,13 +288,35 @@ test("blog list uses semantic navigation and article lists without changing visu
 
 test("blog category active tab uses a transparent-edge gradient underline", async () => {
   const styles = await source("styles");
+  const categoryListStyle = styles.match(
+    /\.blogCategoryList\s*\{[\s\S]*?\}/,
+  )?.[0];
   const activeCategoryStyle = styles.match(
     /\.blogCategoryButton\[aria-current="page"\]\s*\{[\s\S]*?\}/,
   )?.[0];
+  const categoryButtonStyle = styles.match(
+    /\.blogCategoryButton\s*\{[\s\S]*?\}/,
+  )?.[0];
 
-  assert.match(styles, /\.blogCategoryButton\s*\{[\s\S]*position: relative/);
+  assert.match(
+    categoryListStyle ?? "",
+    /padding-inline:\s*20px;/,
+  );
+  assert.match(
+    categoryListStyle ?? "",
+    /background:\s*linear-gradient\(var\(--landing-gray-100\), var\(--landing-gray-100\)\)[\s\S]*left 20px bottom\s*\/\s*calc\(100% - 40px\) 1px no-repeat;/,
+  );
+  assert.doesNotMatch(categoryListStyle ?? "", /border-bottom:/);
+  assert.doesNotMatch(styles, /\.blogCategoryList > li:first-child\s*\{/);
+  assert.doesNotMatch(styles, /\.blogCategoryList > li:last-child\s*\{/);
+  assert.match(categoryButtonStyle ?? "", /position: relative/);
+  assert.doesNotMatch(categoryButtonStyle ?? "", /border-bottom:/);
   assert.doesNotMatch(activeCategoryStyle ?? "", /border-bottom-color/);
   assert.match(styles, /\.blogCategoryButton\[aria-current="page"\]::after/);
+  assert.match(
+    styles,
+    /\.blogCategoryButton\[aria-current="page"\]::after\s*\{[\s\S]*?bottom:\s*0;/,
+  );
   assert.match(
     styles,
     /rgba\(48, 186, 195, 0\) 0%[\s\S]*var\(--landing-brand-500\) 50%[\s\S]*rgba\(48, 186, 195, 0\) 100%/,

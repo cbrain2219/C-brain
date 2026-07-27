@@ -157,7 +157,8 @@
 .categoryNav {
   width: 100cqw;
   margin-left: calc(50% - 50cqw);
-  border-bottom: 1px solid var(--landing-gray-100);
+  background: linear-gradient(var(--landing-gray-100), var(--landing-gray-100))
+    center bottom / 100% 1px no-repeat;
   display: flex;
   gap: 4px;
   overflow-x: auto;

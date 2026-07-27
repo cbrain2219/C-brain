@@ -171,7 +171,8 @@
   height: 52px;
   margin: 0;
   padding-inline: 20px;
-  border-bottom: 1px solid var(--landing-gray-100);
+  background: linear-gradient(var(--landing-gray-100), var(--landing-gray-100))
+    left 20px bottom / calc(100% - 40px) 1px no-repeat;
   display: flex;
   align-items: stretch;
   gap: 4px;
@@ -188,7 +189,6 @@
   min-width: max-content;
   padding: 0 16px;
   border: 0;
-  border-bottom: 2px solid transparent;
   background: transparent;
   color: var(--landing-gray-600);
   display: inline-flex;
@@ -216,7 +216,7 @@
   height: 2px;
   position: absolute;
   right: 0;
-  bottom: -1px;
+  bottom: 0;
   left: 0;
   background: linear-gradient(
     90deg,
