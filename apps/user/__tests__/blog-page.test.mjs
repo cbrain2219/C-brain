@@ -84,6 +84,10 @@ test("blog page keeps the shared header, hero, category, and CTA contracts", asy
   assert.match(blogSection, /\{post\.summary\}/);
   assert.match(blogSection, /dateTime=\{post\.publishedAtIso\}/);
   assert.match(blogSection, /<Link[\s\S]*href="\/blog"/);
+  assert.match(
+    blogSection,
+    /<Icon[\s\S]*?className=\{styles\.moreButtonIcon\}[\s\S]*?name="arrow-right"[\s\S]*?size=\{24\}/,
+  );
   assert.doesNotMatch(blogSection, /<Button/);
 });
 

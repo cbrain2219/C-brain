@@ -74,7 +74,11 @@ export function BlogSection() {
           style={buttonStyle}
         >
           <span>블로그 전체 보기</span>
-          <Icon name="arrow-right" size={16} />
+          <Icon
+            className={styles.moreButtonIcon}
+            name="arrow-right"
+            size={24}
+          />
         </Link>
       </div>
     </SectionLayout>
