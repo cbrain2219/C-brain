@@ -58,6 +58,17 @@ test("portfolio active category underline stays visible while overlapping the ra
   );
 });
 
+test("portfolio landing tabs filter cards on click", async () => {
+  const landingPortfolio = await readFile(landingPortfolioPath, "utf8");
+
+  assert.match(landingPortfolio, /"use client";/);
+  assert.match(landingPortfolio, /useState<PortfolioCategoryId>/);
+  assert.match(landingPortfolio, /handleCategoryClick/);
+  assert.match(landingPortfolio, /setActiveCategoryId\(categoryId\)/);
+  assert.match(landingPortfolio, /aria-pressed=\{isActive\}/);
+  assert.match(landingPortfolio, /activePortfolioItems\.map/);
+});
+
 test("portfolio cards expose semantic project markup and descriptive alt text", async () => {
   const content = await readFile(contentPath, "utf8");
   const gallery = await readFile(galleryPath, "utf8");
@@ -102,7 +113,7 @@ test("portfolio landing, list, and detail stay fixture-only", async () => {
   }
 
   assert.match(listPage, /items=\{portfolioItems\}/);
-  assert.match(landingPortfolio, /featuredPortfolioItems\.map/);
+  assert.match(landingPortfolio, /activePortfolioItems\.map/);
   assert.match(detailPage, /getPortfolioDetailBySlug\(slug\)/);
   assert.match(detailPage, /portfolioItems\.map\(\(item\) =>/);
 });

@@ -1,5 +1,8 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
+import { useState } from "react";
 
 import { HorizontalDragScroll } from "../../components/HorizontalDragScroll";
 import { Icon } from "../../components/Icon";
@@ -7,7 +10,10 @@ import { SectionLayout } from "../../components/SectionLayout";
 import {
   featuredPortfolioItems,
   getPortfolioDetailHref,
+  getPortfolioListHref,
+  portfolioItems,
   portfolioCategories,
+  type PortfolioCategoryId,
 } from "../_content/portfolio";
 import styles from "../page.module.css";
 import { createGradientBorderButtonStyle } from "./buttonStyles";
@@ -15,6 +21,20 @@ import { createGradientBorderButtonStyle } from "./buttonStyles";
 const buttonStyle = createGradientBorderButtonStyle({ width: 184 });
 
 export function PortfolioSection() {
+  const [activeCategoryId, setActiveCategoryId] = useState<PortfolioCategoryId>(
+    portfolioCategories[0].id,
+  );
+  const activePortfolioItems =
+    activeCategoryId === portfolioCategories[0].id
+      ? featuredPortfolioItems
+      : portfolioItems
+          .filter((item) => item.categoryId === activeCategoryId)
+          .slice(0, 12);
+
+  const handleCategoryClick = (categoryId: PortfolioCategoryId) => {
+    setActiveCategoryId(categoryId);
+  };
+
   return (
     <SectionLayout
       badge="포트폴리오"
@@ -36,25 +56,30 @@ export function PortfolioSection() {
           ariaLabel="포트폴리오 카테고리"
           className={styles.categoryRail}
         >
-          {portfolioCategories.map((category, index) => (
-            <button
-              aria-pressed={index === 0}
-              className={`${styles.categoryChip} ${
-                index === 0 ? styles.categoryChipActive : ""
-              }`}
-              key={category.id}
-              type="button"
-            >
-              {category.label}
-            </button>
-          ))}
+          {portfolioCategories.map((category) => {
+            const isActive = activeCategoryId === category.id;
+
+            return (
+              <button
+                aria-pressed={isActive}
+                className={`${styles.categoryChip} ${
+                  isActive ? styles.categoryChipActive : ""
+                }`}
+                key={category.id}
+                onClick={() => handleCategoryClick(category.id)}
+                type="button"
+              >
+                {category.label}
+              </button>
+            );
+          })}
         </HorizontalDragScroll>
         <div className={styles.portfolioGrid}>
-          {featuredPortfolioItems.map((item) => (
+          {activePortfolioItems.map((item) => (
             <Link
               aria-label={`${item.client} ${item.title} 상세 보기`}
               className={styles.portfolioCard}
-              href={getPortfolioDetailHref(item)}
+              href={getPortfolioDetailHref(item, activeCategoryId)}
               key={item.slug}
             >
               <Image
@@ -76,7 +101,7 @@ export function PortfolioSection() {
       <div className={styles.centerAction}>
         <Link
           className={styles.portfolioMoreLink}
-          href="/portfolio"
+          href={getPortfolioListHref(activeCategoryId)}
           style={buttonStyle}
         >
           <span>더 많은 포트폴리오</span>
