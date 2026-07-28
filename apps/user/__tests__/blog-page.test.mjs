@@ -50,6 +50,29 @@ async function source(name) {
   return readFile(paths[name], "utf8");
 }
 
+function cssBlock(sourceText, selector) {
+  const selectorIndex = sourceText.indexOf(selector);
+  assert.notEqual(selectorIndex, -1);
+
+  const openBraceIndex = sourceText.indexOf("{", selectorIndex);
+  assert.notEqual(openBraceIndex, -1);
+
+  let depth = 0;
+  for (let index = openBraceIndex; index < sourceText.length; index += 1) {
+    if (sourceText[index] === "{") {
+      depth += 1;
+    } else if (sourceText[index] === "}") {
+      depth -= 1;
+
+      if (depth === 0) {
+        return sourceText.slice(openBraceIndex + 1, index);
+      }
+    }
+  }
+
+  assert.fail(`Missing closing brace for ${selector}`);
+}
+
 test("blog page keeps the shared header, hero, category, and CTA contracts", async () => {
   const [header, page, board, blogSection] = await Promise.all([
     source("header"),
@@ -375,6 +398,29 @@ test("blog hero title uses the shared mobile-only line break pattern", async () 
     styles,
     /@media \(min-width: 640px\)[\s\S]*\.heroMobileBreak\s*\{[\s\S]*display: none;/,
   );
+});
+
+test("blog hero title is 28px on mobile only", async () => {
+  const styles = await source("styles");
+  const tabletStart = styles.indexOf("@media (min-width: 640px)");
+  const desktopStart = styles.indexOf("@media (min-width: 1440px)");
+
+  assert.notEqual(tabletStart, -1);
+  assert.notEqual(desktopStart, -1);
+
+  const mobileTitleStyles = cssBlock(styles, ".title {");
+  const tabletTitleStyles = cssBlock(
+    styles.slice(tabletStart, desktopStart),
+    ".title {",
+  );
+  const desktopTitleStyles = cssBlock(styles.slice(desktopStart), ".title {");
+
+  assert.match(mobileTitleStyles, /font-size:\s*28px;/);
+  assert.match(mobileTitleStyles, /line-height:\s*36px;/);
+  assert.match(tabletTitleStyles, /font-size:\s*32px;/);
+  assert.match(tabletTitleStyles, /line-height:\s*40px;/);
+  assert.match(desktopTitleStyles, /font-size:\s*36px;/);
+  assert.match(desktopTitleStyles, /line-height:\s*48px;/);
 });
 
 test("blog detail page follows portfolio detail route conventions", async () => {
