@@ -119,11 +119,13 @@
 .mobileCategoryNav {
   width: 100cqw;
   margin: 0 0 20px calc(50% - 50cqw);
-  border-bottom: 1px solid var(--landing-gray-100);
   position: sticky;
   top: var(--faq-header-offset);
   z-index: 10;
-  background: #ffffff;
+  background:
+    linear-gradient(var(--landing-gray-100), var(--landing-gray-100)) center
+      bottom / 100% 1px no-repeat,
+    #ffffff;
   display: flex;
   gap: 4px;
   overflow-x: auto;
@@ -158,7 +160,7 @@
   align-items: center;
   justify-content: center;
   gap: 4px;
-  border-bottom: 2px solid transparent;
+  border: 0;
   border-radius: 12px 12px 0 0;
   color: var(--landing-gray-500);
   font-family: var(--font-sans);
@@ -199,7 +201,6 @@
 }
 
 .mobileCategoryLinkActive {
-  border-bottom-color: transparent;
   font-weight: 700;
 }
 
@@ -208,7 +209,7 @@
   height: 2px;
   position: absolute;
   right: 0;
-  bottom: -1px;
+  bottom: 0;
   left: 0;
   background: linear-gradient(
     90deg,

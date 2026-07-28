@@ -26,24 +26,37 @@ test("FAQ category navigation follows the responsive header offset", async () =>
   );
 });
 
-test("FAQ active category tab uses the notice-style gradient underline", async () => {
+test("FAQ active category tab overlaps the gray rail like portfolio tabs", async () => {
   const stylesSource = await readFile(stylesUrl, "utf8");
+  const mobileCategoryNavStyle = stylesSource.match(
+    /\.mobileCategoryNav\s*\{[\s\S]*?\}/,
+  )?.[0];
+  const mobileCategoryLinkStyle = stylesSource.match(
+    /(?:^|\n)\.mobileCategoryLink\s*\{[\s\S]*?\}/,
+  )?.[0];
 
   assert.match(
-    stylesSource,
-    /\.mobileCategoryLink\s*\{[\s\S]*?position:\s*relative;/,
+    mobileCategoryNavStyle ?? "",
+    /background:\s*linear-gradient\(var\(--landing-gray-100\), var\(--landing-gray-100\)\)[\s\S]*center\s+bottom\s*\/\s*100% 1px no-repeat,/,
+  );
+  assert.doesNotMatch(mobileCategoryNavStyle ?? "", /border-bottom:/);
+
+  assert.match(
+    mobileCategoryLinkStyle ?? "",
+    /border:\s*0;/,
+  );
+  assert.match(
+    mobileCategoryLinkStyle ?? "",
+    /position:\s*relative;/,
   );
   assert.match(
     stylesSource,
     /\.mobileCategoryLink:active,\s*\.mobileCategoryLinkActive,\s*\.mobileCategoryLinkActive:hover,\s*\.mobileCategoryLinkActive:focus-visible,\s*\.mobileCategoryLinkActive:active\s*\{[\s\S]*?color:\s*var\(--landing-brand-500\);/,
   );
+  assert.doesNotMatch(stylesSource, /border-bottom-color:\s*transparent;/);
   assert.match(
     stylesSource,
-    /\.mobileCategoryLinkActive\s*\{[\s\S]*?border-bottom-color:\s*transparent;/,
-  );
-  assert.match(
-    stylesSource,
-    /\.mobileCategoryLinkActive::after\s*\{[\s\S]*?height:\s*2px;[\s\S]*?bottom:\s*-1px;[\s\S]*?background:\s*linear-gradient\(/,
+    /\.mobileCategoryLinkActive::after\s*\{[\s\S]*?height:\s*2px;[\s\S]*?bottom:\s*0;[\s\S]*?background:\s*linear-gradient\(/,
   );
   assert.match(
     stylesSource,
