@@ -154,16 +154,18 @@
   position: absolute;
   inset: 0;
   border-radius: inherit;
-  padding: 1px;
+  box-sizing: border-box;
+  border: 1px solid transparent;
   background-image:
     var(--landing-brand-border-end), var(--landing-brand-border-start);
+  background-origin: border-box;
   pointer-events: none;
   -webkit-mask:
-    linear-gradient(#ffffff 0 0) content-box,
+    linear-gradient(#ffffff 0 0) padding-box,
     linear-gradient(#ffffff 0 0);
   -webkit-mask-composite: xor;
   mask:
-    linear-gradient(#ffffff 0 0) content-box,
+    linear-gradient(#ffffff 0 0) padding-box,
     linear-gradient(#ffffff 0 0);
   mask-composite: exclude;
 }
@@ -330,16 +332,18 @@
   position: absolute;
   inset: 0;
   border-radius: inherit;
-  padding: 1px;
+  box-sizing: border-box;
+  border: 1px solid transparent;
   background-image:
     var(--method-label-border-end), var(--method-label-border-start);
+  background-origin: border-box;
   pointer-events: none;
   -webkit-mask:
-    linear-gradient(#ffffff 0 0) content-box,
+    linear-gradient(#ffffff 0 0) padding-box,
     linear-gradient(#ffffff 0 0);
   -webkit-mask-composite: xor;
   mask:
-    linear-gradient(#ffffff 0 0) content-box,
+    linear-gradient(#ffffff 0 0) padding-box,
     linear-gradient(#ffffff 0 0);
   mask-composite: exclude;
 }
@@ -573,17 +577,19 @@
   position: absolute;
   inset: 0;
   border-radius: inherit;
-  padding: 1px;
+  box-sizing: border-box;
+  border: 1px solid transparent;
   background-image:
     var(--option-service-badge-border-end),
     var(--option-service-badge-border-start);
+  background-origin: border-box;
   pointer-events: none;
   -webkit-mask:
-    linear-gradient(#ffffff 0 0) content-box,
+    linear-gradient(#ffffff 0 0) padding-box,
     linear-gradient(#ffffff 0 0);
   -webkit-mask-composite: xor;
   mask:
-    linear-gradient(#ffffff 0 0) content-box,
+    linear-gradient(#ffffff 0 0) padding-box,
     linear-gradient(#ffffff 0 0);
   mask-composite: exclude;
 }

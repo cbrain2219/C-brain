@@ -61,15 +61,17 @@
 .badge::before {
   content: "";
   position: absolute;
-  inset: -1px;
+  inset: 0;
   border-radius: inherit;
-  padding: 1px;
+  box-sizing: border-box;
+  border: 1px solid transparent;
   background:
     var(--landing-brand-border-end),
     var(--landing-brand-border-start);
+  background-origin: border-box;
   pointer-events: none;
   -webkit-mask:
-    linear-gradient(#ffffff 0 0) content-box,
+    linear-gradient(#ffffff 0 0) padding-box,
     linear-gradient(#ffffff 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;

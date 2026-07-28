@@ -4,6 +4,7 @@ type GradientBorderButtonTone = "brand" | "contactKakao" | "kakao";
 
 type GradientBorderButtonOptions = {
   height?: number;
+  includeBorder?: boolean;
   padding?: CSSProperties["padding"];
   tone?: GradientBorderButtonTone;
   width?: number;
@@ -26,27 +27,26 @@ const colorByTone = {
 
 export function createGradientBorderButtonStyle({
   height = 52,
+  includeBorder = true,
   padding = "8px 24px",
   tone = "brand",
   width = 164,
 }: GradientBorderButtonOptions = {}): CSSProperties {
   const fillLayers = fillByTone[tone];
-  const backgroundLayers = [
-    ...fillLayers,
-    "var(--landing-button-border-end)",
-    "var(--landing-button-border-start)",
-  ];
+  const borderLayers = includeBorder
+    ? ["var(--landing-button-border-end)", "var(--landing-button-border-start)"]
+    : [];
+  const backgroundLayers = [...fillLayers, ...borderLayers];
   const backgroundClips = [
     ...fillLayers.map(() => "padding-box"),
-    "border-box",
-    "border-box",
+    ...borderLayers.map(() => "border-box"),
   ];
 
   return {
     height,
     width,
     borderRadius: 32,
-    border: "1px solid transparent",
+    border: includeBorder ? "1px solid transparent" : 0,
     backgroundClip: backgroundClips.join(", "),
     backgroundColor: "transparent",
     backgroundImage: backgroundLayers.join(", "),

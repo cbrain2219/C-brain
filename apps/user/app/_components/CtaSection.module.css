@@ -54,12 +54,14 @@
   position: absolute;
   inset: 0;
   border-radius: inherit;
-  padding: 1px;
+  box-sizing: border-box;
+  border: 1px solid transparent;
   background:
     var(--landing-button-border-end), var(--landing-button-border-start);
+  background-origin: border-box;
   pointer-events: none;
   -webkit-mask:
-    linear-gradient(#ffffff 0 0) content-box,
+    linear-gradient(#ffffff 0 0) padding-box,
     linear-gradient(#ffffff 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
@@ -112,6 +114,36 @@
   flex-direction: column;
   align-items: center;
   gap: 8px;
+}
+
+.actionButton {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+
+.actionButton::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  box-sizing: border-box;
+  border: 1px solid transparent;
+  border-radius: inherit;
+  background:
+    var(--landing-button-border-end), var(--landing-button-border-start);
+  background-origin: border-box;
+  pointer-events: none;
+  -webkit-mask:
+    linear-gradient(#ffffff 0 0) padding-box,
+    linear-gradient(#ffffff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+}
+
+.actionButton > * {
+  position: relative;
+  z-index: 1;
 }
 
 .secondaryAction {

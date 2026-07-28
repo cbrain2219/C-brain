@@ -12,12 +12,15 @@ import { createGradientBorderButtonStyle } from "./buttonStyles";
 const heroButtonWidth = "var(--landing-hero-button-width, 164px)" as const;
 
 const kakaoButtonStyle = {
-  ...createGradientBorderButtonStyle({ tone: "contactKakao" }),
+  ...createGradientBorderButtonStyle({
+    includeBorder: false,
+    tone: "contactKakao",
+  }),
   width: heroButtonWidth,
 };
 
 const priceButtonStyle = {
-  ...createGradientBorderButtonStyle(),
+  ...createGradientBorderButtonStyle({ includeBorder: false }),
   width: heroButtonWidth,
 };
 
@@ -36,19 +39,27 @@ export function Hero() {
             className={styles.heroGradientButton}
             href={KAKAO_CHANNEL_URL}
             rel="noreferrer"
-            rightIcon={<Icon name="message-typing" size={16} />}
             style={kakaoButtonStyle}
             target="_blank"
           >
-            실시간 카톡상담
+            <span>실시간 카톡상담</span>
+            <Icon
+              className={styles.heroGradientButtonIcon}
+              name="message-typing"
+              size={24}
+            />
           </ButtonLink>
           <Button
             className={styles.heroGradientButton}
             onClick={handlePriceButtonClick}
-            rightIcon={<Icon name="arrow-right" size={16} />}
             style={priceButtonStyle}
           >
-            정찰제 가격 보기
+            <span>정찰제 가격 보기</span>
+            <Icon
+              className={styles.heroGradientButtonIcon}
+              name="arrow-right"
+              size={24}
+            />
           </Button>
         </>
       }

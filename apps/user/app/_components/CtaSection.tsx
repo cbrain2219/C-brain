@@ -12,6 +12,7 @@ const actionPadding = "8px 23px";
 
 const kakaoButtonStyle: CSSProperties = {
   ...createGradientBorderButtonStyle({
+    includeBorder: false,
     padding: actionPadding,
     tone: "contactKakao",
   }),
@@ -19,7 +20,10 @@ const kakaoButtonStyle: CSSProperties = {
 };
 
 const secondaryActionStyle: CSSProperties = {
-  ...createGradientBorderButtonStyle({ padding: actionPadding }),
+  ...createGradientBorderButtonStyle({
+    includeBorder: false,
+    padding: actionPadding,
+  }),
   width: actionWidth,
 };
 
@@ -68,6 +72,7 @@ export function CtaSection({
         </div>
         <div className={styles.actions}>
           <ButtonLink
+            className={styles.actionButton}
             href={KAKAO_CHANNEL_URL}
             rel="noreferrer"
             style={kakaoButtonStyle}
@@ -78,7 +83,7 @@ export function CtaSection({
           </ButtonLink>
           {secondaryAction ? (
             <Link
-              className={styles.secondaryAction}
+              className={`${styles.secondaryAction} ${styles.actionButton}`}
               href={secondaryAction.href}
               style={secondaryActionStyle}
             >

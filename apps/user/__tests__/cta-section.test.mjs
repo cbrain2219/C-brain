@@ -35,9 +35,20 @@ test("CTA section owns its styles and conditionally renders the second action", 
   assert.match(source, /secondaryAction \?/);
   assert.match(source, /<Link/);
   assert.match(source, /createGradientBorderButtonStyle/);
+  assert.match(source, /includeBorder: false/);
   assert.match(styles, /\.descriptionSm/);
   assert.match(styles, /\.descriptionMd/);
   assert.match(styles, /\.badge::before/);
+  assert.match(styles, /\.actionButton::before/);
+  assert.match(styles, /\.actionButton::before\s*\{[\s\S]*?inset: 0;/);
+  assert.match(
+    styles,
+    /\.actionButton::before\s*\{[\s\S]*?border: 1px solid transparent;/,
+  );
+  assert.match(
+    styles,
+    /\.actionButton::before\s*\{[\s\S]*?linear-gradient\(#ffffff 0 0\) padding-box,/,
+  );
   assert.match(styles, /var\(--landing-button-border-end\)/);
   assert.match(
     styles,

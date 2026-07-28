@@ -317,12 +317,15 @@
 .heroGradientButton::before {
   content: "";
   position: absolute;
-  inset: -1px;
+  inset: 0;
+  z-index: 0;
   border-radius: inherit;
-  padding: 1px;
+  box-sizing: border-box;
+  border: 1px solid transparent;
+  background-origin: border-box;
   pointer-events: none;
   -webkit-mask:
-    linear-gradient(#ffffff 0 0) content-box,
+    linear-gradient(#ffffff 0 0) padding-box,
     linear-gradient(#ffffff 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
@@ -330,11 +333,22 @@
 
 .heroGradientButton {
   position: relative;
+  isolation: isolate;
+  overflow: hidden;
 }
 
 .heroGradientButton::before {
   background:
     var(--landing-button-border-end), var(--landing-button-border-start);
+}
+
+.heroGradientButton > * {
+  position: relative;
+  z-index: 1;
+}
+
+.heroGradientButtonIcon {
+  flex: 0 0 auto;
 }
 
 .blogCopy,
@@ -427,14 +441,16 @@
 .portfolioKicker::before {
   content: "";
   position: absolute;
-  inset: -1px;
+  inset: 0;
   border-radius: inherit;
-  padding: 1px;
+  box-sizing: border-box;
+  border: 1px solid transparent;
   background:
     var(--landing-brand-border-end), var(--landing-brand-border-start);
+  background-origin: border-box;
   pointer-events: none;
   -webkit-mask:
-    linear-gradient(#ffffff 0 0) content-box,
+    linear-gradient(#ffffff 0 0) padding-box,
     linear-gradient(#ffffff 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
@@ -828,14 +844,16 @@
 .aboutKicker::before {
   content: "";
   position: absolute;
-  inset: -1px;
+  inset: 0;
   border-radius: inherit;
-  padding: 1px;
+  box-sizing: border-box;
+  border: 1px solid transparent;
   background:
     var(--landing-button-border-end), var(--landing-button-border-start);
+  background-origin: border-box;
   pointer-events: none;
   -webkit-mask:
-    linear-gradient(#ffffff 0 0) content-box,
+    linear-gradient(#ffffff 0 0) padding-box,
     linear-gradient(#ffffff 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
@@ -940,14 +958,16 @@
 .reviewKicker::before {
   content: "";
   position: absolute;
-  inset: -1px;
+  inset: 0;
   border-radius: inherit;
-  padding: 1px;
+  box-sizing: border-box;
+  border: 1px solid transparent;
   background:
     var(--landing-brand-border-end), var(--landing-brand-border-start);
+  background-origin: border-box;
   pointer-events: none;
   -webkit-mask:
-    linear-gradient(#ffffff 0 0) content-box,
+    linear-gradient(#ffffff 0 0) padding-box,
     linear-gradient(#ffffff 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
@@ -1315,14 +1335,16 @@
 .reviewsBadge::before {
   content: "";
   position: absolute;
-  inset: -1px;
+  inset: 0;
   border-radius: inherit;
-  padding: 1px;
+  box-sizing: border-box;
+  border: 1px solid transparent;
   background:
     var(--landing-brand-border-end), var(--landing-brand-border-start);
+  background-origin: border-box;
   pointer-events: none;
   -webkit-mask:
-    linear-gradient(#ffffff 0 0) content-box,
+    linear-gradient(#ffffff 0 0) padding-box,
     linear-gradient(#ffffff 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
@@ -1837,14 +1859,16 @@
 .faqKicker::before {
   content: "";
   position: absolute;
-  inset: -1px;
+  inset: 0;
   border-radius: inherit;
-  padding: 1px;
+  box-sizing: border-box;
+  border: 1px solid transparent;
   background:
     var(--landing-brand-border-end), var(--landing-brand-border-start);
+  background-origin: border-box;
   pointer-events: none;
   -webkit-mask:
-    linear-gradient(#ffffff 0 0) content-box,
+    linear-gradient(#ffffff 0 0) padding-box,
     linear-gradient(#ffffff 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
