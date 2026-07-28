@@ -45,7 +45,7 @@ test("FAQ category navigation follows the responsive header offset", async () =>
   );
   assert.match(
     stylesSource,
-    /@media \(max-width:\s*1099px\)\s*\{[\s\S]*?\.faqPage\s*\{[\s\S]*?--faq-header-offset:\s*64px;/,
+    /@media \(max-width:\s*1099px\)\s*\{[\s\S]*?\.faqPage\s*\{[\s\S]*?--faq-header-offset:\s*52px;/,
   );
 });
 

@@ -297,7 +297,7 @@
 
 @media (max-width: 1099px) {
   .faqPage {
-    --faq-header-offset: 64px;
+    --faq-header-offset: 52px;
   }
 }
 
