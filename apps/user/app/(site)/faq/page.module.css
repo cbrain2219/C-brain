@@ -29,7 +29,7 @@
 }
 
 .mainColumn {
-  width: min(100%, 640px);
+  width: 100%;
   margin: 0 auto;
   padding: 32px 20px 72px;
 }
@@ -302,10 +302,6 @@
 }
 
 @media (min-width: 640px) {
-  .mainColumn {
-    width: min(100%, 640px);
-  }
-
   .heroTitle {
     max-width: 540px;
   }

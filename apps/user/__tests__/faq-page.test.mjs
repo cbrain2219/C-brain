@@ -7,6 +7,29 @@ const stylesUrl = new URL(
   import.meta.url,
 );
 
+function cssBlock(sourceText, selector) {
+  const selectorIndex = sourceText.indexOf(selector);
+  assert.notEqual(selectorIndex, -1);
+
+  const openBraceIndex = sourceText.indexOf("{", selectorIndex);
+  assert.notEqual(openBraceIndex, -1);
+
+  let depth = 0;
+  for (let index = openBraceIndex; index < sourceText.length; index += 1) {
+    if (sourceText[index] === "{") {
+      depth += 1;
+    } else if (sourceText[index] === "}") {
+      depth -= 1;
+
+      if (depth === 0) {
+        return sourceText.slice(openBraceIndex + 1, index);
+      }
+    }
+  }
+
+  assert.fail(`Missing closing brace for ${selector}`);
+}
+
 test("FAQ category navigation follows the responsive header offset", async () => {
   const stylesSource = await readFile(stylesUrl, "utf8");
 
@@ -24,6 +47,28 @@ test("FAQ category navigation follows the responsive header offset", async () =>
     stylesSource,
     /@media \(max-width:\s*1099px\)\s*\{[\s\S]*?\.faqPage\s*\{[\s\S]*?--faq-header-offset:\s*64px;/,
   );
+});
+
+test("FAQ main column fills the layout before the sidebar breakpoint", async () => {
+  const stylesSource = await readFile(stylesUrl, "utf8");
+  const tabletStart = stylesSource.indexOf("@media (min-width: 640px)");
+  const sidebarStart = stylesSource.indexOf("@media (min-width: 1200px)");
+  const desktopStart = stylesSource.indexOf("@media (min-width: 1440px)");
+
+  assert.notEqual(tabletStart, -1);
+  assert.notEqual(sidebarStart, -1);
+  assert.notEqual(desktopStart, -1);
+
+  const baseMainColumnStyle = cssBlock(stylesSource, ".mainColumn {");
+  const beforeSidebarStyles = stylesSource.slice(tabletStart, sidebarStart);
+  const sidebarMainColumnStyle = cssBlock(
+    stylesSource.slice(sidebarStart, desktopStart),
+    ".mainColumn {",
+  );
+
+  assert.match(baseMainColumnStyle, /width:\s*100%;/);
+  assert.doesNotMatch(beforeSidebarStyles, /\.mainColumn\s*\{/);
+  assert.match(sidebarMainColumnStyle, /max-width:\s*820px;/);
 });
 
 test("FAQ active category tab overlaps the gray rail like portfolio tabs", async () => {
