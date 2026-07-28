@@ -1263,10 +1263,27 @@
   }
 }
 
-@media (max-width: 1099px) {
+@media (max-width: 1079px) {
   .hero {
     min-height: 584px;
     padding: 136px 0 72px;
+  }
+
+  .heroInner {
+    padding: 0 20px;
+  }
+
+  .heroCopy,
+  .heroTextBlock,
+  .heroCopy h1,
+  .heroDescription {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+  }
+
+  .heroDescriptionLine {
+    white-space: normal;
   }
 
   .heroMetricPanel {
@@ -1388,12 +1405,7 @@
   }
 }
 
-@media (max-width: 699px) {
-  .sectionInner,
-  .historyInner {
-    padding: 0 20px;
-  }
-
+@media (max-width: 869px) {
   .hero {
     min-height: 720px;
     padding: 72px 0;
@@ -1435,29 +1447,9 @@
     line-height: 44px;
   }
 
-  .heroTitleMobileBreak {
-    display: block;
-  }
-
-  .heroTitleDesktopSeparator {
-    display: none;
-  }
-
   .heroDescription {
     font-size: 16px;
     line-height: 24px;
-  }
-
-  .heroDescriptionLine {
-    white-space: normal;
-  }
-
-  .heroDescriptionLineDesktop {
-    display: none;
-  }
-
-  .heroDescriptionLineMobile {
-    display: block;
   }
 
   .heroMetricPanel {
@@ -1489,6 +1481,42 @@
   .heroMetric strong {
     font-size: 28px;
     line-height: 30px;
+  }
+}
+
+@media (max-width: 639px) {
+  .sectionInner,
+  .historyInner {
+    padding: 0 20px;
+  }
+
+  .heroTitleMobileBreak {
+    display: block;
+  }
+
+  .heroTitleLine {
+    display: block;
+  }
+
+  .heroTitleAccent,
+  .heroTitlePlain {
+    display: block;
+  }
+
+  .heroTitleDesktopSeparator {
+    display: none;
+  }
+
+  .heroDescriptionLine {
+    white-space: normal;
+  }
+
+  .heroDescriptionLineDesktop {
+    display: none;
+  }
+
+  .heroDescriptionLineMobile {
+    display: block;
   }
 
   .introSection,

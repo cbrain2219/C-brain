@@ -56,7 +56,7 @@ test("about hero uses the 1080 hero padding from the Figma frame", async () => {
   const stylesSource = await readFile(stylesUrl, "utf8");
   const tabletStart = stylesSource.indexOf("@media (max-width: 1399px)");
   const desktopStart = stylesSource.indexOf(
-    "@media (max-width: 1099px)",
+    "@media (max-width: 1079px)",
     tabletStart,
   );
 
@@ -72,23 +72,58 @@ test("about hero uses the 1080 hero padding from the Figma frame", async () => {
   assert.match(heroInnerStyles, /width:\s*min\(100%,\s*1080px\);/);
 });
 
-test("about hero uses the 640 hero padding from the Figma frame", async () => {
+test("about hero keeps the fold padding before the 870 mobile breakpoint", async () => {
   const stylesSource = await readFile(stylesUrl, "utf8");
-  const foldStart = stylesSource.indexOf("@media (max-width: 1099px)");
-  const mobileStart = stylesSource.indexOf("@media (max-width: 699px)", foldStart);
+  const foldStart = stylesSource.indexOf("@media (max-width: 1079px)");
+  const mobileStart = stylesSource.indexOf("@media (max-width: 869px)", foldStart);
 
   assert.notEqual(foldStart, -1);
   assert.notEqual(mobileStart, -1);
 
   const foldStyles = stylesSource.slice(foldStart, mobileStart);
   const heroStyles = cssBlock(foldStyles, ".hero {");
+  const heroInnerStyles = cssBlock(foldStyles, ".heroInner {");
 
   assert.match(heroStyles, /padding:\s*136px 0 72px;/);
+  assert.match(heroInnerStyles, /padding:\s*0 20px;/);
+  assert.match(
+    foldStyles,
+    /\.heroDescriptionLine\s*\{[\s\S]*?white-space:\s*normal;/,
+  );
 });
 
-test("about hero title uses the mobile line break before the compact mobile breakpoint", async () => {
+test("about hero keeps flexible text before the compact mobile breakpoint", async () => {
   const stylesSource = await readFile(stylesUrl, "utf8");
-  const mobileStart = stylesSource.indexOf("@media (max-width: 699px)");
+  const mobileStart = stylesSource.indexOf("@media (max-width: 869px)");
+  const compactMobileStart = stylesSource.indexOf(
+    "@media (max-width: 639px)",
+    mobileStart,
+  );
+  const mobileHeroStyles = stylesSource.slice(mobileStart, compactMobileStart);
+
+  assert.notEqual(mobileStart, -1);
+  assert.notEqual(compactMobileStart, -1);
+  assert.match(
+    cssBlock(mobileHeroStyles, ".heroMetricPanel {"),
+    /grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\);/,
+  );
+  assert.doesNotMatch(
+    mobileHeroStyles,
+    /\.heroTitleMobileBreak\s*\{[\s\S]*?display:\s*block;/,
+  );
+  assert.doesNotMatch(
+    mobileHeroStyles,
+    /\.heroTitleLine\s*\{[\s\S]*?display:\s*block;/,
+  );
+  assert.doesNotMatch(
+    mobileHeroStyles,
+    /\.heroDescriptionLineDesktop\s*\{[\s\S]*?display:\s*none;/,
+  );
+});
+
+test("about hero title uses the mobile line break below 640px", async () => {
+  const stylesSource = await readFile(stylesUrl, "utf8");
+  const mobileStart = stylesSource.indexOf("@media (max-width: 639px)");
   const compactMobileStart = stylesSource.indexOf(
     "@media (max-width: 480px)",
     mobileStart,
@@ -101,11 +136,19 @@ test("about hero title uses the mobile line break before the compact mobile brea
     stylesSource.slice(mobileStart, compactMobileStart),
     /\.heroTitleMobileBreak\s*\{[\s\S]*?display:\s*block;/,
   );
+  assert.match(
+    stylesSource.slice(mobileStart, compactMobileStart),
+    /\.heroTitleLine\s*\{[\s\S]*?display:\s*block;/,
+  );
+  assert.match(
+    stylesSource.slice(mobileStart, compactMobileStart),
+    /\.heroTitleAccent,\s*\.heroTitlePlain\s*\{[\s\S]*?display:\s*block;/,
+  );
 });
 
-test("about hero mobile description can wrap inside narrow screens", async () => {
+test("about hero mobile description appears below 640px", async () => {
   const stylesSource = await readFile(stylesUrl, "utf8");
-  const mobileStart = stylesSource.indexOf("@media (max-width: 699px)");
+  const mobileStart = stylesSource.indexOf("@media (max-width: 639px)");
   const compactMobileStart = stylesSource.indexOf(
     "@media (max-width: 480px)",
     mobileStart,
@@ -134,7 +177,7 @@ test("about mobile timeline keeps title fragments on the same line", async () =>
     readFile(pageUrl, "utf8"),
     readFile(companyUrl, "utf8"),
   ]);
-  const mobileStart = stylesSource.indexOf("@media (max-width: 699px)");
+  const mobileStart = stylesSource.indexOf("@media (max-width: 639px)");
   const compactMobileStart = stylesSource.indexOf(
     "@media (max-width: 480px)",
     mobileStart,
@@ -168,12 +211,12 @@ test("about mobile timeline keeps title fragments on the same line", async () =>
 
 test("about info section fills narrow screens", async () => {
   const stylesSource = await readFile(stylesUrl, "utf8");
-  const tabletStart = stylesSource.indexOf("@media (max-width: 1099px)");
+  const tabletStart = stylesSource.indexOf("@media (max-width: 1079px)");
   const channelStart = stylesSource.indexOf(
     "@media (max-width: 1137px)",
     tabletStart,
   );
-  const mobileStart = stylesSource.indexOf("@media (max-width: 699px)");
+  const mobileStart = stylesSource.indexOf("@media (max-width: 639px)");
   const compactMobileStart = stylesSource.indexOf(
     "@media (max-width: 480px)",
     mobileStart,
