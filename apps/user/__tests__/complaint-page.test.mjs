@@ -160,6 +160,29 @@ test("complaint container fills the one-column layout width", async () => {
   );
 });
 
+test("complaint page includes the fixed mobile header in compact top padding", async () => {
+  const stylesSource = await readFile(stylesPath, "utf8");
+  const baseComplaintSection = extractCssBlock(
+    stylesSource,
+    ".complaintSection",
+  );
+  const tabletMedia = extractCssBlock(stylesSource, "@media (min-width: 640px)");
+  const desktopMedia = extractCssBlock(
+    stylesSource,
+    "@media (min-width: 1080px)",
+  );
+
+  assert.match(baseComplaintSection, /padding:\s*104px 20px 72px;/);
+  assert.match(
+    tabletMedia,
+    /\.complaintSection\s*\{[\s\S]*?padding-top:\s*152px;/,
+  );
+  assert.match(
+    desktopMedia,
+    /\.complaintSection\s*\{[\s\S]*?padding-top:\s*184px;/,
+  );
+});
+
 test("complaint text inputs use baseline-aligned compact placeholders", async () => {
   const formSource = await readFile(formPath, "utf8");
   const stylesSource = await readFile(stylesPath, "utf8");

@@ -1937,7 +1937,7 @@
 .complaintSection {
   width: 100%;
   background: rgba(255, 255, 255, 0.5);
-  padding: 152px 20px 72px;
+  padding: 104px 20px 72px;
 }
 
 .complaintInner {
@@ -2752,6 +2752,10 @@
 
   .faqList {
     width: min(100%, 560px);
+  }
+
+  .complaintSection {
+    padding-top: 152px;
   }
 
   .complaintFieldGrid {
