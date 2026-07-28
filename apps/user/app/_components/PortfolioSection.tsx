@@ -93,8 +93,13 @@ export function PortfolioSection({ initialCategoryId }: PortfolioSectionProps) {
       className={styles.portfolioSection}
       description={
         <>
-          브로슈어 · 카탈로그 · 리플렛 · 포스터 · 명함 등 씨브레인
-          <br />의 실제 디자인 제작물을 확인하세요.
+          브로슈어 · 카탈로그 · 리플렛 · 포스터 · 명함 등
+          <span className={styles.portfolioDescriptionDesktopSpace}> </span>
+          <br className={styles.portfolioDescriptionMobileBreak} />
+          씨브레인의
+          <br className={styles.portfolioDescriptionBreak} />
+          <span className={styles.portfolioDescriptionMobileSpace}> </span>
+          실제 디자인 제작물을 확인하세요.
         </>
       }
       descriptionClassName={styles.portfolioDescription}
