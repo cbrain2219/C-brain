@@ -4,6 +4,7 @@ import test from "node:test";
 
 const paths = {
   blog: new URL("../app/(site)/blog/page.tsx", import.meta.url),
+  pageHeroStyles: new URL("../components/PageHero.module.css", import.meta.url),
   landing: new URL("../app/_components/Hero.tsx", import.meta.url),
   notice: new URL("../app/(site)/notice/page.tsx", import.meta.url),
   pageHero: new URL("../components/PageHero.tsx", import.meta.url),
@@ -51,4 +52,72 @@ test("page hero images expose the requested alternative text", async () => {
 
     assert.ok(source.includes(expectedAlt), `${path.pathname} should include ${expectedAlt}`);
   }
+});
+
+test("shared page hero uses the 1440 hero padding from the Figma frames", async () => {
+  const stylesSource = await readFile(paths.pageHeroStyles, "utf8");
+  const pcMediaStart = stylesSource.indexOf("@media (min-width: 1440px)");
+
+  assert.notEqual(pcMediaStart, -1);
+
+  const pcMediaStyles = stylesSource.slice(pcMediaStart);
+
+  assert.match(
+    pcMediaStyles,
+    /\.subpage \.content\s*\{[\s\S]*?width:\s*1360px;[\s\S]*?padding:\s*184px 0 104px;[\s\S]*?margin:\s*0 auto;/,
+  );
+  assert.match(
+    pcMediaStyles,
+    /\.landing \.content\s*\{[\s\S]*?padding-top:\s*184px;[\s\S]*?padding-bottom:\s*104px;/,
+  );
+});
+
+test("shared page hero uses the 1080 hero padding from the Figma frames", async () => {
+  const stylesSource = await readFile(paths.pageHeroStyles, "utf8");
+  const desktopMediaStart = stylesSource.indexOf("@media (min-width: 1080px)");
+  const pcMediaStart = stylesSource.indexOf(
+    "@media (min-width: 1440px)",
+    desktopMediaStart,
+  );
+
+  assert.notEqual(desktopMediaStart, -1);
+  assert.notEqual(pcMediaStart, -1);
+
+  const desktopMediaStyles = stylesSource.slice(desktopMediaStart, pcMediaStart);
+
+  assert.match(
+    desktopMediaStyles,
+    /\.subpage \.content\s*\{[\s\S]*?width:\s*min\(100%, 1080px\);[\s\S]*?padding:\s*152px 80px 72px;/,
+  );
+  assert.match(
+    desktopMediaStyles,
+    /\n\s*\.content\s*\{[\s\S]*?width:\s*min\(100%, 1080px\);[\s\S]*?margin:\s*0 auto;/,
+  );
+  assert.match(
+    desktopMediaStyles,
+    /\.landing \.content\s*\{[\s\S]*?padding:\s*152px 80px 72px;/,
+  );
+});
+
+test("shared page hero uses the 640 hero padding from the Figma frames", async () => {
+  const stylesSource = await readFile(paths.pageHeroStyles, "utf8");
+  const foldMediaStart = stylesSource.indexOf("@media (min-width: 640px)");
+  const desktopMediaStart = stylesSource.indexOf(
+    "@media (min-width: 1080px)",
+    foldMediaStart,
+  );
+
+  assert.notEqual(foldMediaStart, -1);
+  assert.notEqual(desktopMediaStart, -1);
+
+  const foldMediaStyles = stylesSource.slice(foldMediaStart, desktopMediaStart);
+
+  assert.match(
+    foldMediaStyles,
+    /\.subpage \.content\s*\{[\s\S]*?width:\s*min\(100%, 640px\);[\s\S]*?padding:\s*136px 20px 72px;/,
+  );
+  assert.match(
+    foldMediaStyles,
+    /\.landing \.content\s*\{[\s\S]*?padding:\s*136px 20px 72px;/,
+  );
 });

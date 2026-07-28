@@ -62,6 +62,34 @@ test("portfolio active category underline stays visible while overlapping the ra
   );
 });
 
+test("portfolio hero uses the 1080 and 1440 Figma frame padding", async () => {
+  const styles = await readFile(stylesPath, "utf8");
+  const foldStart = styles.indexOf("@media (min-width: 640px)");
+  const desktopStart = styles.indexOf("@media (min-width: 1080px)");
+  const pcStart = styles.indexOf("@media (min-width: 1440px)", desktopStart);
+
+  assert.notEqual(foldStart, -1);
+  assert.notEqual(desktopStart, -1);
+  assert.notEqual(pcStart, -1);
+
+  const foldStyles = styles.slice(foldStart, desktopStart);
+  const desktopStyles = styles.slice(desktopStart, pcStart);
+  const pcStyles = styles.slice(pcStart);
+
+  assert.match(
+    foldStyles,
+    /\.heroContent\s*\{[\s\S]*?padding-top:\s*136px;[\s\S]*?padding-bottom:\s*72px;/,
+  );
+  assert.match(
+    desktopStyles,
+    /\.heroContent\s*\{[\s\S]*?width:\s*min\(100%, 1080px\);[\s\S]*?padding:\s*152px 80px 72px;/,
+  );
+  assert.match(
+    pcStyles,
+    /\.heroContent\s*\{[\s\S]*?width:\s*1360px;[\s\S]*?padding:\s*184px 0 104px;/,
+  );
+});
+
 test("portfolio landing tabs filter cards on click", async () => {
   const landingPortfolio = await readFile(landingPortfolioPath, "utf8");
 

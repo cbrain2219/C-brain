@@ -44,6 +44,48 @@ test("about intro heading follows the responsive type scale", async () => {
   );
 });
 
+test("about hero uses the 1440 hero padding from the Figma frame", async () => {
+  const stylesSource = await readFile(stylesUrl, "utf8");
+  const heroStyles = cssBlock(stylesSource, ".hero {");
+
+  assert.match(heroStyles, /min-height:\s*776px;/);
+  assert.match(heroStyles, /padding:\s*184px 0 104px;/);
+});
+
+test("about hero uses the 1080 hero padding from the Figma frame", async () => {
+  const stylesSource = await readFile(stylesUrl, "utf8");
+  const tabletStart = stylesSource.indexOf("@media (max-width: 1399px)");
+  const desktopStart = stylesSource.indexOf(
+    "@media (max-width: 1099px)",
+    tabletStart,
+  );
+
+  assert.notEqual(tabletStart, -1);
+  assert.notEqual(desktopStart, -1);
+
+  const tabletStyles = stylesSource.slice(tabletStart, desktopStart);
+  const heroStyles = cssBlock(tabletStyles, ".hero {");
+  const heroInnerStyles = cssBlock(tabletStyles, ".heroInner {");
+
+  assert.match(heroStyles, /min-height:\s*664px;/);
+  assert.match(heroStyles, /padding:\s*152px 0 72px;/);
+  assert.match(heroInnerStyles, /width:\s*min\(100%,\s*1080px\);/);
+});
+
+test("about hero uses the 640 hero padding from the Figma frame", async () => {
+  const stylesSource = await readFile(stylesUrl, "utf8");
+  const foldStart = stylesSource.indexOf("@media (max-width: 1099px)");
+  const mobileStart = stylesSource.indexOf("@media (max-width: 699px)", foldStart);
+
+  assert.notEqual(foldStart, -1);
+  assert.notEqual(mobileStart, -1);
+
+  const foldStyles = stylesSource.slice(foldStart, mobileStart);
+  const heroStyles = cssBlock(foldStyles, ".hero {");
+
+  assert.match(heroStyles, /padding:\s*136px 0 72px;/);
+});
+
 test("about hero title uses the mobile line break before the compact mobile breakpoint", async () => {
   const stylesSource = await readFile(stylesUrl, "utf8");
   const mobileStart = stylesSource.indexOf("@media (max-width: 699px)");

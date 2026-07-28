@@ -245,8 +245,7 @@
   }
 
   .landing .content {
-    padding-top: 144px;
-    padding-bottom: 96px;
+    padding: 136px 20px 72px;
   }
 
   .landing .title {
@@ -277,11 +276,11 @@
 
   .content {
     width: min(100%, 1080px);
+    margin: 0 auto;
   }
 
   .landing .content {
-    padding-top: 152px;
-    padding-bottom: 104px;
+    padding: 152px 80px 72px;
   }
 
   .landing.light .overlay {
@@ -315,6 +314,11 @@
     padding-left: 0;
     padding-right: 0;
     margin: 0 auto;
+  }
+
+  .landing .content {
+    padding-top: 184px;
+    padding-bottom: 104px;
   }
 
   .landing .title {

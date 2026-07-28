@@ -356,8 +356,8 @@
   }
 
   .heroContent {
-    padding-top: 160px;
-    padding-bottom: 88px;
+    padding-top: 136px;
+    padding-bottom: 72px;
   }
 
   .portfolioGrid {
@@ -398,8 +398,8 @@
   }
 
   .heroContent {
-    padding-top: 184px;
-    padding-bottom: 104px;
+    width: min(100%, 1080px);
+    padding: 152px 80px 72px;
   }
 
   .heroText h1 {
@@ -414,6 +414,11 @@
 }
 
 @media (min-width: 1440px) {
+  .heroContent {
+    width: 1360px;
+    padding: 184px 0 104px;
+  }
+
   .work {
     padding: 104px 0;
   }

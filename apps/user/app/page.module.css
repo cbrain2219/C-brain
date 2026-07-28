@@ -2760,6 +2760,7 @@
 
   .reviewsHeroContent {
     width: min(100%, 640px);
+    padding: 136px 20px 72px;
   }
 
   .reviewsContent {
@@ -2867,7 +2868,8 @@
   }
 
   .reviewsPageHero {
-    min-height: 600px;
+    min-height: 428px;
+    align-items: flex-start;
   }
 
   .reviewsHeroContent,
@@ -2876,7 +2878,8 @@
   }
 
   .reviewsHeroContent {
-    padding: 160px 80px 104px;
+    margin: 0 auto;
+    padding: 152px 80px 72px;
   }
 
   .reviewsContent {
@@ -3118,10 +3121,15 @@
     flex-wrap: nowrap;
   }
 
+  .reviewsPageHero {
+    min-height: 500px;
+    align-items: flex-start;
+  }
+
   .reviewsHeroContent {
     width: 1360px;
     margin: 0 auto;
-    padding: 160px 0 104px;
+    padding: 184px 0 104px;
   }
 
   .reviewsContent {

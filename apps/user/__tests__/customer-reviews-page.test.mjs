@@ -550,12 +550,24 @@ test("customer reviews hero content follows the shared hero width scale", async 
     /\.reviewsHeroContent\s*\{[\s\S]*?width: min\(100%, 640px\);/,
   );
   assert.match(
+    tabletStyles,
+    /\.reviewsHeroContent\s*\{[\s\S]*?padding: 136px 20px 72px;/,
+  );
+  assert.match(
     desktopStyles,
     /\.reviewsHeroContent,\s*\.reviewsContent\s*\{[\s\S]*?width: min\(100%, 1080px\);/,
   );
   assert.match(
     desktopStyles,
-    /\.reviewsHeroContent\s*\{[\s\S]*?padding: 160px 80px 104px;/,
+    /\.reviewsPageHero\s*\{[\s\S]*?min-height:\s*428px;[\s\S]*?align-items:\s*flex-start;/,
+  );
+  assert.match(
+    desktopStyles,
+    /\.reviewsHeroContent\s*\{[\s\S]*?margin: 0 auto;[\s\S]*?padding: 152px 80px 72px;/,
+  );
+  assert.match(
+    pcStyles,
+    /\.reviewsPageHero\s*\{[\s\S]*?min-height:\s*500px;[\s\S]*?align-items:\s*flex-start;/,
   );
   assert.match(
     pcStyles,
@@ -567,7 +579,7 @@ test("customer reviews hero content follows the shared hero width scale", async 
   );
   assert.match(
     pcStyles,
-    /\.reviewsHeroContent\s*\{[\s\S]*?padding: 160px 0 104px;/,
+    /\.reviewsHeroContent\s*\{[\s\S]*?padding: 184px 0 104px;/,
   );
 });
 

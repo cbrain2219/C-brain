@@ -1729,6 +1729,7 @@
 @media (min-width: 640px) {
   .heroInner {
     width: min(100%, 640px);
+    padding: 136px 20px 72px;
   }
 
   .stepList {
@@ -1814,14 +1815,16 @@
   }
 
   .hero {
-    min-height: 424px;
+    min-height: 500px;
+    align-items: flex-start;
   }
 
   .heroInner {
-    padding-top: 160px;
+    padding-top: 184px;
     padding-left: 80px;
     padding-right: 80px;
     padding-bottom: 104px;
+    margin: 0 auto;
   }
 
   .orderFlow {
@@ -1840,6 +1843,11 @@
 }
 
 @media (min-width: 1440px) {
+  .hero {
+    min-height: 500px;
+    align-items: flex-start;
+  }
+
   .heroInner,
   .orderInner {
     width: 1360px;
@@ -1848,6 +1856,8 @@
   }
 
   .heroInner {
+    padding-top: 184px;
+    padding-bottom: 104px;
     margin: 0 auto;
   }
 
