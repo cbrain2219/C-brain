@@ -986,7 +986,7 @@
   border: 1px solid var(--landing-gray-100);
   border-radius: 16px;
   background: var(--landing-gray-50);
-  padding: 32px;
+  padding: 20px;
   display: flex;
   flex-direction: column;
   gap: 20px;
@@ -1565,7 +1565,8 @@
 
 .reviewsFeaturedBody blockquote,
 .reviewsInterviewCopy blockquote,
-.reviewsTestimonialContent blockquote {
+.reviewsTestimonialContent blockquote,
+.reviewsTestimonialBody {
   margin: 0;
 }
 
@@ -1649,7 +1650,7 @@
 }
 
 .reviewsTestimonialCard {
-  padding: 24px;
+  padding: 20px;
   display: flex;
   flex-direction: column;
   gap: 20px;
@@ -1672,7 +1673,8 @@
 }
 
 .reviewsTestimonialContent p:not(.reviewsStars),
-.reviewsTestimonialContent blockquote {
+.reviewsTestimonialContent blockquote,
+.reviewsTestimonialBody {
   color: var(--landing-gray-600);
   font-family: var(--font-sans);
   font-size: 14px;
@@ -2925,10 +2927,6 @@
 
   .reviewsTestimonialGrid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-
-  .reviewsTestimonialCard {
-    padding: 32px;
   }
 
   .blogGrid {

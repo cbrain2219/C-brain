@@ -1,6 +1,7 @@
 import { SectionLayout } from "../../components/SectionLayout";
 import { getLandingCustomerTestimonials } from "../_content/customerReviews";
 import styles from "../page.module.css";
+import { CustomerTestimonialCard } from "./CustomerTestimonialCard";
 import { PartnerLogoCloud } from "./PartnerLogoCloud";
 
 export async function CustomerReviewSection() {
@@ -24,19 +25,7 @@ export async function CustomerReviewSection() {
       {reviews.length > 0 ? (
         <div className={styles.reviewGrid}>
           {reviews.map((review) => (
-            <article className={styles.reviewCard} key={review.name}>
-              <div className={styles.reviewContent}>
-                <p className={styles.reviewStars} aria-label="별점 5점">
-                  ★★★★★
-                </p>
-                <p className={styles.reviewBody}>{review.body}</p>
-              </div>
-              <span className={styles.reviewDivider} aria-hidden="true" />
-              <div className={styles.reviewMeta}>
-                <p>{review.name}</p>
-                <span>{review.company}</span>
-              </div>
-            </article>
+            <CustomerTestimonialCard key={review.name} testimonial={review} />
           ))}
         </div>
       ) : (

@@ -16,6 +16,10 @@ const landingSectionPath = new URL(
   "../app/_components/CustomerReviewSection.tsx",
   import.meta.url,
 );
+const testimonialCardPath = new URL(
+  "../app/_components/CustomerTestimonialCard.tsx",
+  import.meta.url,
+);
 const packagePath = new URL("../package.json", import.meta.url);
 const rootPackagePath = new URL("../../../package.json", import.meta.url);
 const stylesPath = new URL("../app/page.module.css", import.meta.url);
@@ -114,6 +118,37 @@ test("customer review content is shared by the reviews page", async () => {
   assert.match(pageSource, /customerTestimonials/);
   assert.match(pageSource, /customerInterviews/);
   assert.match(pageSource, /featuredCustomerInterview/);
+});
+
+test("landing and reviews pages share the testimonial card component", async () => {
+  const [landingSource, testimonialListSource] = await Promise.all([
+    readFile(landingSectionPath, "utf8"),
+    readFile(testimonialListPath, "utf8"),
+  ]);
+
+  assert.match(landingSource, /CustomerTestimonialCard/);
+  assert.match(testimonialListSource, /CustomerTestimonialCard/);
+  assert.doesNotMatch(landingSource, /styles\.reviewCard/);
+  assert.doesNotMatch(testimonialListSource, /styles\.reviewsTestimonialCard/);
+  assert.doesNotMatch(testimonialListSource, /styles\.reviewsTestimonialArticle/);
+  assert.doesNotMatch(landingSource, /★★★★★/);
+  assert.doesNotMatch(testimonialListSource, /★★★★★/);
+});
+
+test("shared testimonial cards use compact 20px padding", async () => {
+  const stylesSource = await readFile(stylesPath, "utf8");
+  const landingCard = extractCssBlock(stylesSource, ".reviewCard");
+  const pcMedia = extractCssBlock(stylesSource, "@media (min-width: 1440px)");
+
+  assert.match(landingCard, /padding:\s*20px;/);
+  assert.match(
+    stylesSource,
+    /\.reviewsTestimonialCard\s*\{\s*padding:\s*20px;/,
+  );
+  assert.doesNotMatch(
+    pcMedia,
+    /\.reviewsTestimonialCard\s*\{[\s\S]*?padding:\s*32px;/,
+  );
 });
 
 test("review list, detail, and landing stay fixture-only", async () => {
@@ -490,6 +525,7 @@ test("customer review cards use an 8px gap until the PC breakpoint", async () =>
 test("customer testimonials are ready for dynamic admin data", async () => {
   const contentSource = await readFile(contentPath, "utf8");
   const testimonialListSource = await readFile(testimonialListPath, "utf8");
+  const testimonialCardSource = await readFile(testimonialCardPath, "utf8");
   const testimonialsBlock = extractConstArray(
     contentSource,
     "customerTestimonials",
@@ -502,8 +538,8 @@ test("customer testimonials are ready for dynamic admin data", async () => {
   assert.match(testimonialsBlock, /title: "/);
   assert.match(testimonialListSource, /key=\{review\.id\}/);
   assert.match(
-    testimonialListSource,
-    /aria-label=\{`\$\{review\.title\} 고객 후기`\}/,
+    testimonialCardSource,
+    /aria-label=\{`\$\{props\.testimonial\.title\} 고객 후기`\}/,
   );
   assert.doesNotMatch(
     testimonialListSource,

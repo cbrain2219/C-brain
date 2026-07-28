@@ -4,6 +4,7 @@ import { TextButton } from "@repo/ui/text-button";
 import { useState } from "react";
 
 import { Icon } from "../../../components/Icon";
+import { CustomerTestimonialCard } from "../../_components/CustomerTestimonialCard";
 import type { CustomerTestimonial } from "../../_content/customerReviews";
 import styles from "../../page.module.css";
 
@@ -28,24 +29,11 @@ export function CustomerTestimonialList({
     <div className={styles.reviewsTestimonialList}>
       <ul className={styles.reviewsTestimonialGrid} id="customer-review-list">
         {visibleTestimonials.map((review) => (
-          <li className={styles.reviewsTestimonialCard} key={review.id}>
-            <article
-              aria-label={`${review.title} 고객 후기`}
-              className={styles.reviewsTestimonialArticle}
-            >
-              <div className={styles.reviewsTestimonialContent}>
-                <p className={styles.reviewsStars} aria-label="별점 5점">
-                  ★★★★★
-                </p>
-                <blockquote>{review.body}</blockquote>
-              </div>
-              <span className={styles.reviewsDivider} aria-hidden="true" />
-              <footer className={styles.reviewsTestimonialMeta}>
-                <p>{review.name}</p>
-                <span>{review.company}</span>
-              </footer>
-            </article>
-          </li>
+          <CustomerTestimonialCard
+            key={review.id}
+            testimonial={review}
+            variant="reviews"
+          />
         ))}
       </ul>
 
