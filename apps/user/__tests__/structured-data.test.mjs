@@ -137,20 +137,15 @@ test("structured data helpers centralize site, company, breadcrumb, and FAQ data
   assert.doesNotMatch(structuredDataSource, /const organizationProfile/);
 });
 
-test("FAQ answers do not start by repeating the C-Brain brand name", async () => {
+test("FAQ structured data preserves the approved company-name wording", async () => {
   const check = `
     import assert from "node:assert/strict";
     const { faqCategories } = await import(${JSON.stringify(faqModuleUrl)});
-    const repeatedBrandAnswers = faqCategories.flatMap((category) =>
-      category.items
-        .filter((item) => item.answer.startsWith("씨브레인"))
-        .map((item) => ({
-          category: category.title,
-          question: item.question,
-        })),
-    );
+    const firstAnswer = faqCategories[0].items[0].answer;
+    const paymentAnswer = faqCategories[0].items[2].answer;
 
-    assert.deepEqual(repeatedBrandAnswers, []);
+    assert.match(firstAnswer, /^씨브레인 홈페이지에서 원하는 제품 카테고리를 선택해/);
+    assert.match(paymentAnswer, /^씨브레인은 신용카드 즉시결제와 계좌이체를 지원합니다\\./);
   `;
 
   await execFileAsync(
