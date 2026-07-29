@@ -146,6 +146,24 @@ test("about hero title uses the mobile line break below 640px", async () => {
   );
 });
 
+test("about hero title follows the blog hero responsive mobile type scale", async () => {
+  const stylesSource = await readFile(stylesUrl, "utf8");
+  const mobileStart = stylesSource.indexOf("@media (max-width: 639px)");
+  const compactMobileStart = stylesSource.indexOf(
+    "@media (max-width: 480px)",
+    mobileStart,
+  );
+
+  assert.notEqual(mobileStart, -1);
+  assert.notEqual(compactMobileStart, -1);
+
+  const mobileStyles = stylesSource.slice(mobileStart, compactMobileStart);
+  const mobileTitleStyles = cssBlock(mobileStyles, ".heroCopy h1 {");
+
+  assert.match(mobileTitleStyles, /font-size:\s*28px;/);
+  assert.match(mobileTitleStyles, /line-height:\s*36px;/);
+});
+
 test("about hero mobile description appears below 640px", async () => {
   const stylesSource = await readFile(stylesUrl, "utf8");
   const mobileStart = stylesSource.indexOf("@media (max-width: 639px)");
