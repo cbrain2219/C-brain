@@ -968,12 +968,11 @@ test("order payment success and failure result routes are wired", () => {
   const appStylesPath = "apps/user/app/page.module.css";
 
   assert.equal(existsSync(path.join(repoRoot, successRoutePath)), true);
-  assert.equal(existsSync(path.join(repoRoot, successPreviewRoutePath)), true);
+  assert.equal(existsSync(path.join(repoRoot, successPreviewRoutePath)), false);
   assert.equal(existsSync(path.join(repoRoot, failRoutePath)), true);
   assert.equal(existsSync(path.join(repoRoot, resultComponentPath)), true);
 
   const successRouteSource = read(successRoutePath);
-  const successPreviewRouteSource = read(successPreviewRoutePath);
   const failRouteSource = read(failRoutePath);
   const resultSource = read(resultComponentPath);
   const stylesSource = read(stylesPath);
@@ -986,16 +985,6 @@ test("order payment success and failure result routes are wired", () => {
 
   assert.match(successRouteSource, /redirect\("\/order"\)/);
   assert.doesNotMatch(successRouteSource, /variant="success"/);
-  assert.match(successPreviewRouteSource, /createNoIndexMetadata/);
-  assert.match(successPreviewRouteSource, /\/order\/success\/preview/);
-  assert.match(successPreviewRouteSource, /OrderPaymentResult/);
-  assert.match(successPreviewRouteSource, /variant="success"/);
-  assert.match(successPreviewRouteSource, /categoryLabel:\s*"브로슈어·카탈로그"/);
-  assert.match(successPreviewRouteSource, /serviceLabel:\s*"디자인 \+ 인쇄"/);
-  assert.match(successPreviewRouteSource, /paperLabel:\s*"일반지 \(스노우지 유광\)"/);
-  assert.match(successPreviewRouteSource, /pageLabel:\s*"8p"/);
-  assert.match(successPreviewRouteSource, /quantityLabel:\s*"500부"/);
-  assert.match(successPreviewRouteSource, /totalPrice:\s*520000/);
   assert.match(failRouteSource, /variant="failure"/);
   assert.match(failRouteSource, /결제 실패/);
   assert.match(resultSource, /"use client"/);
