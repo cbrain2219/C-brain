@@ -58,3 +58,33 @@ test("landing about reason items stay one column before their body text has one-
     /\.reasonGrid\s*\{[^}]*grid-template-columns:\s*1fr;/s,
   );
 });
+
+test("landing about reason items follow the Figma card and desktop list styles", async () => {
+  const stylesSource = await readFile(stylesPath, "utf8");
+  const baseReasonGrid = cssBlock(stylesSource, ".reasonGrid");
+  const baseReasonItem = cssBlock(stylesSource, ".reasonItem {");
+  const baseReasonIcon = cssBlock(stylesSource, ".reasonIcon {");
+  const pcMedia = cssBlock(stylesSource, "@media (min-width: 1440px)");
+
+  assert.match(baseReasonGrid, /gap:\s*8px;/);
+  assert.match(baseReasonItem, /flex-direction:\s*column;/);
+  assert.match(baseReasonItem, /gap:\s*8px;/);
+  assert.match(baseReasonItem, /padding:\s*16px;/);
+  assert.match(baseReasonItem, /border-radius:\s*16px;/);
+  assert.match(baseReasonItem, /border:\s*1px solid rgba\(255,\s*255,\s*255,\s*0\.1\);/);
+  assert.match(baseReasonItem, /background:\s*rgba\(255,\s*255,\s*255,\s*0\.1\);/);
+  assert.match(baseReasonIcon, /width:\s*24px;/);
+  assert.match(baseReasonIcon, /height:\s*24px;/);
+  assert.match(baseReasonIcon, /border-radius:\s*8px;/);
+  assert.match(baseReasonIcon, /background:\s*var\(--landing-brand-50\);/);
+
+  assert.match(pcMedia, /\.reasonGrid\s*\{[^}]*gap:\s*16px;/s);
+  assert.match(pcMedia, /\.reasonItem\s*\{[^}]*flex-direction:\s*row;/s);
+  assert.match(pcMedia, /\.reasonItem\s*\{[^}]*padding:\s*0;/s);
+  assert.match(pcMedia, /\.reasonItem\s*\{[^}]*border:\s*0;/s);
+  assert.match(pcMedia, /\.reasonItem:not\(:last-child\)::after\s*\{/);
+  assert.match(
+    pcMedia,
+    /\.reasonItem:not\(:last-child\)::after\s*\{[^}]*border-top:\s*1px dashed #ffffff;[^}]*opacity:\s*0\.3;/s,
+  );
+});
