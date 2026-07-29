@@ -228,7 +228,7 @@ export function fromAdminProductToOrderRegistration(
       badge: "+ 선택 추가",
       description: "컨셉 방향·구성안·카피라이팅",
       fee: product.planning_estimate,
-      note: "규모에 따라 별도 상담",
+      note: "페이지당 N만원",
       priceLabel: createAdditionalPriceLabel(product.planning_estimate),
       title: "기획",
     },

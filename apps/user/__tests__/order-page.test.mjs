@@ -880,6 +880,8 @@ test("order page route, content, responsive styles, and navigation are wired", (
   assert.match(contentSource, /categoryLabel:\s*string/);
   assert.match(contentSource, /export const formatOrderCurrency/);
   assert.match(contentSource, /export const orderProductRegistrations/);
+  assert.match(contentSource, /note:\s*"페이지당 N만원"/);
+  assert.doesNotMatch(contentSource, /note:\s*"규모에 따라 별도 상담"/);
   assert.match(contentSource, /export const orderServiceSearchParam = "service"/);
   assert.doesNotMatch(contentSource, /export const orderConsultSearchParam/);
   assert.doesNotMatch(contentSource, /export const orderQuoteConsultSearchValue/);
