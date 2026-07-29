@@ -325,6 +325,10 @@ export function OrderCustomerInfoStep({
         <h3 id="customer-payment-title">결제 내역</h3>
         <dl className={styles.customerSummaryList}>
           <div>
+            <dt>카테고리</dt>
+            <dd>{summary.categoryLabel}</dd>
+          </div>
+          <div>
             <dt>서비스</dt>
             <dd>{summary.serviceLabel}</dd>
           </div>

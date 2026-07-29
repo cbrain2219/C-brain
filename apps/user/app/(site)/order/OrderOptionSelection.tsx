@@ -129,6 +129,7 @@ export function OrderOptionSelection({
       : []),
   ];
   const selectedSummary: OrderSelectionSummary = {
+    categoryLabel: service.title,
     ids: {
       hasPlanning,
       pageId: selectedPage.id,
@@ -316,6 +317,10 @@ export function OrderOptionSelection({
         >
           <h3 id="order-summary-title">주문 요약</h3>
           <dl className={styles.summaryList}>
+            <div>
+              <dt>카테고리</dt>
+              <dd>{service.title}</dd>
+            </div>
             <div>
               <dt>서비스</dt>
               <dd>{selectedServiceLabel}</dd>

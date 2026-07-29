@@ -297,6 +297,11 @@ test("order page route, content, responsive styles, and navigation are wired", (
     optionSelectionSource,
     /unitPrice:\s*selectedQuantity\.unitPriceAmount/,
   );
+  assert.match(optionSelectionSource, /categoryLabel:\s*service\.title/);
+  assert.match(
+    optionSelectionSource,
+    /<dt>카테고리<\/dt>\s*<dd>\{service\.title\}<\/dd>/s,
+  );
   assert.match(optionSelectionSource, /hasPlanning,/);
   assert.match(optionSelectionSource, /handlePaymentStart/);
   assert.match(optionSelectionSource, /onClick=\{handlePaymentStart\}/);
@@ -370,6 +375,10 @@ test("order page route, content, responsive styles, and navigation are wired", (
   assert.match(customerInfoSource, /III\. 주문자 정보 입력/);
   assert.match(customerInfoSource, /결제 완료 후 영업일 기준 1일 이내/);
   assert.match(customerInfoSource, /결제 내역/);
+  assert.match(
+    customerInfoSource,
+    /<dt>카테고리<\/dt>\s*<dd>\{summary\.categoryLabel\}<\/dd>/s,
+  );
   assert.match(customerInfoSource, /페이지 수 \/ 수량/);
   assert.match(customerInfoSource, /이름\(담당자명\)\*/);
   assert.match(customerInfoSource, /회사명/);
@@ -868,6 +877,7 @@ test("order page route, content, responsive styles, and navigation are wired", (
   assert.match(contentSource, /export type OrderUnitPriceQuote/);
   assert.match(contentSource, /export type OrderSelectedOptionIds/);
   assert.match(contentSource, /export type OrderSelectionSummary/);
+  assert.match(contentSource, /categoryLabel:\s*string/);
   assert.match(contentSource, /export const formatOrderCurrency/);
   assert.match(contentSource, /export const orderProductRegistrations/);
   assert.match(contentSource, /export const orderServiceSearchParam = "service"/);
@@ -947,6 +957,8 @@ test("order page route, content, responsive styles, and navigation are wired", (
 
 test("order payment success and failure result routes are wired", () => {
   const successRoutePath = "apps/user/app/(site)/order/success/page.tsx";
+  const successPreviewRoutePath =
+    "apps/user/app/(site)/order/success/preview/page.tsx";
   const failRoutePath = "apps/user/app/(site)/order/fail/page.tsx";
   const resultComponentPath =
     "apps/user/app/(site)/order/OrderPaymentResult.tsx";
@@ -954,10 +966,12 @@ test("order payment success and failure result routes are wired", () => {
   const appStylesPath = "apps/user/app/page.module.css";
 
   assert.equal(existsSync(path.join(repoRoot, successRoutePath)), true);
+  assert.equal(existsSync(path.join(repoRoot, successPreviewRoutePath)), true);
   assert.equal(existsSync(path.join(repoRoot, failRoutePath)), true);
   assert.equal(existsSync(path.join(repoRoot, resultComponentPath)), true);
 
   const successRouteSource = read(successRoutePath);
+  const successPreviewRouteSource = read(successPreviewRoutePath);
   const failRouteSource = read(failRoutePath);
   const resultSource = read(resultComponentPath);
   const stylesSource = read(stylesPath);
@@ -970,6 +984,16 @@ test("order payment success and failure result routes are wired", () => {
 
   assert.match(successRouteSource, /redirect\("\/order"\)/);
   assert.doesNotMatch(successRouteSource, /variant="success"/);
+  assert.match(successPreviewRouteSource, /createNoIndexMetadata/);
+  assert.match(successPreviewRouteSource, /\/order\/success\/preview/);
+  assert.match(successPreviewRouteSource, /OrderPaymentResult/);
+  assert.match(successPreviewRouteSource, /variant="success"/);
+  assert.match(successPreviewRouteSource, /categoryLabel:\s*"브로슈어·카탈로그"/);
+  assert.match(successPreviewRouteSource, /serviceLabel:\s*"디자인 \+ 인쇄"/);
+  assert.match(successPreviewRouteSource, /paperLabel:\s*"일반지 \(스노우지 유광\)"/);
+  assert.match(successPreviewRouteSource, /pageLabel:\s*"8p"/);
+  assert.match(successPreviewRouteSource, /quantityLabel:\s*"500부"/);
+  assert.match(successPreviewRouteSource, /totalPrice:\s*520000/);
   assert.match(failRouteSource, /variant="failure"/);
   assert.match(failRouteSource, /결제 실패/);
   assert.match(resultSource, /"use client"/);
@@ -1022,6 +1046,12 @@ test("order payment success and failure result routes are wired", () => {
     resultSource,
     /function OrderResultPaymentCard\(\{\s*data,\s*\}:\s*\{\s*data:\s*OrderPaymentSuccessData;\s*\}\)/s,
   );
+  assert.match(resultSource, /"categoryLabel"/);
+  assert.match(
+    resultSource,
+    /\.\.\.\(summary\.categoryLabel\s*\?\s*\[\{ label: "카테고리", value: summary\.categoryLabel \}\]\s*:\s*\[\]\),\s*\{ label: "서비스", value: summary\.serviceLabel \}/s,
+  );
+  assert.match(resultSource, /summary\.categoryLabel/);
   assert.match(resultSource, /summary\.serviceLabel/);
   assert.match(resultSource, /summary\.paperLabel/);
   assert.match(resultSource, /summary\.pageLabel/);

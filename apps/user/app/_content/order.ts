@@ -124,6 +124,7 @@ export type OrderSelectedOptionIds = {
 };
 
 export type OrderSelectionSummary = {
+  categoryLabel: string;
   ids: OrderSelectedOptionIds;
   pageLabel: string;
   paperLabel: string;
