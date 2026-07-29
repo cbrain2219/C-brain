@@ -404,9 +404,9 @@
 
 .productSectionHeader p {
   font-family: var(--font-sans);
-  font-size: 14px;
+  font-size: 20px;
   font-weight: 700;
-  line-height: 20px;
+  line-height: 28px;
   letter-spacing: 0;
   color: var(--landing-gray-800);
 }
@@ -489,9 +489,9 @@
 .optionSectionHeader h3,
 .orderSummary h3 {
   font-family: var(--font-sans);
-  font-size: 14px;
+  font-size: 20px;
   font-weight: 700;
-  line-height: 20px;
+  line-height: 28px;
   letter-spacing: 0;
   color: var(--landing-gray-800);
 }
@@ -501,7 +501,8 @@
 }
 
 .orderSummary h3 {
-  font-size: 16px;
+  font-size: 20px;
+  line-height: 28px;
 }
 
 .optionSectionHeader p {
@@ -971,17 +972,17 @@
 .customerInfoHeader h3,
 .customerPaymentCard h3 {
   font-family: var(--font-sans);
-  font-size: 14px;
+  font-size: 20px;
   font-weight: 700;
-  line-height: 20px;
+  line-height: 28px;
   letter-spacing: 0;
   color: var(--landing-gray-800);
 }
 
 .customerPaymentCard h3 {
-  font-size: 16px;
-  line-height: 24px;
-  letter-spacing: -0.24px;
+  font-size: 20px;
+  line-height: 28px;
+  letter-spacing: 0;
 }
 
 .customerInfoHeader p {
@@ -1497,9 +1498,9 @@
 .resultPaymentCard h2 {
   color: var(--landing-gray-800);
   font-family: var(--font-sans);
-  font-size: 14px;
+  font-size: 20px;
   font-weight: 700;
-  line-height: 20px;
+  line-height: 28px;
   letter-spacing: 0;
 }
 
@@ -1689,10 +1690,10 @@
     transform: translateX(-50%);
     color: #000000;
     font-family: var(--font-sans);
-    font-size: 14px;
+    font-size: 20px;
     font-weight: 500;
-    line-height: 20px;
-    letter-spacing: -0.21px;
+    line-height: 28px;
+    letter-spacing: 0;
     white-space: nowrap;
   }
 

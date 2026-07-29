@@ -526,7 +526,7 @@ test("order page route, content, responsive styles, and navigation are wired", (
   );
   assert.match(
     stylesSource,
-    /@media \(max-width:\s*639px\)[\s\S]*?\.optionHeaderTitle\s*\{[\s\S]*?display:\s*block[\s\S]*?font-size:\s*14px[\s\S]*?line-height:\s*20px/,
+    /@media \(max-width:\s*639px\)[\s\S]*?\.optionHeaderTitle\s*\{[\s\S]*?display:\s*block[\s\S]*?font-size:\s*20px[\s\S]*?line-height:\s*28px/,
   );
   assert.match(
     stylesSource,
@@ -688,7 +688,15 @@ test("order page route, content, responsive styles, and navigation are wired", (
     stylesSource,
     /\.orderSummary\s*\{[^}]*background:\s*var\(--landing-gray-50\)/s,
   );
-  assert.match(stylesSource, /\.orderSummary h3\s*\{[^}]*font-size:\s*16px/s);
+  assert.match(
+    stylesSource,
+    /\.productSectionHeader p\s*\{[^}]*font-size:\s*20px[^}]*line-height:\s*28px/s,
+  );
+  assert.match(stylesSource, /\.orderSummary h3\s*\{[^}]*font-size:\s*20px/s);
+  assert.match(
+    stylesSource,
+    /\.optionSection h3,\s*\.optionSectionHeader h3,\s*\.orderSummary h3\s*\{[^}]*font-size:\s*20px[^}]*line-height:\s*28px/s,
+  );
   assert.match(
     stylesSource,
     /\.summaryList\s*\{[^}]*background-image:\s*repeating-linear-gradient\([^}]*var\(--landing-gray-100\) 0 2px,[^}]*transparent 2px 4px/s,
@@ -725,7 +733,15 @@ test("order page route, content, responsive styles, and navigation are wired", (
   );
   assert.match(
     stylesSource,
-    /\.customerPaymentCard h3\s*\{[^}]*font-size:\s*16px[^}]*line-height:\s*24px/s,
+    /\.customerInfoHeader h3,\s*\.customerPaymentCard h3\s*\{[^}]*font-size:\s*20px[^}]*line-height:\s*28px/s,
+  );
+  assert.match(
+    stylesSource,
+    /\.customerPaymentCard h3\s*\{[^}]*font-size:\s*20px[^}]*line-height:\s*28px/s,
+  );
+  assert.match(
+    stylesSource,
+    /\.resultPaymentCard h2\s*\{[^}]*font-size:\s*20px[^}]*line-height:\s*28px/s,
   );
   assert.match(
     stylesSource,
