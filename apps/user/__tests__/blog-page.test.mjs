@@ -423,6 +423,19 @@ test("blog hero title is 28px on mobile only", async () => {
   assert.match(desktopTitleStyles, /line-height:\s*48px;/);
 });
 
+test("blog hero relies on shared frame padding without a custom fixed height", async () => {
+  const styles = await source("styles");
+
+  assert.doesNotMatch(
+    styles,
+    /\.page > section:first-child\s*\{[^}]*min-height:/,
+  );
+  assert.doesNotMatch(
+    styles,
+    /\.page > section:first-child > div:last-child\s*\{[^}]*padding:\s*(?:128|136|152|184)px/,
+  );
+});
+
 test("blog detail page follows portfolio detail route conventions", async () => {
   const [detailPage, posts] = await Promise.all([
     source("detailPage"),

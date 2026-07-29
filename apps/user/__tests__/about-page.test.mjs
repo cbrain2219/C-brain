@@ -44,15 +44,15 @@ test("about intro heading follows the responsive type scale", async () => {
   );
 });
 
-test("about hero uses the 1440 hero padding from the Figma frame", async () => {
+test("about hero keeps the 1440 frame padding without a fixed hero height", async () => {
   const stylesSource = await readFile(stylesUrl, "utf8");
   const heroStyles = cssBlock(stylesSource, ".hero {");
 
-  assert.match(heroStyles, /min-height:\s*776px;/);
+  assert.doesNotMatch(heroStyles, /min-height:/);
   assert.match(heroStyles, /padding:\s*184px 0 104px;/);
 });
 
-test("about hero uses the 1080 hero padding from the Figma frame", async () => {
+test("about hero keeps the 1080 frame padding without a fixed hero height", async () => {
   const stylesSource = await readFile(stylesUrl, "utf8");
   const tabletStart = stylesSource.indexOf("@media (max-width: 1399px)");
   const desktopStart = stylesSource.indexOf(
@@ -67,7 +67,7 @@ test("about hero uses the 1080 hero padding from the Figma frame", async () => {
   const heroStyles = cssBlock(tabletStyles, ".hero {");
   const heroInnerStyles = cssBlock(tabletStyles, ".heroInner {");
 
-  assert.match(heroStyles, /min-height:\s*664px;/);
+  assert.doesNotMatch(heroStyles, /min-height:/);
   assert.match(heroStyles, /padding:\s*152px 0 72px;/);
   assert.match(heroInnerStyles, /width:\s*min\(100%,\s*1080px\);/);
 });
@@ -84,6 +84,7 @@ test("about hero keeps the fold padding before the 870 mobile breakpoint", async
   const heroStyles = cssBlock(foldStyles, ".hero {");
   const heroInnerStyles = cssBlock(foldStyles, ".heroInner {");
 
+  assert.doesNotMatch(heroStyles, /min-height:/);
   assert.match(heroStyles, /padding:\s*136px 0 72px;/);
   assert.match(heroInnerStyles, /padding:\s*0 20px;/);
   assert.doesNotMatch(

@@ -593,17 +593,13 @@ test("customer reviews hero content follows the shared hero width scale", async 
     desktopStyles,
     /\.reviewsHeroContent,\s*\.reviewsContent\s*\{[\s\S]*?width: min\(100%, 1080px\);/,
   );
-  assert.match(
-    desktopStyles,
-    /\.reviewsPageHero\s*\{[\s\S]*?min-height:\s*428px;[\s\S]*?align-items:\s*flex-start;/,
+  assert.doesNotMatch(
+    extractCssBlock(stylesSource, ".reviewsPageHero"),
+    /min-height:/,
   );
   assert.match(
     desktopStyles,
     /\.reviewsHeroContent\s*\{[\s\S]*?margin: 0 auto;[\s\S]*?padding: 152px 80px 72px;/,
-  );
-  assert.match(
-    pcStyles,
-    /\.reviewsPageHero\s*\{[\s\S]*?min-height:\s*500px;[\s\S]*?align-items:\s*flex-start;/,
   );
   assert.match(
     pcStyles,

@@ -501,9 +501,9 @@ test("order page route, content, responsive styles, and navigation are wired", (
     desktopMediaStyles,
     /\.heroInner\s*\{[\s\S]*?width:\s*min\(100%,\s*1080px\);/,
   );
-  assert.match(
+  assert.doesNotMatch(
     desktopMediaStyles,
-    /\.hero\s*\{[\s\S]*?min-height:\s*500px;[\s\S]*?align-items:\s*flex-start;/,
+    /\.hero\s*\{[^}]*min-height:/,
   );
   assert.match(
     desktopMediaStyles,
@@ -525,9 +525,9 @@ test("order page route, content, responsive styles, and navigation are wired", (
     pcMediaStyles,
     /\.heroInner,\s*\.orderInner\s*\{[\s\S]*?width:\s*1360px/,
   );
-  assert.match(
+  assert.doesNotMatch(
     pcMediaStyles,
-    /\.hero\s*\{[\s\S]*?min-height:\s*500px;[\s\S]*?align-items:\s*flex-start;/,
+    /\.hero\s*\{[^}]*min-height:/,
   );
   assert.match(
     pcMediaStyles,

@@ -54,64 +54,28 @@ test("page hero images expose the requested alternative text", async () => {
   }
 });
 
-test("shared page hero uses the 1440 hero padding from the Figma frames", async () => {
+test("shared page hero keeps frame padding without a fixed hero height", async () => {
   const stylesSource = await readFile(paths.pageHeroStyles, "utf8");
-  const pcMediaStart = stylesSource.indexOf("@media (min-width: 1440px)");
-
-  assert.notEqual(pcMediaStart, -1);
-
-  const pcMediaStyles = stylesSource.slice(pcMediaStart);
-
-  assert.match(
-    pcMediaStyles,
-    /\.subpage \.content\s*\{[\s\S]*?width:\s*1360px;[\s\S]*?padding:\s*184px 0 104px;[\s\S]*?margin:\s*0 auto;/,
-  );
-  assert.match(
-    pcMediaStyles,
-    /\.landing \.content\s*\{[\s\S]*?padding-top:\s*184px;[\s\S]*?padding-bottom:\s*104px;/,
-  );
-});
-
-test("shared page hero uses the 1080 hero padding from the Figma frames", async () => {
-  const stylesSource = await readFile(paths.pageHeroStyles, "utf8");
+  const foldMediaStart = stylesSource.indexOf("@media (min-width: 640px)");
   const desktopMediaStart = stylesSource.indexOf("@media (min-width: 1080px)");
   const pcMediaStart = stylesSource.indexOf(
     "@media (min-width: 1440px)",
     desktopMediaStart,
   );
 
+  assert.notEqual(foldMediaStart, -1);
   assert.notEqual(desktopMediaStart, -1);
   assert.notEqual(pcMediaStart, -1);
 
-  const desktopMediaStyles = stylesSource.slice(desktopMediaStart, pcMediaStart);
-
-  assert.match(
-    desktopMediaStyles,
-    /\.subpage \.content\s*\{[\s\S]*?width:\s*min\(100%, 1080px\);[\s\S]*?padding:\s*152px 80px 72px;/,
-  );
-  assert.match(
-    desktopMediaStyles,
-    /\n\s*\.content\s*\{[\s\S]*?width:\s*min\(100%, 1080px\);[\s\S]*?margin:\s*0 auto;/,
-  );
-  assert.match(
-    desktopMediaStyles,
-    /\.landing \.content\s*\{[\s\S]*?padding:\s*152px 80px 72px;/,
-  );
-});
-
-test("shared page hero uses the 640 hero padding from the Figma frames", async () => {
-  const stylesSource = await readFile(paths.pageHeroStyles, "utf8");
-  const foldMediaStart = stylesSource.indexOf("@media (min-width: 640px)");
-  const desktopMediaStart = stylesSource.indexOf(
-    "@media (min-width: 1080px)",
-    foldMediaStart,
-  );
-
-  assert.notEqual(foldMediaStart, -1);
-  assert.notEqual(desktopMediaStart, -1);
-
   const foldMediaStyles = stylesSource.slice(foldMediaStart, desktopMediaStart);
+  const desktopMediaStyles = stylesSource.slice(desktopMediaStart, pcMediaStart);
+  const pcMediaStyles = stylesSource.slice(pcMediaStart);
 
+  assert.doesNotMatch(stylesSource, /\.hero(?:\.subpage|\.landing)?\s*\{[^}]*min-height:/);
+  assert.match(
+    stylesSource,
+    /\.content\s*\{[\s\S]*?padding:\s*104px 20px;/,
+  );
   assert.match(
     foldMediaStyles,
     /\.subpage \.content\s*\{[\s\S]*?width:\s*min\(100%, 640px\);[\s\S]*?padding:\s*136px 20px 72px;/,
@@ -119,5 +83,21 @@ test("shared page hero uses the 640 hero padding from the Figma frames", async (
   assert.match(
     foldMediaStyles,
     /\.landing \.content\s*\{[\s\S]*?padding:\s*136px 20px 72px;/,
+  );
+  assert.match(
+    desktopMediaStyles,
+    /\.subpage \.content\s*\{[\s\S]*?width:\s*min\(100%, 1080px\);[\s\S]*?padding:\s*152px 80px 72px;/,
+  );
+  assert.match(
+    desktopMediaStyles,
+    /\.landing \.content\s*\{[\s\S]*?padding:\s*152px 80px 72px;/,
+  );
+  assert.match(
+    pcMediaStyles,
+    /\.subpage \.content\s*\{[\s\S]*?width:\s*1360px;[\s\S]*?padding:\s*184px 0 104px;/,
+  );
+  assert.match(
+    pcMediaStyles,
+    /\.landing \.content\s*\{[\s\S]*?padding-top:\s*184px;[\s\S]*?padding-bottom:\s*104px;/,
   );
 });

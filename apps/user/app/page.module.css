@@ -1300,7 +1300,6 @@
 }
 
 .reviewsPageHero {
-  min-height: 540px;
   position: relative;
   overflow: hidden;
   background: var(--landing-info-50);
@@ -2933,7 +2932,6 @@
   }
 
   .reviewsPageHero {
-    min-height: 428px;
     align-items: flex-start;
   }
 
@@ -3205,7 +3203,6 @@
   }
 
   .reviewsPageHero {
-    min-height: 500px;
     align-items: flex-start;
   }
 

@@ -14,7 +14,6 @@
 }
 
 .hero {
-  min-height: 776px;
   padding: 184px 0 104px;
   position: relative;
   overflow: hidden;
@@ -1180,7 +1179,6 @@
   }
 
   .hero {
-    min-height: 664px;
     padding: 152px 0 72px;
   }
 
@@ -1282,7 +1280,6 @@
 
 @media (max-width: 1079px) {
   .hero {
-    min-height: 584px;
     padding: 136px 0 72px;
   }
 
@@ -1420,7 +1417,6 @@
 
 @media (max-width: 869px) {
   .hero {
-    min-height: 720px;
     padding: 72px 0;
   }
 
@@ -1713,10 +1709,6 @@
 }
 
 @media (max-width: 480px) {
-  .hero {
-    min-height: 1044px;
-  }
-
   .heroMetricPanel {
     height: 560px;
     grid-template-columns: 1fr;

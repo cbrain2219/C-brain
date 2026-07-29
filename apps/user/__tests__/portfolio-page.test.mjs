@@ -62,8 +62,10 @@ test("portfolio active category underline stays visible while overlapping the ra
   );
 });
 
-test("portfolio hero uses the 1080 and 1440 Figma frame padding", async () => {
+test("portfolio hero keeps frame padding without a fixed hero height", async () => {
   const styles = await readFile(stylesPath, "utf8");
+  const baseHero = styles.match(/\.hero\s*\{[\s\S]*?\}/)?.[0] ?? "";
+  const baseHeroContent = styles.match(/\.heroContent\s*\{[\s\S]*?\}/)?.[0] ?? "";
   const foldStart = styles.indexOf("@media (min-width: 640px)");
   const desktopStart = styles.indexOf("@media (min-width: 1080px)");
   const pcStart = styles.indexOf("@media (min-width: 1440px)", desktopStart);
@@ -76,10 +78,9 @@ test("portfolio hero uses the 1080 and 1440 Figma frame padding", async () => {
   const desktopStyles = styles.slice(desktopStart, pcStart);
   const pcStyles = styles.slice(pcStart);
 
-  assert.match(
-    foldStyles,
-    /\.heroContent\s*\{[\s\S]*?padding-top:\s*136px;[\s\S]*?padding-bottom:\s*72px;/,
-  );
+  assert.doesNotMatch(baseHero, /min-height:/);
+  assert.match(baseHeroContent, /padding:\s*136px 0 72px;/);
+  assert.doesNotMatch(foldStyles, /\.hero\s*\{[\s\S]*?min-height:/);
   assert.match(
     desktopStyles,
     /\.heroContent\s*\{[\s\S]*?width:\s*min\(100%, 1080px\);[\s\S]*?padding:\s*152px 80px 72px;/,

@@ -1,5 +1,4 @@
 .hero {
-  min-height: 344px;
   position: relative;
   overflow: hidden;
   display: flex;
@@ -129,7 +128,6 @@
 }
 
 .subpage {
-  min-height: 336px;
   align-items: stretch;
 }
 
@@ -161,10 +159,6 @@
 .dark .title,
 .dark .description {
   color: var(--landing-gray-50);
-}
-
-.landing {
-  min-height: 536px;
 }
 
 .landing .background {
@@ -223,10 +217,6 @@
     object-position: var(--page-hero-background-position, center);
   }
 
-  .hero.subpage {
-    min-height: 344px;
-  }
-
   .subpage .content {
     width: min(100%, 640px);
     padding: 136px 20px 72px;
@@ -238,16 +228,8 @@
     letter-spacing: -0.8px;
   }
 
-  .hero.landing {
-    min-height: 512px;
-  }
-
   .content {
     width: min(100%, 640px);
-  }
-
-  .landing .content {
-    padding: 136px 20px 72px;
   }
 
   .landing .title {
@@ -260,20 +242,16 @@
 
     width: auto;
   }
+
+  .landing .content {
+    padding: 136px 20px 72px;
+  }
 }
 
 @media (min-width: 1080px) {
-  .hero.subpage {
-    min-height: 360px;
-  }
-
   .subpage .content {
     width: min(100%, 1080px);
     padding: 152px 80px 72px;
-  }
-
-  .hero.landing {
-    min-height: 528px;
   }
 
   .content {
@@ -291,10 +269,6 @@
 }
 
 @media (min-width: 1440px) {
-  .hero.subpage {
-    min-height: 428px;
-  }
-
   .subpage .content {
     width: 1360px;
     padding: 184px 0 104px;
@@ -307,10 +281,6 @@
     letter-spacing: -0.9px;
   }
 
-  .hero.landing {
-    min-height: 608px;
-  }
-
   .content {
     width: 1360px;
     padding-left: 0;
@@ -318,14 +288,14 @@
     margin: 0 auto;
   }
 
-  .landing .content {
-    padding-top: 184px;
-    padding-bottom: 104px;
-  }
-
   .landing .title {
     font-size: 36px;
     line-height: 48px;
+  }
+
+  .landing .content {
+    padding-top: 184px;
+    padding-bottom: 104px;
   }
 
   .landing .description {
