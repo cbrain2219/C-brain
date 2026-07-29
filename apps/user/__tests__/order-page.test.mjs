@@ -636,12 +636,33 @@ test("order page route, content, responsive styles, and navigation are wired", (
   );
   assert.match(
     stylesSource,
+    /\.optionServiceCard\.optionServiceCardButton\s*\{[^}]*background:\s*var\(--landing-gray-50\)[^}]*padding:\s*32px[^}]*border-color:\s*transparent/s,
+  );
+  assert.match(
+    stylesSource,
+    /\.optionServiceCardButton\.optionServiceCardSelectedExtra\s*\{[^}]*border-color:\s*var\(--landing-brand-500\)[^}]*background:\s*#effcfd/s,
+  );
+  assert.match(
+    stylesSource,
     /\.optionServiceBadge\s*\{[^}]*border:\s*1px solid transparent/s,
   );
   assert.match(
     stylesSource,
     /\.optionServiceBadge::before\s*\{[^}]*background-image:/s,
   );
+  assert.match(
+    stylesSource,
+    /\.optionServiceBadgeInfo\s*\{[^}]*--option-service-badge-border-start:\s*linear-gradient[^}]*--option-service-badge-border-end:\s*linear-gradient[^}]*border-color:\s*transparent[^}]*color:\s*var\(--landing-gray-800\)/s,
+  );
+  assert.match(
+    stylesSource,
+    /\.optionServiceCardSelectedExtra \.optionServiceBadgeInfo\s*\{[^}]*--option-service-badge-background:\s*rgba\(48,\s*186,\s*195,\s*0\.1\)[^}]*--option-service-badge-border-start:\s*var\(--landing-brand-border-start\)[^}]*--option-service-badge-border-end:\s*var\(--landing-brand-border-end\)[^}]*background-color:\s*var\(--option-service-badge-background\)[^}]*color:\s*var\(--landing-brand-500\)/s,
+  );
+  assert.match(
+    stylesSource,
+    /\.optionServiceCardSelectedExtra \.optionServiceTitle\s*\{[^}]*color:\s*var\(--landing-brand-500\)/s,
+  );
+  assert.doesNotMatch(stylesSource, /\.optionServiceBadgeInfo::before/);
   assert.match(
     stylesSource,
     /\.optionChoiceButton\s*\{[^}]*min-height:\s*52px/s,
@@ -862,6 +883,14 @@ test("order page route, content, responsive styles, and navigation are wired", (
   assert.match(contentSource, /order_quantities/);
   assert.match(contentSource, /unit_prices/);
   assert.match(contentSource, /fromAdminProductToOrderRegistration/);
+  assert.match(
+    contentSource,
+    /const createAdditionalPriceLabel = \(fee: number\) =>\s*`\+\$\{formatOrderCurrency\(fee\)\} ~`;/,
+  );
+  assert.match(
+    contentSource,
+    /priceLabel:\s*createAdditionalPriceLabel\(product\.planning_estimate\)/,
+  );
   assert.match(contentSource, /function createOrderOptionConfig/);
   assert.match(contentSource, /function createQuantityOption/);
   assert.match(contentSource, /unitPriceQuotes/);

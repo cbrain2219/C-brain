@@ -204,6 +204,8 @@ const toPaperChoice = (paperType: string, index: number): OrderOptionChoice => (
 const toQuantityId = (quantity: number) => String(quantity);
 
 const createPriceLabel = (fee: number) => `${formatOrderCurrency(fee)} ~`;
+const createAdditionalPriceLabel = (fee: number) =>
+  `+${formatOrderCurrency(fee)} ~`;
 
 export function fromAdminProductToOrderRegistration(
   product: AdminOrderProduct,
@@ -226,7 +228,7 @@ export function fromAdminProductToOrderRegistration(
       description: "컨셉 방향·구성안·카피라이팅",
       fee: product.planning_estimate,
       note: "규모에 따라 별도 상담",
-      priceLabel: createPriceLabel(product.planning_estimate),
+      priceLabel: createAdditionalPriceLabel(product.planning_estimate),
       title: "기획",
     },
     quantities: product.order_quantities,

@@ -537,8 +537,11 @@
   text-align: left;
 }
 
-.optionServiceCardButton {
+.optionServiceCard.optionServiceCardButton {
   width: 100%;
+  background: var(--landing-gray-50);
+  padding: 32px;
+  border-color: transparent;
   cursor: pointer;
 }
 
@@ -548,8 +551,13 @@
 }
 
 .optionServiceCardSelectedExtra {
-  border-color: var(--landing-info-500);
-  background: var(--landing-info-50);
+  border-color: var(--landing-brand-500);
+  background: #effcfd;
+}
+
+.optionServiceCardButton.optionServiceCardSelectedExtra {
+  border-color: var(--landing-brand-500);
+  background: #effcfd;
 }
 
 .optionServiceBadge {
@@ -603,10 +611,34 @@
 }
 
 .optionServiceBadgeInfo {
-  --option-service-badge-background: rgba(67, 160, 245, 0.1);
-  --option-service-badge-border-end: var(--landing-info-border-end);
-  --option-service-badge-border-start: var(--landing-info-border-start);
-  color: var(--landing-info-500);
+  --option-service-badge-background: rgba(255, 255, 255, 0.1);
+  --option-service-badge-border-start: linear-gradient(
+    to bottom right,
+    rgba(30, 41, 59, 0.8) 0%,
+    rgba(30, 41, 59, 0.08) 30%,
+    rgba(30, 41, 59, 0.08) 100%
+  );
+  --option-service-badge-border-end: linear-gradient(
+    to bottom right,
+    rgba(30, 41, 59, 0.08) 0%,
+    rgba(30, 41, 59, 0.08) 70%,
+    rgba(30, 41, 59, 0.8) 100%
+  );
+  background-color: rgba(255, 255, 255, 0.1);
+  border-color: transparent;
+  color: var(--landing-gray-800);
+}
+
+.optionServiceCardSelectedExtra .optionServiceBadgeInfo {
+  --option-service-badge-background: rgba(48, 186, 195, 0.1);
+  --option-service-badge-border-start: var(--landing-brand-border-start);
+  --option-service-badge-border-end: var(--landing-brand-border-end);
+  background-color: var(--option-service-badge-background);
+  color: var(--landing-brand-500);
+}
+
+.optionServiceCardSelectedExtra .optionServiceTitle {
+  color: var(--landing-brand-500);
 }
 
 .optionServiceCopy {
