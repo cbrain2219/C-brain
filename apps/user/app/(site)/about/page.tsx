@@ -143,38 +143,13 @@ export default function AboutPage() {
                 </span>
               </h1>
               <p className={styles.heroDescription}>
-                <span
-                  className={`${styles.heroDescriptionLine} ${styles.heroDescriptionLineDesktop}`}
-                >
-                  경기도 성남시 소재 · 2000년 설립 이후 26년간 전국 1,200여
-                  기업과 함께해 온
-                </span>
-                <span
-                  className={`${styles.heroDescriptionLine} ${styles.heroDescriptionLineDesktop}`}
-                >
-                  브로슈어·브로셔·카탈로그·리플렛·팜플렛·포스터 및 각종 홍보물
-                  기획·디자인·인쇄 원스톱 전문 기업입니다.
-                </span>
-                <span
-                  className={`${styles.heroDescriptionLine} ${styles.heroDescriptionLineMobile}`}
-                >
-                  경기도 성남시 소재 · 2000년 설립 이후 26년간
-                </span>
-                <span
-                  className={`${styles.heroDescriptionLine} ${styles.heroDescriptionLineMobile}`}
-                >
-                  전국 1,200여 기업과 함께해 온
-                </span>
-                <span
-                  className={`${styles.heroDescriptionLine} ${styles.heroDescriptionLineMobile}`}
-                >
-                  브로슈어·브로셔·카탈로그·리플렛·팜플렛·포스터 및
-                </span>
-                <span
-                  className={`${styles.heroDescriptionLine} ${styles.heroDescriptionLineMobile}`}
-                >
-                  각종 홍보물 기획·디자인·인쇄 원스톱 전문 기업입니다.
-                </span>
+                경기도 성남시 소재 · 2000년 설립 이후 26년간{" "}
+                <br className={styles.heroDescriptionMobileBreak} />
+                전국 1,200여 기업과 함께해 온
+                <br className={styles.heroDescriptionBreak} />
+                브로슈어·브로셔·카탈로그·리플렛·팜플렛·포스터 및{" "}
+                <br className={styles.heroDescriptionMobileBreak} />
+                각종 홍보물 기획·디자인·인쇄 원스톱 전문 기업입니다.
               </p>
             </div>
           </div>

@@ -232,12 +232,11 @@
   line-height: 24px;
 }
 
-.heroDescriptionLine {
+.heroDescriptionBreak {
   display: block;
-  white-space: nowrap;
 }
 
-.heroDescriptionLineMobile {
+.heroDescriptionMobileBreak {
   display: none;
 }
 
@@ -1300,10 +1299,6 @@
     min-width: 0;
   }
 
-  .heroDescriptionLine {
-    white-space: normal;
-  }
-
   .heroMetricPanel {
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
@@ -1530,15 +1525,7 @@
     display: none;
   }
 
-  .heroDescriptionLine {
-    white-space: normal;
-  }
-
-  .heroDescriptionLineDesktop {
-    display: none;
-  }
-
-  .heroDescriptionLineMobile {
+  .heroDescriptionMobileBreak {
     display: block;
   }
 

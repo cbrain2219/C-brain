@@ -86,9 +86,9 @@ test("about hero keeps the fold padding before the 870 mobile breakpoint", async
 
   assert.match(heroStyles, /padding:\s*136px 0 72px;/);
   assert.match(heroInnerStyles, /padding:\s*0 20px;/);
-  assert.match(
+  assert.doesNotMatch(
     foldStyles,
-    /\.heroDescriptionLine\s*\{[\s\S]*?white-space:\s*normal;/,
+    /\.heroDescriptionMobileBreak\s*\{[\s\S]*?display:\s*block;/,
   );
 });
 
@@ -117,7 +117,7 @@ test("about hero keeps flexible text before the compact mobile breakpoint", asyn
   );
   assert.doesNotMatch(
     mobileHeroStyles,
-    /\.heroDescriptionLineDesktop\s*\{[\s\S]*?display:\s*none;/,
+    /\.heroDescriptionMobileBreak\s*\{[\s\S]*?display:\s*block;/,
   );
 });
 
@@ -164,8 +164,11 @@ test("about hero title follows the blog hero responsive mobile type scale", asyn
   assert.match(mobileTitleStyles, /line-height:\s*36px;/);
 });
 
-test("about hero mobile description appears below 640px", async () => {
-  const stylesSource = await readFile(stylesUrl, "utf8");
+test("about hero description renders one text copy with responsive line breaks", async () => {
+  const [stylesSource, pageSource] = await Promise.all([
+    readFile(stylesUrl, "utf8"),
+    readFile(pageUrl, "utf8"),
+  ]);
   const mobileStart = stylesSource.indexOf("@media (max-width: 639px)");
   const compactMobileStart = stylesSource.indexOf(
     "@media (max-width: 480px)",
@@ -175,17 +178,30 @@ test("about hero mobile description appears below 640px", async () => {
 
   assert.notEqual(mobileStart, -1);
   assert.notEqual(compactMobileStart, -1);
+  assert.equal(
+    pageSource.match(/경기도 성남시 소재 · 2000년 설립 이후 26년간/g)?.length,
+    1,
+  );
+  assert.equal(
+    pageSource.match(/전국 1,200여\s*기업과 함께해 온/g)?.length,
+    1,
+  );
+  assert.equal(
+    pageSource.match(/각종 홍보물 기획·디자인·인쇄 원스톱 전문 기업입니다\./g)
+      ?.length,
+    1,
+  );
+  assert.doesNotMatch(pageSource, /heroDescriptionLineDesktop/);
+  assert.doesNotMatch(pageSource, /heroDescriptionLineMobile/);
+  assert.match(pageSource, /className=\{styles\.heroDescriptionBreak\}/);
+  assert.match(pageSource, /className=\{styles\.heroDescriptionMobileBreak\}/);
   assert.match(
-    mobileStyles,
-    /\.heroDescriptionLine\s*\{[\s\S]*?white-space:\s*normal;/,
+    cssBlock(stylesSource, ".heroDescriptionMobileBreak {"),
+    /display:\s*none;/,
   );
   assert.match(
     mobileStyles,
-    /\.heroDescriptionLineDesktop\s*\{[\s\S]*?display:\s*none;/,
-  );
-  assert.match(
-    mobileStyles,
-    /\.heroDescriptionLineMobile\s*\{[\s\S]*?display:\s*block;/,
+    /\.heroDescriptionMobileBreak\s*\{[\s\S]*?display:\s*block;/,
   );
 });
 
