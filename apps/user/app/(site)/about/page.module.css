@@ -997,10 +997,14 @@
   justify-content: center;
 }
 
-.channelIcon svg,
+.channelIcon img,
 .channelLink svg {
   display: block;
   flex: 0 0 auto;
+}
+
+.channelIcon img {
+  object-fit: contain;
 }
 
 .channelText {

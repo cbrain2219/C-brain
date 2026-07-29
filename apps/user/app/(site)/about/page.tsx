@@ -357,7 +357,12 @@ export default function AboutPage() {
               >
                 <span className={styles.channelMain}>
                   <span className={styles.channelIcon}>
-                    <Icon name={channel.icon} size={24} />
+                    <Image
+                      alt={channel.iconImage.alt}
+                      height={channel.iconImage.height}
+                      src={channel.iconImage.src}
+                      width={channel.iconImage.width}
+                    />
                   </span>
                   <span className={styles.channelText}>
                     <strong>{channel.title}</strong>

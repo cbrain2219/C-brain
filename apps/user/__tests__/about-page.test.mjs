@@ -189,6 +189,31 @@ test("about hero mobile description appears below 640px", async () => {
   );
 });
 
+test("about channel cards use exported Figma image icons", async () => {
+  const pageSource = await readFile(pageUrl, "utf8");
+  const companySource = await readFile(companyUrl, "utf8");
+  const stylesSource = await readFile(stylesUrl, "utf8");
+
+  [
+    "about-channel-kakao.png",
+    "about-channel-home.png",
+    "about-channel-naver-blog.png",
+    "about-channel-instagram.png",
+    "about-channel-youtube.png",
+  ].forEach((fileName) => {
+    assert.match(companySource, new RegExp(`/figma-assets/${fileName}`));
+  });
+
+  assert.match(companySource, /iconImage:\s*\{/);
+  assert.match(pageSource, /<Image/);
+  assert.match(pageSource, /src=\{channel\.iconImage\.src\}/);
+  assert.match(pageSource, /alt=\{channel\.iconImage\.alt\}/);
+  assert.match(pageSource, /width=\{channel\.iconImage\.width\}/);
+  assert.match(pageSource, /height=\{channel\.iconImage\.height\}/);
+  assert.doesNotMatch(pageSource, /<Icon name=\{channel\.icon\}/);
+  assert.match(cssBlock(stylesSource, ".channelIcon img"), /display:\s*block;/);
+});
+
 test("about mobile timeline keeps title fragments on the same line", async () => {
   const [stylesSource, pageSource, companySource] = await Promise.all([
     readFile(stylesUrl, "utf8"),

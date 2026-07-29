@@ -1,5 +1,3 @@
-import type { IconName } from "../../components/Icon";
-
 import { KAKAO_CHANNEL_URL } from "./contact.ts";
 
 export const companyLinks = {
@@ -283,40 +281,70 @@ export const companyTimelineCompact = [
 ] as const;
 
 export const companyChannels: {
-  icon: IconName;
-  title: string;
   description: string;
   href: string;
+  iconImage: {
+    alt: string;
+    height: number;
+    src: string;
+    width: number;
+  };
+  title: string;
 }[] = [
   {
-    icon: "channel-message-typing",
     title: "카카오톡 1:1 상담",
     description: "빠른 견적 및 상담",
     href: companyLinks.kakao,
+    iconImage: {
+      alt: "",
+      height: 40,
+      src: "/figma-assets/about-channel-kakao.png",
+      width: 40,
+    },
   },
   {
-    icon: "channel-home-02",
     title: "공식 홈페이지",
     description: "cbrain.kr",
     href: companyLinks.homepage,
+    iconImage: {
+      alt: "",
+      height: 24,
+      src: "/figma-assets/about-channel-home.png",
+      width: 24,
+    },
   },
   {
-    icon: "channel-naver-blog",
     title: "네이버 블로그",
     description: "제작 가이드 & 노하우",
     href: companyLinks.naverBlog,
+    iconImage: {
+      alt: "",
+      height: 40,
+      src: "/figma-assets/about-channel-naver-blog.png",
+      width: 40,
+    },
   },
   {
-    icon: "channel-instagram",
     title: "인스타그램",
     description: "포트폴리오 & 디자인 꿀팁",
     href: companyLinks.instagram,
+    iconImage: {
+      alt: "",
+      height: 40,
+      src: "/figma-assets/about-channel-instagram.png",
+      width: 40,
+    },
   },
   {
-    icon: "channel-youtube",
     title: "유튜브",
     description: "회사소개 & 고객인터뷰",
     href: companyLinks.youtube,
+    iconImage: {
+      alt: "",
+      height: 40,
+      src: "/figma-assets/about-channel-youtube.png",
+      width: 40,
+    },
   },
 ];
 
