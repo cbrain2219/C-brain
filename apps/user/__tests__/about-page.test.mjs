@@ -78,6 +78,23 @@ test("about hero keeps the 1080 frame padding without a fixed hero height", asyn
   assert.match(heroInnerStyles, /width:\s*min\(100%,\s*1080px\);/);
 });
 
+test("about section wrappers keep 20px horizontal padding through tablet", async () => {
+  const stylesSource = await readFile(stylesUrl, "utf8");
+  const tabletStart = stylesSource.indexOf("@media (max-width: 1399px)");
+  const desktopStart = stylesSource.indexOf(
+    "@media (max-width: 1080px)",
+    tabletStart,
+  );
+
+  assert.notEqual(tabletStart, -1);
+  assert.notEqual(desktopStart, -1);
+
+  const tabletStyles = stylesSource.slice(tabletStart, desktopStart);
+  const sectionFrameStyles = cssBlock(tabletStyles, ".sectionInner,");
+
+  assert.match(sectionFrameStyles, /padding:\s*0 20px;/);
+});
+
 test("about hero keeps the fold padding before the 870 mobile breakpoint", async () => {
   const stylesSource = await readFile(stylesUrl, "utf8");
   const foldStart = stylesSource.indexOf("@media (max-width: 1080px)");
@@ -256,6 +273,19 @@ test("about intro media and timeline marker follow the reviewed desktop design",
   assert.doesNotMatch(timelineDotStyles, /box-shadow:/);
 });
 
+test("about intro media stacks in one column through 600px", async () => {
+  const stylesSource = await readFile(stylesUrl, "utf8");
+  const introMediaBreakpoint = cssBlock(
+    stylesSource,
+    "@media (max-width: 600px)",
+  );
+
+  assert.match(
+    cssBlock(introMediaBreakpoint, ".introMedia {"),
+    /grid-template-columns:\s*1fr;/,
+  );
+});
+
 test("about channels follow the reviewed order and copy", async () => {
   const companySource = await readFile(companyUrl, "utf8");
   const channelSource = companySource.slice(
@@ -278,18 +308,12 @@ test("about channels follow the reviewed order and copy", async () => {
 
 test("about card grids follow the reviewed row and column breakpoints", async () => {
   const stylesSource = await readFile(stylesUrl, "utf8");
-  const reasonBreakpoint = cssBlock(
-    stylesSource,
-    "@media (max-width: 800px)",
-  );
+  const reasonBreakpoint = cssBlock(stylesSource, "@media (max-width: 800px)");
   const compactChannelBreakpoint = cssBlock(
     stylesSource,
     "@media (max-width: 1137px)",
   );
-  const channelBreakpoint = cssBlock(
-    stylesSource,
-    "@media (max-width: 899px)",
-  );
+  const channelBreakpoint = cssBlock(stylesSource, "@media (max-width: 899px)");
 
   assert.match(
     cssBlock(reasonBreakpoint, ".reasonGrid {"),

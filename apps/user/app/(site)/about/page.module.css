@@ -1166,7 +1166,7 @@
   .heroInner,
   .historyInner {
     width: min(100%, 1180px);
-    padding: 0 24px;
+    padding: 0 20px;
   }
 
   .introSection,
@@ -1373,7 +1373,6 @@
     font-size: 22px;
     line-height: 32px;
   }
-
 }
 
 @media (max-width: 1137px) {
@@ -1386,7 +1385,6 @@
     padding: 20px;
     gap: 20px;
   }
-
 }
 
 @media (max-width: 1080px) {
@@ -1710,6 +1708,12 @@
   }
 }
 
+@media (max-width: 600px) {
+  .introMedia {
+    grid-template-columns: 1fr;
+  }
+}
+
 @media (max-width: 480px) {
   .heroMetricPanel {
     height: 560px;
@@ -1717,7 +1721,6 @@
   }
 
   .introMedia {
-    grid-template-columns: 1fr;
     gap: 10px;
   }
 
