@@ -313,6 +313,34 @@ test("blog list uses semantic navigation and article lists without changing visu
   );
 });
 
+test("blog list vertical spacing is expressed with parent gaps", async () => {
+  const [board, card, styles] = await Promise.all([
+    source("board"),
+    source("card"),
+    source("styles"),
+  ]);
+
+  assert.match(board, /<div className=\{styles\.blogBoardControls\}>/);
+  assert.match(card, /<div className=\{styles\.blogCardTextGroup\}>/);
+  assert.match(
+    styles,
+    /\.blogBoardControls\s*\{[\s\S]*?gap:\s*32px;/,
+  );
+  assert.match(
+    styles,
+    /\.blogCardBody\s*\{[\s\S]*?gap:\s*20px;/,
+  );
+  assert.match(
+    styles,
+    /\.blogCardTextGroup\s*\{[\s\S]*?gap:\s*8px;/,
+  );
+  assert.match(
+    styles,
+    /@media \(min-width:\s*1440px\)[\s\S]*?\.blogBoardControls\s*\{[\s\S]*?gap:\s*52px;/,
+  );
+  assert.doesNotMatch(styles, /\bmargin-(?:top|bottom)\s*:/);
+});
+
 test("blog category active tab uses a transparent-edge gradient underline", async () => {
   const styles = await source("styles");
   const categoryListStyle = styles.match(
@@ -573,11 +601,30 @@ test("blog detail page marks related posts as complementary article links", asyn
 });
 
 test("blog detail styles match the P/T/F/M responsive detail frame", async () => {
-  const styles = await source("detailStyles");
+  const [detailPage, styles] = await Promise.all([
+    source("detailPage"),
+    source("detailStyles"),
+  ]);
 
+  assert.match(
+    detailPage,
+    /<div className=\{styles\.blogDetailArticleContent\}>[\s\S]*?<BlogDetailBackLink href=\{listHref\} \/>[\s\S]*?<\/div>[\s\S]*?<aside/,
+  );
   assert.match(styles, /\.blogDetailInner/);
   assert.match(styles, /width: min\(calc\(100% - 40px\), 640px\)/);
-  assert.match(styles, /padding: 52px 0 88px/);
+  assert.match(styles, /\.blogDetailInner\s*\{[^}]*gap: 52px;/s);
+  assert.match(
+    styles,
+    /\.blogDetailArticleContent\s*\{[^}]*gap: 20px;/s,
+  );
+  assert.match(
+    styles,
+    /\.blogDetailInner\s*\{[^}]*padding:\s*52px 0;/s,
+  );
+  assert.match(
+    styles,
+    /@media \(max-width: 1080px\) \{[\s\S]*?\.blogDetailInner\s*\{[^}]*gap: 32px;/,
+  );
   assert.match(styles, /\.blogDetailContent/);
   assert.match(styles, /font-size: 16px/);
   assert.match(styles, /line-height: 24px/);

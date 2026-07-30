@@ -41,6 +41,7 @@ test("landing about reason items stay one column before their body text has one-
   const pcMedia = cssBlock(stylesSource, "@media (min-width: 1440px)");
 
   assert.match(sectionSource, /className=\{styles\.aboutDesktopBreak\}/);
+  assert.match(sectionSource, /className=\{styles\.reasonDivider\}/);
   assert.match(
     baseReasonGrid,
     /grid-template-columns:\s*repeat\(auto-fit,\s*minmax\(min\(100%,\s*600px\),\s*1fr\)\);/,
@@ -82,9 +83,10 @@ test("landing about reason items follow the Figma card and desktop list styles",
   assert.match(pcMedia, /\.reasonItem\s*\{[^}]*flex-direction:\s*row;/s);
   assert.match(pcMedia, /\.reasonItem\s*\{[^}]*padding:\s*0;/s);
   assert.match(pcMedia, /\.reasonItem\s*\{[^}]*border:\s*0;/s);
-  assert.match(pcMedia, /\.reasonItem:not\(:last-child\)::after\s*\{/);
+  assert.match(pcMedia, /\.reasonDivider\s*\{/);
   assert.match(
     pcMedia,
-    /\.reasonItem:not\(:last-child\)::after\s*\{[^}]*border-top:\s*1px dashed #ffffff;[^}]*opacity:\s*0\.3;/s,
+    /\.reasonDivider\s*\{[^}]*border-top:\s*1px dashed #ffffff;[^}]*opacity:\s*0\.3;/s,
   );
+  assert.doesNotMatch(pcMedia, /\.reasonDivider\s*\{[^}]*margin:/s);
 });

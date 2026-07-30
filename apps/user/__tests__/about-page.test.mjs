@@ -49,7 +49,10 @@ test("about hero keeps the 1440 frame padding without a fixed hero height", asyn
   const heroStyles = cssBlock(stylesSource, ".hero {");
 
   assert.doesNotMatch(heroStyles, /min-height:/);
-  assert.match(heroStyles, /padding:\s*184px 0 104px;/);
+  assert.match(
+    heroStyles,
+    /padding:\s*var\(--site-page-top-offset, 124px\) 0 104px;/,
+  );
 });
 
 test("about hero keeps the 1080 frame padding without a fixed hero height", async () => {
@@ -68,7 +71,10 @@ test("about hero keeps the 1080 frame padding without a fixed hero height", asyn
   const heroInnerStyles = cssBlock(tabletStyles, ".heroInner {");
 
   assert.doesNotMatch(heroStyles, /min-height:/);
-  assert.match(heroStyles, /padding:\s*152px 0 72px;/);
+  assert.match(
+    heroStyles,
+    /padding:\s*var\(--site-page-top-offset, 124px\) 0 72px;/,
+  );
   assert.match(heroInnerStyles, /width:\s*min\(100%,\s*1080px\);/);
 });
 
@@ -85,7 +91,10 @@ test("about hero keeps the fold padding before the 870 mobile breakpoint", async
   const heroInnerStyles = cssBlock(foldStyles, ".heroInner {");
 
   assert.doesNotMatch(heroStyles, /min-height:/);
-  assert.match(heroStyles, /padding:\s*136px 0 72px;/);
+  assert.match(
+    heroStyles,
+    /padding:\s*var\(--site-page-top-offset, 124px\) 0 72px;/,
+  );
   assert.match(heroInnerStyles, /padding:\s*0 20px;/);
   assert.doesNotMatch(
     foldStyles,

@@ -1,6 +1,6 @@
 .linkPaySection {
   width: 100%;
-  padding: 112px 20px 80px;
+  padding: var(--site-page-top-offset, 124px) 20px 80px;
   display: flex;
   justify-content: center;
 }
@@ -312,7 +312,7 @@
 
 @media (min-width: 768px) {
   .linkPaySection {
-    padding-top: 132px;
+    padding-top: var(--site-page-top-offset, 124px);
     padding-bottom: 104px;
   }
 

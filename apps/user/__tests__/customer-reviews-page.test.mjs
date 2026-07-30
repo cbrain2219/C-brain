@@ -249,12 +249,20 @@ test("customer reviews page uses shared navigation and CTA", async () => {
   assert.doesNotMatch(pageSource, /reviewsCta/);
 });
 
-test("shared header switches to 52px when the mobile menu button is visible", async () => {
+test("shared header and page spacing switch immediately above 1080px", async () => {
   const stylesSource = await readFile(stylesPath, "utf8");
 
   assert.match(
     stylesSource,
-    /@media \(max-width: 1099px\)[\s\S]*?\.header\s*\{[\s\S]*?height: 52px;[\s\S]*?\}[\s\S]*?\.headerNoticePage\s*\{/,
+    /\.page\s*\{[\s\S]*?--site-header-height: 52px;[\s\S]*?--site-page-top-gap: 72px;[\s\S]*?--site-page-top-offset: calc\(/,
+  );
+  assert.match(
+    stylesSource,
+    /@media \(min-width: 1081px\)[\s\S]*?\.page\s*\{[\s\S]*?--site-header-height: 80px;[\s\S]*?--site-page-top-gap: 104px;/,
+  );
+  assert.match(
+    stylesSource,
+    /\.header\s*\{[\s\S]*?height: var\(--site-header-height\);/,
   );
   assert.match(
     stylesSource,
@@ -289,10 +297,15 @@ test("customer reviews page includes responsive layout styles", async () => {
   );
 });
 
-test("customer interviews follow the P/T/F/M responsive section variants", async () => {
+test("customer interviews keep the desktop section layout from 1080px upward", async () => {
   const contentSource = await readFile(contentPath, "utf8");
   const pageSource = await readFile(pagePath, "utf8");
   const stylesSource = await readFile(stylesPath, "utf8");
+  const desktopMedia = extractCssBlock(
+    stylesSource,
+    "@media (min-width: 1080px)",
+  );
+  const pcMedia = extractCssBlock(stylesSource, "@media (min-width: 1440px)");
 
   const interviewSlugs = contentSource.match(/slug: "/g) ?? [];
 
@@ -320,28 +333,28 @@ test("customer interviews follow the P/T/F/M responsive section variants", async
   assert.doesNotMatch(stylesSource, /\.reviewsFeaturedStandalone/);
   assert.doesNotMatch(stylesSource, /\.reviewsInterviewCard:nth-child/);
   assert.match(
-    stylesSource,
-    /@media \(min-width: 1080px\)[\s\S]*\.reviewsFeatured\s*\{[\s\S]*grid-template-columns: minmax\(0, 1fr\) 530px;/,
+    desktopMedia,
+    /\.reviewsFeatured\s*\{[^}]*grid-template-columns: minmax\(0, 530px\) minmax\(0, 1fr\);/s,
   );
   assert.match(
-    stylesSource,
-    /@media \(min-width: 1080px\)[\s\S]*\.reviewsInterviewGrid\s*\{[\s\S]*grid-template-columns: repeat\(3, minmax\(0, 1fr\)\);/,
+    desktopMedia,
+    /\.reviewsFeaturedMedia\s*\{[^}]*order: 1;/s,
   );
   assert.match(
-    stylesSource,
-    /@media \(min-width: 1440px\)[\s\S]*\.reviewsFeatured\s*\{[\s\S]*grid-template-columns: minmax\(0, 530px\) minmax\(0, 1fr\);/,
+    desktopMedia,
+    /\.reviewsInterviewGrid\s*\{[^}]*grid-template-columns: repeat\(2, minmax\(0, 1fr\)\);[^}]*gap: 20px;/s,
   );
   assert.match(
-    stylesSource,
-    /@media \(min-width: 1440px\)[\s\S]*\.reviewsFeaturedMedia\s*\{[\s\S]*order: 1;/,
+    desktopMedia,
+    /\.reviewsSectionDescription\s*\{[^}]*display: block;/s,
   );
   assert.match(
-    stylesSource,
-    /@media \(min-width: 1440px\)[\s\S]*\.reviewsInterviewGrid\s*\{[\s\S]*grid-template-columns: repeat\(2, minmax\(0, 1fr\)\);/,
+    desktopMedia,
+    /\.reviewsCategory\s*\{\s*display: none;/,
   );
-  assert.match(
-    stylesSource,
-    /@media \(min-width: 1440px\)[\s\S]*\.reviewsCategory\s*\{\s*display: none;/,
+  assert.doesNotMatch(
+    pcMedia,
+    /\.reviews(?:InterviewSection|SectionHeading|SectionDescription|Featured|QuoteMark|InterviewGrid|TestimonialGrid|InterviewMedia|Category)\b/,
   );
 });
 
@@ -495,7 +508,7 @@ test("customer reviews page progressively reveals testimonials after the first s
   assert.doesNotMatch(stylesSource, /\.reviewsTestimonialCard:nth-child/);
 });
 
-test("customer review cards use an 8px gap until the PC breakpoint", async () => {
+test("customer review cards use an 8px gap until the desktop breakpoint", async () => {
   const stylesSource = await readFile(stylesPath, "utf8");
   const baseTestimonialGrid = extractCssBlock(
     stylesSource,
@@ -512,11 +525,11 @@ test("customer review cards use an 8px gap until the PC breakpoint", async () =>
 
   assert.match(baseTestimonialGrid, /gap: 8px;/);
   assert.doesNotMatch(baseTestimonialGrid, /gap: 20px;/);
-  assert.doesNotMatch(
+  assert.match(
     desktopMedia,
     /\.reviewsTestimonialGrid\s*\{[^}]*gap: 20px;/s,
   );
-  assert.match(
+  assert.doesNotMatch(
     pcMedia,
     /\.reviewsTestimonialGrid\s*\{[^}]*gap: 20px;/s,
   );
@@ -556,7 +569,7 @@ test("customer reviews hero content styles stay consolidated", async () => {
   );
   assert.match(
     stylesSource,
-    /\.reviewsHeroContent\s*\{[\s\S]*width: min\(100%, 390px\);[\s\S]*padding: 144px 20px 72px;[\s\S]*position: relative;[\s\S]*display: flex;[\s\S]*flex-direction: column;[\s\S]*gap: 20px;/,
+    /\.reviewsHeroContent\s*\{[\s\S]*width: min\(100%, 390px\);[\s\S]*padding: var\(--site-page-top-offset\) 20px 72px;[\s\S]*position: relative;[\s\S]*display: flex;[\s\S]*flex-direction: column;[\s\S]*gap: 20px;/,
   );
   assert.doesNotMatch(
     extractCssBlock(stylesSource, ".reviewsHeroContent"),
@@ -579,7 +592,7 @@ test("customer reviews hero content follows the shared hero width scale", async 
   );
   assert.match(
     stylesSource,
-    /\.reviewsHeroContent\s*\{[\s\S]*padding: 144px 20px 72px;/,
+    /\.reviewsHeroContent\s*\{[\s\S]*padding: var\(--site-page-top-offset\) 20px 72px;/,
   );
   assert.match(
     tabletStyles,
@@ -587,7 +600,7 @@ test("customer reviews hero content follows the shared hero width scale", async 
   );
   assert.match(
     tabletStyles,
-    /\.reviewsHeroContent\s*\{[\s\S]*?padding: 136px 20px 72px;/,
+    /\.reviewsHeroContent\s*\{[\s\S]*?padding: var\(--site-page-top-offset\) 20px 72px;/,
   );
   assert.match(
     desktopStyles,
@@ -599,7 +612,7 @@ test("customer reviews hero content follows the shared hero width scale", async 
   );
   assert.match(
     desktopStyles,
-    /\.reviewsHeroContent\s*\{[\s\S]*?margin: 0 auto;[\s\S]*?padding: 152px 80px 72px;/,
+    /\.reviewsHeroContent\s*\{[\s\S]*?margin: 0 auto;[\s\S]*?padding: var\(--site-page-top-offset\) 80px 72px;/,
   );
   assert.match(
     pcStyles,
@@ -611,7 +624,7 @@ test("customer reviews hero content follows the shared hero width scale", async 
   );
   assert.match(
     pcStyles,
-    /\.reviewsHeroContent\s*\{[\s\S]*?padding: 184px 0 104px;/,
+    /\.reviewsHeroContent\s*\{[\s\S]*?padding: var\(--site-page-top-offset\) 0 104px;/,
   );
 });
 

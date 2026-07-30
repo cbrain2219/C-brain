@@ -5,7 +5,7 @@
 .legalSection {
   width: min(100%, 720px);
   margin: 0 auto;
-  padding: 144px 20px 104px;
+  padding: var(--site-page-top-offset, 124px) 20px 104px;
   display: flex;
   flex-direction: column;
   gap: 24px;

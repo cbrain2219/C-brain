@@ -200,7 +200,10 @@ test("customer review detail styles match the P/T/F/M responsive detail frame", 
   }
 
   assert.match(styles, /width: min\(calc\(100% - 40px\), 640px\);/);
-  assert.match(styles, /padding: 52px 0 72px;/);
+  assert.match(
+    styles,
+    /padding: var\(--site-page-top-gap, 72px\) 0 72px;/,
+  );
   assert.match(
     styles,
     /\.reviewDetailAuthorLine\s*\{[\s\S]*gap: 8px;/,
@@ -224,6 +227,6 @@ test("customer review detail styles match the P/T/F/M responsive detail frame", 
   );
   assert.match(
     styles,
-    /@media \(min-width: 1080px\)[\s\S]*\.reviewDetailInner\s*\{[\s\S]*padding-top: 52px;/,
+    /@media \(min-width: 1080px\)[\s\S]*\.reviewDetailInner\s*\{[\s\S]*padding-top: var\(--site-page-top-gap, 72px\);/,
   );
 });

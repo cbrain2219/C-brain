@@ -14,7 +14,7 @@
 }
 
 .hero {
-  padding: 184px 0 104px;
+  padding: var(--site-page-top-offset, 124px) 0 104px;
   position: relative;
   overflow: hidden;
   color: #ffffff;
@@ -1179,7 +1179,7 @@
   }
 
   .hero {
-    padding: 152px 0 72px;
+    padding: var(--site-page-top-offset, 124px) 0 72px;
   }
 
   .heroInner {
@@ -1280,7 +1280,7 @@
 
 @media (max-width: 1079px) {
   .hero {
-    padding: 136px 0 72px;
+    padding: var(--site-page-top-offset, 124px) 0 72px;
   }
 
   .heroInner {
@@ -1417,7 +1417,7 @@
 
 @media (max-width: 869px) {
   .hero {
-    padding: 72px 0;
+    padding: var(--site-page-top-offset, 124px) 0 72px;
   }
 
   .heroImage {

@@ -279,10 +279,6 @@
 }
 
 @media (min-width: 640px) {
-  .sectionInner {
-    gap: 52px;
-  }
-
   .noticeItem {
     min-height: 70px;
   }
@@ -309,16 +305,15 @@
   }
 }
 
-@media (min-width: 1080px) {
+@media (min-width: 1081px) {
   .sectionInner {
-    gap: 32px;
+    gap: 52px;
   }
 }
 
 @media (min-width: 1440px) {
   .sectionInner {
     width: 1080px;
-    gap: 52px;
   }
 
   .categoryRail {

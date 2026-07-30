@@ -172,14 +172,17 @@ test("complaint page includes the fixed mobile header in compact top padding", a
     "@media (min-width: 1080px)",
   );
 
-  assert.match(baseComplaintSection, /padding:\s*104px 20px 72px;/);
+  assert.match(
+    baseComplaintSection,
+    /padding:\s*var\(--site-page-top-offset\) 20px 72px;/,
+  );
   assert.match(
     tabletMedia,
-    /\.complaintSection\s*\{[\s\S]*?padding-top:\s*152px;/,
+    /\.complaintSection\s*\{[\s\S]*?padding-top:\s*var\(--site-page-top-offset\);/,
   );
   assert.match(
     desktopMedia,
-    /\.complaintSection\s*\{[\s\S]*?padding-top:\s*184px;/,
+    /\.complaintSection\s*\{[\s\S]*?padding-top:\s*var\(--site-page-top-offset\);/,
   );
 });
 

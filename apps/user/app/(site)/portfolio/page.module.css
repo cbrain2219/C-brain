@@ -31,7 +31,7 @@
 .heroContent {
   width: min(calc(100% - 40px), 1360px);
   margin: 0 auto;
-  padding: 136px 0 72px;
+  padding: var(--site-page-top-offset, 124px) 0 72px;
   position: relative;
 }
 
@@ -377,17 +377,13 @@
 }
 
 @media (min-width: 1080px) {
-  .workInner {
-    gap: 52px;
-  }
-
   .heroOverlay {
     background: linear-gradient(90deg, #ffffff 0%, rgba(255, 255, 255, 0) 78%);
   }
 
   .heroContent {
     width: min(100%, 1080px);
-    padding: 152px 80px 72px;
+    padding: var(--site-page-top-offset, 124px) 80px 72px;
   }
 
   .heroText h1 {
@@ -404,7 +400,7 @@
 @media (min-width: 1440px) {
   .heroContent {
     width: 1360px;
-    padding: 184px 0 104px;
+    padding: var(--site-page-top-offset, 124px) 0 104px;
   }
 
   .work {

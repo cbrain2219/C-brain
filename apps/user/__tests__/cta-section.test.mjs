@@ -32,6 +32,7 @@ test("CTA section owns its styles and conditionally renders the second action", 
   const styles = await readFile(stylesPath, "utf8").catch(() => "");
 
   assert.match(source, /CtaSection\.module\.css/);
+  assert.match(source, /className=\{styles\.copyGroup\}/);
   assert.match(source, /secondaryAction \?/);
   assert.match(source, /<Link/);
   assert.match(source, /createGradientBorderButtonStyle/);
@@ -50,6 +51,13 @@ test("CTA section owns its styles and conditionally renders the second action", 
     /\.actionButton::before\s*\{[\s\S]*?linear-gradient\(#ffffff 0 0\) padding-box,/,
   );
   assert.match(styles, /var\(--landing-button-border-end\)/);
+  assert.match(styles, /\.copyGroup\s*\{[\s\S]*?gap: 20px;/);
+  assert.match(styles, /\.content\s*\{[\s\S]*?gap: 52px;/);
+  assert.match(
+    styles,
+    /@media \(max-width: 1080px\)\s*\{[\s\S]*?\.content\s*\{[\s\S]*?gap: 32px;/,
+  );
+  assert.doesNotMatch(styles, /\.actions\s*\{[\s\S]*?margin-top:/);
   assert.match(
     styles,
     /\.section\s*\{[\s\S]*?--cta-action-width: 164px;/,

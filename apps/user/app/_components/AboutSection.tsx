@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { Fragment } from "react";
 
 import { SectionLayout } from "../../components/SectionLayout";
 import { aboutReasons } from "../_content/about";
@@ -31,16 +32,21 @@ export function AboutSection() {
     >
       <div className={styles.aboutContent}>
         <div className={styles.reasonGrid}>
-          {aboutReasons.map((reason) => (
-            <article className={styles.reasonItem} key={reason.title}>
-              <span className={styles.reasonIcon}>
-                <Image alt="" height={14} src={reason.icon} width={14} />
-              </span>
-              <div>
-                <h3>{reason.title}</h3>
-                <p>{reason.description}</p>
-              </div>
-            </article>
+          {aboutReasons.map((reason, index) => (
+            <Fragment key={reason.title}>
+              <article className={styles.reasonItem}>
+                <span className={styles.reasonIcon}>
+                  <Image alt="" height={14} src={reason.icon} width={14} />
+                </span>
+                <div>
+                  <h3>{reason.title}</h3>
+                  <p>{reason.description}</p>
+                </div>
+              </article>
+              {index < aboutReasons.length - 1 ? (
+                <div aria-hidden className={styles.reasonDivider} />
+              ) : null}
+            </Fragment>
           ))}
         </div>
 

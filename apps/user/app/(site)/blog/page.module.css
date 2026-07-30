@@ -52,9 +52,15 @@
   gap: 20px;
 }
 
+.blogBoardControls {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
 .blogBoardHeader {
   min-width: 0;
-  margin: 0 0 12px;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -234,6 +240,7 @@
 .blogSidebar,
 .blogCard,
 .blogCardBody,
+.blogCardTextGroup,
 .blogCardCopy,
 .blogAuthorMeta,
 .blogConsultCard,
@@ -450,12 +457,17 @@
   padding: 8px 0;
   display: flex;
   flex-direction: column;
-  gap: 0;
+  gap: 20px;
+}
+
+.blogCardTextGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .blogCardCopy {
   height: 68px;
-  margin-top: 8px;
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -479,7 +491,6 @@
 
 .blogAuthorMeta {
   height: 16px;
-  margin-top: 20px;
   display: flex;
   align-items: center;
   gap: 4px;
@@ -779,6 +790,9 @@
   .blogSidebar {
     grid-column: 3;
     grid-row: 2;
+    align-self: start;
+    position: sticky;
+    top: calc(var(--site-header-height, 52px) + 20px);
     display: flex;
     flex-direction: column;
     gap: 20px;
@@ -816,8 +830,8 @@
     padding: 0;
   }
 
-  .blogBoardHeader {
-    margin-bottom: 32px;
+  .blogBoardControls {
+    gap: 52px;
   }
 
   .blogBoardTitle {

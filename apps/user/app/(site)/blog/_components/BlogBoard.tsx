@@ -64,37 +64,39 @@ export function BlogBoard({ activeCategory, posts }: BlogBoardProps) {
   return (
     <section className={styles.blogBoard} aria-labelledby="blog-board-title">
       <div className={styles.blogBoardInner}>
-        <header className={styles.blogBoardHeader}>
-          <p className={styles.blogBoardKicker}>C · Brain 공식 블로그</p>
-          <h2 className={styles.blogBoardTitle} id="blog-board-title">
-            전체 게시글 <strong>{posts.length}</strong>
-          </h2>
-        </header>
+        <div className={styles.blogBoardControls}>
+          <header className={styles.blogBoardHeader}>
+            <p className={styles.blogBoardKicker}>C · Brain 공식 블로그</p>
+            <h2 className={styles.blogBoardTitle} id="blog-board-title">
+              전체 게시글 <strong>{posts.length}</strong>
+            </h2>
+          </header>
 
-        <nav
-          aria-label="블로그 카테고리"
-          className={styles.blogCategoryNavigation}
-        >
-          <HorizontalDragScroll
-            ariaLabel="블로그 카테고리 스크롤"
-            className={styles.blogCategoryScroll}
+          <nav
+            aria-label="블로그 카테고리"
+            className={styles.blogCategoryNavigation}
           >
-            <ul className={styles.blogCategoryList}>
-              {BLOG_CATEGORIES.map((category) => (
-                <li key={category}>
-                  <Link
-                    aria-current={activeCategory === category ? "page" : undefined}
-                    className={styles.blogCategoryButton}
-                    href={getCategoryHref(category)}
-                    scroll={false}
-                  >
-                    {category}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </HorizontalDragScroll>
-        </nav>
+            <HorizontalDragScroll
+              ariaLabel="블로그 카테고리 스크롤"
+              className={styles.blogCategoryScroll}
+            >
+              <ul className={styles.blogCategoryList}>
+                {BLOG_CATEGORIES.map((category) => (
+                  <li key={category}>
+                    <Link
+                      aria-current={activeCategory === category ? "page" : undefined}
+                      className={styles.blogCategoryButton}
+                      href={getCategoryHref(category)}
+                      scroll={false}
+                    >
+                      {category}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </HorizontalDragScroll>
+          </nav>
+        </div>
 
         <BlogHistoryBoundary listHref={listHref}>
           {featuredPost ? (

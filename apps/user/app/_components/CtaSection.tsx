@@ -51,24 +51,28 @@ export function CtaSection({
     <section className={styles.section} id={id}>
       <div aria-hidden="true" className={styles.background} />
       <div className={styles.content}>
-        {badge ? <p className={styles.badge}>{badge}</p> : null}
-        <div className={styles.copy}>
-          <h2 className={styles.title}>
-            {titleLines.map((line, index) => (
-              <span key={typeof line === "string" ? line : index}>{line}</span>
-            ))}
-          </h2>
-          {description ? (
-            <p
-              className={
-                descriptionSize === "md"
-                  ? styles.descriptionMd
-                  : styles.descriptionSm
-              }
-            >
-              {description}
-            </p>
-          ) : null}
+        <div className={styles.copyGroup}>
+          {badge ? <p className={styles.badge}>{badge}</p> : null}
+          <div className={styles.copy}>
+            <h2 className={styles.title}>
+              {titleLines.map((line, index) => (
+                <span key={typeof line === "string" ? line : index}>
+                  {line}
+                </span>
+              ))}
+            </h2>
+            {description ? (
+              <p
+                className={
+                  descriptionSize === "md"
+                    ? styles.descriptionMd
+                    : styles.descriptionSm
+                }
+              >
+                {description}
+              </p>
+            ) : null}
+          </div>
         </div>
         <div className={styles.actions}>
           <ButtonLink

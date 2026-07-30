@@ -116,53 +116,55 @@ export default async function PortfolioDetailPage({
         })}
       />
       <div className={styles.detailInner}>
-        <header className={styles.detailHeader}>
-          <p className={styles.categoryBadge}>{categoryLabel}</p>
-          <div className={styles.titleGroup}>
-            <h1 id="portfolio-detail-title">
-              {item.title} - {item.client}
-            </h1>
-            <p className={styles.authorLine}>
-              <span>작성자</span>
-              <span className={styles.authorIdentity}>
-                <Image
-                  alt=""
-                  className={styles.authorIcon}
-                  height={20}
-                  src="/figma-assets/cbrain-author.svg"
-                  width={20}
-                />
-                <span>{item.author}</span>
-              </span>
-            </p>
-          </div>
-        </header>
+        <div className={styles.detailBody}>
+          <header className={styles.detailHeader}>
+            <p className={styles.categoryBadge}>{categoryLabel}</p>
+            <div className={styles.titleGroup}>
+              <h1 id="portfolio-detail-title">
+                {item.title} - {item.client}
+              </h1>
+              <p className={styles.authorLine}>
+                <span>작성자</span>
+                <span className={styles.authorIdentity}>
+                  <Image
+                    alt=""
+                    className={styles.authorIcon}
+                    height={20}
+                    src="/figma-assets/cbrain-author.svg"
+                    width={20}
+                  />
+                  <span>{item.author}</span>
+                </span>
+              </p>
+            </div>
+          </header>
 
-        <section
-          aria-labelledby="portfolio-detail-title"
-          className={styles.detailContent}
-        >
-          <div className={styles.detailImageList}>
-            {item.detailImages.map((image) => (
-              <figure className={styles.detailImageFrame} key={image.src}>
-                <Image
-                  alt={image.alt}
-                  className={styles.detailImage}
-                  fill
-                  priority={image.src === item.detailImages[0]?.src}
-                  sizes="(min-width: 768px) 640px, calc(100vw - 40px)"
-                  src={image.src}
-                />
-              </figure>
-            ))}
-          </div>
+          <section
+            aria-labelledby="portfolio-detail-title"
+            className={styles.detailContent}
+          >
+            <div className={styles.detailImageList}>
+              {item.detailImages.map((image) => (
+                <figure className={styles.detailImageFrame} key={image.src}>
+                  <Image
+                    alt={image.alt}
+                    className={styles.detailImage}
+                    fill
+                    priority={image.src === item.detailImages[0]?.src}
+                    sizes="(min-width: 768px) 640px, calc(100vw - 40px)"
+                    src={image.src}
+                  />
+                </figure>
+              ))}
+            </div>
 
-          <p className={styles.description}>{item.description}</p>
-        </section>
+            <p className={styles.description}>{item.description}</p>
+          </section>
 
-        <Link className={styles.backLink} href={listHref}>
-          목록으로
-        </Link>
+          <Link className={styles.backLink} href={listHref}>
+            목록으로
+          </Link>
+        </div>
 
         <section
           aria-labelledby="related-portfolio-title"

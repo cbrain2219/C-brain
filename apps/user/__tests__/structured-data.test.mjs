@@ -137,15 +137,21 @@ test("structured data helpers centralize site, company, breadcrumb, and FAQ data
   assert.doesNotMatch(structuredDataSource, /const organizationProfile/);
 });
 
-test("FAQ structured data preserves the approved company-name wording", async () => {
+test("FAQ structured data uses answers without company-name prefixes", async () => {
   const check = `
     import assert from "node:assert/strict";
     const { faqCategories } = await import(${JSON.stringify(faqModuleUrl)});
     const firstAnswer = faqCategories[0].items[0].answer;
     const paymentAnswer = faqCategories[0].items[2].answer;
 
-    assert.match(firstAnswer, /^씨브레인 홈페이지에서 원하는 제품 카테고리를 선택해/);
-    assert.match(paymentAnswer, /^씨브레인은 신용카드 즉시결제와 계좌이체를 지원합니다\\./);
+    assert.match(firstAnswer, /^홈페이지에서 원하는 제품 카테고리를 선택해/);
+    assert.match(paymentAnswer, /^신용카드 즉시결제와 계좌이체를 지원합니다\\./);
+
+    const sentenceStarts = faqCategories
+      .flatMap((category) => category.items)
+      .flatMap((item) => item.answer.split(/(?<=[.!?])\\s+/));
+
+    assert.ok(sentenceStarts.every((sentence) => !sentence.startsWith("씨브레인")));
   `;
 
   await execFileAsync(

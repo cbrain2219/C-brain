@@ -62,6 +62,13 @@ test("portfolio active category underline stays visible while overlapping the ra
   );
 });
 
+test("portfolio work content keeps a 32px gap up to its 1080px max width", async () => {
+  const styles = await readFile(stylesPath, "utf8");
+  const workInnerStyle = styles.match(/\.workInner\s*\{[\s\S]*?\}/)?.[0];
+
+  assert.match(workInnerStyle ?? "", /gap:\s*32px;/);
+});
+
 test("portfolio hero keeps frame padding without a fixed hero height", async () => {
   const styles = await readFile(stylesPath, "utf8");
   const baseHero = styles.match(/\.hero\s*\{[\s\S]*?\}/)?.[0] ?? "";
@@ -79,15 +86,18 @@ test("portfolio hero keeps frame padding without a fixed hero height", async () 
   const pcStyles = styles.slice(pcStart);
 
   assert.doesNotMatch(baseHero, /min-height:/);
-  assert.match(baseHeroContent, /padding:\s*136px 0 72px;/);
+  assert.match(
+    baseHeroContent,
+    /padding:\s*var\(--site-page-top-offset, 124px\) 0 72px;/,
+  );
   assert.doesNotMatch(foldStyles, /\.hero\s*\{[\s\S]*?min-height:/);
   assert.match(
     desktopStyles,
-    /\.heroContent\s*\{[\s\S]*?width:\s*min\(100%, 1080px\);[\s\S]*?padding:\s*152px 80px 72px;/,
+    /\.heroContent\s*\{[\s\S]*?width:\s*min\(100%, 1080px\);[\s\S]*?padding:\s*var\(--site-page-top-offset, 124px\) 80px 72px;/,
   );
   assert.match(
     pcStyles,
-    /\.heroContent\s*\{[\s\S]*?width:\s*1360px;[\s\S]*?padding:\s*184px 0 104px;/,
+    /\.heroContent\s*\{[\s\S]*?width:\s*1360px;[\s\S]*?padding:\s*var\(--site-page-top-offset, 124px\) 0 104px;/,
   );
 });
 
@@ -245,4 +255,48 @@ test("portfolio detail body is associated with its heading and images", async ()
   const authorIconRule = detailStyles.match(/\.authorIcon\s*\{([^}]*)\}/)?.[1];
   assert.ok(authorIconRule);
   assert.doesNotMatch(authorIconRule, /\b(?:width|height)\s*:/);
+});
+
+test("portfolio detail spacing is expressed with responsive parent gaps", async () => {
+  const [detailPage, detailStyles] = await Promise.all([
+    readFile(detailPagePath, "utf8"),
+    readFile(detailStylesPath, "utf8"),
+  ]);
+
+  assert.match(detailPage, /<div className=\{styles\.detailBody\}>/);
+  assert.match(
+    detailStyles,
+    /\.detailPage\s*\{[\s\S]*?--site-page-top-gap:\s*52px;[\s\S]*?--site-page-top-offset:\s*calc\(\s*var\(--site-header-height\) \+ var\(--site-page-top-gap\)\s*\);/,
+  );
+  assert.match(
+    detailStyles,
+    /\.detailInner\s*\{[\s\S]*?padding:\s*var\(--site-page-top-offset\) 0 52px;[\s\S]*?gap:\s*32px;/,
+  );
+  assert.match(detailStyles, /\.detailBody\s*\{[\s\S]*?gap:\s*20px;/);
+  assert.match(detailStyles, /\.detailHeader\s*\{[\s\S]*?gap:\s*20px;/);
+  assert.match(
+    detailStyles,
+    /\.relatedSection\s*\{[\s\S]*?gap:\s*20px;/,
+  );
+  assert.match(
+    detailStyles,
+    /\.relatedList\s*\{[\s\S]*?margin:\s*0;[\s\S]*?gap:\s*20px;/,
+  );
+  assert.match(
+    detailStyles,
+    /@media \(min-width:\s*1081px\)[\s\S]*?\.detailInner\s*\{[\s\S]*?gap:\s*52px;/,
+  );
+
+  for (const selector of [
+    "detailContent",
+    "backLink",
+    "relatedSection",
+  ]) {
+    const rule = detailStyles.match(
+      new RegExp(`\\.${selector}\\s*\\{([^}]*)\\}`),
+    )?.[1];
+
+    assert.ok(rule);
+    assert.doesNotMatch(rule, /margin-top:/);
+  }
 });

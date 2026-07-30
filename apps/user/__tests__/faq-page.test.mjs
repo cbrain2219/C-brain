@@ -30,11 +30,18 @@ function cssBlock(sourceText, selector) {
   assert.fail(`Missing closing brace for ${selector}`);
 }
 
-test("FAQ category navigation follows the responsive header offset", async () => {
+test("FAQ category navigation follows the shared responsive header offset", async () => {
   const stylesSource = await readFile(stylesUrl, "utf8");
 
-  assert.match(stylesSource, /--faq-header-offset:\s*80px;/);
+  assert.match(
+    stylesSource,
+    /--faq-header-offset:\s*var\(--site-header-height, 52px\);/,
+  );
   assert.match(stylesSource, /padding-top:\s*var\(--faq-header-offset\);/);
+  assert.match(
+    stylesSource,
+    /\.mainColumn\s*\{[\s\S]*?padding:\s*var\(--site-page-top-gap, 72px\) 20px 72px;/,
+  );
   assert.match(
     stylesSource,
     /\.mobileCategoryNav\s*\{[\s\S]*?top:\s*var\(--faq-header-offset\);/,
@@ -42,10 +49,6 @@ test("FAQ category navigation follows the responsive header offset", async () =>
   assert.match(
     stylesSource,
     /\.categorySection\s*\{[\s\S]*?var\(--faq-header-offset\)/,
-  );
-  assert.match(
-    stylesSource,
-    /@media \(max-width:\s*1099px\)\s*\{[\s\S]*?\.faqPage\s*\{[\s\S]*?--faq-header-offset:\s*52px;/,
   );
 });
 

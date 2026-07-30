@@ -102,6 +102,17 @@ test("notice active category underline stays visible while overlapping the rail"
   );
 });
 
+test("notice section uses the requested responsive header-to-board gap", async () => {
+  const styles = await source("listStyles");
+  const sectionInnerStyle = styles.match(/\.sectionInner\s*\{[\s\S]*?\}/)?.[0];
+
+  assert.match(sectionInnerStyle ?? "", /gap:\s*32px;/);
+  assert.match(
+    styles,
+    /@media \(min-width: 1081px\) \{[\s\S]*?\.sectionInner\s*\{[^}]*gap:\s*52px;/,
+  );
+});
+
 test("notice detail keeps metadata, 404, structured content, and list return", async () => {
   const [page, article, detailStyles] = await Promise.all([
     source("detailPage"),

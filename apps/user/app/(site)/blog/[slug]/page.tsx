@@ -204,51 +204,53 @@ export default async function BlogDetailPage({
         })}
       />
       <div className={styles.blogDetailInner}>
-        <header className={styles.blogDetailHeader}>
-          <p className={styles.blogDetailBadge} itemProp="articleSection">
-            {post.category}
-          </p>
-          <div className={styles.blogDetailTitleGroup}>
-            <h1 id="blog-detail-title" itemProp="headline">
-              {post.title}
-            </h1>
-            <div className={styles.blogDetailMeta}>
-              <address
-                className={styles.blogDetailAuthorLine}
-                itemProp="author"
-                itemScope
-                itemType="https://schema.org/Organization"
-              >
-                <span>작성자</span>
-                <span className={styles.blogDetailAuthorIdentity}>
-                  <Image
-                    alt=""
-                    className={styles.blogDetailAuthorIcon}
-                    height={20}
-                    src="/figma-assets/cbrain-author.svg"
-                    width={20}
-                  />
-                  <span itemProp="name">{post.author}</span>
-                </span>
-              </address>
-              <span aria-hidden="true" className={styles.blogDetailMetaDot} />
-              <div className={styles.blogDetailDateLine}>
-                <span>작성일</span>
-                <time dateTime={post.publishedAtIso}>{post.publishedAt}</time>
+        <div className={styles.blogDetailArticleContent}>
+          <header className={styles.blogDetailHeader}>
+            <p className={styles.blogDetailBadge} itemProp="articleSection">
+              {post.category}
+            </p>
+            <div className={styles.blogDetailTitleGroup}>
+              <h1 id="blog-detail-title" itemProp="headline">
+                {post.title}
+              </h1>
+              <div className={styles.blogDetailMeta}>
+                <address
+                  className={styles.blogDetailAuthorLine}
+                  itemProp="author"
+                  itemScope
+                  itemType="https://schema.org/Organization"
+                >
+                  <span>작성자</span>
+                  <span className={styles.blogDetailAuthorIdentity}>
+                    <Image
+                      alt=""
+                      className={styles.blogDetailAuthorIcon}
+                      height={20}
+                      src="/figma-assets/cbrain-author.svg"
+                      width={20}
+                    />
+                    <span itemProp="name">{post.author}</span>
+                  </span>
+                </address>
+                <span aria-hidden="true" className={styles.blogDetailMetaDot} />
+                <div className={styles.blogDetailDateLine}>
+                  <span>작성일</span>
+                  <time dateTime={post.publishedAtIso}>{post.publishedAt}</time>
+                </div>
               </div>
             </div>
-          </div>
-        </header>
+          </header>
 
-        <section
-          aria-labelledby="blog-detail-title"
-          className={styles.blogDetailContent}
-          itemProp="articleBody"
-        >
-          {post.detail.body.map(renderBlogContentBlock)}
-        </section>
+          <section
+            aria-labelledby="blog-detail-title"
+            className={styles.blogDetailContent}
+            itemProp="articleBody"
+          >
+            {post.detail.body.map(renderBlogContentBlock)}
+          </section>
 
-        <BlogDetailBackLink href={listHref} />
+          <BlogDetailBackLink href={listHref} />
+        </div>
 
         <aside
           aria-labelledby="more-blog-title"

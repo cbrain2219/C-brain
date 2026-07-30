@@ -495,7 +495,7 @@ test("order page route, content, responsive styles, and navigation are wired", (
   );
   assert.match(
     tabletMediaStyles,
-    /\.heroInner\s*\{[\s\S]*?padding:\s*136px 20px 72px;/,
+    /\.heroInner\s*\{[\s\S]*?padding:\s*var\(--site-page-top-offset, 124px\) 20px 72px;/,
   );
   assert.match(
     desktopMediaStyles,
@@ -507,7 +507,7 @@ test("order page route, content, responsive styles, and navigation are wired", (
   );
   assert.match(
     desktopMediaStyles,
-    /\.heroInner\s*\{[\s\S]*?padding-top:\s*184px;[\s\S]*?padding-left:\s*80px;[\s\S]*?padding-right:\s*80px;[\s\S]*?padding-bottom:\s*104px;/,
+    /\.heroInner\s*\{[\s\S]*?padding-top:\s*var\(--site-page-top-offset, 124px\);[\s\S]*?padding-left:\s*80px;[\s\S]*?padding-right:\s*80px;[\s\S]*?padding-bottom:\s*104px;/,
   );
   assert.doesNotMatch(
     extractBlock(stylesSource, ".heroInner"),
@@ -531,7 +531,7 @@ test("order page route, content, responsive styles, and navigation are wired", (
   );
   assert.match(
     pcMediaStyles,
-    /\.heroInner\s*\{[\s\S]*?padding-top:\s*184px;[\s\S]*?padding-bottom:\s*104px;[\s\S]*?margin:\s*0 auto;/,
+    /\.heroInner\s*\{[\s\S]*?padding-top:\s*var\(--site-page-top-offset, 124px\);[\s\S]*?padding-bottom:\s*104px;[\s\S]*?margin:\s*0 auto;/,
   );
   assert.match(
     stylesSource,
@@ -1135,7 +1135,7 @@ test("order payment success and failure result routes are wired", () => {
   );
   assert.match(
     stylesSource,
-    /@media \(min-width:\s*1080px\)[\s\S]*?\.resultSection\s*\{[\s\S]*?padding-top:\s*104px[\s\S]*?padding-bottom:\s*104px/,
+    /@media \(min-width:\s*1080px\)[\s\S]*?\.resultSection\s*\{[\s\S]*?padding-top:\s*var\(--site-page-top-offset, 124px\)[\s\S]*?padding-bottom:\s*104px/,
   );
   assert.match(
     appStylesSource,

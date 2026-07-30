@@ -1,4 +1,9 @@
 .page {
+  --site-header-height: 52px;
+  --site-page-top-gap: 72px;
+  --site-page-top-offset: calc(
+    var(--site-header-height) + var(--site-page-top-gap)
+  );
   --landing-brand-50: #eaf8f9;
   --landing-brand-100: #d5f1f3;
   --landing-brand-500: #30bac3;
@@ -85,6 +90,13 @@
   overflow-x: clip;
 }
 
+@media (min-width: 1081px) {
+  .page {
+    --site-header-height: 80px;
+    --site-page-top-gap: 104px;
+  }
+}
+
 .siteMain {
   width: 100%;
   flex: 1;
@@ -96,7 +108,7 @@
 
 .header {
   width: 100%;
-  height: 80px;
+  height: var(--site-header-height);
   margin: 0;
   padding: 0 20px;
   position: fixed;
@@ -402,7 +414,7 @@
 
 .metricValue {
   font-family: var(--font-sans);
-  font-size: 36px;
+  font-size: 28px;
   font-weight: 700;
   line-height: 36px;
   letter-spacing: -0.42px;
@@ -555,6 +567,12 @@
   cursor: pointer;
   user-select: none;
   -webkit-user-drag: none;
+}
+
+@media (max-width: 1080px) {
+  .categoryChip {
+    padding: 0 20px;
+  }
 }
 
 .categoryChipActive {
@@ -933,6 +951,10 @@
   gap: 4px;
 }
 
+.reasonDivider {
+  display: none;
+}
+
 .reasonIcon {
   width: 24px;
   height: 24px;
@@ -1104,6 +1126,10 @@
   display: none;
 }
 
+.featuredClientLogoMarquee {
+  display: none;
+}
+
 .reviewLogoMarqueeRow {
   width: 100%;
   overflow: hidden;
@@ -1127,6 +1153,11 @@
   animation-duration: 36s;
 }
 
+.featuredClientLogoMarquee .reviewLogoMarqueeTrack {
+  animation-name: review-logo-marquee-reverse;
+  animation-duration: 18s;
+}
+
 .reviewLogoMarqueeGroup {
   flex: 0 0 auto;
 }
@@ -1140,7 +1171,8 @@
   flex: 0 0 auto;
 }
 
-.reviewLogoMarquee:hover .reviewLogoMarqueeTrack {
+.reviewLogoMarquee:hover .reviewLogoMarqueeTrack,
+.featuredClientLogoMarquee:hover .reviewLogoMarqueeTrack {
   animation-play-state: paused;
 }
 
@@ -1197,6 +1229,12 @@
 .featuredClientLogo {
   width: min(100%, 270px);
   min-height: 72px;
+}
+
+.featuredClientLogoMarquee .featuredClientLogo {
+  width: 270px;
+  height: 90px;
+  min-height: 90px;
 }
 
 .reviewClientLogo {
@@ -1265,17 +1303,58 @@
 }
 
 @media (max-width: 1200px) {
-  .reviewLogoCloudStatic {
+  .reviewLogoCloud:not(.reviewLogoCloudCompany) .reviewClientLogoRows {
     display: none;
   }
 
-  .reviewLogoMarquee {
+  .reviewLogoCloud:not(.reviewLogoCloudCompany) .reviewLogoMarqueePartners {
     width: 100cqw;
-    margin-left: calc(50% - 50cqw);
     display: flex;
     flex-direction: column;
     gap: 12px;
     overflow: hidden;
+  }
+}
+
+@media (max-width: 825px) {
+  .reviewLogoCloud:not(.reviewLogoCloudCompany) .featuredClientLogos {
+    display: none;
+  }
+
+  .reviewLogoCloud:not(.reviewLogoCloudCompany) .featuredClientLogoMarquee {
+    width: 100cqw;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+}
+
+@media (max-width: 640px) {
+  .reviewLogoCloud:not(.reviewLogoCloudCompany)
+    .featuredClientLogoMarquee
+    .featuredClientLogo {
+    width: 202px;
+    height: 68px;
+    min-height: 68px;
+    border-radius: 9px;
+  }
+
+  .reviewLogoCloud:not(.reviewLogoCloudCompany)
+    .reviewLogoMarqueePartners
+    .reviewMarqueeLogo {
+    width: 135px;
+    height: 45px;
+    border-radius: 6px;
+  }
+
+  .reviewLogoCloud:not(.reviewLogoCloudCompany)
+    .featuredClientLogoMarquee
+    .partnerLogoImage,
+  .reviewLogoCloud:not(.reviewLogoCloudCompany)
+    .reviewLogoMarqueePartners
+    .partnerLogoImage {
+    width: var(--partner-logo-compact-width);
+    height: var(--partner-logo-compact-height);
   }
 }
 
@@ -1326,7 +1405,7 @@
 
 .reviewsHeroContent {
   width: min(100%, 390px);
-  padding: 144px 20px 72px;
+  padding: var(--site-page-top-offset) 20px 72px;
   position: relative;
   display: flex;
   flex-direction: column;
@@ -1414,6 +1493,7 @@
 
 .reviewsMain {
   background: #ffffff;
+  padding-inline: 20px;
 }
 
 .reviewsContent {
@@ -1725,6 +1805,14 @@
   line-height: 20px;
 }
 
+.reviewsTestimonialBody {
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 4;
+}
+
 .reviewsDivider {
   width: 100%;
   height: 1px;
@@ -1758,6 +1846,19 @@
 
 .blogInner {
   gap: 52px;
+}
+
+@media (max-width: 1080px) {
+  .metricValue {
+    font-size: 28px;
+  }
+
+  .portfolioInner,
+  .serviceInner,
+  .reviewInner,
+  .blogInner {
+    gap: 32px;
+  }
 }
 
 .blogSection {
@@ -1984,7 +2085,7 @@
 .complaintSection {
   width: 100%;
   background: rgba(255, 255, 255, 0.5);
-  padding: 104px 20px 72px;
+  padding: var(--site-page-top-offset) 20px 72px;
 }
 
 .complaintInner {
@@ -2723,7 +2824,7 @@
   }
 
   .header {
-    height: 80px;
+    height: var(--site-header-height);
     padding: 0 40px;
   }
 
@@ -2815,7 +2916,7 @@
   }
 
   .complaintSection {
-    padding-top: 152px;
+    padding-top: var(--site-page-top-offset);
   }
 
   .complaintFieldGrid {
@@ -2824,7 +2925,7 @@
 
   .reviewsHeroContent {
     width: min(100%, 640px);
-    padding: 136px 20px 72px;
+    padding: var(--site-page-top-offset) 20px 72px;
   }
 
   .reviewsContent {
@@ -2922,10 +3023,6 @@
     gap: 20px;
   }
 
-  .reviewCard {
-    min-height: 262px;
-  }
-
   .reviewClientLogo {
     width: 180px;
     height: 60px;
@@ -2942,12 +3039,25 @@
 
   .reviewsHeroContent {
     margin: 0 auto;
-    padding: 152px 80px 72px;
+    padding: var(--site-page-top-offset) 80px 72px;
   }
 
   .reviewsContent {
     padding: 104px 0;
     gap: 104px;
+  }
+
+  .reviewsInterviewSection {
+    gap: 52px;
+  }
+
+  .reviewsSectionHeading h2 {
+    font-size: 28px;
+    line-height: 36px;
+  }
+
+  .reviewsSectionDescription {
+    display: block;
   }
 
   .reviewsHeroCopy h1 {
@@ -2960,13 +3070,27 @@
   }
 
   .reviewsFeatured {
-    grid-template-columns: minmax(0, 1fr) 530px;
+    grid-template-columns: minmax(0, 530px) minmax(0, 1fr);
     align-items: center;
     gap: 52px;
   }
 
   .reviewsFeaturedMedia {
+    order: 1;
     aspect-ratio: 530 / 298;
+  }
+
+  .reviewsFeaturedText {
+    order: 2;
+  }
+
+  .reviewsFeaturedCompactTitle {
+    display: none;
+  }
+
+  .reviewsQuoteMark,
+  .reviewsFeaturedDesktopTitle {
+    display: block;
   }
 
   .reviewsPlayButtonLarge {
@@ -2975,7 +3099,8 @@
   }
 
   .reviewsInterviewGrid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
   }
 
   .reviewsTestimonialSection {
@@ -2984,6 +3109,15 @@
 
   .reviewsTestimonialGrid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 20px;
+  }
+
+  .reviewsInterviewMedia {
+    aspect-ratio: 530 / 299;
+  }
+
+  .reviewsCategory {
+    display: none;
   }
 
   .blogGrid {
@@ -3004,7 +3138,7 @@
   }
 
   .complaintSection {
-    padding-top: 184px;
+    padding-top: var(--site-page-top-offset);
     padding-bottom: 104px;
   }
 
@@ -3178,16 +3312,13 @@
     padding: 0;
     flex-direction: row;
     overflow: visible;
-    position: relative;
   }
 
-  .reasonItem:not(:last-child)::after {
-    content: "";
-    position: absolute;
-    left: 0;
-    bottom: -8px;
+  .reasonDivider {
+    display: block;
     width: 100%;
     height: 0;
+    border: 0;
     border-top: 1px dashed #ffffff;
     opacity: 0.3;
   }
@@ -3209,65 +3340,11 @@
   .reviewsHeroContent {
     width: 1360px;
     margin: 0 auto;
-    padding: 184px 0 104px;
+    padding: var(--site-page-top-offset) 0 104px;
   }
 
   .reviewsContent {
     width: min(100%, 1080px);
-  }
-
-  .reviewsInterviewSection {
-    gap: 52px;
-  }
-
-  .reviewsSectionHeading h2 {
-    font-size: 28px;
-    line-height: 36px;
-  }
-
-  .reviewsSectionDescription {
-    display: block;
-  }
-
-  .reviewsFeatured {
-    grid-template-columns: minmax(0, 530px) minmax(0, 1fr);
-    align-items: center;
-    gap: 52px;
-  }
-
-  .reviewsFeaturedMedia {
-    order: 1;
-    aspect-ratio: 530 / 298;
-  }
-
-  .reviewsFeaturedText {
-    order: 2;
-  }
-
-  .reviewsFeaturedCompactTitle {
-    display: none;
-  }
-
-  .reviewsQuoteMark,
-  .reviewsFeaturedDesktopTitle {
-    display: block;
-  }
-
-  .reviewsInterviewGrid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 20px;
-  }
-
-  .reviewsTestimonialGrid {
-    gap: 20px;
-  }
-
-  .reviewsInterviewMedia {
-    aspect-ratio: 530 / 299;
-  }
-
-  .reviewsCategory {
-    display: none;
   }
 
   .footer {
@@ -3276,10 +3353,6 @@
 }
 
 @media (max-width: 1099px) {
-  .header {
-    height: 52px;
-  }
-
   .headerNoticePage {
     padding-left: 20px;
     padding-right: 20px;

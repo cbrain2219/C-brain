@@ -23,7 +23,7 @@
 
 .content {
   width: min(100%, 390px);
-  padding: 104px 20px;
+  padding: var(--site-page-top-offset, 124px) 20px 104px;
   position: relative;
   display: flex;
   flex-direction: column;
@@ -137,7 +137,7 @@
 
 .subpage .content {
   width: min(100%, 390px);
-  padding: 136px 20px 72px;
+  padding: var(--site-page-top-offset, 124px) 20px 72px;
 }
 
 .subpage .title {
@@ -170,7 +170,7 @@
 }
 
 .landing .content {
-  padding-top: 132px;
+  padding-top: var(--site-page-top-offset, 124px);
   padding-bottom: 72px;
   gap: 52px;
 }
@@ -219,7 +219,7 @@
 
   .subpage .content {
     width: min(100%, 640px);
-    padding: 136px 20px 72px;
+    padding: var(--site-page-top-offset, 124px) 20px 72px;
   }
 
   .subpage .title {
@@ -244,14 +244,14 @@
   }
 
   .landing .content {
-    padding: 136px 20px 72px;
+    padding: var(--site-page-top-offset, 124px) 20px 72px;
   }
 }
 
 @media (min-width: 1080px) {
   .subpage .content {
     width: min(100%, 1080px);
-    padding: 152px 80px 72px;
+    padding: var(--site-page-top-offset, 124px) 80px 72px;
   }
 
   .content {
@@ -260,7 +260,7 @@
   }
 
   .landing .content {
-    padding: 152px 80px 72px;
+    padding: var(--site-page-top-offset, 124px) 80px 72px;
   }
 
   .landing.light .overlay {
@@ -271,7 +271,7 @@
 @media (min-width: 1440px) {
   .subpage .content {
     width: 1360px;
-    padding: 184px 0 104px;
+    padding: var(--site-page-top-offset, 124px) 0 104px;
     margin: 0 auto;
   }
 
@@ -294,7 +294,7 @@
   }
 
   .landing .content {
-    padding-top: 184px;
+    padding-top: var(--site-page-top-offset, 124px);
     padding-bottom: 104px;
   }
 

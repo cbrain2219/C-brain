@@ -1,6 +1,6 @@
 .detailSection {
   width: 100%;
-  padding: 96px 20px 32px;
+  padding: var(--site-page-top-offset, 124px) 20px 32px;
   background: #ffffff;
 }
 
@@ -178,7 +178,7 @@
 
 @media (min-width: 1100px) {
   .detailSection {
-    padding-top: 132px;
+    padding-top: var(--site-page-top-offset, 124px);
     padding-bottom: 52px;
   }
 }

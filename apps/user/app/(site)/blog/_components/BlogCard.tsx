@@ -31,10 +31,12 @@ export function BlogCard({ detailHref, post }: BlogCardProps) {
             />
           </div>
           <div className={styles.blogCardBody}>
-            <p className={styles.blogCardCategory}>{post.category}</p>
-            <div className={styles.blogCardCopy}>
-              <h3 className={styles.blogCardTitle}>{post.title}</h3>
-              <p className={styles.blogCardSummary}>{post.summary}</p>
+            <div className={styles.blogCardTextGroup}>
+              <p className={styles.blogCardCategory}>{post.category}</p>
+              <div className={styles.blogCardCopy}>
+                <h3 className={styles.blogCardTitle}>{post.title}</h3>
+                <p className={styles.blogCardSummary}>{post.summary}</p>
+              </div>
             </div>
             <BlogAuthorMeta
               author={post.author}

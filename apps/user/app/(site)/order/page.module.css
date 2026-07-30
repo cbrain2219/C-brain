@@ -107,7 +107,7 @@
 
 .heroInner {
   width: min(100%, 390px);
-  padding: 128px 20px 64px;
+  padding: var(--site-page-top-offset, 124px) 20px 64px;
   position: relative;
   display: flex;
   flex-direction: column;
@@ -1362,7 +1362,7 @@
 
 .resultSection {
   width: 100%;
-  padding: 100px 20px 72px;
+  padding: var(--site-page-top-offset, 124px) 20px 72px;
 }
 
 .resultPageContentHeight .resultSection {
@@ -1750,7 +1750,7 @@
 
 @media (min-width: 400px) {
   .resultSection {
-    padding-top: 132px;
+    padding-top: var(--site-page-top-offset, 124px);
   }
 
   .resultMobileHeader {
@@ -1767,7 +1767,7 @@
 @media (min-width: 640px) {
   .heroInner {
     width: min(100%, 640px);
-    padding: 136px 20px 72px;
+    padding: var(--site-page-top-offset, 124px) 20px 72px;
   }
 
   .stepList {
@@ -1857,7 +1857,7 @@
   }
 
   .heroInner {
-    padding-top: 184px;
+    padding-top: var(--site-page-top-offset, 124px);
     padding-left: 80px;
     padding-right: 80px;
     padding-bottom: 104px;
@@ -1870,7 +1870,7 @@
   }
 
   .resultSection {
-    padding-top: 104px;
+    padding-top: var(--site-page-top-offset, 124px);
     padding-bottom: 104px;
   }
 
@@ -1892,7 +1892,7 @@
   }
 
   .heroInner {
-    padding-top: 184px;
+    padding-top: var(--site-page-top-offset, 124px);
     padding-bottom: 104px;
     margin: 0 auto;
   }

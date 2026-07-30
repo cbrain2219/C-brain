@@ -74,30 +74,30 @@ test("shared page hero keeps frame padding without a fixed hero height", async (
   assert.doesNotMatch(stylesSource, /\.hero(?:\.subpage|\.landing)?\s*\{[^}]*min-height:/);
   assert.match(
     stylesSource,
-    /\.content\s*\{[\s\S]*?padding:\s*104px 20px;/,
+    /\.content\s*\{[\s\S]*?padding:\s*var\(--site-page-top-offset, 124px\) 20px 104px;/,
   );
   assert.match(
     foldMediaStyles,
-    /\.subpage \.content\s*\{[\s\S]*?width:\s*min\(100%, 640px\);[\s\S]*?padding:\s*136px 20px 72px;/,
+    /\.subpage \.content\s*\{[\s\S]*?width:\s*min\(100%, 640px\);[\s\S]*?padding:\s*var\(--site-page-top-offset, 124px\) 20px 72px;/,
   );
   assert.match(
     foldMediaStyles,
-    /\.landing \.content\s*\{[\s\S]*?padding:\s*136px 20px 72px;/,
+    /\.landing \.content\s*\{[\s\S]*?padding:\s*var\(--site-page-top-offset, 124px\) 20px 72px;/,
   );
   assert.match(
     desktopMediaStyles,
-    /\.subpage \.content\s*\{[\s\S]*?width:\s*min\(100%, 1080px\);[\s\S]*?padding:\s*152px 80px 72px;/,
+    /\.subpage \.content\s*\{[\s\S]*?width:\s*min\(100%, 1080px\);[\s\S]*?padding:\s*var\(--site-page-top-offset, 124px\) 80px 72px;/,
   );
   assert.match(
     desktopMediaStyles,
-    /\.landing \.content\s*\{[\s\S]*?padding:\s*152px 80px 72px;/,
+    /\.landing \.content\s*\{[\s\S]*?padding:\s*var\(--site-page-top-offset, 124px\) 80px 72px;/,
   );
   assert.match(
     pcMediaStyles,
-    /\.subpage \.content\s*\{[\s\S]*?width:\s*1360px;[\s\S]*?padding:\s*184px 0 104px;/,
+    /\.subpage \.content\s*\{[\s\S]*?width:\s*1360px;[\s\S]*?padding:\s*var\(--site-page-top-offset, 124px\) 0 104px;/,
   );
   assert.match(
     pcMediaStyles,
-    /\.landing \.content\s*\{[\s\S]*?padding-top:\s*184px;[\s\S]*?padding-bottom:\s*104px;/,
+    /\.landing \.content\s*\{[\s\S]*?padding-top:\s*var\(--site-page-top-offset, 124px\);[\s\S]*?padding-bottom:\s*104px;/,
   );
 });
