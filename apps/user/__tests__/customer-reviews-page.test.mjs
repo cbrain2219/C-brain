@@ -295,6 +295,53 @@ test("customer reviews page includes responsive layout styles", async () => {
     stylesSource,
     /grid-template-columns: repeat\(3, minmax\(0, 1fr\)\)/,
   );
+  assert.match(
+    stylesSource,
+    /@media \(max-width: 640px\)\s*\{\s*\.reviewsInterviewSection\s*\{\s*gap: 32px;/,
+  );
+});
+
+test("customer interview heading moves below the featured interview through 640px", async () => {
+  const [pageSource, stylesSource] = await Promise.all([
+    readFile(pagePath, "utf8"),
+    readFile(stylesPath, "utf8"),
+  ]);
+  const reviewsSectionStart = stylesSource.indexOf(
+    ".reviewsInterviewSection",
+  );
+  const mobileReviewMedia = extractCssBlock(
+    stylesSource.slice(reviewsSectionStart),
+    "@media (max-width: 640px)",
+  );
+  const interviewLead = extractCssBlock(
+    stylesSource,
+    ".reviewsInterviewLead",
+  );
+
+  assert.equal(
+    pageSource.match(/id="customer-interview-heading"/g)?.length,
+    1,
+  );
+  assert.match(pageSource, /className=\{styles\.reviewsInterviewLead\}/);
+  assert.match(interviewLead, /display: flex;/);
+  assert.match(interviewLead, /flex-direction: column;/);
+  assert.match(interviewLead, /gap: inherit;/);
+  assert.match(
+    mobileReviewMedia,
+    /\.reviewsInterviewLead\s*\{[^}]*gap: 72px;/s,
+  );
+  assert.match(
+    mobileReviewMedia,
+    /\.reviewsInterviewLead > \.reviewsFeatured\s*\{[^}]*order: 1;/s,
+  );
+  assert.match(
+    mobileReviewMedia,
+    /\.reviewsInterviewLead > \.reviewsSectionHeading\s*\{[^}]*display: flex;[^}]*order: 2;/s,
+  );
+  assert.doesNotMatch(
+    mobileReviewMedia,
+    /\.reviewsInterviewLead > \.reviewsSectionHeading\s*\{[^}]*display: none;/s,
+  );
 });
 
 test("customer interviews keep the desktop section layout from 1080px upward", async () => {
@@ -477,7 +524,7 @@ test("customer interview data stays consistent for dynamic admin content", async
   );
 });
 
-test("customer reviews page progressively reveals testimonials after the first six", async () => {
+test("customer reviews page reveals testimonials in responsive batches", async () => {
   const [pageSource, testimonialListSource] = await Promise.all([
     readFile(pagePath, "utf8"),
     readFile(testimonialListPath, "utf8"),
@@ -488,7 +535,26 @@ test("customer reviews page progressively reveals testimonials after the first s
   assert.match(pageSource, /<CustomerTestimonialList testimonials=\{customerTestimonials\}/);
   assert.doesNotMatch(pageSource, /customerInterviews\.slice/);
   assert.doesNotMatch(pageSource, /customerInterviews\.filter/);
-  assert.match(testimonialListSource, /const TESTIMONIALS_PER_PAGE = 6/);
+  assert.match(
+    testimonialListSource,
+    /const MOBILE_TESTIMONIALS_PER_PAGE = 4/,
+  );
+  assert.match(
+    testimonialListSource,
+    /const DESKTOP_TESTIMONIALS_PER_PAGE = 6/,
+  );
+  assert.match(
+    testimonialListSource,
+    /const MOBILE_TESTIMONIALS_MEDIA_QUERY = "\(max-width: 640px\)"/,
+  );
+  assert.match(
+    testimonialListSource,
+    /setVisibleCount\(getTestimonialsPerPage\(mediaQuery\)\)/,
+  );
+  assert.match(
+    testimonialListSource,
+    /currentCount\s*\+\s*getTestimonialsPerPage\(\s*window\.matchMedia\(MOBILE_TESTIMONIALS_MEDIA_QUERY\)/,
+  );
   assert.match(
     testimonialListSource,
     /testimonials\.slice\(0, visibleCount\)/,
@@ -508,8 +574,10 @@ test("customer reviews page progressively reveals testimonials after the first s
   assert.doesNotMatch(stylesSource, /\.reviewsTestimonialCard:nth-child/);
 });
 
-test("customer review cards use an 8px gap until the desktop breakpoint", async () => {
+test("customer reviews keep compact spacing through the 1080px breakpoint", async () => {
   const stylesSource = await readFile(stylesPath, "utf8");
+  const baseContent = extractCssBlock(stylesSource, ".reviewsContent");
+  const baseSection = extractCssBlock(stylesSource, ".reviewsSectionBlock");
   const baseTestimonialGrid = extractCssBlock(
     stylesSource,
     ".reviewsTestimonialGrid",
@@ -522,11 +590,40 @@ test("customer review cards use an 8px gap until the desktop breakpoint", async 
     stylesSource,
     "@media (min-width: 1440px)",
   );
+  const above1080Source = stylesSource.slice(
+    stylesSource.lastIndexOf("@media (min-width: 1081px)"),
+  );
+  const above1080Media = extractCssBlock(
+    above1080Source,
+    "@media (min-width: 1081px)",
+  );
 
+  assert.match(baseContent, /padding: 72px 20px;/);
+  assert.match(baseSection, /gap: 32px;/);
   assert.match(baseTestimonialGrid, /gap: 8px;/);
   assert.doesNotMatch(baseTestimonialGrid, /gap: 20px;/);
-  assert.match(
+  assert.doesNotMatch(
     desktopMedia,
+    /\.reviewsTestimonialGrid\s*\{[^}]*gap: 20px;/s,
+  );
+  assert.doesNotMatch(
+    desktopMedia,
+    /\.reviewsTestimonialSection\s*\{[^}]*gap: 52px;/s,
+  );
+  assert.doesNotMatch(
+    desktopMedia,
+    /\.reviewsContent\s*\{[^}]*padding(?:-block)?: 104px/s,
+  );
+  assert.match(
+    above1080Media,
+    /\.reviewsContent\s*\{[^}]*padding-block: 104px;/s,
+  );
+  assert.match(
+    above1080Media,
+    /\.reviewsTestimonialSection\s*\{[^}]*gap: 52px;/s,
+  );
+  assert.match(
+    above1080Media,
     /\.reviewsTestimonialGrid\s*\{[^}]*gap: 20px;/s,
   );
   assert.doesNotMatch(

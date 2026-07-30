@@ -32,10 +32,12 @@
   width: 100%;
   margin: 0 auto;
   padding: var(--site-page-top-gap, 72px) 20px 72px;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
 }
 
 .hero {
-  margin-bottom: 72px;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -120,7 +122,7 @@
 
 .mobileCategoryNav {
   width: 100cqw;
-  margin: 0 0 20px calc(50% - 50cqw);
+  margin: 0 0 0 calc(50% - 50cqw);
   position: sticky;
   top: var(--faq-header-offset);
   z-index: 10;
@@ -297,7 +299,7 @@
   overflow-wrap: anywhere;
 }
 
-@media (min-width: 640px) {
+@media (min-width: 800px) {
   .heroTitle {
     max-width: 540px;
   }
@@ -306,9 +308,6 @@
     max-width: 538px;
   }
 
-}
-
-@media (min-width: 1200px) {
   .faqLayout {
     display: grid;
     grid-template-columns: 260px minmax(0, 1fr);
@@ -318,7 +317,7 @@
   .sidebar {
     display: block;
     min-height: calc(100svh - var(--faq-header-offset));
-    padding: var(--site-page-top-gap, 72px) 20px 32px;
+    padding: 52px 20px;
   }
 
   .sidebarInner {
@@ -450,29 +449,45 @@
     width: 100%;
     max-width: 820px;
     margin: 0;
-    padding: var(--site-page-top-gap, 72px) 20px 72px;
-  }
-
-  .hero {
-    margin-bottom: 32px;
-  }
-
-  .heroTitle {
-    max-width: 780px;
-    font-size: 36px;
-    line-height: 48px;
+    padding: 52px 20px;
   }
 
   .mobileCategoryNav {
     display: none;
   }
 
-  .categorySections {
-    gap: 52px;
-  }
-
   .categorySection {
     scroll-margin-top: calc(var(--faq-header-offset) + 24px);
+  }
+}
+
+@media (max-width: 1080px) {
+  .sidebar {
+    padding-top: 32px;
+    padding-bottom: 32px;
+  }
+
+  .mainColumn {
+    padding-top: 32px;
+    padding-bottom: 32px;
+  }
+}
+
+@media (min-width: 1081px) {
+  .mainColumn {
+    gap: 52px;
+  }
+}
+
+@media (min-width: 1200px) {
+  .heroTitle {
+    max-width: 780px;
+    font-size: 36px;
+    line-height: 48px;
+  }
+
+  .categorySections {
+    gap: 52px;
   }
 }
 
@@ -482,16 +497,12 @@
   }
 
   .sidebar {
-    padding: var(--site-page-top-gap, 72px) 40px 52px;
+    padding: 52px 40px;
   }
 
   .mainColumn {
     max-width: 1600px;
-    padding: var(--site-page-top-gap, 72px) 40px 104px;
-  }
-
-  .hero {
-    margin-bottom: 52px;
+    padding: 52px 40px;
   }
 
   .heroTitle {

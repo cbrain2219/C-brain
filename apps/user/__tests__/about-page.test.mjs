@@ -59,7 +59,7 @@ test("about hero keeps the 1080 frame padding without a fixed hero height", asyn
   const stylesSource = await readFile(stylesUrl, "utf8");
   const tabletStart = stylesSource.indexOf("@media (max-width: 1399px)");
   const desktopStart = stylesSource.indexOf(
-    "@media (max-width: 1079px)",
+    "@media (max-width: 1080px)",
     tabletStart,
   );
 
@@ -80,8 +80,11 @@ test("about hero keeps the 1080 frame padding without a fixed hero height", asyn
 
 test("about hero keeps the fold padding before the 870 mobile breakpoint", async () => {
   const stylesSource = await readFile(stylesUrl, "utf8");
-  const foldStart = stylesSource.indexOf("@media (max-width: 1079px)");
-  const mobileStart = stylesSource.indexOf("@media (max-width: 869px)", foldStart);
+  const foldStart = stylesSource.indexOf("@media (max-width: 1080px)");
+  const mobileStart = stylesSource.indexOf(
+    "@media (max-width: 869px)",
+    foldStart,
+  );
 
   assert.notEqual(foldStart, -1);
   assert.notEqual(mobileStart, -1);
@@ -192,10 +195,7 @@ test("about hero description renders one text copy with responsive line breaks",
     pageSource.match(/경기도 성남시 소재 · 2000년 설립 이후 26년간/g)?.length,
     1,
   );
-  assert.equal(
-    pageSource.match(/전국 1,200여\s*기업과 함께해 온/g)?.length,
-    1,
-  );
+  assert.equal(pageSource.match(/전국 1,200여\s*기업과 함께해 온/g)?.length, 1);
   assert.equal(
     pageSource.match(/각종 홍보물 기획·디자인·인쇄 원스톱 전문 기업입니다\./g)
       ?.length,
@@ -222,10 +222,10 @@ test("about channel cards use exported Figma image icons", async () => {
 
   [
     "about-channel-kakao.png",
-    "about-channel-home.png",
     "about-channel-naver-blog.png",
     "about-channel-instagram.png",
     "about-channel-youtube.png",
+    "about-channel-naver-place.png",
   ].forEach((fileName) => {
     assert.match(companySource, new RegExp(`/figma-assets/${fileName}`));
   });
@@ -238,6 +238,72 @@ test("about channel cards use exported Figma image icons", async () => {
   assert.match(pageSource, /height=\{channel\.iconImage\.height\}/);
   assert.doesNotMatch(pageSource, /<Icon name=\{channel\.icon\}/);
   assert.match(cssBlock(stylesSource, ".channelIcon img"), /display:\s*block;/);
+});
+
+test("about intro media and timeline marker follow the reviewed desktop design", async () => {
+  const stylesSource = await readFile(stylesUrl, "utf8");
+  const introMediaStyles = cssBlock(stylesSource, ".introMedia {");
+  const introMediaLargeStyles = cssBlock(stylesSource, ".introMediaLarge {");
+  const timelineDotStyles = cssBlock(stylesSource, ".timelineDot {");
+
+  assert.match(introMediaStyles, /gap:\s*20px;/);
+  assert.match(introMediaLargeStyles, /aspect-ratio:\s*327 \/ 184;/);
+  assert.match(timelineDotStyles, /width:\s*4px;/);
+  assert.match(timelineDotStyles, /height:\s*4px;/);
+  assert.match(timelineDotStyles, /border:\s*1px solid #f8fafc;/);
+  assert.match(timelineDotStyles, /border-radius:\s*8px;/);
+  assert.match(timelineDotStyles, /background:\s*#30bac3;/);
+  assert.doesNotMatch(timelineDotStyles, /box-shadow:/);
+});
+
+test("about channels follow the reviewed order and copy", async () => {
+  const companySource = await readFile(companyUrl, "utf8");
+  const channelSource = companySource.slice(
+    companySource.indexOf("export const companyChannels"),
+    companySource.indexOf("export const companyInfoRows"),
+  );
+
+  assert.match(
+    channelSource,
+    /title:\s*"네이버 블로그"[\s\S]*title:\s*"인스타그램"[\s\S]*title:\s*"유튜브"[\s\S]*title:\s*"네이버 플레이스"[\s\S]*title:\s*"카카오톡 채널"/,
+  );
+  assert.match(channelSource, /description:\s*"찾아오시는길"/);
+  assert.match(channelSource, /description:\s*"빠른 견적 및 1:1 상담"/);
+  assert.match(
+    companySource,
+    /naverPlace:\s*"https:\/\/map\.naver\.com\/p\/entry\/place\/18259776"/,
+  );
+  assert.doesNotMatch(channelSource, /title:\s*"공식 홈페이지"/);
+});
+
+test("about card grids follow the reviewed row and column breakpoints", async () => {
+  const stylesSource = await readFile(stylesUrl, "utf8");
+  const reasonBreakpoint = cssBlock(
+    stylesSource,
+    "@media (max-width: 800px)",
+  );
+  const compactChannelBreakpoint = cssBlock(
+    stylesSource,
+    "@media (max-width: 1137px)",
+  );
+  const channelBreakpoint = cssBlock(
+    stylesSource,
+    "@media (max-width: 899px)",
+  );
+
+  assert.match(
+    cssBlock(reasonBreakpoint, ".reasonGrid {"),
+    /grid-template-columns:\s*1fr;/,
+  );
+  assert.match(
+    cssBlock(compactChannelBreakpoint, ".channelGrid {"),
+    /grid-template-columns:\s*repeat\(5,\s*minmax\(0,\s*1fr\)\);/,
+  );
+  assert.doesNotMatch(compactChannelBreakpoint, /\.channelCard:nth-child/);
+  assert.match(
+    cssBlock(channelBreakpoint, ".channelGrid {"),
+    /grid-template-columns:\s*1fr;/,
+  );
 });
 
 test("about mobile timeline keeps title fragments on the same line", async () => {
@@ -272,15 +338,12 @@ test("about mobile timeline keeps title fragments on the same line", async () =>
   assert.match(pageSource, /styles\.timelineDetailBreak/);
   assert.match(companySource, /year:\s*"2010"[\s\S]*?detailLineBreak:\s*true/);
   assert.match(companySource, /year:\s*"2011"[\s\S]*?detailLineBreak:\s*true/);
-  assert.match(
-    companySource,
-    /year:\s*"2015"[\s\S]*?detailPrefix:\s*" \/ "/,
-  );
+  assert.match(companySource, /year:\s*"2015"[\s\S]*?detailPrefix:\s*" \/ "/);
 });
 
 test("about info section fills narrow screens", async () => {
   const stylesSource = await readFile(stylesUrl, "utf8");
-  const tabletStart = stylesSource.indexOf("@media (max-width: 1079px)");
+  const tabletStart = stylesSource.indexOf("@media (max-width: 1080px)");
   const channelStart = stylesSource.indexOf(
     "@media (max-width: 1137px)",
     tabletStart,
@@ -300,9 +363,15 @@ test("about info section fills narrow screens", async () => {
 
   assert.match(cssBlock(tabletStyles, ".infoContent {"), /width:\s*100%;/);
   assert.match(cssBlock(tabletStyles, ".mapWrap {"), /width:\s*100%;/);
-  assert.match(cssBlock(tabletStyles, ".mapWrap {"), /justify-self:\s*stretch;/);
+  assert.match(
+    cssBlock(tabletStyles, ".mapWrap {"),
+    /justify-self:\s*stretch;/,
+  );
 
-  assert.match(cssBlock(mobileStyles, ".infoGrid {"), /justify-items:\s*stretch;/);
+  assert.match(
+    cssBlock(mobileStyles, ".infoGrid {"),
+    /justify-items:\s*stretch;/,
+  );
   assert.match(cssBlock(mobileStyles, ".infoContent {"), /width:\s*100%;/);
   assert.match(cssBlock(mobileStyles, ".mapWrap {"), /width:\s*100%;/);
 });

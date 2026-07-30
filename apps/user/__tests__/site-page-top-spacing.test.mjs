@@ -73,7 +73,6 @@ test("every public page start consumes the shared responsive spacing", async () 
     styles.about,
     styles.order,
     styles.privacy,
-    styles.noticeDetail,
     styles.portfolioDetail,
     styles.linkPay,
   ];
@@ -100,8 +99,16 @@ test("every public page start consumes the shared responsive spacing", async () 
     styles.blogDetail,
     /\.blogDetailInner\s*\{[^}]*padding:\s*52px 0;/s,
   );
+  assert.match(styles.noticeDetail, /var\(--site-header-height, 52px\)/);
+  assert.match(
+    styles.noticeDetail,
+    /\.detailInner\s*\{[^}]*max-width:\s*680px;[^}]*padding:\s*52px 20px;/s,
+  );
   assert.match(styles.reviewDetail, /var\(--site-header-height, 52px\)/);
-  assert.match(styles.reviewDetail, /var\(--site-page-top-gap, 72px\)/);
+  assert.match(
+    styles.reviewDetail,
+    /\.reviewDetailInner\s*\{[^}]*padding:\s*52px 0;/s,
+  );
 
   assert.match(
     styles.faq,

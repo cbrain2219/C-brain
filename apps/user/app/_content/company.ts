@@ -5,6 +5,7 @@ export const companyLinks = {
   instagram: "https://instagram.com/cbrain_design_group",
   kakao: KAKAO_CHANNEL_URL,
   naverBlog: "https://blog.naver.com/cbrain_design_group",
+  naverPlace: "https://map.naver.com/p/entry/place/18259776",
   youtube: "https://www.youtube.com/@CreateDesigngroup",
 } as const;
 
@@ -292,28 +293,6 @@ export const companyChannels: {
   title: string;
 }[] = [
   {
-    title: "카카오톡 1:1 상담",
-    description: "빠른 견적 및 상담",
-    href: companyLinks.kakao,
-    iconImage: {
-      alt: "",
-      height: 40,
-      src: "/figma-assets/about-channel-kakao.png",
-      width: 40,
-    },
-  },
-  {
-    title: "공식 홈페이지",
-    description: "cbrain.kr",
-    href: companyLinks.homepage,
-    iconImage: {
-      alt: "",
-      height: 24,
-      src: "/figma-assets/about-channel-home.png",
-      width: 24,
-    },
-  },
-  {
     title: "네이버 블로그",
     description: "제작 가이드 & 노하우",
     href: companyLinks.naverBlog,
@@ -343,6 +322,28 @@ export const companyChannels: {
       alt: "",
       height: 40,
       src: "/figma-assets/about-channel-youtube.png",
+      width: 40,
+    },
+  },
+  {
+    title: "네이버 플레이스",
+    description: "찾아오시는길",
+    href: companyLinks.naverPlace,
+    iconImage: {
+      alt: "",
+      height: 40,
+      src: "/figma-assets/about-channel-naver-place.png",
+      width: 40,
+    },
+  },
+  {
+    title: "카카오톡 채널",
+    description: "빠른 견적 및 1:1 상담",
+    href: companyLinks.kakao,
+    iconImage: {
+      alt: "",
+      height: 40,
+      src: "/figma-assets/about-channel-kakao.png",
       width: 40,
     },
   },

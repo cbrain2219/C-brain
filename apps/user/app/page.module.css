@@ -1274,10 +1274,6 @@
   border-radius: 8px;
 }
 
-.reviewLogoMarqueeCompany {
-  display: none;
-}
-
 .partnerLogoImage {
   display: block;
   width: var(--partner-logo-width);
@@ -1287,27 +1283,12 @@
   object-fit: contain;
 }
 
-@media (max-width: 1375px) {
-  .reviewLogoCloudCompany.reviewLogoCloudStatic {
+@media (max-width: 1300px) {
+  .reviewLogoCloud .reviewClientLogoRows {
     display: none;
   }
 
-  .reviewLogoMarqueeCompany {
-    width: 100cqw;
-    margin-left: calc(50% - 50cqw);
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    overflow: hidden;
-  }
-}
-
-@media (max-width: 1200px) {
-  .reviewLogoCloud:not(.reviewLogoCloudCompany) .reviewClientLogoRows {
-    display: none;
-  }
-
-  .reviewLogoCloud:not(.reviewLogoCloudCompany) .reviewLogoMarqueePartners {
+  .reviewLogoCloud .reviewLogoMarqueePartners {
     width: 100cqw;
     display: flex;
     flex-direction: column;
@@ -1317,11 +1298,11 @@
 }
 
 @media (max-width: 825px) {
-  .reviewLogoCloud:not(.reviewLogoCloudCompany) .featuredClientLogos {
+  .reviewLogoCloud .featuredClientLogos {
     display: none;
   }
 
-  .reviewLogoCloud:not(.reviewLogoCloudCompany) .featuredClientLogoMarquee {
+  .reviewLogoCloud .featuredClientLogoMarquee {
     width: 100cqw;
     display: flex;
     flex-direction: column;
@@ -1330,29 +1311,21 @@
 }
 
 @media (max-width: 640px) {
-  .reviewLogoCloud:not(.reviewLogoCloudCompany)
-    .featuredClientLogoMarquee
-    .featuredClientLogo {
+  .reviewLogoCloud .featuredClientLogoMarquee .featuredClientLogo {
     width: 202px;
     height: 68px;
     min-height: 68px;
     border-radius: 9px;
   }
 
-  .reviewLogoCloud:not(.reviewLogoCloudCompany)
-    .reviewLogoMarqueePartners
-    .reviewMarqueeLogo {
+  .reviewLogoCloud .reviewLogoMarqueePartners .reviewMarqueeLogo {
     width: 135px;
     height: 45px;
     border-radius: 6px;
   }
 
-  .reviewLogoCloud:not(.reviewLogoCloudCompany)
-    .featuredClientLogoMarquee
-    .partnerLogoImage,
-  .reviewLogoCloud:not(.reviewLogoCloudCompany)
-    .reviewLogoMarqueePartners
-    .partnerLogoImage {
+  .reviewLogoCloud .featuredClientLogoMarquee .partnerLogoImage,
+  .reviewLogoCloud .reviewLogoMarqueePartners .partnerLogoImage {
     width: var(--partner-logo-compact-width);
     height: var(--partner-logo-compact-height);
   }
@@ -1493,7 +1466,6 @@
 
 .reviewsMain {
   background: #ffffff;
-  padding-inline: 20px;
 }
 
 .reviewsContent {
@@ -1513,6 +1485,31 @@
 
 .reviewsInterviewSection {
   gap: 32px;
+}
+
+.reviewsInterviewLead {
+  display: flex;
+  flex-direction: column;
+  gap: inherit;
+}
+
+@media (max-width: 640px) {
+  .reviewsInterviewSection {
+    gap: 32px;
+  }
+
+  .reviewsInterviewLead {
+    gap: 72px;
+  }
+
+  .reviewsInterviewLead > .reviewsFeatured {
+    order: 1;
+  }
+
+  .reviewsInterviewLead > .reviewsSectionHeading {
+    display: flex;
+    order: 2;
+  }
 }
 
 .reviewsSectionHeading {
@@ -3043,7 +3040,7 @@
   }
 
   .reviewsContent {
-    padding: 104px 0;
+    padding-inline: 20px;
     gap: 104px;
   }
 
@@ -3103,13 +3100,8 @@
     gap: 20px;
   }
 
-  .reviewsTestimonialSection {
-    gap: 52px;
-  }
-
   .reviewsTestimonialGrid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 20px;
   }
 
   .reviewsInterviewMedia {
@@ -3145,6 +3137,20 @@
   .footer {
     padding-left: 20px;
     padding-right: 20px;
+  }
+}
+
+@media (min-width: 1081px) {
+  .reviewsContent {
+    padding-block: 104px;
+  }
+
+  .reviewsTestimonialSection {
+    gap: 52px;
+  }
+
+  .reviewsTestimonialGrid {
+    gap: 20px;
   }
 }
 

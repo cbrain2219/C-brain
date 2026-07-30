@@ -149,21 +149,23 @@ export default async function CustomerReviewsPage() {
             aria-labelledby="customer-interview-heading"
             className={`${styles.reviewsSectionBlock} ${styles.reviewsInterviewSection}`}
           >
-            <div className={styles.reviewsSectionHeading}>
-              <p className={styles.reviewsBadge}>고객 인터뷰</p>
-              <h2 id="customer-interview-heading">
-                실제 인터뷰 영상으로 확인하세요
-              </h2>
-              <p className={styles.reviewsSectionDescription}>
-                씨브레인을 선택한 고객들이 직접 이야기합니다.
-              </p>
-            </div>
+            <div className={styles.reviewsInterviewLead}>
+              <div className={styles.reviewsSectionHeading}>
+                <p className={styles.reviewsBadge}>고객 인터뷰</p>
+                <h2 id="customer-interview-heading">
+                  실제 인터뷰 영상으로 확인하세요
+                </h2>
+                <p className={styles.reviewsSectionDescription}>
+                  씨브레인을 선택한 고객들이 직접 이야기합니다.
+                </p>
+              </div>
 
-            {featuredCustomerInterview ? (
-              <FeaturedInterview
-                featuredCustomerInterview={featuredCustomerInterview}
-              />
-            ) : null}
+              {featuredCustomerInterview ? (
+                <FeaturedInterview
+                  featuredCustomerInterview={featuredCustomerInterview}
+                />
+              ) : null}
+            </div>
 
             {customerInterviews.length > 0 ? (
               <ul className={styles.reviewsInterviewGrid}>

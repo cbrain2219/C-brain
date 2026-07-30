@@ -52,26 +52,99 @@ test("FAQ category navigation follows the shared responsive header offset", asyn
   );
 });
 
-test("FAQ main column fills the layout before the sidebar breakpoint", async () => {
+test("FAQ sidebar replaces mobile navigation from the 800px breakpoint", async () => {
   const stylesSource = await readFile(stylesUrl, "utf8");
-  const tabletStart = stylesSource.indexOf("@media (min-width: 640px)");
-  const sidebarStart = stylesSource.indexOf("@media (min-width: 1200px)");
-  const desktopStart = stylesSource.indexOf("@media (min-width: 1440px)");
+  const tabletStart = stylesSource.indexOf("@media (min-width: 800px)");
+  const desktopStart = stylesSource.indexOf("@media (min-width: 1200px)");
 
   assert.notEqual(tabletStart, -1);
-  assert.notEqual(sidebarStart, -1);
+  assert.notEqual(desktopStart, -1);
+
+  const baseSidebarStyle = cssBlock(stylesSource, ".sidebar {");
+  const baseMainColumnStyle = cssBlock(stylesSource, ".mainColumn {");
+  const tabletStyles = stylesSource.slice(tabletStart, desktopStart);
+  const tabletLayoutStyle = cssBlock(tabletStyles, ".faqLayout {");
+  const tabletSidebarStyle = cssBlock(tabletStyles, ".sidebar {");
+  const tabletMainColumnStyle = cssBlock(tabletStyles, ".mainColumn {");
+  const tabletMobileNavigationStyle = cssBlock(
+    tabletStyles,
+    ".mobileCategoryNav {",
+  );
+
+  assert.match(baseSidebarStyle, /display:\s*none;/);
+  assert.match(baseMainColumnStyle, /width:\s*100%;/);
+  assert.match(tabletLayoutStyle, /display:\s*grid;/);
+  assert.match(
+    tabletLayoutStyle,
+    /grid-template-columns:\s*260px minmax\(0, 1fr\);/,
+  );
+  assert.match(tabletSidebarStyle, /display:\s*block;/);
+  assert.match(tabletMainColumnStyle, /max-width:\s*820px;/);
+  assert.match(tabletMobileNavigationStyle, /display:\s*none;/);
+});
+
+test("FAQ main column owns responsive section spacing", async () => {
+  const stylesSource = await readFile(stylesUrl, "utf8");
+  const expandedStart = stylesSource.indexOf("@media (min-width: 1081px)");
+  const desktopStart = stylesSource.indexOf("@media (min-width: 1200px)");
+
+  assert.notEqual(expandedStart, -1);
   assert.notEqual(desktopStart, -1);
 
   const baseMainColumnStyle = cssBlock(stylesSource, ".mainColumn {");
-  const beforeSidebarStyles = stylesSource.slice(tabletStart, sidebarStart);
-  const sidebarMainColumnStyle = cssBlock(
-    stylesSource.slice(sidebarStart, desktopStart),
+  const baseHeroStyle = cssBlock(stylesSource, ".hero {");
+  const baseMobileNavigationStyle = cssBlock(
+    stylesSource,
+    ".mobileCategoryNav {",
+  );
+  const expandedMainColumnStyle = cssBlock(
+    stylesSource.slice(expandedStart, desktopStart),
     ".mainColumn {",
   );
 
-  assert.match(baseMainColumnStyle, /width:\s*100%;/);
-  assert.doesNotMatch(beforeSidebarStyles, /\.mainColumn\s*\{/);
-  assert.match(sidebarMainColumnStyle, /max-width:\s*820px;/);
+  assert.match(baseMainColumnStyle, /display:\s*flex;/);
+  assert.match(baseMainColumnStyle, /flex-direction:\s*column;/);
+  assert.match(baseMainColumnStyle, /gap:\s*32px;/);
+  assert.doesNotMatch(baseHeroStyle, /margin-bottom:/);
+  assert.match(
+    baseMobileNavigationStyle,
+    /margin:\s*0 0 0 calc\(50% - 50cqw\);/,
+  );
+  assert.match(expandedMainColumnStyle, /gap:\s*52px;/);
+});
+
+test("FAQ columns use 32px vertical padding through 1080px", async () => {
+  const stylesSource = await readFile(stylesUrl, "utf8");
+  const tabletStart = stylesSource.indexOf("@media (min-width: 800px)");
+  const compactEnd = stylesSource.indexOf("@media (max-width: 1080px)");
+  const expandedStart = stylesSource.indexOf("@media (min-width: 1081px)");
+  const desktopStart = stylesSource.indexOf("@media (min-width: 1200px)");
+  const wideStart = stylesSource.indexOf("@media (min-width: 1440px)");
+
+  assert.notEqual(tabletStart, -1);
+  assert.notEqual(compactEnd, -1);
+  assert.notEqual(expandedStart, -1);
+  assert.notEqual(desktopStart, -1);
+  assert.notEqual(wideStart, -1);
+
+  const tabletStyles = stylesSource.slice(tabletStart, compactEnd);
+  const compactStyles = stylesSource.slice(compactEnd, expandedStart);
+  const wideStyles = stylesSource.slice(wideStart);
+  const tabletSidebarStyle = cssBlock(tabletStyles, ".sidebar {");
+  const tabletMainColumnStyle = cssBlock(tabletStyles, ".mainColumn {");
+  const compactSidebarStyle = cssBlock(compactStyles, ".sidebar {");
+  const compactMainColumnStyle = cssBlock(compactStyles, ".mainColumn {");
+  const wideSidebarStyle = cssBlock(wideStyles, ".sidebar {");
+  const wideMainColumnStyle = cssBlock(wideStyles, ".mainColumn {");
+
+  assert.match(tabletSidebarStyle, /padding:\s*52px 20px;/);
+  assert.match(tabletMainColumnStyle, /padding:\s*52px 20px;/);
+  assert.match(compactSidebarStyle, /padding-top:\s*32px;/);
+  assert.match(compactSidebarStyle, /padding-bottom:\s*32px;/);
+  assert.match(compactMainColumnStyle, /padding-top:\s*32px;/);
+  assert.match(compactMainColumnStyle, /padding-bottom:\s*32px;/);
+  assert.match(wideSidebarStyle, /padding:\s*52px 40px;/);
+  assert.match(wideMainColumnStyle, /padding:\s*52px 40px;/);
 });
 
 test("FAQ active category tab overlaps the gray rail like portfolio tabs", async () => {
