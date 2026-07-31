@@ -159,7 +159,7 @@
   width: 100cqw;
   margin-left: calc(50% - 50cqw);
   background: linear-gradient(var(--landing-gray-100), var(--landing-gray-100))
-    center bottom / 100% 1px no-repeat;
+    center bottom / calc(100% - 40px) 1px no-repeat;
   display: flex;
   gap: 4px;
   overflow-x: auto;
@@ -361,6 +361,7 @@
   .categoryNav {
     width: 100%;
     margin-left: 0;
+    background-size: 100% 1px;
   }
 
   .categoryButton:first-child {
