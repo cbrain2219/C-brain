@@ -456,7 +456,7 @@ CSS Module과 공용 `Icon` 레지스트리에만 추가한다.
   640px 미만에서 기존 `resultBackLink`만 유지하고, 640px 이상에서 공용
   스텝퍼를 함께 표시한다.
 
-- [ ] **Step 6: 타깃 테스트와 타입 검사를 통과시킴**
+- [x] **Step 6: 타깃 테스트와 타입 검사를 통과시킴**
 
   Run:
 
@@ -470,7 +470,9 @@ CSS Module과 공용 `Icon` 레지스트리에만 추가한다.
   pnpm --filter user check-types
   ```
 
-  Expected: 모든 사용자 앱 테스트와 TypeScript 검사가 PASS한다.
+  Verification (HEAD `633221c`): 타깃 주문 테스트는 2/2 PASS했고 사용자 앱
+  `check-types`도 PASS했다. 전체 사용자 테스트도 실행했으나 스텝퍼 커밋 범위 밖인
+  notice/portfolio 관련 실패 2건이 남아 있다.
 
 - [x] **Step 7: 작업 단위 커밋**
 
@@ -500,7 +502,7 @@ CSS Module과 공용 `Icon` 레지스트리에만 추가한다.
 - Produces: Figma 노드 `1101:4506`과 일치하는 461px × 24px 스텝퍼 및 회귀
   검사 결과
 
-- [ ] **Step 1: 데스크톱 첫 단계 확인**
+- [x] **Step 1: 데스크톱 첫 단계 확인**
 
   `1512px` 너비에서 `/order`를 열고 계산된 레이아웃을 확인한다.
   - 스텝 콘텐츠 전체: `461px × 24px`, 주문 콘텐츠 왼쪽 정렬
@@ -509,25 +511,39 @@ CSS Module과 공용 `Icon` 레지스트리에만 추가한다.
   - chevron: `16px × 16px`, gray-800
   - 기존 상단 2px 선과 4열 균등 분할이 보이지 않음
 
-- [ ] **Step 2: 단계 전환 확인**
+  Verification (HEAD `633221c`): 1512px에서 스텝퍼가 표시되고
+  `461.3125px × 24px`이며 주문 콘텐츠 왼쪽과의 delta는 0이다. 첫 단계의 활성
+  표현과 나머지 단계의 중립 표현을 확인했다.
+
+- [x] **Step 2: 단계 전환 확인**
 
   `/order`에서 표준 상품을 선택해 옵션 단계로 이동하고, 결제 직전의 정보 입력
   단계까지 이동한다. 각 화면에서 활성 칩과 라벨만 각각 2, 3으로 이동하고 이전
   단계는 비활성 중립색으로 돌아가는지 확인한다. 결제나 개인정보 입력은 수행하지
   않는다.
 
-- [ ] **Step 3: 결과 화면의 네 번째 단계 확인**
+  Verification (HEAD `633221c`): 1, 2, 3단계 상태를 확인했고 활성 칩과 라벨만
+  해당 단계로 이동했다.
+
+- [x] **Step 3: 결과 화면의 네 번째 단계 확인**
 
   `/order/success`와 `/order/fail`을 열어 진행 표시가 노출되는 상태에서는 네 번째
   칩과 `결제 완료` 라벨만 활성인지 확인한다. 성공/실패 메시지와 뒤로 가기 링크는
   기존과 동일해야 한다.
 
-- [ ] **Step 4: 반응형 경계 확인**
+  Verification (HEAD `633221c`): 실패 결과 화면에서 4단계 활성 상태를 확인했다.
+  성공 경로는 현재 의도된 리다이렉트 동작으로 결과 화면을 직접 표시하지 않는다.
+
+- [x] **Step 4: 반응형 경계 확인**
   - `639px`: 스텝퍼가 숨겨지고 가로 overflow가 없음
   - `640px`: 461px 스텝퍼가 한 줄로 보임
   - `1080px`, `1440px`: 스텝퍼가 주문 콘텐츠 왼쪽에 유지됨
 
-- [ ] **Step 5: 자동 품질 게이트 실행**
+  Verification (HEAD `633221c`): 639px에서는 예상대로 숨겨지고, 640px, 1080px,
+  1440px, 1512px에서는 표시됐다. 표시된 모든 폭에서 크기는 `461.3125px × 24px`,
+  왼쪽 정렬 delta는 0이다.
+
+- [x] **Step 5: 자동 품질 게이트 실행**
 
   Run:
 
@@ -540,12 +556,12 @@ CSS Module과 공용 `Icon` 레지스트리에만 추가한다.
   rg "figma.com/api/mcp/asset|https://www.figma.com/api" apps packages
   ```
 
-  Expected:
-  - test, lint, typecheck, build, `git diff --check` 모두 exit 0
-  - 마지막 `rg`는 출력이 없고 exit 1이어야 함. 이는 금지된 Figma URL이 없다는
-    성공 조건이다.
+  Verification (HEAD `633221c`): 타깃 주문 테스트, lint, typecheck, build,
+  scoped diff check, 금지된 Figma URL 검사가 PASS했다. 전체 사용자 테스트는
+  실행했으나 스텝퍼와 무관한 notice/portfolio 실패 2건이 동일하게 남아 있다.
+  증빙은 커밋하지 않는 `.omo/evidence/order-stepper-qa-633221c/`에만 보관한다.
 
-- [ ] **Step 6: 최종 커밋**
+- [x] **Step 6: 최종 커밋**
 
   시각 QA 중 보정이 발생한 경우에만 관련 파일과 이 계획 문서를 커밋한다.
 
@@ -561,3 +577,5 @@ CSS Module과 공용 `Icon` 레지스트리에만 추가한다.
     'docs/superpowers/plans/2026-07-31-order-stepper-redesign.md'
   git commit -m "test(user): verify responsive order stepper"
   ```
+
+  Verification record: 이 문서 커밋이 최종 검증 기록이다.
