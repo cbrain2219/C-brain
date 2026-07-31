@@ -245,7 +245,7 @@ test("customer reviews page uses shared navigation and CTA", async () => {
   );
   assert.match(pageSource, /import \{ CtaSection \}/);
   assert.match(pageSource, /<CtaSection/);
-  assert.match(pageSource, /secondaryAction=\{\{/);
+  assert.match(pageSource, /secondaryAction=\{FIXED_PRICE_ACTION\}/);
   assert.doesNotMatch(pageSource, /reviewsCta/);
 });
 
@@ -344,6 +344,55 @@ test("customer interview heading moves below the featured interview through 640p
   );
 });
 
+test("featured customer interview keeps the redesigned quote layout at 640px and 390px", async () => {
+  const [pageSource, stylesSource] = await Promise.all([
+    readFile(pagePath, "utf8"),
+    readFile(stylesPath, "utf8"),
+  ]);
+  const foldMedia = extractCssBlock(
+    stylesSource,
+    "@media (min-width: 640px)",
+  );
+
+  assert.doesNotMatch(pageSource, /reviewsFeaturedCompactTitle/);
+  assert.match(
+    pageSource,
+    /<h3 className=\{styles\.reviewsFeaturedTitle\}>/,
+  );
+  assert.match(
+    stylesSource,
+    /\.reviewsFeaturedText\s*\{[^}]*gap: 20px;/s,
+  );
+  assert.match(
+    stylesSource,
+    /\.reviewsFeaturedSummary\s*\{[^}]*gap: 32px;/s,
+  );
+  assert.match(
+    stylesSource,
+    /\.reviewsFeaturedQuoteGroup\s*\{[^}]*gap: 24px;/s,
+  );
+  assert.match(
+    stylesSource,
+    /\.reviewsQuoteMark\s*\{[^}]*width: 18px;[^}]*height: 16px;/s,
+  );
+  assert.match(
+    stylesSource,
+    /\.reviewsFeaturedTitle\s*\{[^}]*font-size: 20px;[^}]*line-height: 30px;[^}]*letter-spacing: -0\.3px;/s,
+  );
+  assert.match(
+    stylesSource,
+    /\.reviewsQuoteMark,\s*\.reviewsFeaturedDivider\s*\{\s*display: block;/,
+  );
+  assert.match(
+    foldMedia,
+    /\.reviewsFeaturedMedia\s*\{[^}]*aspect-ratio: 600 \/ 338;/s,
+  );
+  assert.match(
+    foldMedia,
+    /\.reviewsPlayButtonLarge\s*\{[^}]*width: 64px;[^}]*height: 64px;/s,
+  );
+});
+
 test("customer interviews keep the desktop section layout from 1080px upward", async () => {
   const contentSource = await readFile(contentPath, "utf8");
   const pageSource = await readFile(pagePath, "utf8");
@@ -362,8 +411,16 @@ test("customer interviews keep the desktop section layout from 1080px upward", a
   assert.doesNotMatch(pageSource, /reviewsFeaturedInline/);
   assert.doesNotMatch(pageSource, /variant: "inline" \| "standalone"/);
   assert.match(pageSource, /reviewsSectionDescription/);
-  assert.match(pageSource, /reviewsFeaturedCompactTitle/);
-  assert.match(pageSource, /reviewsFeaturedDesktopTitle/);
+  assert.match(pageSource, /reviewsSectionCopy/);
+  assert.doesNotMatch(pageSource, /reviewsFeaturedCompactTitle/);
+  assert.doesNotMatch(pageSource, /reviewsFeaturedDesktopTitle/);
+  assert.match(
+    pageSource,
+    /<h3 className=\{styles\.reviewsFeaturedTitle\}>/,
+  );
+  assert.match(pageSource, /reviewsFeaturedSummary/);
+  assert.match(pageSource, /reviewsFeaturedDivider/);
+  assert.match(pageSource, /reviewsFeaturedMeta/);
   assert.match(
     pageSource,
     /featuredCustomerInterview\.headlineLines\.map\(\(line, index\) =>/,
@@ -389,11 +446,51 @@ test("customer interviews keep the desktop section layout from 1080px upward", a
   );
   assert.match(
     desktopMedia,
+    /\.reviewsFeaturedText\s*\{[^}]*gap: 20px;/s,
+  );
+  assert.match(
+    desktopMedia,
+    /\.reviewsFeaturedSummary\s*\{[^}]*gap: 32px;/s,
+  );
+  assert.match(
+    desktopMedia,
+    /\.reviewsFeaturedQuoteGroup\s*\{[^}]*gap: 24px;/s,
+  );
+  assert.match(
+    desktopMedia,
+    /\.reviewsQuoteMark\s*\{[^}]*width: 27px;[^}]*height: 24px;/s,
+  );
+  assert.match(
+    desktopMedia,
+    /\.reviewsFeaturedTitle\s*\{[^}]*font-size: 24px;[^}]*line-height: 32px;[^}]*letter-spacing: -0\.36px;/s,
+  );
+  assert.match(
+    desktopMedia,
     /\.reviewsInterviewGrid\s*\{[^}]*grid-template-columns: repeat\(2, minmax\(0, 1fr\)\);[^}]*gap: 20px;/s,
   );
   assert.match(
     desktopMedia,
+    /\.reviewsInterviewBody\s*\{[^}]*padding: 16px 20px;[^}]*gap: 20px;/s,
+  );
+  assert.match(
+    desktopMedia,
+    /\.reviewsInterviewSection\s*\{[^}]*gap: 32px;/s,
+  );
+  assert.match(
+    desktopMedia,
+    /\.reviewsInterviewLead\s*\{[^}]*gap: 52px;/s,
+  );
+  assert.match(
+    desktopMedia,
     /\.reviewsSectionDescription\s*\{[^}]*display: block;/s,
+  );
+  assert.match(
+    stylesSource,
+    /\.reviewsSectionHeading\s*\{[^}]*gap: 16px;/s,
+  );
+  assert.match(
+    stylesSource,
+    /\.reviewsSectionCopy\s*\{[^}]*gap: 4px;/s,
   );
   assert.match(
     desktopMedia,
@@ -445,7 +542,8 @@ test("customer interview markup stays semantic and uses admin video alt text", a
   assert.match(pageSource, /<blockquote>/);
   assert.match(pageSource, /<footer className=\{styles\.reviewsCardMeta\}>/);
   assert.match(stylesSource, /list-style: none;/);
-  assert.match(stylesSource, /\.reviewsFeaturedBody blockquote/);
+  assert.match(stylesSource, /\.reviewsFeaturedDivider::before/);
+  assert.match(stylesSource, /\.reviewsFeaturedMeta p:first-child/);
   assert.match(stylesSource, /\.reviewsInterviewCopy blockquote/);
   assert.match(stylesSource, /\.reviewsTestimonialContent blockquote/);
 });
@@ -478,7 +576,10 @@ test("customer interview data stays consistent for dynamic admin content", async
     contentSource,
     /const featuredCustomerInterviewRecord =[\s\S]*customerInterviewRecordList\.find[\s\S]*\?\?[\s\S]*getLatestCustomerInterviewRecord\(\);/,
   );
-  assert.doesNotMatch(recordsBlock, /featured:/);
+  assert.match(
+    recordsBlock,
+    /featured:\s*\{[\s\S]*headlineLines: \["처음 맡겼는데", "결과물이 기대 이상이였어요\."\],[\s\S]*projectName: "게임 졸업 프로젝트 완료 보고서"/,
+  );
   assert.doesNotMatch(contentSource, /대표 고객 인터뷰 데이터가 필요합니다/);
   assert.match(contentSource, /publishedAt: record\.publishedAt/);
   assert.match(contentSource, /id: record\.slug/);
@@ -487,6 +588,8 @@ test("customer interview data stays consistent for dynamic admin content", async
   assert.match(contentSource, /quote: getCustomerInterviewQuote\(record\)/);
   assert.match(contentSource, /thumbnail: record\.thumbnail/);
   assert.match(contentSource, /videoAlt: record\.videoAlt/);
+  assert.match(contentSource, /description: getCustomerInterviewIntro\(record\)/);
+  assert.match(contentSource, /projectName,/);
   assert.match(
     contentSource,
     /export type CustomerInterviewProjectInfoId = "client" \| "deliverable" \| "usage";/,
@@ -701,7 +804,11 @@ test("customer reviews hero content follows the shared hero width scale", async 
   );
   assert.match(
     desktopStyles,
-    /\.reviewsHeroContent,\s*\.reviewsContent\s*\{[\s\S]*?width: min\(100%, 1080px\);/,
+    /\.reviewsHeroContent\s*\{[\s\S]*?width: min\(100%, 1080px\);/,
+  );
+  assert.match(
+    desktopStyles,
+    /\.reviewsContent\s*\{[\s\S]*?width: min\(100%, 1120px\);/,
   );
   assert.doesNotMatch(
     extractCssBlock(stylesSource, ".reviewsPageHero"),
@@ -722,6 +829,10 @@ test("customer reviews hero content follows the shared hero width scale", async 
   assert.match(
     pcStyles,
     /\.reviewsHeroContent\s*\{[\s\S]*?padding: var\(--site-page-top-offset\) 0 104px;/,
+  );
+  assert.match(
+    pcStyles,
+    /\.reviewsContent\s*\{[\s\S]*?width: min\(100%, 1120px\);/,
   );
 });
 

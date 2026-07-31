@@ -1,31 +1,10 @@
-import { ButtonLink } from "@repo/ui/button";
-import Link from "next/link";
-import type { CSSProperties, ReactNode } from "react";
+import type { ReactNode } from "react";
 
-import { Icon } from "../../components/Icon";
-import { KAKAO_CHANNEL_URL } from "../_content/contact";
+import {
+  ContactActionButtons,
+  type ContactSecondaryAction,
+} from "./ContactActionButtons";
 import styles from "./CtaSection.module.css";
-import { createGradientBorderButtonStyle } from "./buttonStyles";
-
-const actionWidth = "var(--cta-action-width)";
-const actionPadding = "8px 23px";
-
-const kakaoButtonStyle: CSSProperties = {
-  ...createGradientBorderButtonStyle({
-    includeBorder: false,
-    padding: actionPadding,
-    tone: "contactKakao",
-  }),
-  width: actionWidth,
-};
-
-const secondaryActionStyle: CSSProperties = {
-  ...createGradientBorderButtonStyle({
-    includeBorder: false,
-    padding: actionPadding,
-  }),
-  width: actionWidth,
-};
 
 type CtaSectionProps = {
   id?: string;
@@ -33,10 +12,7 @@ type CtaSectionProps = {
   titleLines: readonly ReactNode[];
   description?: string;
   descriptionSize?: "sm" | "md";
-  secondaryAction?: {
-    label: string;
-    href: string;
-  };
+  secondaryAction?: ContactSecondaryAction;
 };
 
 export function CtaSection({
@@ -74,28 +50,7 @@ export function CtaSection({
             ) : null}
           </div>
         </div>
-        <div className={styles.actions}>
-          <ButtonLink
-            className={styles.actionButton}
-            href={KAKAO_CHANNEL_URL}
-            rel="noreferrer"
-            style={kakaoButtonStyle}
-            target="_blank"
-          >
-            <span>실시간 카톡상담</span>
-            <Icon className={styles.icon} name="message-typing" size={24} />
-          </ButtonLink>
-          {secondaryAction ? (
-            <Link
-              className={`${styles.secondaryAction} ${styles.actionButton}`}
-              href={secondaryAction.href}
-              style={secondaryActionStyle}
-            >
-              <span>{secondaryAction.label}</span>
-              <Icon className={styles.icon} name="arrow-right" size={24} />
-            </Link>
-          ) : null}
-        </div>
+        <ContactActionButtons secondaryAction={secondaryAction} />
       </div>
     </section>
   );

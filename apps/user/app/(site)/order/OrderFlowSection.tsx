@@ -90,7 +90,10 @@ export function OrderFlowSection({
       aria-labelledby="order-flow-title"
       ref={orderFlowRef}
     >
-      <div className={styles.orderInner}>
+      <div
+        className={styles.orderInner}
+        data-order-category-active={!selectedDirectService}
+      >
         <h2 className={styles.visuallyHidden} id="order-flow-title">
           상품유형 주문 단계
         </h2>
@@ -140,18 +143,20 @@ export function OrderFlowSection({
             />
           )
         ) : (
-          <>
+          <div className={styles.categoryStep}>
             <OrderMethodSelector onQuoteSelect={openConsultDialog} />
 
-            <div className={styles.productSectionHeader}>
-              <p>Ⅰ. 카테고리 선택</p>
-            </div>
+            <div className={styles.productSection}>
+              <div className={styles.productSectionHeader}>
+                <p>Ⅰ. 카테고리 선택</p>
+              </div>
 
-            <ServiceCards
-              onDirectServiceSelect={onDirectServiceSelect}
-              onQuoteServiceSelect={openConsultDialog}
-            />
-          </>
+              <ServiceCards
+                onDirectServiceSelect={onDirectServiceSelect}
+                onQuoteServiceSelect={openConsultDialog}
+              />
+            </div>
+          </div>
         )}
       </div>
 

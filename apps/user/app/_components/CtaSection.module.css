@@ -1,5 +1,4 @@
 .section {
-  --cta-action-width: 164px;
   position: relative;
   overflow: hidden;
   display: flex;
@@ -120,73 +119,9 @@
   line-height: 24px;
 }
 
-.actions {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-}
-
-.actionButton {
-  position: relative;
-  isolation: isolate;
-  overflow: hidden;
-}
-
-.actionButton::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  box-sizing: border-box;
-  border: 1px solid transparent;
-  border-radius: inherit;
-  background:
-    var(--landing-button-border-end), var(--landing-button-border-start);
-  background-origin: border-box;
-  pointer-events: none;
-  -webkit-mask:
-    linear-gradient(#ffffff 0 0) padding-box,
-    linear-gradient(#ffffff 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
-}
-
-.actionButton > * {
-  position: relative;
-  z-index: 1;
-}
-
-.secondaryAction {
-  height: 52px;
-  border-radius: 32px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-  font-family: var(--font-sans);
-  font-size: 14px;
-  font-weight: 700;
-  line-height: 21px;
-  text-decoration: none;
-  white-space: nowrap;
-}
-
-.icon {
-  flex: 0 0 auto;
-}
-
 @media (min-width: 640px) {
   .content {
     width: min(100%, 640px);
-  }
-
-  .actions {
-    width: auto;
-    flex-direction: row;
-    align-items: center;
-    flex-wrap: wrap;
   }
 }
 

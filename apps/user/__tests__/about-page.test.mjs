@@ -55,6 +55,19 @@ test("about hero keeps the 1440 frame padding without a fixed hero height", asyn
   );
 });
 
+test("about hero metric panel uses the subtle white gradient border", async () => {
+  const stylesSource = await readFile(stylesUrl, "utf8");
+  const panelStyles = cssBlock(stylesSource, ".heroMetricPanel {");
+  const borderStyles = cssBlock(stylesSource, ".heroMetricPanel::before {");
+
+  assert.match(panelStyles, /background:\s*rgba\(255, 255, 255, 0\.1\);/);
+  assert.doesNotMatch(panelStyles, /box-shadow:[^;]*inset/);
+  assert.match(
+    borderStyles,
+    /linear-gradient\(\s*180deg,\s*rgba\(255, 255, 255, 0\) 0%,\s*rgba\(255, 255, 255, 0\.2\) 50%,\s*rgba\(255, 255, 255, 0\) 100%\s*\)/,
+  );
+});
+
 test("about hero keeps the 1080 frame padding without a fixed hero height", async () => {
   const stylesSource = await readFile(stylesUrl, "utf8");
   const tabletStart = stylesSource.indexOf("@media (max-width: 1399px)");

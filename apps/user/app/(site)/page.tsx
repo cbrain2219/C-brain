@@ -1,5 +1,6 @@
 import { AboutSection } from "../_components/AboutSection";
 import { BlogSection } from "../_components/BlogSection";
+import { FIXED_PRICE_ACTION } from "../_components/ContactActionButtons";
 import { CtaSection } from "../_components/CtaSection";
 import { CustomerReviewSection } from "../_components/CustomerReviewSection";
 import { FaqSection } from "../_components/FaqSection";
@@ -43,10 +44,7 @@ export default async function Home({ searchParams }: HomeProps) {
         description="빠른 상담 · 전국 납품 · 소량부터 대량까지"
         descriptionSize="md"
         id="contact"
-        secondaryAction={{
-          label: "정찰제 가격 보기",
-          href: "/order",
-        }}
+        secondaryAction={FIXED_PRICE_ACTION}
         titleLines={[
           "실패 없는 홍보물 디자인 제작,",
           <>
