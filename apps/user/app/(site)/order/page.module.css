@@ -232,7 +232,7 @@
 .stepList {
   width: fit-content;
   max-width: 100%;
-  margin: 0 auto;
+  margin: 0;
   padding: 0;
   list-style: none;
   display: none;
@@ -1819,7 +1819,7 @@
 
   .stepList {
     display: flex;
-    justify-content: center;
+    justify-content: flex-start;
   }
 
   .heroTitleMobileBreak {

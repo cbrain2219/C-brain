@@ -27,7 +27,7 @@ CSS Module과 공용 `Icon` 레지스트리에만 추가한다.
   등록한다.
 - `https://www.figma.com/api/mcp/asset/*` 또는 다른 Figma API URL을 앱 소스에
   남기지 않는다.
-- 스텝퍼는 Figma와 동일하게 `461px × 24px` 크기의 콘텐츠를 중앙 정렬한다.
+- 스텝퍼는 `461px × 24px` 크기의 콘텐츠를 주문 콘텐츠 왼쪽에 정렬한다.
 - 단계 사이 간격은 `12px`, 숫자 칩과 라벨 사이는 `4px`이다.
 - 숫자 칩은 `24px × 24px`; 숫자는 12/18, weight 500이다.
 - 라벨은 14/21, 비활성 weight 500, 활성 weight 700이다. `design.md`에 따라
@@ -286,7 +286,7 @@ CSS Module과 공용 `Icon` 레지스트리에만 추가한다.
 
   assert.match(
     stylesSource,
-    /\.stepList\s*\{[^}]*width:\s*fit-content[^}]*max-width:\s*100%[^}]*display:\s*none/s,
+    /\.stepList\s*\{[^}]*width:\s*fit-content[^}]*max-width:\s*100%[^}]*margin:\s*0;[^}]*display:\s*none/s,
   );
   assert.match(
     stylesSource,
@@ -311,7 +311,7 @@ CSS Module과 공용 `Icon` 레지스트리에만 추가한다.
   );
   assert.match(
     tabletMediaStyles,
-    /\.stepList\s*\{[^}]*display:\s*flex[^}]*justify-content:\s*center/s,
+    /\.stepList\s*\{[^}]*display:\s*flex[^}]*justify-content:\s*flex-start/s,
   );
   assert.doesNotMatch(stylesSource, /\.stepItemComplete/);
   assert.doesNotMatch(stylesSource, /\.resultStepList/);
@@ -372,7 +372,7 @@ CSS Module과 공용 `Icon` 레지스트리에만 추가한다.
   .stepList {
     width: fit-content;
     max-width: 100%;
-    margin: 0 auto;
+    margin: 0;
     padding: 0;
     list-style: none;
     display: none;
@@ -448,7 +448,7 @@ CSS Module과 공용 `Icon` 레지스트리에만 추가한다.
   ```css
   .stepList {
     display: flex;
-    justify-content: center;
+    justify-content: flex-start;
   }
   ```
 
@@ -503,7 +503,7 @@ CSS Module과 공용 `Icon` 레지스트리에만 추가한다.
 - [ ] **Step 1: 데스크톱 첫 단계 확인**
 
   `1512px` 너비에서 `/order`를 열고 계산된 레이아웃을 확인한다.
-  - 스텝 콘텐츠 전체: `461px × 24px`, 주문 콘텐츠 중앙 정렬
+  - 스텝 콘텐츠 전체: `461px × 24px`, 주문 콘텐츠 왼쪽 정렬
   - 첫 항목: 브랜드 배경의 24px 숫자 칩, 브랜드색 700 라벨
   - 나머지 항목: gray-50 칩, gray-100 테두리, gray-600 텍스트
   - chevron: `16px × 16px`, gray-800
@@ -525,7 +525,7 @@ CSS Module과 공용 `Icon` 레지스트리에만 추가한다.
 - [ ] **Step 4: 반응형 경계 확인**
   - `639px`: 스텝퍼가 숨겨지고 가로 overflow가 없음
   - `640px`: 461px 스텝퍼가 한 줄로 보임
-  - `1080px`, `1440px`: 스텝퍼가 주문 콘텐츠 중앙에 유지됨
+  - `1080px`, `1440px`: 스텝퍼가 주문 콘텐츠 왼쪽에 유지됨
 
 - [ ] **Step 5: 자동 품질 게이트 실행**
 

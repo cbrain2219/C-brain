@@ -596,7 +596,7 @@ test("order page route, content, responsive styles, and navigation are wired", (
   );
   assert.match(
     stylesSource,
-    /\.stepList\s*\{[^}]*width:\s*fit-content[^}]*max-width:\s*100%[^}]*display:\s*none/s,
+    /\.stepList\s*\{[^}]*width:\s*fit-content[^}]*max-width:\s*100%[^}]*margin:\s*0;[^}]*display:\s*none/s,
   );
   assert.match(
     stylesSource,
@@ -621,7 +621,7 @@ test("order page route, content, responsive styles, and navigation are wired", (
   );
   assert.match(
     tabletMediaStyles,
-    /\.stepList\s*\{[^}]*display:\s*flex[^}]*justify-content:\s*center/s,
+    /\.stepList\s*\{[^}]*display:\s*flex[^}]*justify-content:\s*flex-start/s,
   );
   assert.doesNotMatch(stylesSource, /\.stepItemComplete/);
   assert.doesNotMatch(stylesSource, /\.resultStepList/);
