@@ -61,6 +61,7 @@ export type CustomerInterviewDetailSeo = {
 
 type CustomerInterviewFeaturedConfig = {
   headlineLines: readonly string[];
+  projectName: string;
 };
 
 export type CustomerInterviewRecord = CustomerInterviewDetail & {
@@ -82,8 +83,9 @@ export type CustomerInterviewCard = {
 };
 
 export type FeaturedCustomerInterview = CustomerInterviewCard & {
-  body: readonly [string, string, string];
+  description: string;
   headlineLines: readonly string[];
+  projectName: string;
 };
 
 export type CustomerTestimonial = {
@@ -318,6 +320,10 @@ export const customerInterviewRecords = [
     publishedAt: "2026-07-15T00:00:00+09:00",
     seoDescription:
       "청강문화산업대학교 게임콘텐츠스쿨의 게임 졸업 프로젝트 완료보고서 제작 사례와 씨브레인 고객 인터뷰를 확인하세요.",
+    featured: {
+      headlineLines: ["처음 맡겼는데", "결과물이 기대 이상이였어요."],
+      projectName: "게임 졸업 프로젝트 완료 보고서",
+    },
     industry: "교육",
     slug: "chungkang-college",
     thumbnail: reviewInterviewEducationImage,
@@ -404,15 +410,16 @@ function createFeaturedCustomerInterview(
   }
 
   const quote = getCustomerInterviewQuote(record);
+  const projectName =
+    record.featured?.projectName ??
+    getCustomerInterviewProjectValue(record, "deliverable") ??
+    record.company;
 
   return {
     ...toCustomerInterviewCard(record),
-    body: [
-      getCustomerInterviewIntro(record),
-      "고객이 직접 말하는 결과",
-      record.company,
-    ],
+    description: getCustomerInterviewIntro(record),
     headlineLines: record.featured?.headlineLines ?? [quote],
+    projectName,
   };
 }
 

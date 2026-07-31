@@ -1,5 +1,6 @@
 import Image from "next/image";
 
+import { FIXED_PRICE_ACTION } from "../../_components/ContactActionButtons";
 import { CtaSection } from "../../_components/CtaSection";
 import { JsonLdScript } from "../../_components/JsonLdScript";
 import {
@@ -20,7 +21,9 @@ type PortfolioPageProps = {
 
 export const metadata = createPageMetadata("portfolio");
 
-export default async function PortfolioPage({ searchParams }: PortfolioPageProps) {
+export default async function PortfolioPage({
+  searchParams,
+}: PortfolioPageProps) {
   const resolvedSearchParams = await searchParams;
   const initialCategoryId = getPortfolioCategoryIdFromValue(
     resolvedSearchParams?.category,
@@ -79,10 +82,7 @@ export default async function PortfolioPage({ searchParams }: PortfolioPageProps
         description="견적부터 납기까지 빠르고 명확하게 안내드립니다."
         descriptionSize="md"
         id="contact"
-        secondaryAction={{
-          label: "정찰제 가격 보기",
-          href: "/#services",
-        }}
+        secondaryAction={FIXED_PRICE_ACTION}
         titleLines={["궁금하신 점, 지금 바로 문의하세요"]}
       />
     </div>

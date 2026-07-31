@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 
+import { FIXED_PRICE_ACTION } from "../../_components/ContactActionButtons";
 import { CtaSection } from "../../_components/CtaSection";
 import { JsonLdScript } from "../../_components/JsonLdScript";
 import {
@@ -53,34 +54,43 @@ function FeaturedInterview({
         <h3 className={styles.reviewsFeaturedCompactTitle}>
           {featuredCustomerInterview.title}
         </h3>
-        <span className={styles.reviewsQuoteMark} aria-hidden="true">
-          <Image
-            alt=""
-            className={styles.reviewsQuoteMarkImage}
-            fill
-            sizes="22px"
-            src={reviewQuoteMarkIcon}
-          />
-        </span>
-        <p className={styles.reviewsFeaturedDesktopTitle} aria-hidden="true">
-          {featuredCustomerInterview.headlineLines.map((line, index) => (
-            <span key={`${featuredCustomerInterview.id}-headline-${index}`}>
-              {line}
+        <div className={styles.reviewsFeaturedSummary}>
+          <div className={styles.reviewsFeaturedQuoteGroup}>
+            <span className={styles.reviewsQuoteMark} aria-hidden="true">
+              <Image
+                alt=""
+                className={styles.reviewsQuoteMarkImage}
+                fill
+                sizes="27px"
+                src={reviewQuoteMarkIcon}
+              />
             </span>
-          ))}
-        </p>
-        <div className={styles.reviewsFeaturedBody}>
-          <p>{featuredCustomerInterview.body[0]}</p>
-          <p>
-            <strong>{featuredCustomerInterview.body[1]}</strong>
-          </p>
-          <blockquote>
-            <p>&quot;{featuredCustomerInterview.quote}&quot;</p>
-          </blockquote>
-          <p>{featuredCustomerInterview.body[2]}</p>
+            <div className={styles.reviewsFeaturedCopy}>
+              <p
+                className={styles.reviewsFeaturedDesktopTitle}
+                aria-hidden="true"
+              >
+                {featuredCustomerInterview.headlineLines.map((line, index) => (
+                  <span
+                    key={`${featuredCustomerInterview.id}-headline-${index}`}
+                  >
+                    {line}
+                  </span>
+                ))}
+              </p>
+              <p className={styles.reviewsFeaturedDescription}>
+                {featuredCustomerInterview.description}
+              </p>
+            </div>
+          </div>
+          <span
+            aria-hidden="true"
+            className={styles.reviewsFeaturedDivider}
+          />
         </div>
-        <footer className={styles.reviewsCardMeta}>
-          {featuredCustomerInterview.meta}
+        <footer className={styles.reviewsFeaturedMeta}>
+          <p>{featuredCustomerInterview.company}</p>
+          <p>{featuredCustomerInterview.projectName}</p>
         </footer>
       </div>
       <figure className={styles.reviewsFeaturedMedia}>
@@ -152,12 +162,14 @@ export default async function CustomerReviewsPage() {
             <div className={styles.reviewsInterviewLead}>
               <div className={styles.reviewsSectionHeading}>
                 <p className={styles.reviewsBadge}>고객 인터뷰</p>
-                <h2 id="customer-interview-heading">
-                  실제 인터뷰 영상으로 확인하세요
-                </h2>
-                <p className={styles.reviewsSectionDescription}>
-                  씨브레인을 선택한 고객들이 직접 이야기합니다.
-                </p>
+                <div className={styles.reviewsSectionCopy}>
+                  <h2 id="customer-interview-heading">
+                    실제 인터뷰 영상으로 확인하세요
+                  </h2>
+                  <p className={styles.reviewsSectionDescription}>
+                    씨브레인을 선택한 고객들이 직접 이야기합니다.
+                  </p>
+                </div>
               </div>
 
               {featuredCustomerInterview ? (
@@ -191,7 +203,7 @@ export default async function CustomerReviewsPage() {
                               alt={interview.videoAlt}
                               className={styles.reviewsMediaImage}
                               fill
-                              sizes="(min-width: 1080px) 341px, (min-width: 640px) 296px, 350px"
+                              sizes="(min-width: 1120px) 530px, (min-width: 640px) calc((100vw - 60px) / 2), calc(100vw - 40px)"
                               src={interview.thumbnail}
                             />
                             <span
@@ -205,15 +217,17 @@ export default async function CustomerReviewsPage() {
                               {interview.category}
                             </p>
                             <div className={styles.reviewsInterviewCopy}>
-                              <h3 id={titleId}>{interview.title}</h3>
+                              <h3 id={titleId}>
+                                {interview.company} — 씨브레인 고객 인터뷰
+                              </h3>
                               <blockquote>
                                 &quot;{interview.quote}&quot;
                               </blockquote>
                             </div>
+                            <footer className={styles.reviewsCardMeta}>
+                              {interview.meta}
+                            </footer>
                           </div>
-                          <footer className={styles.reviewsCardMeta}>
-                            {interview.meta}
-                          </footer>
                         </Link>
                       </article>
                     </li>
@@ -248,7 +262,7 @@ export default async function CustomerReviewsPage() {
       </section>
 
       <CtaSection
-        secondaryAction={{ label: "정찰제 가격 보기", href: "/#services" }}
+        secondaryAction={FIXED_PRICE_ACTION}
         titleLines={[
           "많은 기업들이 씨브레인을 선택한 이유,",
           "이제 직접 경험해 보세요.",

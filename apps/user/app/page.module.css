@@ -326,43 +326,6 @@
   }
 }
 
-.heroGradientButton::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  border-radius: inherit;
-  box-sizing: border-box;
-  border: 1px solid transparent;
-  background-origin: border-box;
-  pointer-events: none;
-  -webkit-mask:
-    linear-gradient(#ffffff 0 0) padding-box,
-    linear-gradient(#ffffff 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
-}
-
-.heroGradientButton {
-  position: relative;
-  isolation: isolate;
-  overflow: hidden;
-}
-
-.heroGradientButton::before {
-  background:
-    var(--landing-button-border-end), var(--landing-button-border-start);
-}
-
-.heroGradientButton > * {
-  position: relative;
-  z-index: 1;
-}
-
-.heroGradientButtonIcon {
-  flex: 0 0 auto;
-}
-
 .blogCopy,
 .serviceCopy,
 .footerInfo,
@@ -1425,9 +1388,13 @@
 
 .reviewsHeroCopy,
 .reviewsSectionHeading,
+.reviewsSectionCopy,
 .reviewsInterviewArticle,
 .reviewsFeaturedText,
-.reviewsFeaturedBody,
+.reviewsFeaturedSummary,
+.reviewsFeaturedQuoteGroup,
+.reviewsFeaturedCopy,
+.reviewsFeaturedMeta,
 .reviewsInterviewBody,
 .reviewsInterviewCopy,
 .reviewsTestimonialArticle,
@@ -1515,6 +1482,11 @@
 .reviewsSectionHeading {
   align-items: flex-start;
   gap: 16px;
+}
+
+.reviewsSectionCopy {
+  align-items: flex-start;
+  gap: 4px;
 }
 
 .reviewsSectionHeading h2 {
@@ -1627,6 +1599,15 @@
   gap: 16px;
 }
 
+.reviewsFeaturedSummary,
+.reviewsFeaturedQuoteGroup {
+  gap: 0;
+}
+
+.reviewsFeaturedCopy {
+  gap: 8px;
+}
+
 .reviewsCategory {
   color: var(--landing-brand-500);
   font-family: var(--font-sans);
@@ -1644,46 +1625,82 @@
 }
 
 .reviewsQuoteMark,
-.reviewsFeaturedDesktopTitle {
+.reviewsFeaturedDesktopTitle,
+.reviewsFeaturedDivider {
   display: none;
 }
 
 .reviewsQuoteMark {
-  width: 22px;
-  height: 8px;
+  width: 27px;
+  height: 24px;
   position: relative;
 }
 
 .reviewsFeaturedDesktopTitle {
   color: var(--landing-gray-800);
   font-family: var(--font-sans);
-  font-size: 18px;
+  font-size: 24px;
   font-weight: 700;
-  line-height: 26px;
-  letter-spacing: -0.27px;
+  line-height: 32px;
+  letter-spacing: -0.36px;
 }
 
 .reviewsFeaturedDesktopTitle span {
   display: block;
 }
 
-.reviewsFeaturedBody {
-  gap: 8px;
+.reviewsFeaturedDescription {
   color: var(--landing-gray-600);
   font-family: var(--font-sans);
   font-size: 16px;
   font-weight: 500;
   line-height: 24px;
   letter-spacing: -0.24px;
-  word-break: keep-all;
+  word-break: break-word;
 }
 
-.reviewsFeaturedBody strong {
+.reviewsFeaturedDivider {
+  width: 100%;
+  height: 0;
+  position: relative;
+}
+
+.reviewsFeaturedDivider::before {
+  content: "";
+  width: 100%;
+  height: 1px;
+  position: absolute;
+  top: -0.5px;
+  left: 0;
+  background: linear-gradient(
+    90deg,
+    rgba(30, 41, 59, 0) 0%,
+    rgba(30, 41, 59, 0.2) 50%,
+    rgba(30, 41, 59, 0) 100%
+  );
+}
+
+.reviewsFeaturedMeta {
+  gap: 4px;
+  font-family: var(--font-sans);
+  font-weight: 500;
+  word-break: break-word;
+}
+
+.reviewsFeaturedMeta p:first-child {
   color: var(--landing-gray-800);
-  font-weight: 700;
+  font-size: 16px;
+  line-height: 24px;
+  letter-spacing: -0.24px;
 }
 
-.reviewsFeaturedBody blockquote,
+.reviewsFeaturedMeta p:last-child {
+  color: var(--landing-gray-600);
+  font-size: 12px;
+  line-height: 16px;
+  letter-spacing: -0.18px;
+}
+
 .reviewsInterviewCopy blockquote,
 .reviewsTestimonialContent blockquote,
 .reviewsTestimonialBody {
@@ -1696,6 +1713,8 @@
   font-size: 12px;
   font-weight: 500;
   line-height: 16px;
+  letter-spacing: -0.18px;
+  word-break: break-word;
 }
 
 .reviewsInterviewGrid,
@@ -1719,7 +1738,6 @@
 .reviewsInterviewCard,
 .reviewsTestimonialCard {
   min-width: 0;
-  border: 1px solid var(--landing-gray-100);
   border-radius: 16px;
   background: var(--landing-gray-50);
   overflow: hidden;
@@ -1730,13 +1748,17 @@
   flex-direction: column;
 }
 
+.reviewsTestimonialCard {
+  border: 1px solid var(--landing-gray-100);
+}
+
 .reviewsInterviewArticle,
 .reviewsTestimonialArticle {
   height: 100%;
 }
 
 .reviewsInterviewBody {
-  padding: 20px 20px 0;
+  padding: 20px;
   gap: 16px;
 }
 
@@ -1763,10 +1785,13 @@
   font-size: 14px;
   font-weight: 500;
   line-height: 20px;
+  letter-spacing: -0.21px;
 }
 
-.reviewsInterviewCard .reviewsCardMeta {
-  padding: 0 20px 20px;
+.reviewsInterviewCopy blockquote {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .reviewsTestimonialCard {
@@ -3035,9 +3060,12 @@
     align-items: flex-start;
   }
 
-  .reviewsHeroContent,
-  .reviewsContent {
+  .reviewsHeroContent {
     width: min(100%, 1080px);
+  }
+
+  .reviewsContent {
+    width: min(100%, 1120px);
   }
 
   .reviewsHeroContent {
@@ -3051,6 +3079,10 @@
   }
 
   .reviewsInterviewSection {
+    gap: 32px;
+  }
+
+  .reviewsInterviewLead {
     gap: 52px;
   }
 
@@ -3085,6 +3117,15 @@
 
   .reviewsFeaturedText {
     order: 2;
+    gap: 20px;
+  }
+
+  .reviewsFeaturedSummary {
+    gap: 32px;
+  }
+
+  .reviewsFeaturedQuoteGroup {
+    gap: 24px;
   }
 
   .reviewsFeaturedCompactTitle {
@@ -3092,7 +3133,8 @@
   }
 
   .reviewsQuoteMark,
-  .reviewsFeaturedDesktopTitle {
+  .reviewsFeaturedDesktopTitle,
+  .reviewsFeaturedDivider {
     display: block;
   }
 
@@ -3112,6 +3154,11 @@
 
   .reviewsInterviewMedia {
     aspect-ratio: 530 / 299;
+  }
+
+  .reviewsInterviewBody {
+    padding: 16px 20px;
+    gap: 20px;
   }
 
   .reviewsCategory {
@@ -3355,7 +3402,7 @@
   }
 
   .reviewsContent {
-    width: min(100%, 1080px);
+    width: min(100%, 1120px);
   }
 
   .footer {

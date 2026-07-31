@@ -1,68 +1,14 @@
-"use client";
-
-import { Button, ButtonLink } from "@repo/ui/button";
-import { useRouter } from "next/navigation";
-
-import { Icon } from "../../components/Icon";
 import { PageHero } from "../../components/PageHero";
-import { KAKAO_CHANNEL_URL } from "../_content/contact";
 import styles from "../page.module.css";
-import { createGradientBorderButtonStyle } from "./buttonStyles";
-
-const heroButtonWidth = "var(--landing-hero-button-width, 164px)" as const;
-
-const kakaoButtonStyle = {
-  ...createGradientBorderButtonStyle({
-    includeBorder: false,
-    tone: "contactKakao",
-  }),
-  width: heroButtonWidth,
-};
-
-const priceButtonStyle = {
-  ...createGradientBorderButtonStyle({ includeBorder: false }),
-  width: heroButtonWidth,
-};
+import {
+  ContactActionButtons,
+  FIXED_PRICE_ACTION,
+} from "./ContactActionButtons";
 
 export function Hero() {
-  const router = useRouter();
-
-  const handlePriceButtonClick = () => {
-    router.push("/order");
-  };
-
   return (
     <PageHero
-      actions={
-        <>
-          <ButtonLink
-            className={styles.heroGradientButton}
-            href={KAKAO_CHANNEL_URL}
-            rel="noreferrer"
-            style={kakaoButtonStyle}
-            target="_blank"
-          >
-            <span>실시간 카톡상담</span>
-            <Icon
-              className={styles.heroGradientButtonIcon}
-              name="message-typing"
-              size={24}
-            />
-          </ButtonLink>
-          <Button
-            className={styles.heroGradientButton}
-            onClick={handlePriceButtonClick}
-            style={priceButtonStyle}
-          >
-            <span>정찰제 가격 보기</span>
-            <Icon
-              className={styles.heroGradientButtonIcon}
-              name="arrow-right"
-              size={24}
-            />
-          </Button>
-        </>
-      }
+      actions={<ContactActionButtons secondaryAction={FIXED_PRICE_ACTION} />}
       backgroundAlt="편집디자인 전문회사 씨브레인 브랜드 이미지"
       backgroundImage="/figma-assets/landing-hero-background.png"
       backgroundPosition="62% center"

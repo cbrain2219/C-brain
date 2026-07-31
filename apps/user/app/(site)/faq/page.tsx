@@ -117,7 +117,7 @@ export default function FaqPage() {
       </div>
 
       <CtaSection
-        badge="상담 가능 시간 : 평일 오전 9시 ~ 오후 6시"
+        badge="상담 시간 : 월-목) 08시~17시 / 금) 08시~16시"
         description="씨브레인에 직접 물어보세요. 빠르게 답변드립니다."
         id="faq-contact"
         titleLines={["찾으시는 답변이 없으신가요?"]}

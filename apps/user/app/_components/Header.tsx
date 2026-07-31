@@ -1,9 +1,8 @@
 "use client";
 
-import { Button, ButtonLink } from "@repo/ui/button";
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import {
   type MouseEvent,
   type SyntheticEvent,
@@ -13,9 +12,11 @@ import {
 } from "react";
 
 import { Icon } from "../../components/Icon";
-import { KAKAO_CHANNEL_URL } from "../_content/contact";
 import styles from "../page.module.css";
-import { createGradientBorderButtonStyle } from "./buttonStyles";
+import {
+  ContactActionButtons,
+  FIXED_PRICE_ACTION,
+} from "./ContactActionButtons";
 
 const navItems = [
   { label: "회사소개", href: "/about" },
@@ -28,16 +29,8 @@ const navItems = [
   { label: "공지사항", href: "/notice" },
 ];
 
-const priceButtonStyle = createGradientBorderButtonStyle({ width: 148 });
-
-const kakaoButtonStyle = createGradientBorderButtonStyle({
-  tone: "kakao",
-  width: 148,
-});
-
 export function Header() {
   const pathname = usePathname();
-  const router = useRouter();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [activeNavHref, setActiveNavHref] = useState<string | null>(null);
@@ -102,10 +95,6 @@ export function Header() {
 
   const handleOpenMenu = () => {
     setIsMenuOpen(true);
-  };
-
-  const handlePriceButtonClick = () => {
-    router.push("/order");
   };
 
   const handleOverlayClick = (event: MouseEvent<HTMLDialogElement>) => {
@@ -186,17 +175,11 @@ export function Header() {
       </div>
 
       <div className={styles.headerActions}>
-        <Button onClick={handlePriceButtonClick} style={priceButtonStyle}>
-          정찰제 가격 보기
-        </Button>
-        <ButtonLink
-          href={KAKAO_CHANNEL_URL}
-          rel="noreferrer"
-          style={kakaoButtonStyle}
-          target="_blank"
-        >
-          실시간 카톡상담
-        </ButtonLink>
+        <ContactActionButtons
+          actionOrder="secondary-first"
+          secondaryAction={FIXED_PRICE_ACTION}
+          variant="compact"
+        />
       </div>
 
       <button
