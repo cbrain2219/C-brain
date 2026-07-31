@@ -6,6 +6,10 @@ const stylesUrl = new URL(
   "../app/(site)/faq/page.module.css",
   import.meta.url,
 );
+const accordionUrl = new URL(
+  "../../../packages/ui/src/accordion.tsx",
+  import.meta.url,
+);
 
 function cssBlock(sourceText, selector) {
   const selectorIndex = sourceText.indexOf(selector);
@@ -29,6 +33,24 @@ function cssBlock(sourceText, selector) {
 
   assert.fail(`Missing closing brace for ${selector}`);
 }
+
+test("FAQ card padding belongs to the clickable summary", async () => {
+  const accordionSource = await readFile(accordionUrl, "utf8");
+
+  assert.match(accordionSource, /const detailsStyle:[\s\S]*?padding:\s*0,/);
+  assert.match(
+    accordionSource,
+    /const summaryStyle:[\s\S]*?width:\s*"100%",[\s\S]*?padding:\s*"16px 20px",/,
+  );
+  assert.match(
+    accordionSource,
+    /<summary[\s\S]*?paddingBottom:\s*isOpen \? 12 : 16/,
+  );
+  assert.match(
+    accordionSource,
+    /const contentStyle:[\s\S]*?padding:\s*"0 20px 16px",/,
+  );
+});
 
 test("FAQ category navigation follows the shared responsive header offset", async () => {
   const stylesSource = await readFile(stylesUrl, "utf8");

@@ -23,7 +23,7 @@ export interface AccordionProps extends Omit<
 const detailsStyle: CSSProperties = {
   width: 350,
   boxSizing: "border-box",
-  padding: "16px 20px",
+  padding: 0,
   border: "1px solid var(--accordion-border-color, #e9ecf2)",
   borderRadius: "var(--accordion-radius, 16px)",
   background: "var(--accordion-background, #ffffff)",
@@ -32,10 +32,13 @@ const detailsStyle: CSSProperties = {
 };
 
 const summaryStyle: CSSProperties = {
+  width: "100%",
+  boxSizing: "border-box",
   display: "flex",
   alignItems: "center",
   justifyContent: "space-between",
   gap: 8,
+  padding: "16px 20px",
   listStyle: "none",
   cursor: "pointer",
 };
@@ -61,7 +64,7 @@ const contentStyle: CSSProperties = {
   display: "flex",
   flexDirection: "column",
   gap: 12,
-  paddingTop: 12,
+  padding: "0 20px 16px",
 };
 
 const dividerStyle: CSSProperties = {
@@ -138,7 +141,7 @@ export const Accordion = forwardRef<HTMLDetailsElement, AccordionProps>(
         ref={ref}
         style={{ ...detailsStyle, ...style }}
       >
-        <summary style={summaryStyle}>
+        <summary style={{ ...summaryStyle, paddingBottom: isOpen ? 12 : 16 }}>
           <span style={questionStyle}>{question}</span>
           <ChevronIcon open={isOpen} />
         </summary>
