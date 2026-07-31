@@ -27,6 +27,7 @@ export type IconName =
   | "channel-youtube"
   | "check-01"
   | "chevron-down"
+  | "chevron-right"
   | "credit-card"
   | "dots-horizontal"
   | "edit-03"
@@ -174,6 +175,28 @@ function ChevronDownIcon({ size = 24, ...props }: Omit<IconProps, "name">) {
   );
 }
 
+function ChevronRightIcon({ size = 24, ...props }: Omit<IconProps, "name">) {
+  return (
+    <svg
+      aria-hidden="true"
+      fill="none"
+      height={size}
+      viewBox="0 0 16 16"
+      width={size}
+      xmlns="http://www.w3.org/2000/svg"
+      {...props}
+    >
+      <path
+        d="M6.33333 4.66667L9.66667 8L6.33333 11.3333"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="1.5"
+      />
+    </svg>
+  );
+}
+
 function BookOpenIcon({ size = 24, ...props }: Omit<IconProps, "name">) {
   return (
     <svg
@@ -235,13 +258,7 @@ function CameraIcon({ size = 24, ...props }: Omit<IconProps, "name">) {
         strokeLinecap="round"
         strokeWidth="2"
       />
-      <circle
-        cx="11"
-        cy="10.5"
-        r="3"
-        stroke="currentColor"
-        strokeWidth="2"
-      />
+      <circle cx="11" cy="10.5" r="3" stroke="currentColor" strokeWidth="2" />
     </svg>
   );
 }
@@ -784,6 +801,7 @@ const icons = {
   "channel-youtube": ChannelYoutubeIcon,
   "check-01": Check01Icon,
   "chevron-down": ChevronDownIcon,
+  "chevron-right": ChevronRightIcon,
   "credit-card": CreditCardIcon,
   "dots-horizontal": DotsHorizontalIcon,
   "edit-03": Edit03Icon,

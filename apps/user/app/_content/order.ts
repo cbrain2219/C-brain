@@ -15,14 +15,11 @@ export type OrderMethod = {
 };
 
 export const orderSteps = [
-  { label: "Ⅰ. 카테고리 선택", state: "active" },
-  { label: "Ⅱ. 옵션 선택", state: "inactive" },
-  { label: "Ⅲ. 정보 입력", state: "inactive" },
-  { label: "Ⅳ. 결제 완료", state: "inactive" },
-] as const satisfies ReadonlyArray<{
-  label: string;
-  state: OrderStepState;
-}>;
+  { number: 1, label: "카테고리 선택" },
+  { number: 2, label: "옵션 선택" },
+  { number: 3, label: "정보 선택" },
+  { number: 4, label: "결제 완료" },
+] as const;
 
 export const orderMethods = [
   {
@@ -167,8 +164,9 @@ const createAdminUnitPrices = (
         const unitPrice = unitPricesByQuantity[quantityIndex];
 
         if (unitPrice !== undefined) {
-          unit_prices[getAdminUnitPriceKey(paperIndex, pageIndex, quantityIndex)] =
-            unitPrice;
+          unit_prices[
+            getAdminUnitPriceKey(paperIndex, pageIndex, quantityIndex)
+          ] = unitPrice;
         }
       });
     });
@@ -197,7 +195,10 @@ const toPageChoice = (pageCount: number): OrderOptionChoice => ({
   label: `${pageCount}p`,
 });
 
-const toPaperChoice = (paperType: string, index: number): OrderOptionChoice => ({
+const toPaperChoice = (
+  paperType: string,
+  index: number,
+): OrderOptionChoice => ({
   id: `paper-${index}`,
   label: paperType,
 });
@@ -309,7 +310,9 @@ const createQuantityOptions = (
       : [];
   });
 
-function createOrderOptionConfig(product: AdminOrderProduct): OrderOptionConfig {
+function createOrderOptionConfig(
+  product: AdminOrderProduct,
+): OrderOptionConfig {
   const registration = fromAdminProductToOrderRegistration(product);
   const selectedService = registration.designPrintService;
   const defaultPage = registration.pageOptions[0];

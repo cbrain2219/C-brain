@@ -55,6 +55,7 @@ const countMatches = (source, pattern) => source.match(pattern)?.length ?? 0;
 test("order page route, content, responsive styles, and navigation are wired", () => {
   const routePath = "apps/user/app/(site)/order/page.tsx";
   const flowSectionPath = "apps/user/app/(site)/order/OrderFlowSection.tsx";
+  const progressPath = "apps/user/app/(site)/order/OrderProgress.tsx";
   const methodSelectorPath =
     "apps/user/app/(site)/order/OrderMethodSelector.tsx";
   const optionSelectionPath =
@@ -68,6 +69,7 @@ test("order page route, content, responsive styles, and navigation are wired", (
 
   assert.equal(existsSync(path.join(repoRoot, routePath)), true);
   assert.equal(existsSync(path.join(repoRoot, flowSectionPath)), true);
+  assert.equal(existsSync(path.join(repoRoot, progressPath)), true);
   assert.equal(existsSync(path.join(repoRoot, methodSelectorPath)), true);
   assert.equal(existsSync(path.join(repoRoot, optionSelectionPath)), true);
   assert.equal(existsSync(path.join(repoRoot, customerInfoPath)), true);
@@ -78,6 +80,7 @@ test("order page route, content, responsive styles, and navigation are wired", (
 
   const routeSource = read(routePath);
   const flowSectionSource = read(flowSectionPath);
+  const progressSource = read(progressPath);
   const methodSelectorSource = read(methodSelectorPath);
   const optionSelectionSource = read(optionSelectionPath);
   const customerInfoSource = read(customerInfoPath);
@@ -88,6 +91,11 @@ test("order page route, content, responsive styles, and navigation are wired", (
   const contactSource = read(contactPath);
   const headerSource = read("apps/user/app/_components/Header.tsx");
   const iconSource = read("apps/user/components/Icon.tsx");
+  const chevronRightIconSource = extractBetween(
+    iconSource,
+    "function ChevronRightIcon",
+    "function BookOpenIcon",
+  );
   const orderMethodsSource = extractBetween(
     contentSource,
     "export const orderMethods",
@@ -118,6 +126,30 @@ test("order page route, content, responsive styles, and navigation are wired", (
     "@media (min-width: 1440px)",
   );
 
+  assert.match(progressSource, /type OrderProgressProps = \{/);
+  assert.match(progressSource, /activeStepIndex:\s*number/);
+  assert.match(progressSource, /aria-label="주문 진행 단계"/);
+  assert.match(
+    progressSource,
+    /aria-current=\{isActive \? "step" : undefined\}/,
+  );
+  assert.match(progressSource, /styles\.stepChip/);
+  assert.match(progressSource, /styles\.stepLabel/);
+  assert.match(progressSource, /name="chevron-right"/);
+  assert.match(progressSource, /size=\{16\}/);
+  assert.doesNotMatch(progressSource, /stepItemComplete/);
+
+  assert.match(contentSource, /number:\s*1,\s*label:\s*"카테고리 선택"/);
+  assert.match(contentSource, /number:\s*2,\s*label:\s*"옵션 선택"/);
+  assert.match(contentSource, /number:\s*3,\s*label:\s*"정보 선택"/);
+  assert.match(contentSource, /number:\s*4,\s*label:\s*"결제 완료"/);
+
+  assert.match(iconSource, /\| "chevron-right"/);
+  assert.match(iconSource, /function ChevronRightIcon/);
+  assert.match(chevronRightIconSource, /stroke="currentColor"/);
+  assert.match(chevronRightIconSource, /strokeWidth="1\.5"/);
+  assert.match(iconSource, /"chevron-right": ChevronRightIcon/);
+
   assert.match(routeSource, /export default function OrderPage/);
   assert.match(routeSource, /"use client"/);
   assert.match(routeSource, /useEffect/);
@@ -129,10 +161,7 @@ test("order page route, content, responsive styles, and navigation are wired", (
   assert.doesNotMatch(routeSource, /orderConsultSearchParam/);
   assert.doesNotMatch(routeSource, /orderQuoteConsultSearchValue/);
   assert.match(routeSource, /new URLSearchParams\(window\.location\.search\)/);
-  assert.match(
-    routeSource,
-    /searchParams\.get\(orderServiceSearchParam\)/,
-  );
+  assert.match(routeSource, /searchParams\.get\(orderServiceSearchParam\)/);
   assert.match(routeSource, /setSelectedDirectService\(initialService\)/);
   assert.match(routeSource, /setOrderStep\("option"\)/);
   assert.match(routeSource, /OrderPaymentSubmitPayload/);
@@ -525,10 +554,7 @@ test("order page route, content, responsive styles, and navigation are wired", (
     desktopMediaStyles,
     /\.heroInner\s*\{[\s\S]*?width:\s*min\(100%,\s*1080px\);/,
   );
-  assert.doesNotMatch(
-    desktopMediaStyles,
-    /\.hero\s*\{[^}]*min-height:/,
-  );
+  assert.doesNotMatch(desktopMediaStyles, /\.hero\s*\{[^}]*min-height:/);
   assert.match(
     desktopMediaStyles,
     /\.heroInner\s*\{[\s\S]*?padding-top:\s*var\(--site-page-top-offset, 124px\);[\s\S]*?padding-left:\s*80px;[\s\S]*?padding-right:\s*80px;[\s\S]*?padding-bottom:\s*104px;/,
@@ -541,18 +567,12 @@ test("order page route, content, responsive styles, and navigation are wired", (
     tabletMediaStyles,
     /\.heroInner\s*\{[\s\S]*?margin:\s*0 auto;/,
   );
-  assert.match(
-    desktopMediaStyles,
-    /\.heroInner\s*\{[\s\S]*?margin:\s*0 auto;/,
-  );
+  assert.match(desktopMediaStyles, /\.heroInner\s*\{[\s\S]*?margin:\s*0 auto;/);
   assert.match(
     pcMediaStyles,
     /\.heroInner,\s*\.orderInner\s*\{[\s\S]*?width:\s*1360px/,
   );
-  assert.doesNotMatch(
-    pcMediaStyles,
-    /\.hero\s*\{[^}]*min-height:/,
-  );
+  assert.doesNotMatch(pcMediaStyles, /\.hero\s*\{[^}]*min-height:/);
   assert.match(
     pcMediaStyles,
     /\.heroInner\s*\{[\s\S]*?padding-top:\s*var\(--site-page-top-offset, 124px\);[\s\S]*?padding-bottom:\s*104px;[\s\S]*?margin:\s*0 auto;/,
@@ -895,7 +915,7 @@ test("order page route, content, responsive styles, and navigation are wired", (
   assert.match(orderMethodsSource, /tone:\s*"quote"/);
   assert.match(contentSource, /규격·사양이 정해진 표준 제품/);
   assert.match(contentSource, /규격 협의 필요하거나 대량 주문/);
-  assert.match(contentSource, /Ⅲ\. 정보 입력/);
+  assert.match(contentSource, /정보 선택/);
   assert.match(contentSource, /export type OrderStepId/);
   assert.match(contentSource, /export type AdminOrderProduct/);
   assert.match(contentSource, /export type OrderUnitPriceQuote/);
@@ -906,9 +926,15 @@ test("order page route, content, responsive styles, and navigation are wired", (
   assert.match(contentSource, /export const orderProductRegistrations/);
   assert.match(contentSource, /note:\s*"페이지당 N만원"/);
   assert.doesNotMatch(contentSource, /note:\s*"규모에 따라 별도 상담"/);
-  assert.match(contentSource, /export const orderServiceSearchParam = "service"/);
+  assert.match(
+    contentSource,
+    /export const orderServiceSearchParam = "service"/,
+  );
   assert.doesNotMatch(contentSource, /export const orderConsultSearchParam/);
-  assert.doesNotMatch(contentSource, /export const orderQuoteConsultSearchValue/);
+  assert.doesNotMatch(
+    contentSource,
+    /export const orderQuoteConsultSearchValue/,
+  );
   assert.match(contentSource, /export const getOrderDirectServiceHref/);
   assert.doesNotMatch(contentSource, /export const getOrderQuoteConsultHref/);
   assert.match(contentSource, /export const orderOptionCatalog/);
@@ -959,7 +985,10 @@ test("order page route, content, responsive styles, and navigation are wired", (
     /const directServices = directOrderServiceIds\.map/,
   );
   assert.match(servicesSource, /export function getDirectServiceItemById/);
-  assert.match(servicesSource, /service\.id === serviceId && !service\.isQuote/);
+  assert.match(
+    servicesSource,
+    /service\.id === serviceId && !service\.isQuote/,
+  );
   assert.match(servicesArraySource, /\.\.\.directServices/);
   assert.equal(countMatches(servicesArraySource, /title:/g), 2);
   assert.equal(countMatches(servicesArraySource, /id:/g), 2);
