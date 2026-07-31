@@ -58,8 +58,10 @@ export function BlogSection() {
             <div className={styles.blogCardBody}>
               <div className={styles.blogCopy}>
                 <p className={styles.blogCategory}>{post.category}</p>
-                <h3>{post.title}</h3>
-                <p>{post.summary}</p>
+                <div className={styles.blogText}>
+                  <h3>{post.title}</h3>
+                  <p>{post.summary}</p>
+                </div>
               </div>
               <time dateTime={post.publishedAtIso}>{post.publishedAt}</time>
             </div>

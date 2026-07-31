@@ -128,7 +128,7 @@
   z-index: 10;
   background:
     linear-gradient(var(--landing-gray-100), var(--landing-gray-100)) center
-      bottom / 100% 1px no-repeat,
+      bottom / calc(100% - 40px) 1px no-repeat,
     #ffffff;
   display: flex;
   gap: 4px;

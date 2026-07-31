@@ -7,6 +7,10 @@ const aboutSectionPath = new URL(
   import.meta.url,
 );
 const stylesPath = new URL("../app/page.module.css", import.meta.url);
+const reasonDividerAssetPath = new URL(
+  "../public/figma-assets/about-reason-divider.svg",
+  import.meta.url,
+);
 
 function cssBlock(source, selector) {
   const start = source.indexOf(selector);
@@ -61,7 +65,10 @@ test("landing about reason items stay one column before their body text has one-
 });
 
 test("landing about reason items follow the Figma card and desktop list styles", async () => {
-  const stylesSource = await readFile(stylesPath, "utf8");
+  const [stylesSource, reasonDividerAssetSource] = await Promise.all([
+    readFile(stylesPath, "utf8"),
+    readFile(reasonDividerAssetPath, "utf8"),
+  ]);
   const baseReasonGrid = cssBlock(stylesSource, ".reasonGrid");
   const baseReasonItem = cssBlock(stylesSource, ".reasonItem {");
   const baseReasonIcon = cssBlock(stylesSource, ".reasonIcon {");
@@ -86,7 +93,13 @@ test("landing about reason items follow the Figma card and desktop list styles",
   assert.match(pcMedia, /\.reasonDivider\s*\{/);
   assert.match(
     pcMedia,
-    /\.reasonDivider\s*\{[^}]*border-top:\s*1px dashed #ffffff;[^}]*opacity:\s*0\.3;/s,
+    /\.reasonDivider\s*\{[^}]*height:\s*1px;[^}]*background:\s*url\("\/figma-assets\/about-reason-divider\.svg"\) center \/ 100% 1px no-repeat;/s,
+  );
+  assert.match(reasonDividerAssetSource, /opacity="0\.3"/);
+  assert.match(reasonDividerAssetSource, /stroke-dasharray="2 2"/);
+  assert.match(
+    reasonDividerAssetSource,
+    /<stop offset="1" stop-color="white" stop-opacity="0"\/>/,
   );
   assert.doesNotMatch(pcMedia, /\.reasonDivider\s*\{[^}]*margin:/s);
 });

@@ -44,6 +44,7 @@ const paths = {
   ),
   page: new URL("../app/(site)/blog/page.tsx", import.meta.url),
   styles: new URL("../app/(site)/blog/page.module.css", import.meta.url),
+  landingStyles: new URL("../app/page.module.css", import.meta.url),
 };
 
 async function source(name) {
@@ -112,6 +113,24 @@ test("blog page keeps the shared header, hero, category, and CTA contracts", asy
     /<Icon[\s\S]*?className=\{styles\.moreButtonIcon\}[\s\S]*?name="arrow-right"[\s\S]*?size=\{24\}/,
   );
   assert.doesNotMatch(blogSection, /<Button/);
+});
+
+test("landing blog cards group titles and summaries with a 4px gap", async () => {
+  const [blogSection, landingStyles] = await Promise.all([
+    source("blogSection"),
+    source("landingStyles"),
+  ]);
+  const blogCopy = cssBlock(landingStyles, ".blogCopy {");
+  const blogText = cssBlock(landingStyles, ".blogText");
+
+  assert.match(
+    blogSection,
+    /<div className=\{styles\.blogText\}>\s*<h3>\{post\.title\}<\/h3>\s*<p>\{post\.summary\}<\/p>\s*<\/div>/,
+  );
+  assert.match(blogCopy, /gap:\s*16px/);
+  assert.match(blogText, /display:\s*flex/);
+  assert.match(blogText, /flex-direction:\s*column/);
+  assert.match(blogText, /gap:\s*4px/);
 });
 
 test("blog list page exposes SEO metadata", async () => {

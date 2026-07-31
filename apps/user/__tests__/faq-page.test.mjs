@@ -158,7 +158,7 @@ test("FAQ active category tab overlaps the gray rail like portfolio tabs", async
 
   assert.match(
     mobileCategoryNavStyle ?? "",
-    /background:\s*linear-gradient\(var\(--landing-gray-100\), var\(--landing-gray-100\)\)[\s\S]*center\s+bottom\s*\/\s*100% 1px no-repeat,/,
+    /background:\s*linear-gradient\(var\(--landing-gray-100\), var\(--landing-gray-100\)\)[\s\S]*center\s+bottom\s*\/\s*calc\(100% - 40px\) 1px no-repeat,/,
   );
   assert.doesNotMatch(mobileCategoryNavStyle ?? "", /border-bottom:/);
 

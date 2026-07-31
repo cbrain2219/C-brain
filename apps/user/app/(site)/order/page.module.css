@@ -267,6 +267,12 @@
   gap: 8px;
 }
 
+.categoryStep {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
 .methodCard {
   width: 100%;
   min-width: 0;
@@ -394,6 +400,12 @@
   color: var(--landing-gray-600);
   white-space: pre-line;
   overflow-wrap: break-word;
+}
+
+.productSection {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 }
 
 .productSectionHeader {
@@ -1942,6 +1954,14 @@
 
   .methodGrid {
     gap: 20px;
+  }
+
+  .orderInner[data-order-category-active="true"] {
+    gap: 52px;
+  }
+
+  .categoryStep {
+    gap: 52px;
   }
 
   .methodCard {

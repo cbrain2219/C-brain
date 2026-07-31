@@ -461,6 +461,28 @@ test("order page route, content, responsive styles, and navigation are wired", (
   assert.match(contactSource, /https:\/\/pf\.kakao\.com\/_JAFAG/);
   assert.match(stylesSource, /\.stepList\s*\{[^}]*display:\s*none/s);
   assert.match(orderInnerRule, /width:\s*100%/);
+  assert.match(orderInnerRule, /gap:\s*32px/);
+  assert.match(
+    flowSectionSource,
+    /data-order-category-active=\{!selectedDirectService\}/,
+  );
+  assert.match(
+    flowSectionSource,
+    /<div className=\{styles\.categoryStep\}>[\s\S]*?<OrderMethodSelector[\s\S]*?<div className=\{styles\.productSection\}>[\s\S]*?styles\.productSectionHeader[\s\S]*?<ServiceCards/,
+  );
+  assert.match(
+    stylesSource,
+    /\.categoryStep\s*\{[^}]*display:\s*flex[^}]*flex-direction:\s*column[^}]*gap:\s*32px/s,
+  );
+  assert.match(
+    stylesSource,
+    /\.productSection\s*\{[^}]*display:\s*flex[^}]*flex-direction:\s*column[^}]*gap:\s*20px/s,
+  );
+  assert.match(pcMediaStyles, /\.categoryStep\s*\{[^}]*gap:\s*52px/s);
+  assert.match(
+    pcMediaStyles,
+    /\.orderInner\[data-order-category-active="true"\]\s*\{[^}]*gap:\s*52px/s,
+  );
   assert.match(
     stylesSource,
     /\.optionHeader\s*\{[^}]*scroll-margin-top:\s*96px/s,
