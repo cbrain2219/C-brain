@@ -51,9 +51,6 @@ function FeaturedInterview({
       className={styles.reviewsFeatured}
     >
       <div className={styles.reviewsFeaturedText}>
-        <h3 className={styles.reviewsFeaturedCompactTitle}>
-          {featuredCustomerInterview.title}
-        </h3>
         <div className={styles.reviewsFeaturedSummary}>
           <div className={styles.reviewsFeaturedQuoteGroup}>
             <span className={styles.reviewsQuoteMark} aria-hidden="true">
@@ -66,10 +63,7 @@ function FeaturedInterview({
               />
             </span>
             <div className={styles.reviewsFeaturedCopy}>
-              <p
-                className={styles.reviewsFeaturedDesktopTitle}
-                aria-hidden="true"
-              >
+              <h3 className={styles.reviewsFeaturedTitle}>
                 {featuredCustomerInterview.headlineLines.map((line, index) => (
                   <span
                     key={`${featuredCustomerInterview.id}-headline-${index}`}
@@ -77,7 +71,7 @@ function FeaturedInterview({
                     {line}
                   </span>
                 ))}
-              </p>
+              </h3>
               <p className={styles.reviewsFeaturedDescription}>
                 {featuredCustomerInterview.description}
               </p>

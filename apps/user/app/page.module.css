@@ -1596,12 +1596,15 @@
 .reviewsFeaturedText {
   order: 1;
   justify-content: center;
-  gap: 16px;
+  gap: 20px;
 }
 
-.reviewsFeaturedSummary,
+.reviewsFeaturedSummary {
+  gap: 32px;
+}
+
 .reviewsFeaturedQuoteGroup {
-  gap: 0;
+  gap: 24px;
 }
 
 .reviewsFeaturedCopy {
@@ -1616,36 +1619,27 @@
   line-height: 20px;
 }
 
-.reviewsFeaturedCompactTitle {
-  color: var(--landing-gray-800);
-  font-family: var(--font-sans);
-  font-size: 16px;
-  font-weight: 700;
-  line-height: 24px;
-}
-
 .reviewsQuoteMark,
-.reviewsFeaturedDesktopTitle,
 .reviewsFeaturedDivider {
-  display: none;
+  display: block;
 }
 
 .reviewsQuoteMark {
-  width: 27px;
-  height: 24px;
+  width: 18px;
+  height: 16px;
   position: relative;
 }
 
-.reviewsFeaturedDesktopTitle {
+.reviewsFeaturedTitle {
   color: var(--landing-gray-800);
   font-family: var(--font-sans);
-  font-size: 24px;
+  font-size: 20px;
   font-weight: 700;
-  line-height: 32px;
-  letter-spacing: -0.36px;
+  line-height: 30px;
+  letter-spacing: -0.3px;
 }
 
-.reviewsFeaturedDesktopTitle span {
+.reviewsFeaturedTitle span {
   display: block;
 }
 
@@ -2964,6 +2958,11 @@
     aspect-ratio: 600 / 338;
   }
 
+  .reviewsPlayButtonLarge {
+    width: 64px;
+    height: 64px;
+  }
+
   .reviewsInterviewMedia {
     aspect-ratio: 296 / 195;
   }
@@ -3128,19 +3127,15 @@
     gap: 24px;
   }
 
-  .reviewsFeaturedCompactTitle {
-    display: none;
+  .reviewsQuoteMark {
+    width: 27px;
+    height: 24px;
   }
 
-  .reviewsQuoteMark,
-  .reviewsFeaturedDesktopTitle,
-  .reviewsFeaturedDivider {
-    display: block;
-  }
-
-  .reviewsPlayButtonLarge {
-    width: 64px;
-    height: 64px;
+  .reviewsFeaturedTitle {
+    font-size: 24px;
+    line-height: 32px;
+    letter-spacing: -0.36px;
   }
 
   .reviewsInterviewGrid {

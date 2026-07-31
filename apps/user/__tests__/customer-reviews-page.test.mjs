@@ -344,6 +344,55 @@ test("customer interview heading moves below the featured interview through 640p
   );
 });
 
+test("featured customer interview keeps the redesigned quote layout at 640px and 390px", async () => {
+  const [pageSource, stylesSource] = await Promise.all([
+    readFile(pagePath, "utf8"),
+    readFile(stylesPath, "utf8"),
+  ]);
+  const foldMedia = extractCssBlock(
+    stylesSource,
+    "@media (min-width: 640px)",
+  );
+
+  assert.doesNotMatch(pageSource, /reviewsFeaturedCompactTitle/);
+  assert.match(
+    pageSource,
+    /<h3 className=\{styles\.reviewsFeaturedTitle\}>/,
+  );
+  assert.match(
+    stylesSource,
+    /\.reviewsFeaturedText\s*\{[^}]*gap: 20px;/s,
+  );
+  assert.match(
+    stylesSource,
+    /\.reviewsFeaturedSummary\s*\{[^}]*gap: 32px;/s,
+  );
+  assert.match(
+    stylesSource,
+    /\.reviewsFeaturedQuoteGroup\s*\{[^}]*gap: 24px;/s,
+  );
+  assert.match(
+    stylesSource,
+    /\.reviewsQuoteMark\s*\{[^}]*width: 18px;[^}]*height: 16px;/s,
+  );
+  assert.match(
+    stylesSource,
+    /\.reviewsFeaturedTitle\s*\{[^}]*font-size: 20px;[^}]*line-height: 30px;[^}]*letter-spacing: -0\.3px;/s,
+  );
+  assert.match(
+    stylesSource,
+    /\.reviewsQuoteMark,\s*\.reviewsFeaturedDivider\s*\{\s*display: block;/,
+  );
+  assert.match(
+    foldMedia,
+    /\.reviewsFeaturedMedia\s*\{[^}]*aspect-ratio: 600 \/ 338;/s,
+  );
+  assert.match(
+    foldMedia,
+    /\.reviewsPlayButtonLarge\s*\{[^}]*width: 64px;[^}]*height: 64px;/s,
+  );
+});
+
 test("customer interviews keep the desktop section layout from 1080px upward", async () => {
   const contentSource = await readFile(contentPath, "utf8");
   const pageSource = await readFile(pagePath, "utf8");
@@ -363,8 +412,12 @@ test("customer interviews keep the desktop section layout from 1080px upward", a
   assert.doesNotMatch(pageSource, /variant: "inline" \| "standalone"/);
   assert.match(pageSource, /reviewsSectionDescription/);
   assert.match(pageSource, /reviewsSectionCopy/);
-  assert.match(pageSource, /reviewsFeaturedCompactTitle/);
-  assert.match(pageSource, /reviewsFeaturedDesktopTitle/);
+  assert.doesNotMatch(pageSource, /reviewsFeaturedCompactTitle/);
+  assert.doesNotMatch(pageSource, /reviewsFeaturedDesktopTitle/);
+  assert.match(
+    pageSource,
+    /<h3 className=\{styles\.reviewsFeaturedTitle\}>/,
+  );
   assert.match(pageSource, /reviewsFeaturedSummary/);
   assert.match(pageSource, /reviewsFeaturedDivider/);
   assert.match(pageSource, /reviewsFeaturedMeta/);
@@ -402,6 +455,14 @@ test("customer interviews keep the desktop section layout from 1080px upward", a
   assert.match(
     desktopMedia,
     /\.reviewsFeaturedQuoteGroup\s*\{[^}]*gap: 24px;/s,
+  );
+  assert.match(
+    desktopMedia,
+    /\.reviewsQuoteMark\s*\{[^}]*width: 27px;[^}]*height: 24px;/s,
+  );
+  assert.match(
+    desktopMedia,
+    /\.reviewsFeaturedTitle\s*\{[^}]*font-size: 24px;[^}]*line-height: 32px;[^}]*letter-spacing: -0\.36px;/s,
   );
   assert.match(
     desktopMedia,
