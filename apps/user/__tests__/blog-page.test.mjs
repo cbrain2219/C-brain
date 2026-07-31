@@ -25,10 +25,6 @@ const paths = {
     "../app/(site)/blog/[slug]/BlogDetailBackLink.tsx",
     import.meta.url,
   ),
-  moreBlogPreviewText: new URL(
-    "../app/(site)/blog/[slug]/MoreBlogPreviewText.tsx",
-    import.meta.url,
-  ),
   blogSection: new URL("../app/_components/BlogSection.tsx", import.meta.url),
   historyUtils: new URL(
     "../app/(site)/blog/_utils/blogListHistory.ts",
@@ -561,10 +557,9 @@ test("blog detail page keeps semantic article markup and list restoration", asyn
 });
 
 test("blog detail page marks related posts as complementary article links", async () => {
-  const [detailPage, detailStyles, moreBlogPreviewText] = await Promise.all([
+  const [detailPage, detailStyles] = await Promise.all([
     source("detailPage"),
     source("detailStyles"),
-    source("moreBlogPreviewText"),
   ]);
 
   assert.match(
@@ -587,36 +582,23 @@ test("blog detail page marks related posts as complementary article links", asyn
   assert.match(detailPage, /className=\{styles\.moreBlogCopy\}/);
   assert.doesNotMatch(detailPage, /MORE_BLOG_TITLE_PREVIEW_LENGTH/);
   assert.doesNotMatch(detailPage, /formatMoreBlogPreviewText/);
-  assert.match(detailPage, /<MoreBlogPreviewText text=\{relatedPost\.title\} \/>/);
   assert.match(
     detailPage,
-    /<MoreBlogPreviewText mobileMaxLines=\{2\} text=\{relatedPost\.summary\} \/>/,
+    /title=\{relatedPost\.title\}[\s\S]*\{relatedPost\.title\}[\s\S]*<p title=\{relatedPost\.summary\}>[\s\S]*\{relatedPost\.summary\}/,
   );
-  assert.match(moreBlogPreviewText, /"use client"/);
-  assert.match(moreBlogPreviewText, /ResizeObserver/);
-  assert.match(moreBlogPreviewText, /typeof ResizeObserver === "undefined"/);
-  assert.match(
-    moreBlogPreviewText,
-    /const resizeObserver =\s*typeof ResizeObserver === "undefined"\s*\? null\s*: new ResizeObserver\(updateDisplayText\)/,
-  );
-  assert.match(moreBlogPreviewText, /resizeObserver\?\.observe\(element\)/);
-  assert.match(moreBlogPreviewText, /resizeObserver\?\.disconnect\(\)/);
-  assert.match(moreBlogPreviewText, /mobileMaxLines/);
-  assert.match(
-    moreBlogPreviewText,
-    /window\.matchMedia\("\(max-width: 480px\)"\)/,
-  );
-  assert.match(moreBlogPreviewText, /scrollWidth <= element\.clientWidth/);
-  assert.match(moreBlogPreviewText, /scrollHeight <= maxHeight/);
-  assert.match(moreBlogPreviewText, /const previewText = `\$\{candidate\}\.\.\.`/);
+  assert.doesNotMatch(detailPage, /MoreBlogPreviewText/);
   assert.match(detailStyles, /\.moreBlogCardBody\s*\{[\s\S]*gap: 20px;/);
   assert.match(detailStyles, /\.moreBlogCopy\s*\{[\s\S]*gap: 8px;/);
   assert.match(detailStyles, /\.moreBlogText\s*\{[\s\S]*gap: 4px;/);
   assert.match(detailStyles, /\.moreBlogAuthorIcon\s*\{/);
-  assert.match(detailStyles, /\.moreBlogPreviewText\s*\{/);
-  assert.match(detailStyles, /\.moreBlogPreviewText\[data-lines="2"\]/);
-  assert.doesNotMatch(detailStyles, /text-overflow: ellipsis;/);
-  assert.doesNotMatch(detailStyles, /-webkit-line-clamp: 2;/);
+  assert.match(
+    detailStyles,
+    /\.moreBlogText h3,\s*\.moreBlogText p\s*\{[\s\S]*text-overflow: ellipsis;/,
+  );
+  assert.match(
+    detailStyles,
+    /@media \(max-width: 480px\)[\s\S]*\.moreBlogText p\s*\{[\s\S]*-webkit-line-clamp: 2;/,
+  );
 });
 
 test("blog detail styles match the P/T/F/M responsive detail frame", async () => {

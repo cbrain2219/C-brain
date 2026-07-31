@@ -30,10 +30,12 @@ export function OrderMethodSelector({
             ? styles.methodCardActiveQuote
             : styles.methodCardActiveBrand;
         const handleMethodClick = () => {
-          setSelectedMethodId(method.id);
           if (method.tone === "quote") {
             onQuoteSelect?.();
+            return;
           }
+
+          setSelectedMethodId(method.id);
         };
 
         return (

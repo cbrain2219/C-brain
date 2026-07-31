@@ -2,6 +2,7 @@
 
 import { createBrowserSupabaseClient } from "@repo/supabase/client";
 import { STORAGE_BUCKETS } from "@repo/supabase/files";
+import Link from "next/link";
 import {
   type ChangeEvent,
   type KeyboardEvent,
@@ -143,6 +144,7 @@ export function ComplaintForm() {
     handleSubmit,
     register,
     reset,
+    resetField,
     setError,
     watch,
   } = useForm<ComplaintFormValues>({
@@ -155,6 +157,8 @@ export function ComplaintForm() {
   const selectedComplaintTypeDescription = getComplaintTypeDescription(
     selectedComplaintType,
   );
+  const isPhoneVerificationRequested =
+    phoneVerificationResult?.status === "requested";
 
   useEffect(() => {
     let isActive = true;
@@ -211,7 +215,7 @@ export function ComplaintForm() {
       resizeObserver?.disconnect();
       window.removeEventListener("resize", syncCompactPlaceholders);
     };
-  }, []);
+  }, [isPhoneVerificationRequested]);
 
   const getComplaintInputPlaceholder = (
     fieldName: ComplaintInputPlaceholderField,
@@ -259,7 +263,17 @@ export function ComplaintForm() {
   };
 
   const handlePhoneChange = (event: ChangeEvent<HTMLInputElement>) => {
-    if (isComplaintRequiredFieldValid("phone", event.currentTarget.value)) {
+    const phone = event.currentTarget.value;
+
+    if (
+      phoneVerificationResult &&
+      phone !== phoneVerificationResult.normalizedPhone
+    ) {
+      setPhoneVerificationResult(null);
+      resetField("verificationCode");
+    }
+
+    if (isComplaintRequiredFieldValid("phone", phone)) {
       clearErrors("phone");
     }
   };
@@ -432,11 +446,15 @@ export function ComplaintForm() {
     }
 
     clearErrors("phone");
+    setPhoneVerificationResult(null);
     setIsRequestingPhoneVerification(true);
 
     try {
       const result = await requestPhoneVerification({ phone });
-      setPhoneVerificationResult(result);
+
+      if (getValues("phone") === result.normalizedPhone) {
+        setPhoneVerificationResult(result);
+      }
     } finally {
       setIsRequestingPhoneVerification(false);
     }
@@ -606,39 +624,48 @@ export function ComplaintForm() {
                   data-verification-status={
                     phoneVerificationResult?.status ?? "idle"
                   }
-                  disabled={isRequestingPhoneVerification}
+                  disabled={
+                    isRequestingPhoneVerification ||
+                    isPhoneVerificationRequested
+                  }
                   onClick={handleRequestPhoneVerification}
                   type="button"
                 >
-                  {isRequestingPhoneVerification ? "요청중" : "인증요청"}
+                  {isRequestingPhoneVerification
+                    ? "요청중"
+                    : isPhoneVerificationRequested
+                      ? "발송완료"
+                      : "인증요청"}
                 </button>
               </span>
             </label>
 
-            <label
-              className={styles.complaintField}
-              data-invalid={isFieldInvalid("verificationCode")}
-              ref={setFieldRef("verificationCode")}
-            >
-              <span className={styles.complaintVisuallyHidden}>
-                휴대폰 인증번호
-              </span>
-              <input
-                {...verificationCodeInputRegistration}
-                aria-invalid={isFieldInvalid("verificationCode")}
-                inputMode="numeric"
-                maxLength={COMPLAINT_VERIFICATION_CODE_LENGTH}
-                minLength={COMPLAINT_VERIFICATION_CODE_LENGTH}
-                pattern={COMPLAINT_VERIFICATION_CODE_INPUT_PATTERN}
-                placeholder={getComplaintInputPlaceholder("verificationCode")}
-                ref={(node) => {
-                  verificationCodeInputRegistration.ref(node);
-                  setPlaceholderInputRef("verificationCode", node);
-                }}
-                required
-                type="text"
-              />
-            </label>
+            {isPhoneVerificationRequested ? (
+              <label
+                className={styles.complaintField}
+                data-invalid={isFieldInvalid("verificationCode")}
+                ref={setFieldRef("verificationCode")}
+              >
+                <span className={styles.complaintVisuallyHidden}>
+                  휴대폰 인증번호
+                </span>
+                <input
+                  {...verificationCodeInputRegistration}
+                  aria-invalid={isFieldInvalid("verificationCode")}
+                  inputMode="numeric"
+                  maxLength={COMPLAINT_VERIFICATION_CODE_LENGTH}
+                  minLength={COMPLAINT_VERIFICATION_CODE_LENGTH}
+                  pattern={COMPLAINT_VERIFICATION_CODE_INPUT_PATTERN}
+                  placeholder={getComplaintInputPlaceholder("verificationCode")}
+                  ref={(node) => {
+                    verificationCodeInputRegistration.ref(node);
+                    setPlaceholderInputRef("verificationCode", node);
+                  }}
+                  required
+                  type="text"
+                />
+              </label>
+            ) : null}
           </div>
 
           <div className={styles.complaintFieldGrid}>
@@ -809,16 +836,13 @@ export function ComplaintForm() {
               </span>
               <span>개인정보 수집 및 이용 동의</span>
             </label>
-            <details className={styles.complaintPrivacyDetails}>
-              <summary aria-label="개인정보 수집 및 이용 안내 보기">
-                보기
-              </summary>
-              <p>
-                수집 항목: 이름, 이메일, 휴대폰 번호, 이용 서비스, 불편 유형,
-                상세 내용, 첨부 파일. 수집 목적: 불편 접수 처리 및 회신. 보유 및
-                파기: 관련 법령과 개인정보 처리방침에 따릅니다.
-              </p>
-            </details>
+            <Link
+              aria-label="개인정보 수집 및 이용 안내 보기"
+              className={styles.complaintPrivacyLink}
+              href="/privacy-collection"
+            >
+              보기
+            </Link>
           </div>
 
           {submissionError ? (

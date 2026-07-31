@@ -232,16 +232,16 @@ test("complaint service options match the service cards in visual order", async 
   );
 });
 
-test("complaint privacy consent starts unchecked and exposes its notice inline", async () => {
+test("complaint privacy consent starts unchecked and links to its notice page", async () => {
   const formSource = await readFile(formPath, "utf8");
 
   assert.match(formSource, /privacy: false/);
-  assert.match(formSource, /<details/);
   assert.match(
     formSource,
-    /<summary aria-label="개인정보 수집 및 이용 안내 보기">/,
+    /<Link[\s\S]*?href="\/privacy-collection"[\s\S]*?>[\s\S]*?보기[\s\S]*?<\/Link>/,
   );
-  assert.match(formSource, /수집 항목: 이름, 이메일, 휴대폰 번호/);
+  assert.doesNotMatch(formSource, /<details/);
+  assert.doesNotMatch(formSource, /<summary/);
   assert.doesNotMatch(formSource, /href="#privacy-policy"/);
   assert.match(formSource, /register\("website"\)/);
   assert.match(formSource, /aria-hidden="true"/);
@@ -435,6 +435,37 @@ test("complaint form exposes the phone verification integration boundary", async
     normalizedPhone: "01012345678",
     status: "not-configured",
   });
+});
+
+test("complaint verification code appears only after a successful request", async () => {
+  const formSource = await readFile(formPath, "utf8");
+  const stylesSource = await readFile(stylesPath, "utf8");
+
+  assert.match(
+    formSource,
+    /const isPhoneVerificationRequested\s*=\s*phoneVerificationResult\?\.status === "requested"/,
+  );
+  assert.match(
+    formSource,
+    /disabled=\{\s*isRequestingPhoneVerification\s*\|\|\s*isPhoneVerificationRequested\s*\}/,
+  );
+  assert.match(
+    formSource,
+    /isPhoneVerificationRequested \? \([\s\S]*?\{\.\.\.verificationCodeInputRegistration\}[\s\S]*?\) : null/,
+  );
+  assert.match(
+    formSource,
+    /isPhoneVerificationRequested\s*\? "발송완료"\s*: "인증요청"/,
+  );
+  assert.match(formSource, /resetField\("verificationCode"\)/);
+  assert.match(
+    stylesSource,
+    /\.complaintVerifyButton:disabled\s*\{[\s\S]*?cursor:\s*not-allowed;/,
+  );
+  assert.match(
+    stylesSource,
+    /\.complaintVerifyButton\[aria-busy="true"\]\s*\{[\s\S]*?cursor:\s*wait;/,
+  );
 });
 
 test("complaint validation treats unchecked privacy consent as required", async () => {

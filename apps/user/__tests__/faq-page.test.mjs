@@ -44,7 +44,11 @@ test("FAQ card padding belongs to the clickable summary", async () => {
   );
   assert.match(
     accordionSource,
-    /<summary[\s\S]*?paddingBottom:\s*isOpen \? 12 : 16/,
+    /const handleSummaryClick[\s\S]*?event\.preventDefault\(\);[\s\S]*?const nextOpen = !isOpen;/,
+  );
+  assert.match(
+    accordionSource,
+    /<summary[\s\S]*?onClick=\{handleSummaryClick\}[\s\S]*?paddingBottom:\s*isOpen \? 12 : 16/,
   );
   assert.match(
     accordionSource,

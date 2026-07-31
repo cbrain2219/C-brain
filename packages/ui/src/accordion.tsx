@@ -3,8 +3,8 @@
 import {
   type CSSProperties,
   type DetailsHTMLAttributes,
+  type MouseEvent,
   type ReactNode,
-  type SyntheticEvent,
   forwardRef,
   useState,
 } from "react";
@@ -126,8 +126,10 @@ export const Accordion = forwardRef<HTMLDetailsElement, AccordionProps>(
     const [internalOpen, setInternalOpen] = useState(defaultOpen);
     const isOpen = isControlled ? open : internalOpen;
 
-    const handleToggle = (event: SyntheticEvent<HTMLDetailsElement>) => {
-      const nextOpen = event.currentTarget.open;
+    const handleSummaryClick = (event: MouseEvent<HTMLElement>) => {
+      event.preventDefault();
+
+      const nextOpen = !isOpen;
       if (!isControlled) setInternalOpen(nextOpen);
       onOpenChange?.(nextOpen);
     };
@@ -136,12 +138,14 @@ export const Accordion = forwardRef<HTMLDetailsElement, AccordionProps>(
       <details
         {...props}
         className={className}
-        onToggle={handleToggle}
         open={isOpen}
         ref={ref}
         style={{ ...detailsStyle, ...style }}
       >
-        <summary style={{ ...summaryStyle, paddingBottom: isOpen ? 12 : 16 }}>
+        <summary
+          onClick={handleSummaryClick}
+          style={{ ...summaryStyle, paddingBottom: isOpen ? 12 : 16 }}
+        >
           <span style={questionStyle}>{question}</span>
           <ChevronIcon open={isOpen} />
         </summary>

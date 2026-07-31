@@ -266,8 +266,10 @@ test("order page route, content, responsive styles, and navigation are wired", (
   assert.match(methodSelectorSource, /useState/);
   assert.match(methodSelectorSource, /onQuoteSelect\?: \(\) => void/);
   assert.match(methodSelectorSource, /aria-pressed/);
-  assert.match(methodSelectorSource, /setSelectedMethodId\(method\.id\)/);
-  assert.match(methodSelectorSource, /onQuoteSelect\?\.\(\)/);
+  assert.match(
+    methodSelectorSource,
+    /if \(method\.tone === "quote"\) \{\s*onQuoteSelect\?\.\(\);\s*return;\s*\}\s*setSelectedMethodId\(method\.id\);/,
+  );
   assert.match(methodSelectorSource, /methodCardActiveQuote/);
   assert.match(optionSelectionSource, /"use client"/);
   assert.match(

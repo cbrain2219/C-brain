@@ -321,8 +321,13 @@
   font-family: var(--font-sans);
 }
 
-.moreBlogText h3 {
+.moreBlogText h3,
+.moreBlogText p {
   overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.moreBlogText h3 {
   color: var(--landing-gray-800);
   font-size: 16px;
   font-weight: 700;
@@ -332,7 +337,6 @@
 }
 
 .moreBlogText p {
-  overflow: hidden;
   color: var(--landing-gray-600);
   display: block;
   font-size: 14px;
@@ -340,19 +344,7 @@
   line-height: 20px;
   letter-spacing: -0.21px;
   word-break: keep-all;
-}
-
-.moreBlogPreviewText {
-  max-width: 100%;
-  display: block;
-  overflow: hidden;
-  word-break: keep-all;
   white-space: nowrap;
-}
-
-.moreBlogPreviewText[data-lines="2"] {
-  max-height: 40px;
-  white-space: normal;
 }
 
 .moreBlogMeta {
@@ -413,6 +405,14 @@
     width: 100%;
     padding: 8px 0;
     gap: 20px;
+  }
+
+  .moreBlogText p {
+    max-height: 40px;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    white-space: normal;
   }
 }
 
