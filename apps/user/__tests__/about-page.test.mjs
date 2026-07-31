@@ -55,7 +55,7 @@ test("about hero keeps the 1440 frame padding without a fixed hero height", asyn
   );
 });
 
-test("about hero metric panel uses the subtle white gradient border", async () => {
+test("about hero metric panel shares the badge gradient border", async () => {
   const stylesSource = await readFile(stylesUrl, "utf8");
   const panelStyles = cssBlock(stylesSource, ".heroMetricPanel {");
   const borderStyles = cssBlock(stylesSource, ".heroMetricPanel::before {");
@@ -63,8 +63,16 @@ test("about hero metric panel uses the subtle white gradient border", async () =
   assert.match(panelStyles, /background:\s*rgba\(255, 255, 255, 0\.1\);/);
   assert.doesNotMatch(panelStyles, /box-shadow:[^;]*inset/);
   assert.match(
+    stylesSource,
+    /\.heroBadge::before,\s*\.heroMetricPanel::before\s*\{/,
+  );
+  assert.match(
     borderStyles,
-    /linear-gradient\(\s*180deg,\s*rgba\(255, 255, 255, 0\) 0%,\s*rgba\(255, 255, 255, 0\.2\) 50%,\s*rgba\(255, 255, 255, 0\) 100%\s*\)/,
+    /rgba\(255, 255, 255, 0\.08\) 0%[\s\S]*rgba\(255, 255, 255, 0\.8\) 100%/,
+  );
+  assert.match(
+    borderStyles,
+    /rgba\(255, 255, 255, 0\.8\) 0%[\s\S]*rgba\(255, 255, 255, 0\.08\) 100%/,
   );
 });
 
@@ -212,13 +220,16 @@ test("about hero description renders one text copy with responsive line breaks",
     readFile(stylesUrl, "utf8"),
     readFile(pageUrl, "utf8"),
   ]);
+  const responsiveStart = stylesSource.indexOf("@media (max-width: 1080px)");
   const mobileStart = stylesSource.indexOf("@media (max-width: 639px)");
   const compactMobileStart = stylesSource.indexOf(
     "@media (max-width: 480px)",
     mobileStart,
   );
+  const responsiveStyles = stylesSource.slice(responsiveStart, mobileStart);
   const mobileStyles = stylesSource.slice(mobileStart, compactMobileStart);
 
+  assert.notEqual(responsiveStart, -1);
   assert.notEqual(mobileStart, -1);
   assert.notEqual(compactMobileStart, -1);
   assert.equal(
@@ -235,6 +246,14 @@ test("about hero description renders one text copy with responsive line breaks",
   assert.doesNotMatch(pageSource, /heroDescriptionLineMobile/);
   assert.match(pageSource, /className=\{styles\.heroDescriptionBreak\}/);
   assert.match(pageSource, /className=\{styles\.heroDescriptionMobileBreak\}/);
+  assert.match(
+    cssBlock(stylesSource, ".heroDescription {"),
+    /white-space:\s*nowrap;/,
+  );
+  assert.match(
+    responsiveStyles,
+    /\.heroDescription\s*\{\s*white-space:\s*normal;/,
+  );
   assert.match(
     cssBlock(stylesSource, ".heroDescriptionMobileBreak {"),
     /display:\s*none;/,

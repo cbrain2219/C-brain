@@ -9,6 +9,9 @@ const cssRoots = [
   fileURLToPath(new URL("../app/", import.meta.url)),
   fileURLToPath(new URL("../components/", import.meta.url)),
 ];
+const outsideBorderAllowlist = new Set([
+  "app/(site)/about/page.module.css .heroBadge::before, .heroMetricPanel::before",
+]);
 
 async function collectCssFiles(directory) {
   const entries = await readdir(directory, { withFileTypes: true });
@@ -27,7 +30,7 @@ async function collectCssFiles(directory) {
   return files.flat();
 }
 
-test("gradient border overlays use the shared inner one-pixel border pattern", async () => {
+test("gradient border overlays use the shared one-pixel border pattern", async () => {
   const cssFiles = (await Promise.all(cssRoots.map(collectCssFiles))).flat();
   const inconsistentBlocks = [];
 
@@ -40,9 +43,13 @@ test("gradient border overlays use the shared inner one-pixel border pattern", a
         continue;
       }
 
-      const blockLabel = `${relative(userRoot, filePath)} ${selector.trim()}`;
+      const normalizedSelector = selector.replace(/\s+/g, " ").trim();
+      const blockLabel = `${relative(userRoot, filePath)} ${normalizedSelector}`;
 
-      if (/inset:\s*-1px;/.test(declarations)) {
+      if (
+        /inset:\s*-1px;/.test(declarations) &&
+        !outsideBorderAllowlist.has(blockLabel)
+      ) {
         inconsistentBlocks.push(`${blockLabel}: uses outside inset`);
       }
 
@@ -65,4 +72,22 @@ test("gradient border overlays use the shared inner one-pixel border pattern", a
   }
 
   assert.deepEqual(inconsistentBlocks, []);
+});
+
+test("about hero surfaces keep their reviewed gradient borders outside the box", async () => {
+  const stylesSource = await readFile(
+    fileURLToPath(
+      new URL("../app/(site)/about/page.module.css", import.meta.url),
+    ),
+    "utf8",
+  );
+
+  assert.match(
+    stylesSource,
+    /\.heroBadge::before,\s*\.heroMetricPanel::before\s*\{[^}]*inset:\s*-1px;/s,
+  );
+  assert.match(
+    stylesSource,
+    /\.heroMetricPanel\s*\{[^}]*background-clip:\s*border-box;[^}]*overflow:\s*visible;/s,
+  );
 });

@@ -4,6 +4,11 @@ import test from "node:test";
 
 const paths = {
   blog: new URL("../app/(site)/blog/page.tsx", import.meta.url),
+  darkHeroBadge: new URL("../components/DarkHeroBadge.tsx", import.meta.url),
+  darkHeroBadgeStyles: new URL(
+    "../components/DarkHeroBadge.module.css",
+    import.meta.url,
+  ),
   pageHeroStyles: new URL("../components/PageHero.module.css", import.meta.url),
   landing: new URL("../app/_components/Hero.tsx", import.meta.url),
   notice: new URL("../app/(site)/notice/page.tsx", import.meta.url),
@@ -25,32 +30,35 @@ test("page hero images expose the requested alternative text", async () => {
   const expectedAltByPage = [
     [
       paths.landing,
-      "backgroundAlt=\"편집디자인 전문회사 씨브레인 브랜드 이미지\"",
+      'backgroundAlt="편집디자인 전문회사 씨브레인 브랜드 이미지"',
     ],
     [
       paths.portfolio,
-      "alt=\"MBC 베이비페어 박람회 포스터 디자인 및 인쇄 제작 사례, 핑크 톤 베이비 일러스트가 돋보이는 행사 홍보물\"",
+      'alt="MBC 베이비페어 박람회 포스터 디자인 및 인쇄 제작 사례, 핑크 톤 베이비 일러스트가 돋보이는 행사 홍보물"',
     ],
     [
       paths.blog,
-      "backgroundAlt=\"대전화병원 브로슈어 디자인 및 인쇄 제작 사례, 화이트 톤 표지와 병원 외관 사진을 활용한 내지 구성\"",
+      'backgroundAlt="대전화병원 브로슈어 디자인 및 인쇄 제작 사례, 화이트 톤 표지와 병원 외관 사진을 활용한 내지 구성"',
     ],
-    [paths.notice, "backgroundAlt=\"편집디자인 전문회사 씨브레인 로고\""],
-    [paths.about, "alt=\"편집디자인 전문회사 씨브레인 로고\""],
+    [paths.notice, 'backgroundAlt="편집디자인 전문회사 씨브레인 로고"'],
+    [paths.about, 'alt="편집디자인 전문회사 씨브레인 로고"'],
     [
       paths.reviews,
-      "alt=\"씨브레인 편집디자인 팀이 고객 브로슈어 시안을 함께 검토하는 사무실 장면\"",
+      'alt="씨브레인 편집디자인 팀이 고객 브로슈어 시안을 함께 검토하는 사무실 장면"',
     ],
     [
       paths.order,
-      "alt=\"씨브레인 팀원들이 화이트보드 앞에서 디자인 컨셉과 레이아웃을 논의하는 기획 회의 장면\"",
+      'alt="씨브레인 팀원들이 화이트보드 앞에서 디자인 컨셉과 레이아웃을 논의하는 기획 회의 장면"',
     ],
   ];
 
   for (const [path, expectedAlt] of expectedAltByPage) {
     const source = await readFile(path, "utf8");
 
-    assert.ok(source.includes(expectedAlt), `${path.pathname} should include ${expectedAlt}`);
+    assert.ok(
+      source.includes(expectedAlt),
+      `${path.pathname} should include ${expectedAlt}`,
+    );
   }
 });
 
@@ -68,10 +76,16 @@ test("shared page hero keeps frame padding without a fixed hero height", async (
   assert.notEqual(pcMediaStart, -1);
 
   const foldMediaStyles = stylesSource.slice(foldMediaStart, desktopMediaStart);
-  const desktopMediaStyles = stylesSource.slice(desktopMediaStart, pcMediaStart);
+  const desktopMediaStyles = stylesSource.slice(
+    desktopMediaStart,
+    pcMediaStart,
+  );
   const pcMediaStyles = stylesSource.slice(pcMediaStart);
 
-  assert.doesNotMatch(stylesSource, /\.hero(?:\.subpage|\.landing)?\s*\{[^}]*min-height:/);
+  assert.doesNotMatch(
+    stylesSource,
+    /\.hero(?:\.subpage|\.landing)?\s*\{[^}]*min-height:/,
+  );
   assert.match(
     stylesSource,
     /\.content\s*\{[\s\S]*?padding:\s*var\(--site-page-top-offset, 124px\) 20px 104px;/,
@@ -99,5 +113,31 @@ test("shared page hero keeps frame padding without a fixed hero height", async (
   assert.match(
     pcMediaStyles,
     /\.landing \.content\s*\{[\s\S]*?padding-top:\s*var\(--site-page-top-offset, 124px\);[\s\S]*?padding-bottom:\s*104px;/,
+  );
+});
+
+test("notice and about share one continuous dark hero badge", async () => {
+  const [aboutSource, badgeSource, badgeStyles, pageHeroSource] =
+    await Promise.all([
+      readFile(paths.about, "utf8"),
+      readFile(paths.darkHeroBadge, "utf8"),
+      readFile(paths.darkHeroBadgeStyles, "utf8"),
+      readFile(paths.pageHero, "utf8"),
+    ]);
+
+  assert.match(aboutSource, /<DarkHeroBadge>/);
+  assert.match(
+    pageHeroSource,
+    /tone === "dark"[\s\S]*<DarkHeroBadge>\{badge\}<\/DarkHeroBadge>/,
+  );
+  assert.match(
+    badgeSource,
+    /<rect[\s\S]*stroke=\{`url\(#\$\{BORDER_GRADIENT_ID\}\)`\}/,
+  );
+  assert.match(badgeSource, /stopOpacity="0\.816"/);
+  assert.match(badgeSource, /stopOpacity="0\.1536"/);
+  assert.match(
+    badgeStyles,
+    /\.borderRect\s*\{[^}]*stroke-width:\s*1px;[^}]*vector-effect:\s*non-scaling-stroke;/s,
   );
 });

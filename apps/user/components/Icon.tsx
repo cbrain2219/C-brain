@@ -131,19 +131,19 @@ function ArrowRightIcon({ size = 24, ...props }: Omit<IconProps, "name">) {
   );
 }
 
-function OrderOptionBackIcon({ size = 18, ...props }: Omit<IconProps, "name">) {
+function OrderOptionBackIcon({ size = 20, ...props }: Omit<IconProps, "name">) {
   return (
     <svg
       aria-hidden="true"
       fill="none"
-      height={(size * 16) / 18}
-      viewBox="0 0 18 16"
+      height={size}
+      viewBox="0 0 20 20"
       width={size}
       xmlns="http://www.w3.org/2000/svg"
       {...props}
     >
       <path
-        d="M7.66667 1L1 8L7.66667 15M1 8L17 8"
+        d="M8.88856 4.16797L3.33301 10.0013L8.88856 15.8346M3.33301 10.0013L16.6663 10.0013"
         stroke="currentColor"
         strokeLinecap="round"
         strokeLinejoin="round"

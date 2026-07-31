@@ -1,5 +1,6 @@
 import Image from "next/image";
 
+import { DarkHeroBadge } from "../../../components/DarkHeroBadge";
 import { Icon } from "../../../components/Icon";
 import { JsonLdScript } from "../../_components/JsonLdScript";
 import { PartnerLogoCloud } from "../../_components/PartnerLogoCloud";
@@ -122,9 +123,9 @@ export default function AboutPage() {
         <div className={styles.heroOverlay} />
         <div className={styles.heroInner}>
           <div className={styles.heroCopy}>
-            <p className={styles.heroBadge}>
-              <span>홍보물 기획 · 디자인 · 인쇄 원스톱 전문 회사</span>
-            </p>
+            <DarkHeroBadge>
+              홍보물 기획 · 디자인 · 인쇄 원스톱 전문 회사
+            </DarkHeroBadge>
             <div className={styles.heroTextBlock}>
               <h1>
                 <span className={styles.heroTitleLead}>

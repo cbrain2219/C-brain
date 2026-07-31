@@ -521,7 +521,7 @@
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 32px;
+  gap: 72px;
 }
 
 .optionSection,
@@ -2005,7 +2005,7 @@
   }
 
   .optionMain {
-    gap: 52px;
+    gap: 72px;
   }
 
   .optionServiceCard {

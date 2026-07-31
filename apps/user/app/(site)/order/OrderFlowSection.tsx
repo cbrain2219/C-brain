@@ -107,7 +107,7 @@ export function OrderFlowSection({
               onClick={handleOptionHeaderBack}
               type="button"
             >
-              <Icon name="order-option-back" size={18} />
+              <Icon name="order-option-back" size={20} />
               <span className={styles.optionBackButtonText}>
                 {optionHeaderBackLabel}
               </span>

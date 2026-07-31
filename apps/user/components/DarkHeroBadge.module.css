@@ -1,0 +1,41 @@
+.badge {
+  width: fit-content;
+  min-height: 40px;
+  margin: 0;
+  border: 1px solid transparent;
+  border-radius: 32px;
+  padding: 8px 16px;
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--landing-gray-50, #f8fafc);
+  position: relative;
+  isolation: isolate;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 21px;
+  letter-spacing: 0;
+  white-space: nowrap;
+}
+
+.label {
+  position: relative;
+  z-index: 2;
+}
+
+.border {
+  width: calc(100% + 2px);
+  height: calc(100% + 2px);
+  position: absolute;
+  inset: -1px;
+  z-index: 1;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.borderRect {
+  stroke-width: 1px;
+  vector-effect: non-scaling-stroke;
+}

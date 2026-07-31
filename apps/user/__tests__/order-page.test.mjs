@@ -273,7 +273,7 @@ test("order page route, content, responsive styles, and navigation are wired", (
   assert.match(flowSectionSource, /optionBackButton/);
   assert.match(flowSectionSource, /optionBackButtonText/);
   assert.match(flowSectionSource, /name="order-option-back"/);
-  assert.match(flowSectionSource, /size=\{18\}/);
+  assert.match(flowSectionSource, /size=\{20\}/);
   assert.match(flowSectionSource, /optionHeaderTitle/);
   assert.match(flowSectionSource, /II\. 옵션 선택/);
   assert.match(flowSectionSource, /III\. 정보 입력/);
@@ -706,7 +706,7 @@ test("order page route, content, responsive styles, and navigation are wired", (
   );
   assert.match(stylesSource, /\.consultDialogAction\s*\{[^}]*width:\s*148px/s);
   assert.match(stylesSource, /\.optionLayout\s*\{[^}]*display:\s*flex/s);
-  assert.match(stylesSource, /\.optionMain\s*\{[^}]*gap:\s*32px/s);
+  assert.match(stylesSource, /\.optionMain\s*\{[^}]*gap:\s*72px/s);
   assert.match(
     stylesSource,
     /\.optionServiceGrid\s*\{[^}]*grid-template-columns:\s*1fr/s,
@@ -919,7 +919,7 @@ test("order page route, content, responsive styles, and navigation are wired", (
   );
   assert.match(
     stylesSource,
-    /@media \(min-width:\s*1440px\)[\s\S]*?\.optionMain\s*\{[^}]*gap:\s*52px/s,
+    /@media \(min-width:\s*1440px\)[\s\S]*?\.optionMain\s*\{[^}]*gap:\s*72px/s,
   );
   assert.match(stylesSource, /grid-template-columns:\s*repeat\(2,/);
   assert.match(stylesSource, /grid-template-columns:\s*1fr/);
@@ -1026,8 +1026,11 @@ test("order page route, content, responsive styles, and navigation are wired", (
   assert.match(serviceCardsSource, /견적 후 주문\(카카오톡\)/);
   assert.match(iconSource, /"order-option-back"/);
   assert.match(iconSource, /function OrderOptionBackIcon/);
-  assert.match(iconSource, /viewBox="0 0 18 16"/);
-  assert.match(iconSource, /M7\.66667 1L1 8L7\.66667 15M1 8L17 8/);
+  assert.match(iconSource, /viewBox="0 0 20 20"/);
+  assert.match(
+    iconSource,
+    /M8\.88856 4\.16797L3\.33301 10\.0013L8\.88856 15\.8346M3\.33301 10\.0013L16\.6663 10\.0013/,
+  );
   assert.match(iconSource, /strokeWidth="2"/);
   assert.match(headerSource, /usePathname/);
   assert.match(headerSource, /href:\s*"\/order"/);
