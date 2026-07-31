@@ -9,8 +9,8 @@ import { KAKAO_CHANNEL_URL } from "../../_content/contact";
 import {
   type OrderSelectionSummary,
   formatOrderCurrency,
-  orderSteps,
 } from "../../_content/order";
+import { OrderProgress } from "./OrderProgress";
 import styles from "./page.module.css";
 
 type OrderPaymentSummary = Pick<
@@ -55,13 +55,13 @@ type OrderPaymentResultCommonProps = {
 type OrderPaymentResultProps = OrderPaymentResultCommonProps &
   (
     | {
-      data?: OrderPaymentSuccessData;
-      variant: "success";
-    }
+        data?: OrderPaymentSuccessData;
+        variant: "success";
+      }
     | {
-      data?: OrderPaymentFailureData;
-      variant: "failure";
-    }
+        data?: OrderPaymentFailureData;
+        variant: "failure";
+      }
   );
 
 const resultStepIndex = 3;
@@ -102,10 +102,7 @@ function createPaymentDetailRows(
 }
 
 function createPaymentDetailGroups(data: OrderPaymentSuccessData) {
-  const totalPrice =
-    data.totalPrice ??
-    data.summary?.totalPrice ??
-    0;
+  const totalPrice = data.totalPrice ?? data.summary?.totalPrice ?? 0;
 
   return [
     createPaymentDetailRows(data),
@@ -161,11 +158,7 @@ function OrderResultDescription({
   );
 }
 
-function OrderResultPaymentCard({
-  data,
-}: {
-  data: OrderPaymentSuccessData;
-}) {
+function OrderResultPaymentCard({ data }: { data: OrderPaymentSuccessData }) {
   const paymentDetailGroups = createPaymentDetailGroups(data);
 
   return (
@@ -285,9 +278,10 @@ export function OrderPaymentResult(props: OrderPaymentResultProps) {
     successPrimaryLabel = "다른 제품 주문하기",
   } = props;
   const isSuccess = props.variant === "success";
-  const failureData = props.variant === "failure"
-    ? (props.data ?? defaultFailureResultData)
-    : defaultFailureResultData;
+  const failureData =
+    props.variant === "failure"
+      ? (props.data ?? defaultFailureResultData)
+      : defaultFailureResultData;
   const successData = props.variant === "success" ? props.data : undefined;
   const title = isSuccess ? "결제가 완료되었습니다" : "결제에 실패했습니다";
 
@@ -338,21 +332,7 @@ export function OrderPaymentResult(props: OrderPaymentResultProps) {
                 <span>{backLabel}</span>
               </Link>
 
-              <ol
-                className={`${styles.stepList} ${styles.resultStepList}`}
-                aria-label="주문 진행 단계"
-              >
-                {orderSteps.map((step, index) => (
-                  <li
-                    className={`${styles.stepItem} ${
-                      index < resultStepIndex ? styles.stepItemComplete : ""
-                    } ${index === resultStepIndex ? styles.stepItemActive : ""}`}
-                    key={step.label}
-                  >
-                    {step.label}
-                  </li>
-                ))}
-              </ol>
+              <OrderProgress activeStepIndex={resultStepIndex} />
             </div>
           ) : null}
 

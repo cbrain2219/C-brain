@@ -7,7 +7,6 @@ import { ServiceCards } from "../../_components/ServiceCards";
 import {
   type OrderSelectionSummary,
   type OrderStepId,
-  orderSteps,
 } from "../../_content/order";
 import type { ServiceItem } from "../../_content/services";
 import { OrderConsultDialog } from "./OrderConsultDialog";
@@ -17,6 +16,7 @@ import {
 } from "./OrderCustomerInfoStep";
 import { OrderMethodSelector } from "./OrderMethodSelector";
 import { OrderOptionSelection } from "./OrderOptionSelection";
+import { OrderProgress } from "./OrderProgress";
 import styles from "./page.module.css";
 
 type OrderFlowSectionProps = {
@@ -24,7 +24,9 @@ type OrderFlowSectionProps = {
   onCustomerInfoStart: (summary: OrderSelectionSummary) => void;
   onDirectServiceSelect: (service: ServiceItem) => void;
   onOptionBack: () => void;
-  onPaymentSubmit?: (payload: OrderPaymentSubmitPayload) => Promise<void> | void;
+  onPaymentSubmit?: (
+    payload: OrderPaymentSubmitPayload,
+  ) => Promise<void> | void;
   orderStep: OrderStepId;
   selectedDirectService: ServiceItem | null;
   selectedOrderSummary: OrderSelectionSummary | null;
@@ -115,18 +117,7 @@ export function OrderFlowSection({
           </div>
         ) : null}
 
-        <ol className={styles.stepList} aria-label="주문 진행 단계">
-          {orderSteps.map((step, index) => (
-            <li
-              className={`${styles.stepItem} ${index < activeStepIndex ? styles.stepItemComplete : ""} ${
-                index === activeStepIndex ? styles.stepItemActive : ""
-              }`}
-              key={step.label}
-            >
-              {step.label}
-            </li>
-          ))}
-        </ol>
+        <OrderProgress activeStepIndex={activeStepIndex} />
 
         {selectedDirectService ? (
           isCustomerStep ? (

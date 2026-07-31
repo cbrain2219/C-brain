@@ -246,7 +246,7 @@ test("order page route, content, responsive styles, and navigation are wired", (
   assert.match(flowSectionSource, /type OrderPaymentSubmitPayload/);
   assert.match(
     flowSectionSource,
-    /onPaymentSubmit\?:\s*\(payload:\s*OrderPaymentSubmitPayload\) => Promise<void> \| void/,
+    /onPaymentSubmit\?:\s*\(\s*payload:\s*OrderPaymentSubmitPayload,?\s*\)\s*=>\s*Promise<void>\s*\|\s*void/,
   );
   assert.match(flowSectionSource, /<OrderMethodSelector onQuoteSelect=/);
   assert.match(flowSectionSource, /selectedDirectService/);
@@ -263,8 +263,13 @@ test("order page route, content, responsive styles, and navigation are wired", (
     flowSectionSource,
     /scrollIntoView\(\{\s*behavior:\s*"smooth",\s*block:\s*"start",\s*\}\)/s,
   );
-  assert.match(flowSectionSource, /activeStepIndex/);
-  assert.match(flowSectionSource, /stepItemComplete/);
+  assert.match(flowSectionSource, /import \{ OrderProgress \}/);
+  assert.match(
+    flowSectionSource,
+    /<OrderProgress activeStepIndex=\{activeStepIndex\} \/>/,
+  );
+  assert.doesNotMatch(flowSectionSource, /orderSteps\.map/);
+  assert.doesNotMatch(flowSectionSource, /stepItemComplete/);
   assert.match(flowSectionSource, /optionBackButton/);
   assert.match(flowSectionSource, /optionBackButtonText/);
   assert.match(flowSectionSource, /name="order-option-back"/);
@@ -591,8 +596,35 @@ test("order page route, content, responsive styles, and navigation are wired", (
   );
   assert.match(
     stylesSource,
-    /\.stepItemComplete\s*\{[^}]*border-color:\s*var\(--landing-gray-800\)/s,
+    /\.stepList\s*\{[^}]*width:\s*fit-content[^}]*max-width:\s*100%[^}]*display:\s*none/s,
   );
+  assert.match(
+    stylesSource,
+    /\.stepItem\s*\{[^}]*display:\s*flex[^}]*align-items:\s*center[^}]*gap:\s*12px/s,
+  );
+  assert.match(stylesSource, /\.stepContent\s*\{[^}]*gap:\s*4px/s);
+  assert.match(
+    stylesSource,
+    /\.stepChip\s*\{[^}]*width:\s*24px[^}]*height:\s*24px[^}]*border-radius:\s*100px/s,
+  );
+  assert.match(
+    stylesSource,
+    /\.stepItemActive \.stepChip\s*\{[^}]*background:\s*var\(--landing-brand-500\)/s,
+  );
+  assert.match(
+    stylesSource,
+    /\.stepItemActive \.stepLabel\s*\{[^}]*font-weight:\s*700/s,
+  );
+  assert.match(
+    stylesSource,
+    /\.stepChevron\s*\{[^}]*width:\s*16px[^}]*height:\s*16px/s,
+  );
+  assert.match(
+    tabletMediaStyles,
+    /\.stepList\s*\{[^}]*display:\s*flex[^}]*justify-content:\s*center/s,
+  );
+  assert.doesNotMatch(stylesSource, /\.stepItemComplete/);
+  assert.doesNotMatch(stylesSource, /\.resultStepList/);
   assert.match(
     stylesSource,
     /\.heroTitleMobileBreak\s*\{[^}]*display:\s*inline/s,
@@ -608,10 +640,6 @@ test("order page route, content, responsive styles, and navigation are wired", (
   assert.match(
     stylesSource,
     /\.heroBadge::before\s*\{[^}]*background-image:\s*var\(--landing-brand-border-end\),\s*var\(--landing-brand-border-start\)/s,
-  );
-  assert.match(
-    stylesSource,
-    /@media \(min-width:\s*640px\)[\s\S]*?\.stepList\s*\{[\s\S]*?display:\s*grid[\s\S]*?grid-template-columns:\s*repeat\(4,/,
   );
   assert.match(
     stylesSource,
@@ -1064,10 +1092,14 @@ test("order payment success and failure result routes are wired", () => {
     resultSource,
     /delete document\.body\.dataset\.orderResultActive/,
   );
-  assert.match(resultSource, /orderSteps/);
+  assert.match(resultSource, /import \{ OrderProgress \}/);
+  assert.match(
+    resultSource,
+    /<OrderProgress activeStepIndex=\{resultStepIndex\} \/>/,
+  );
+  assert.doesNotMatch(resultSource, /orderSteps\.map/);
+  assert.doesNotMatch(resultSource, /stepItemComplete/);
   assert.match(resultSource, /const resultStepIndex = 3/);
-  assert.match(resultSource, /stepItemComplete/);
-  assert.match(resultSource, /stepItemActive/);
   assert.match(resultSource, /name="order-option-back"/);
   assert.match(resultSource, /정보 입력으로/);
   assert.match(resultSource, /IV\. 결제 완료/);
@@ -1088,7 +1120,7 @@ test("order payment success and failure result routes are wired", () => {
   assert.match(resultSource, /결제 내역/);
   assert.match(
     resultSource,
-    /function OrderResultPaymentCard\(\{\s*data,\s*\}:\s*\{\s*data:\s*OrderPaymentSuccessData;\s*\}\)/s,
+    /function OrderResultPaymentCard\(\{\s*data\s*\}\s*:\s*\{\s*data:\s*OrderPaymentSuccessData;?\s*\}\)/s,
   );
   assert.match(resultSource, /"categoryLabel"/);
   assert.match(
@@ -1134,7 +1166,6 @@ test("order payment success and failure result routes are wired", () => {
   assert.match(stylesSource, /\.resultPageContentHeight \.resultSection\s*\{/);
   assert.match(stylesSource, /\.resultInner\s*\{/);
   assert.match(stylesSource, /\.resultProgress\s*\{/);
-  assert.match(stylesSource, /\.resultStepList\s*\{/);
   assert.match(stylesSource, /\.resultMobileHeader\s*\{/);
   assert.match(stylesSource, /\.resultContent\s*\{/);
   assert.match(stylesSource, /\.resultIcon\s*\{/);

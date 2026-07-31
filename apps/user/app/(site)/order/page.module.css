@@ -230,35 +230,75 @@
 }
 
 .stepList {
-  width: 100%;
-  margin: 0;
+  width: fit-content;
+  max-width: 100%;
+  margin: 0 auto;
   padding: 0;
   list-style: none;
   display: none;
-  gap: 4px;
+  align-items: center;
+  gap: 12px;
 }
 
 .stepItem {
-  min-height: 32px;
-  border-top: 2px solid var(--landing-gray-100);
-  padding-top: 10px;
-  color: var(--landing-gray-500);
-  font-family: var(--font-sans);
-  font-size: 14px;
-  font-weight: 500;
-  line-height: 20px;
-  letter-spacing: -0.21px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--landing-gray-600);
+}
+
+.stepContent {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   white-space: nowrap;
 }
 
-.stepItemActive {
-  border-color: var(--landing-brand-500);
-  color: var(--landing-brand-500);
+.stepChip {
+  width: 24px;
+  height: 24px;
+  box-sizing: border-box;
+  border: 1px solid var(--landing-gray-100);
+  border-radius: 100px;
+  background: var(--landing-gray-50);
+  color: var(--landing-gray-600);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 24px;
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 18px;
+  letter-spacing: -0.015em;
 }
 
-.stepItemComplete {
-  border-color: var(--landing-gray-800);
+.stepLabel {
+  color: var(--landing-gray-600);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 21px;
+  letter-spacing: -0.015em;
+}
+
+.stepItemActive .stepChip {
+  border-color: var(--landing-brand-500);
+  background: var(--landing-brand-500);
+  color: #fefefe;
+}
+
+.stepItemActive .stepLabel {
+  color: var(--landing-brand-500);
+  font-weight: 700;
+}
+
+.stepChevron {
+  width: 16px;
+  height: 16px;
   color: var(--landing-gray-800);
+  display: block;
+  flex: 0 0 16px;
 }
 
 .methodGrid {
@@ -1411,12 +1451,6 @@
   text-decoration: none;
 }
 
-.resultStepList {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 8px;
-}
-
 .resultMobileHeader {
   position: fixed;
   top: 0;
@@ -1784,8 +1818,8 @@
   }
 
   .stepList {
-    display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    display: flex;
+    justify-content: center;
   }
 
   .heroTitleMobileBreak {
@@ -1798,10 +1832,6 @@
 
   .methodGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .resultStepList {
-    gap: 20px;
   }
 }
 

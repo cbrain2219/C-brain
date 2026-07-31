@@ -261,7 +261,7 @@ CSS Module과 공용 `Icon` 레지스트리에만 추가한다.
 - Produces: `/order/success`와 `/order/fail`에서 `resultStepIndex` 3을 표시하는
   공용 스텝퍼
 
-- [ ] **Step 1: 두 호출부와 정확한 CSS를 요구하는 실패 테스트 작성**
+- [x] **Step 1: 두 호출부와 정확한 CSS를 요구하는 실패 테스트 작성**
 
   기존 `stepItemComplete` 및 4열 상단선 assertion을 제거한다. `flowSectionSource`,
   `stylesSource`, `tabletMediaStyles` 검사는 첫 번째 subtest에, `resultSource`
@@ -317,7 +317,7 @@ CSS Module과 공용 `Icon` 레지스트리에만 추가한다.
   assert.doesNotMatch(stylesSource, /\.resultStepList/);
   ```
 
-- [ ] **Step 2: 테스트가 기존 line/grid 스텝퍼 때문에 실패하는지 확인**
+- [x] **Step 2: 테스트가 기존 line/grid 스텝퍼 때문에 실패하는지 확인**
 
   Run:
 
@@ -329,7 +329,7 @@ CSS Module과 공용 `Icon` 레지스트리에만 추가한다.
   Expected: 호출부에 `OrderProgress`가 없고 `.stepList`가 기존 4열 grid를
   사용하므로 FAIL한다.
 
-- [ ] **Step 3: 주문 선택 화면의 중복 렌더링 교체**
+- [x] **Step 3: 주문 선택 화면의 중복 렌더링 교체**
 
   `OrderFlowSection.tsx`에서 `orderSteps` import를 제거하고 공용 컴포넌트를
   import한다.
@@ -346,7 +346,7 @@ CSS Module과 공용 `Icon` 레지스트리에만 추가한다.
 
   `activeStepIndex` 계산식은 수정하지 않는다.
 
-- [ ] **Step 4: 결제 결과 화면의 중복 렌더링 교체**
+- [x] **Step 4: 결제 결과 화면의 중복 렌더링 교체**
 
   `OrderPaymentResult.tsx`에서 `orderSteps` import를 제거하고 공용 컴포넌트를
   import한다.
@@ -363,7 +363,7 @@ CSS Module과 공용 `Icon` 레지스트리에만 추가한다.
 
   `resultStepIndex = 3`, 뒤로 가기 링크, 결제 성공/실패 콘텐츠는 유지한다.
 
-- [ ] **Step 5: Figma 치수와 색상을 CSS Module로 구현**
+- [x] **Step 5: Figma 치수와 색상을 CSS Module로 구현**
 
   기존 `.stepList`, `.stepItem`, `.stepItemActive`, `.stepItemComplete` 블록을
   아래 규칙으로 교체한다.
@@ -472,7 +472,7 @@ CSS Module과 공용 `Icon` 레지스트리에만 추가한다.
 
   Expected: 모든 사용자 앱 테스트와 TypeScript 검사가 PASS한다.
 
-- [ ] **Step 7: 작업 단위 커밋**
+- [x] **Step 7: 작업 단위 커밋**
 
   ```bash
   git add \
