@@ -69,6 +69,33 @@ test("portfolio work content keeps a 32px gap up to its 1080px max width", async
   assert.match(workInnerStyle ?? "", /gap:\s*32px;/);
 });
 
+test("portfolio grid keeps three columns from the 960px breakpoint", async () => {
+  const [gallery, styles] = await Promise.all([
+    readFile(galleryPath, "utf8"),
+    readFile(stylesPath, "utf8"),
+  ]);
+  const threeColumnStart = styles.indexOf("@media (min-width: 960px)");
+  const nextBreakpointStart = styles.indexOf(
+    "@media (min-width: 980px)",
+    threeColumnStart,
+  );
+  const threeColumnStyles = styles.slice(
+    threeColumnStart,
+    nextBreakpointStart,
+  );
+
+  assert.notEqual(threeColumnStart, -1);
+  assert.notEqual(nextBreakpointStart, -1);
+  assert.match(
+    threeColumnStyles,
+    /\.portfolioGrid\s*\{[\s\S]*?grid-template-columns:\s*repeat\(3,\s*minmax\(0,\s*1fr\)\);/,
+  );
+  assert.match(
+    gallery,
+    /sizes="\(min-width: 1120px\) 347px, \(min-width: 960px\) calc\(33\.333vw - 26\.667px\), \(min-width: 640px\) calc\(50vw - 30px\), calc\(100vw - 40px\)"/,
+  );
+});
+
 test("portfolio hero keeps frame padding without a fixed hero height", async () => {
   const styles = await readFile(stylesPath, "utf8");
   const baseHero = styles.match(/\.hero\s*\{[\s\S]*?\}/)?.[0] ?? "";

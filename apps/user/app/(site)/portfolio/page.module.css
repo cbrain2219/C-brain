@@ -357,6 +357,12 @@
   }
 }
 
+@media (min-width: 960px) {
+  .portfolioGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
 @media (min-width: 980px) {
   .categoryNav {
     width: 100%;
@@ -390,10 +396,6 @@
   .heroText h1 {
     font-size: 36px;
     line-height: 48px;
-  }
-
-  .portfolioGrid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
 }

@@ -384,7 +384,6 @@
 .blogCardSummary,
 .blogPopularTitle {
   overflow: hidden;
-  overflow-wrap: anywhere;
   display: -webkit-box;
   -webkit-box-orient: vertical;
 }
@@ -567,7 +566,6 @@
   font-size: 16px;
   font-weight: 700;
   line-height: 24px;
-  overflow-wrap: anywhere;
 }
 
 .blogConsultTitleDesktop {
@@ -583,7 +581,6 @@
   font-size: 14px;
   font-weight: 500;
   line-height: 20px;
-  overflow-wrap: anywhere;
 }
 
 .blogConsultButton {
@@ -712,7 +709,6 @@
   font-weight: 500;
   line-height: 24px;
   text-align: center;
-  overflow-wrap: anywhere;
 }
 
 @media (min-width: 400px) {

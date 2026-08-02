@@ -58,7 +58,6 @@
   font-weight: 700;
   line-height: 30px;
   letter-spacing: -0.3px;
-  overflow-wrap: break-word;
 }
 
 .meta,
@@ -123,7 +122,6 @@
   font-weight: 500;
   line-height: 24px;
   letter-spacing: -0.24px;
-  overflow-wrap: break-word;
   display: flex;
   flex-direction: column;
   gap: 24px;

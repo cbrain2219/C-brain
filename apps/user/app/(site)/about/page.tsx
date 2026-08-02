@@ -8,6 +8,7 @@ import {
   companyChannels,
   companyHistorySummary,
   companyInfoRows,
+  companyMapEmbedUrl,
   companyMetrics,
   companyReasons,
   companyTimelineCompact,
@@ -380,11 +381,13 @@ export default function AboutPage() {
             </div>
 
             <div className={styles.mapWrap}>
-              <Image
-                alt="경기도 성남시 중원구 사기막골로 99 씨브레인 위치 지도"
-                fill
-                sizes="(min-width: 1400px) 670px, (min-width: 1100px) 530px, (min-width: 700px) 600px, 100vw"
-                src="/figma-assets/company-map.png"
+              <iframe
+                allowFullScreen
+                className={styles.mapEmbed}
+                loading="lazy"
+                referrerPolicy="strict-origin-when-cross-origin"
+                src={companyMapEmbedUrl}
+                title="경기도 성남시 중원구 사기막골로 99 씨브레인 위치 Google 지도"
               />
             </div>
           </div>

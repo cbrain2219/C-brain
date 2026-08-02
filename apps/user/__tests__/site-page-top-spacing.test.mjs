@@ -65,6 +65,19 @@ test("site shell defines the two responsive page-start measurements", async () =
   assert.match(app, /\.header\s*\{[\s\S]*?height:\s*var\(--site-header-height\);/);
 });
 
+test("mobile header keeps 20px horizontal padding at every mobile breakpoint", async () => {
+  const { app } = await readStyles();
+
+  assert.match(
+    app,
+    /\.header\s*\{[\s\S]*?padding:\s*0 20px;/,
+  );
+  assert.match(
+    app,
+    /@media \(min-width: 640px\)[\s\S]*?\.header\s*\{[\s\S]*?padding:\s*0 20px;/,
+  );
+});
+
 test("every public page start consumes the shared responsive spacing", async () => {
   const styles = await readStyles();
   const directOffsetSources = [

@@ -397,6 +397,32 @@ test("about mobile timeline keeps title fragments on the same line", async () =>
   assert.match(companySource, /year:\s*"2015"[\s\S]*?detailPrefix:\s*" \/ "/);
 });
 
+test("about company info embeds the official interactive Google Map", async () => {
+  const [companySource, pageSource, stylesSource] = await Promise.all([
+    readFile(companyUrl, "utf8"),
+    readFile(pageUrl, "utf8"),
+    readFile(stylesUrl, "utf8"),
+  ]);
+  const mapEmbedStyles = cssBlock(stylesSource, ".mapEmbed {");
+
+  assert.match(
+    companySource,
+    /export const companyMapEmbedUrl =[\s\S]*https:\/\/www\.google\.com\/maps\/embed\?pb=/,
+  );
+  assert.match(pageSource, /<iframe/);
+  assert.match(pageSource, /src=\{companyMapEmbedUrl\}/);
+  assert.match(pageSource, /loading="lazy"/);
+  assert.match(pageSource, /allowFullScreen/);
+  assert.match(pageSource, /referrerPolicy="strict-origin-when-cross-origin"/);
+  assert.match(pageSource, /title="[^"]*씨브레인 위치 Google 지도"/);
+  assert.doesNotMatch(pageSource, /company-map\.png/);
+  assert.match(mapEmbedStyles, /position:\s*absolute;/);
+  assert.match(mapEmbedStyles, /inset:\s*0;/);
+  assert.match(mapEmbedStyles, /width:\s*100%;/);
+  assert.match(mapEmbedStyles, /height:\s*100%;/);
+  assert.match(mapEmbedStyles, /border:\s*0;/);
+});
+
 test("about info section fills narrow screens", async () => {
   const stylesSource = await readFile(stylesUrl, "utf8");
   const tabletStart = stylesSource.indexOf("@media (max-width: 1080px)");

@@ -9,6 +9,9 @@ export const companyLinks = {
   youtube: "https://www.youtube.com/@CreateDesigngroup",
 } as const;
 
+export const companyMapEmbedUrl =
+  "https://www.google.com/maps/embed?pb=!1m5!3m3!1m2!1s0x357ca14ab95f86f9%3A0xc3c2796e35a4b0!2z7JSo67iM66CI7J24!5e0!3m2!1sko!2skr!4v1785679485770!5m2!1sko!2skr";
+
 export const companySocialLinks = [
   {
     id: "naverBlog",

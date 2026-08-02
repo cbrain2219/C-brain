@@ -19,6 +19,7 @@ input,
 select,
 textarea {
   font-family: var(--font-sans);
+  overflow-wrap: normal;
   word-break: keep-all;
 }
 

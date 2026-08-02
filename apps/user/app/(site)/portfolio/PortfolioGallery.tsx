@@ -175,7 +175,7 @@ export function PortfolioGallery({
                         alt={item.imageAlt}
                         className={styles.portfolioImage}
                         fill
-                        sizes="(min-width: 1080px) 333px, (min-width: 640px) 290px, calc(100vw - 40px)"
+                        sizes="(min-width: 1120px) 347px, (min-width: 960px) calc(33.333vw - 26.667px), (min-width: 640px) calc(50vw - 30px), calc(100vw - 40px)"
                         src={item.image}
                       />
                     </div>

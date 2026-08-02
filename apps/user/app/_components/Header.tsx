@@ -33,7 +33,6 @@ export function Header() {
   const pathname = usePathname();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [activeNavHref, setActiveNavHref] = useState<string | null>(null);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const mobileNavDialogRef = useRef<HTMLDialogElement>(null);
@@ -108,10 +107,7 @@ export function Header() {
     closeMenuAndRestoreFocus();
   };
 
-  const handleMobileNavClick = (event: MouseEvent<HTMLAnchorElement>) => {
-    const href = event.currentTarget.getAttribute("href");
-
-    setActiveNavHref(href);
+  const handleMobileNavClick = () => {
     setIsMenuOpen(false);
   };
 
@@ -225,14 +221,11 @@ export function Header() {
               className={styles.mobileNavLinks}
             >
               {navItems.map((item) => {
-                const isCurrentPage = isNavItemCurrentPage(item.href);
-                const isActive = isCurrentPage || activeNavHref === item.href;
+                const isActive = isNavItemCurrentPage(item.href);
 
                 return (
                   <Link
-                    aria-current={
-                      isCurrentPage ? "page" : isActive ? "location" : undefined
-                    }
+                    aria-current={isActive ? "page" : undefined}
                     className={`${styles.mobileNavLink} ${
                       isActive ? styles.mobileNavLinkActive : ""
                     }`}

@@ -1650,7 +1650,6 @@
   font-weight: 500;
   line-height: 24px;
   letter-spacing: -0.24px;
-  word-break: break-word;
 }
 
 .reviewsFeaturedDivider {
@@ -1678,7 +1677,6 @@
   gap: 4px;
   font-family: var(--font-sans);
   font-weight: 500;
-  word-break: break-word;
 }
 
 .reviewsFeaturedMeta p:first-child {
@@ -1708,7 +1706,6 @@
   font-weight: 500;
   line-height: 16px;
   letter-spacing: -0.18px;
-  word-break: break-word;
 }
 
 .reviewsInterviewGrid,
@@ -1823,7 +1820,6 @@
 
 .reviewsTestimonialBody {
   overflow: hidden;
-  overflow-wrap: anywhere;
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 4;
@@ -2057,7 +2053,6 @@
 .faqQuestionText {
   min-width: 0;
   flex: 1 1 auto;
-  overflow-wrap: break-word;
   word-break: keep-all;
 }
 
@@ -2644,7 +2639,6 @@
   font-size: 14px;
   font-weight: 500;
   line-height: 20px;
-  overflow-wrap: anywhere;
 }
 
 .complaintSuccessConfirmButton {
@@ -2834,7 +2828,7 @@
 
   .header {
     height: var(--site-header-height);
-    padding: 0 40px;
+    padding: 0 20px;
   }
 
   .metricGrid {

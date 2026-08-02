@@ -202,11 +202,10 @@
   letter-spacing: 0;
   color: var(--landing-gray-800);
   word-break: keep-all;
-  overflow-wrap: break-word;
 }
 
 .orderFlow {
-  padding: 52px 20px 72px;
+  padding: 72px 20px;
 }
 
 .orderInner {
@@ -439,7 +438,6 @@
   letter-spacing: -0.21px;
   color: var(--landing-gray-600);
   white-space: pre-line;
-  overflow-wrap: break-word;
 }
 
 .productSection {

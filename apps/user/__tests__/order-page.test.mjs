@@ -108,6 +108,7 @@ test("order page route, content, responsive styles, and navigation are wired", (
     "] as const satisfies ReadonlyArray<ServiceItem>;",
   );
   const serviceCardsSource = read("apps/user/app/_components/ServiceCards.tsx");
+  const orderFlowRule = extractBlock(stylesSource, ".orderFlow");
   const orderInnerRule = extractBlock(stylesSource, ".orderInner");
   const tabletMediaStyles = extractBlock(
     stylesSource,
@@ -496,6 +497,7 @@ test("order page route, content, responsive styles, and navigation are wired", (
   assert.match(dialogSource, /href=\{KAKAO_CHANNEL_URL\}/);
   assert.match(contactSource, /https:\/\/pf\.kakao\.com\/_JAFAG/);
   assert.match(stylesSource, /\.stepList\s*\{[^}]*display:\s*none/s);
+  assert.match(orderFlowRule, /padding:\s*72px 20px/);
   assert.match(orderInnerRule, /width:\s*100%/);
   assert.match(orderInnerRule, /gap:\s*32px/);
   assert.match(

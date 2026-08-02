@@ -66,9 +66,53 @@ test("Pretendard GOV Variable is the only font family", async () => {
 test("global text defaults keep Korean words together", async () => {
   const globalsPath = join(repoRoot, "apps/user/app/globals.css");
   const globals = await readFile(globalsPath, "utf8");
+  const userTextRoots = [
+    join(repoRoot, "apps/user/app"),
+    join(repoRoot, "apps/user/components"),
+  ];
+  const userTextFiles = (await Promise.all(userTextRoots.map(collectFiles)))
+    .flat()
+    .filter((file) => textExtensions.has(extname(file)));
+  const invalidWrappingDeclarations = [];
 
   assert.match(
     globals,
     /html,\s*body,\s*button,\s*input,\s*select,\s*textarea\s*\{[\s\S]*?word-break:\s*keep-all;/,
   );
+  assert.match(
+    globals,
+    /html,\s*body,\s*button,\s*input,\s*select,\s*textarea\s*\{[\s\S]*?overflow-wrap:\s*normal;/,
+  );
+
+  for (const file of userTextFiles) {
+    const source = await readFile(file, "utf8");
+    const fileName = relative(repoRoot, file);
+
+    source.split("\n").forEach((line, index) => {
+      const isInvalidWordBreak =
+        /word-break\s*:/.test(line) && !/word-break\s*:\s*keep-all/.test(line);
+      const isInvalidInlineWordBreak =
+        /wordBreak\s*:/.test(line) &&
+        !/wordBreak\s*:\s*["']keep-all["']/.test(line);
+      const isInvalidOverflowWrap =
+        /overflow-wrap\s*:/.test(line) &&
+        !/overflow-wrap\s*:\s*normal/.test(line);
+      const isInvalidInlineOverflowWrap =
+        /overflowWrap\s*:/.test(line) &&
+        !/overflowWrap\s*:\s*["']normal["']/.test(line);
+
+      if (
+        isInvalidWordBreak ||
+        isInvalidInlineWordBreak ||
+        isInvalidOverflowWrap ||
+        isInvalidInlineOverflowWrap
+      ) {
+        invalidWrappingDeclarations.push(
+          `${fileName}:${index + 1}: ${line.trim()}`,
+        );
+      }
+    });
+  }
+
+  assert.deepEqual(invalidWrappingDeclarations, []);
 });
