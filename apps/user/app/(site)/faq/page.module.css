@@ -13,7 +13,6 @@
   padding-top: var(--faq-header-offset);
   background: #ffffff;
   color: var(--landing-gray-800);
-  container-type: inline-size;
 }
 
 .faqPage :is(h1, h2, p) {
@@ -119,20 +118,25 @@
 }
 
 .mobileCategoryNav {
-  width: 100cqw;
-  margin: 0 0 0 calc(50% - 50cqw);
+  width: 100vw;
+  margin: 0 0 0 calc(50% - 50vw);
   position: sticky;
   top: var(--faq-header-offset);
   z-index: 10;
-  background:
-    linear-gradient(var(--landing-gray-100), var(--landing-gray-100)) center
-      bottom / calc(100% - 40px) 1px no-repeat,
-    #ffffff;
+  background: rgba(255, 255, 255, 0.5);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
   display: flex;
   gap: 4px;
   overflow-x: auto;
   touch-action: pan-y;
   scrollbar-width: none;
+}
+
+.mobileCategoryNav[data-stuck="true"] {
+  background: transparent;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
 }
 
 .mobileCategoryNav[data-dragging="true"] {

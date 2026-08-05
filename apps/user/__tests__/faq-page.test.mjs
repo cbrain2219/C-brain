@@ -6,6 +6,12 @@ const stylesUrl = new URL(
   "../app/(site)/faq/page.module.css",
   import.meta.url,
 );
+const siteStylesUrl = new URL("../app/page.module.css", import.meta.url);
+const globalStylesUrl = new URL("../app/globals.css", import.meta.url);
+const navigationUrl = new URL(
+  "../app/(site)/faq/FaqCategoryNavigation.tsx",
+  import.meta.url,
+);
 const accordionUrl = new URL(
   "../../../packages/ui/src/accordion.tsx",
   import.meta.url,
@@ -134,7 +140,7 @@ test("FAQ main column owns responsive section spacing", async () => {
   assert.doesNotMatch(baseHeroStyle, /margin-bottom:/);
   assert.match(
     baseMobileNavigationStyle,
-    /margin:\s*0 0 0 calc\(50% - 50cqw\);/,
+    /margin:\s*0 0 0 calc\(50% - 50vw\);/,
   );
   assert.match(expandedMainColumnStyle, /gap:\s*52px;/);
 });
@@ -173,7 +179,7 @@ test("FAQ columns use 32px vertical padding through 1080px", async () => {
   assert.match(wideMainColumnStyle, /padding:\s*52px 40px;/);
 });
 
-test("FAQ active category tab overlaps the gray rail like portfolio tabs", async () => {
+test("FAQ active category tab keeps its underline on the glass navigation surface", async () => {
   const stylesSource = await readFile(stylesUrl, "utf8");
   const mobileCategoryNavStyle = stylesSource.match(
     /\.mobileCategoryNav\s*\{[\s\S]*?\}/,
@@ -184,8 +190,9 @@ test("FAQ active category tab overlaps the gray rail like portfolio tabs", async
 
   assert.match(
     mobileCategoryNavStyle ?? "",
-    /background:\s*linear-gradient\(var\(--landing-gray-100\), var\(--landing-gray-100\)\)[\s\S]*center\s+bottom\s*\/\s*calc\(100% - 40px\) 1px no-repeat,/,
+    /background:\s*rgba\(255,\s*255,\s*255,\s*0\.5\);/,
   );
+  assert.doesNotMatch(mobileCategoryNavStyle ?? "", /linear-gradient\(/);
   assert.doesNotMatch(mobileCategoryNavStyle ?? "", /border-bottom:/);
 
   assert.match(
@@ -213,4 +220,70 @@ test("FAQ active category tab overlaps the gray rail like portfolio tabs", async
     stylesSource,
     /\.sidebarLinkActive:hover,\s*\.sidebarLinkActive:focus-visible,\s*\.sidebarLinkActive:active\s*\{[\s\S]*?color:\s*var\(--landing-brand-500\);/,
   );
+});
+
+test("FAQ mobile category navigation matches the scrolled header glass surface", async () => {
+  const [stylesSource, siteStylesSource, globalStylesSource] = await Promise.all([
+    readFile(stylesUrl, "utf8"),
+    readFile(siteStylesUrl, "utf8"),
+    readFile(globalStylesUrl, "utf8"),
+  ]);
+  const mobileCategoryNavStyle = cssBlock(stylesSource, ".mobileCategoryNav {");
+  const scrolledHeaderStyle = cssBlock(siteStylesSource, ".headerScrolled {");
+  const sharedGlassStyle = cssBlock(
+    globalStylesSource,
+    'body[data-faq-nav-stuck="true"]::before',
+  );
+
+  for (const glassSurfaceStyle of [
+    scrolledHeaderStyle,
+    mobileCategoryNavStyle,
+    sharedGlassStyle,
+  ]) {
+    assert.match(
+      glassSurfaceStyle,
+      /rgba\(255,\s*255,\s*255,\s*0\.5\);/,
+    );
+    assert.match(
+      glassSurfaceStyle,
+      /-webkit-backdrop-filter:\s*blur\(10px\);/,
+    );
+    assert.match(glassSurfaceStyle, /backdrop-filter:\s*blur\(10px\);/);
+  }
+});
+
+test("FAQ sticky navigation replaces the adjacent filters with one glass surface", async () => {
+  const [navigationSource, stylesSource, siteStylesSource] = await Promise.all([
+    readFile(navigationUrl, "utf8"),
+    readFile(stylesUrl, "utf8"),
+    readFile(siteStylesUrl, "utf8"),
+  ]);
+  const stuckNavigationStyle = cssBlock(
+    stylesSource,
+    '.mobileCategoryNav[data-stuck="true"]',
+  );
+  const stuckHeaderStyle = cssBlock(
+    siteStylesSource,
+    ':global(body[data-faq-nav-stuck="true"]) .headerScrolled',
+  );
+
+  assert.match(
+    navigationSource,
+    /mobileNavigation\.dataset\.stuck\s*=\s*"true";/,
+  );
+  assert.match(
+    navigationSource,
+    /document\.body\.dataset\.faqNavStuck\s*=\s*"true";/,
+  );
+  assert.match(
+    navigationSource,
+    /delete document\.body\.dataset\.faqNavStuck;/,
+  );
+  for (const individualSurfaceStyle of [
+    stuckNavigationStyle,
+    stuckHeaderStyle,
+  ]) {
+    assert.match(individualSurfaceStyle, /background:\s*transparent;/);
+    assert.match(individualSurfaceStyle, /backdrop-filter:\s*none;/);
+  }
 });

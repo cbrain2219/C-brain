@@ -135,6 +135,14 @@
   backdrop-filter: blur(10px);
 }
 
+@media (max-width: 799px) {
+  :global(body[data-faq-nav-stuck="true"]) .headerScrolled {
+    background: transparent;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}
+
 .headerDarkHero {
   color: var(--landing-gray-50);
 }

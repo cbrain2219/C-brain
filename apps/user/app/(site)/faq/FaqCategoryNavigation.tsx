@@ -64,10 +64,47 @@ export function FaqCategoryNavigation({
   useEffect(() => {
     if (!categoryIds.length) return;
 
+    const mobileNavigation =
+      variant === "mobile"
+        ? document.querySelector<HTMLElement>(
+            '[data-faq-page] div[role="region"][aria-label="FAQ 카테고리"]',
+          )
+        : null;
+    const faqRoot = document.querySelector<HTMLElement>("[data-faq-page]");
+    const mobileMediaQuery = window.matchMedia("(max-width: 799px)");
+    const headerOffsetValue = faqRoot
+      ? Number.parseFloat(
+          getComputedStyle(faqRoot).getPropertyValue("--faq-header-offset"),
+        )
+      : Number.NaN;
+    const headerOffset = Number.isFinite(headerOffsetValue)
+      ? headerOffsetValue
+      : 52;
     let frameId = 0;
+    let isStickySurfaceActive: boolean | null = null;
+
+    const updateStickySurface = (isActive: boolean) => {
+      if (!mobileNavigation || isStickySurfaceActive === isActive) return;
+
+      isStickySurfaceActive = isActive;
+      if (isActive) {
+        mobileNavigation.dataset.stuck = "true";
+        document.body.dataset.faqNavStuck = "true";
+        return;
+      }
+
+      delete mobileNavigation.dataset.stuck;
+      delete document.body.dataset.faqNavStuck;
+    };
 
     const updateActiveCategory = () => {
       frameId = 0;
+      updateStickySurface(
+        mobileMediaQuery.matches &&
+          mobileNavigation !== null &&
+          mobileNavigation.getBoundingClientRect().top <= headerOffset + 0.5,
+      );
+
       const activationOffset = getActivationOffset();
       const sections = categoryIds
         .map((id) => document.getElementById(id))
@@ -102,8 +139,12 @@ export function FaqCategoryNavigation({
       if (frameId) window.cancelAnimationFrame(frameId);
       window.removeEventListener("scroll", requestUpdate);
       window.removeEventListener("resize", requestUpdate);
+      if (mobileNavigation) {
+        delete mobileNavigation.dataset.stuck;
+        delete document.body.dataset.faqNavStuck;
+      }
     };
-  }, [categoryIds]);
+  }, [categoryIds, variant]);
 
   const handleCategoryLinkClick = (event: MouseEvent<HTMLAnchorElement>) => {
     const categoryId = event.currentTarget.hash.slice(1);
