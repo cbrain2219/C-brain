@@ -14,6 +14,7 @@ import {
   getRelatedBlogPosts,
 } from "../_data/blogPosts";
 import type { BlogContentBlock, BlogPost } from "../_types/blog";
+import { LightHeroBadge } from "../../../../components/LightHeroBadge";
 import { JsonLdScript } from "../../../_components/JsonLdScript";
 import { createBlogPostingStructuredData } from "../../../_content/structured-data";
 import { BlogDetailBackLink } from "./BlogDetailBackLink";
@@ -205,9 +206,9 @@ export default async function BlogDetailPage({
       <div className={styles.blogDetailInner}>
         <div className={styles.blogDetailArticleContent}>
           <header className={styles.blogDetailHeader}>
-            <p className={styles.blogDetailBadge} itemProp="articleSection">
+            <LightHeroBadge itemProp="articleSection">
               {post.category}
-            </p>
+            </LightHeroBadge>
             <div className={styles.blogDetailTitleGroup}>
               <h1 id="blog-detail-title" itemProp="headline">
                 {post.title}

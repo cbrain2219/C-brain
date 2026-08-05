@@ -114,10 +114,6 @@ test("order page route, content, responsive styles, and navigation are wired", (
     stylesSource,
     "@media (min-width: 640px)",
   );
-  const tabletToFoldMediaStyles = extractBlock(
-    stylesSource,
-    "@media (min-width: 640px) and (max-width: 1079px)",
-  );
   const desktopMediaStyles = extractBlock(
     stylesSource,
     "@media (min-width: 1080px)",
@@ -497,7 +493,23 @@ test("order page route, content, responsive styles, and navigation are wired", (
   assert.match(dialogSource, /href=\{KAKAO_CHANNEL_URL\}/);
   assert.match(contactSource, /https:\/\/pf\.kakao\.com\/_JAFAG/);
   assert.match(stylesSource, /\.stepList\s*\{[^}]*display:\s*none/s);
+  assert.match(
+    stylesSource,
+    /\.orderPage\s*\{[^}]*--order-step-top-gap:\s*32px;/s,
+  );
   assert.match(orderFlowRule, /padding:\s*72px 20px/);
+  assert.match(
+    stylesSource,
+    /\.orderPage\[data-order-option-active="true"\] \.orderFlow\s*\{[^}]*padding-top:\s*var\(--site-header-height, 52px\);/s,
+  );
+  assert.match(
+    stylesSource,
+    /\.orderPage\[data-order-option-active="true"\] \.orderInner\s*\{[^}]*padding-top:\s*var\(--order-step-top-gap\);/s,
+  );
+  assert.doesNotMatch(
+    stylesSource,
+    /\.orderPage\[data-order-option-active="true"\] \.orderFlow\s*\{[^}]*padding-top:\s*calc\(/s,
+  );
   assert.match(orderInnerRule, /width:\s*100%/);
   assert.match(orderInnerRule, /gap:\s*32px/);
   assert.match(
@@ -523,7 +535,7 @@ test("order page route, content, responsive styles, and navigation are wired", (
   );
   assert.match(
     stylesSource,
-    /\.optionHeader\s*\{[^}]*scroll-margin-top:\s*96px/s,
+    /\.optionHeader\s*\{[^}]*scroll-margin-top:\s*calc\(\s*var\(--site-header-height, 52px\) \+ var\(--order-step-top-gap\)\s*\);/s,
   );
   assert.match(stylesSource, /\.optionHeaderTitle\s*\{[^}]*display:\s*none/s);
   assert.match(stylesSource, /\.optionHeaderSpacer\s*\{[^}]*display:\s*none/s);
@@ -533,16 +545,13 @@ test("order page route, content, responsive styles, and navigation are wired", (
   );
   assert.match(
     stylesSource,
-    /@media \(max-width:\s*639px\)[\s\S]*?\.orderPage\[data-order-option-active="true"\] \.orderFlow\s*\{[\s\S]*?padding-top:\s*100px/,
+    /@media \(max-width:\s*639px\)[\s\S]*?\.orderPage\[data-order-option-active="true"\] \.orderFlow\s*\{[^}]*padding-top:\s*64px;/,
   );
   assert.match(
-    tabletToFoldMediaStyles,
-    /\.orderPage\[data-order-option-active="true"\] \.orderFlow\s*\{[\s\S]*?padding-top:\s*132px/,
+    desktopMediaStyles,
+    /\.orderPage\s*\{[^}]*--order-step-top-gap:\s*52px;/s,
   );
-  assert.match(
-    tabletToFoldMediaStyles,
-    /\.orderPage\[data-order-option-active="true"\] \.optionHeader\s*\{[\s\S]*?scroll-margin-top:\s*132px/,
-  );
+  assert.doesNotMatch(stylesSource, /padding-top:\s*(?:100|132)px/);
   assert.doesNotMatch(tabletMediaStyles, /\.heroInner,\s*\.orderInner/);
   assert.doesNotMatch(desktopMediaStyles, /\.heroInner,\s*\.orderInner/);
   assert.match(
@@ -1083,6 +1092,10 @@ test("order payment success and failure result routes are wired", () => {
   assert.match(resultSource, /data\?: OrderPaymentFailureData/);
   assert.match(resultSource, /contentHeight\?: boolean/);
   assert.match(resultSource, /contentHeight = false/);
+  assert.match(
+    resultSource,
+    /showProgress \? styles\.resultPageWithProgress : ""/,
+  );
   assert.match(resultSource, /styles\.resultPageContentHeight/);
   assert.doesNotMatch(resultSource, /defaultSuccessResultData/);
   assert.match(resultSource, /defaultFailureResultData/);
@@ -1165,11 +1178,24 @@ test("order payment success and failure result routes are wired", () => {
   assert.match(resultSource, /target="_blank"/);
   assert.match(resultSource, /rel="noreferrer"/);
   assert.match(stylesSource, /\.resultPage\s*\{/);
+  assert.match(
+    stylesSource,
+    /\.resultPage\s*\{[^}]*--order-result-header-height:\s*var\(--site-header-height, 52px\);/s,
+  );
+  assert.doesNotMatch(stylesSource, /--order-result-top-gap/);
   assert.match(stylesSource, /\.resultPageContentHeight\s*\{/);
   assert.match(stylesSource, /min-height:\s*auto/);
   assert.match(stylesSource, /\.resultSection\s*\{/);
+  assert.match(
+    stylesSource,
+    /\.resultSection\s*\{[^}]*padding:\s*var\(--order-result-header-height\) 20px 72px;/s,
+  );
   assert.match(stylesSource, /\.resultPageContentHeight \.resultSection\s*\{/);
   assert.match(stylesSource, /\.resultInner\s*\{/);
+  assert.match(
+    stylesSource,
+    /\.resultInner\s*\{[^}]*padding-top:\s*var\(--order-step-top-gap\);/s,
+  );
   assert.match(stylesSource, /\.resultProgress\s*\{/);
   assert.match(stylesSource, /\.resultMobileHeader\s*\{/);
   assert.match(stylesSource, /\.resultContent\s*\{/);
@@ -1216,6 +1242,10 @@ test("order payment success and failure result routes are wired", () => {
   );
   assert.match(
     stylesSource,
+    /@media \(max-width:\s*399px\)[\s\S]*?\.resultPageWithProgress\s*\{[^}]*--order-result-header-height:\s*64px;/,
+  );
+  assert.match(
+    stylesSource,
     /@media \(min-width:\s*400px\)[\s\S]*?\.resultMobileHeader\s*\{[\s\S]*?display:\s*none/,
   );
   assert.match(
@@ -1224,7 +1254,11 @@ test("order payment success and failure result routes are wired", () => {
   );
   assert.match(
     stylesSource,
-    /@media \(min-width:\s*1080px\)[\s\S]*?\.resultSection\s*\{[\s\S]*?padding-top:\s*var\(--site-page-top-offset, 124px\)[\s\S]*?padding-bottom:\s*104px/,
+    /@media \(min-width:\s*1080px\)[\s\S]*?\.resultSection\s*\{[^}]*padding-bottom:\s*104px/,
+  );
+  assert.doesNotMatch(
+    stylesSource,
+    /\.resultSection\s*\{[^}]*padding-top:\s*var\(--site-page-top-offset, 124px\)/s,
   );
   assert.match(
     appStylesSource,

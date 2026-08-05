@@ -62,16 +62,16 @@ test("site shell defines the two responsive page-start measurements", async () =
     app,
     /@media \(min-width: 1081px\)[\s\S]*?--site-header-height:\s*80px;[\s\S]*?--site-page-top-gap:\s*104px;/,
   );
-  assert.match(app, /\.header\s*\{[\s\S]*?height:\s*var\(--site-header-height\);/);
+  assert.match(
+    app,
+    /\.header\s*\{[\s\S]*?height:\s*var\(--site-header-height\);/,
+  );
 });
 
 test("mobile header keeps 20px horizontal padding at every mobile breakpoint", async () => {
   const { app } = await readStyles();
 
-  assert.match(
-    app,
-    /\.header\s*\{[\s\S]*?padding:\s*0 20px;/,
-  );
+  assert.match(app, /\.header\s*\{[\s\S]*?padding:\s*0 20px;/);
   assert.match(
     app,
     /@media \(min-width: 640px\)[\s\S]*?\.header\s*\{[\s\S]*?padding:\s*0 20px;/,
@@ -86,13 +86,25 @@ test("every public page start consumes the shared responsive spacing", async () 
     styles.about,
     styles.order,
     styles.privacy,
-    styles.portfolioDetail,
     styles.linkPay,
   ];
 
   for (const source of directOffsetSources) {
     assert.match(source, /var\(--site-page-top-offset(?:, 124px)?\)/);
   }
+
+  assert.match(
+    styles.portfolioDetail,
+    /\.detailPage\s*\{[^}]*padding-top:\s*var\(--site-header-height, 52px\);/s,
+  );
+  assert.match(
+    styles.portfolioDetail,
+    /\.detailInner\s*\{[^}]*padding:\s*32px 0 52px;/s,
+  );
+  assert.match(
+    styles.portfolioDetail,
+    /@media \(min-width: 1080px\)[\s\S]*?\.detailInner\s*\{[^}]*padding-top:\s*52px;/,
+  );
 
   assert.match(
     styles.app,
@@ -110,17 +122,29 @@ test("every public page start consumes the shared responsive spacing", async () 
   assert.match(styles.blogDetail, /var\(--site-header-height, 52px\)/);
   assert.match(
     styles.blogDetail,
-    /\.blogDetailInner\s*\{[^}]*padding:\s*52px 0;/s,
+    /\.blogDetailInner\s*\{[^}]*padding:\s*32px 0 52px;/s,
+  );
+  assert.match(
+    styles.blogDetail,
+    /@media \(min-width: 1080px\)[\s\S]*?\.blogDetailInner\s*\{[^}]*padding-top:\s*52px;/,
   );
   assert.match(styles.noticeDetail, /var\(--site-header-height, 52px\)/);
   assert.match(
     styles.noticeDetail,
-    /\.detailInner\s*\{[^}]*max-width:\s*680px;[^}]*padding:\s*52px 20px;/s,
+    /\.detailInner\s*\{[^}]*width:\s*min\(calc\(100% - 40px\), 640px\);[^}]*padding:\s*32px 0 52px;/s,
+  );
+  assert.match(
+    styles.noticeDetail,
+    /@media \(min-width: 1080px\)[\s\S]*?\.detailInner\s*\{[^}]*padding-top:\s*52px;/,
   );
   assert.match(styles.reviewDetail, /var\(--site-header-height, 52px\)/);
   assert.match(
     styles.reviewDetail,
-    /\.reviewDetailInner\s*\{[^}]*padding:\s*52px 0;/s,
+    /\.reviewDetailInner\s*\{[^}]*padding:\s*32px 0 52px;/s,
+  );
+  assert.match(
+    styles.reviewDetail,
+    /@media \(min-width: 1080px\)[\s\S]*?\.reviewDetailInner\s*\{[^}]*padding-top:\s*52px;/,
   );
 
   assert.match(

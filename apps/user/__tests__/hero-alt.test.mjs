@@ -9,6 +9,24 @@ const paths = {
     "../components/DarkHeroBadge.module.css",
     import.meta.url,
   ),
+  lightHeroBadge: new URL("../components/LightHeroBadge.tsx", import.meta.url),
+  lightHeroBadgeStyles: new URL(
+    "../components/LightHeroBadge.module.css",
+    import.meta.url,
+  ),
+  blogDetail: new URL("../app/(site)/blog/[slug]/page.tsx", import.meta.url),
+  noticeDetail: new URL(
+    "../app/(site)/notice/[id]/_components/NoticeDetailArticle.tsx",
+    import.meta.url,
+  ),
+  portfolioDetail: new URL(
+    "../app/(site)/portfolio/[slug]/page.tsx",
+    import.meta.url,
+  ),
+  reviewDetail: new URL(
+    "../app/(site)/reviews/[slug]/page.tsx",
+    import.meta.url,
+  ),
   pageHeroStyles: new URL("../components/PageHero.module.css", import.meta.url),
   landing: new URL("../app/_components/Hero.tsx", import.meta.url),
   notice: new URL("../app/(site)/notice/page.tsx", import.meta.url),
@@ -139,5 +157,51 @@ test("notice and about share one continuous dark hero badge", async () => {
   assert.match(
     badgeStyles,
     /\.borderRect\s*\{[^}]*stroke-width:\s*1px;[^}]*vector-effect:\s*non-scaling-stroke;/s,
+  );
+});
+
+test("page hero and detail pages share one light hero badge", async () => {
+  const [
+    badgeSource,
+    badgeStyles,
+    blogDetail,
+    noticeDetail,
+    pageHero,
+    portfolioDetail,
+    reviewDetail,
+  ] = await Promise.all([
+    readFile(paths.lightHeroBadge, "utf8"),
+    readFile(paths.lightHeroBadgeStyles, "utf8"),
+    readFile(paths.blogDetail, "utf8"),
+    readFile(paths.noticeDetail, "utf8"),
+    readFile(paths.pageHero, "utf8"),
+    readFile(paths.portfolioDetail, "utf8"),
+    readFile(paths.reviewDetail, "utf8"),
+  ]);
+
+  assert.match(badgeSource, /export function LightHeroBadge/);
+  assert.match(
+    pageHero,
+    /tone === "dark"[\s\S]*<LightHeroBadge>\{badge\}<\/LightHeroBadge>/,
+  );
+  assert.match(
+    blogDetail,
+    /<LightHeroBadge itemProp="articleSection">[\s\S]*\{post\.category\}/,
+  );
+  assert.match(
+    noticeDetail,
+    /<LightHeroBadge>[\s\S]*getNoticeCategoryLabel\(notice\.category\)/,
+  );
+  assert.match(
+    portfolioDetail,
+    /<LightHeroBadge>\{categoryLabel\}<\/LightHeroBadge>/,
+  );
+  assert.match(
+    reviewDetail,
+    /<LightHeroBadge itemProp="articleSection">[\s\S]*\{detail\.category\}/,
+  );
+  assert.match(
+    badgeStyles,
+    /\.badge::before\s*\{[\s\S]*var\(--landing-brand-border-end\),\s*var\(--landing-brand-border-start\)/,
   );
 });

@@ -7,7 +7,7 @@
 .reviewDetailInner {
   width: min(calc(100% - 40px), 640px);
   margin: 0 auto;
-  padding: 52px 0;
+  padding: 32px 0 52px;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -27,44 +27,6 @@
 .reviewDetailHeader {
   align-items: flex-start;
   gap: 20px;
-}
-
-.reviewDetailBadge {
-  width: fit-content;
-  min-height: 40px;
-  border: 1px solid transparent;
-  border-radius: 32px;
-  background-color: rgba(48, 186, 195, 0.1);
-  background-clip: padding-box;
-  color: var(--landing-brand-500);
-  padding: 8px 16px;
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-family: var(--font-sans);
-  font-size: 14px;
-  font-weight: 700;
-  line-height: 21px;
-  white-space: nowrap;
-}
-
-.reviewDetailBadge::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  box-sizing: border-box;
-  border: 1px solid transparent;
-  background:
-    var(--landing-brand-border-end), var(--landing-brand-border-start);
-  background-origin: border-box;
-  pointer-events: none;
-  -webkit-mask:
-    linear-gradient(#ffffff 0 0) padding-box,
-    linear-gradient(#ffffff 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
 }
 
 .reviewDetailTitleGroup {
@@ -307,6 +269,12 @@
 @media (min-width: 640px) {
   .reviewDetailVideo {
     height: 369px;
+  }
+}
+
+@media (min-width: 1080px) {
+  .reviewDetailInner {
+    padding-top: 52px;
   }
 }
 

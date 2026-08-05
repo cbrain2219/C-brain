@@ -302,6 +302,8 @@ export function OrderPaymentResult(props: OrderPaymentResultProps) {
   return (
     <div
       className={`${styles.orderPage} ${styles.resultPage} ${
+        showProgress ? styles.resultPageWithProgress : ""
+      } ${
         contentHeight ? styles.resultPageContentHeight : ""
       }`}
       data-order-result-active="true"

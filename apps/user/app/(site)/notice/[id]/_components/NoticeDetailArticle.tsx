@@ -2,6 +2,7 @@ import { getNoticeCategoryLabel } from "../../_constants/noticeCategories";
 import { NoticeAuthorMark } from "../../_components/NoticeAuthorMark";
 import type { NoticeCategoryValue, NoticeDetail } from "../../_types/notice";
 import { formatPublishedDate } from "../../_utils/formatPublishedDate";
+import { LightHeroBadge } from "../../../../../components/LightHeroBadge";
 import styles from "../page.module.css";
 import { NoticeBackButton } from "./NoticeBackButton";
 
@@ -22,9 +23,9 @@ export function NoticeDetailArticle({
   return (
     <section className={styles.detailSection}>
       <div className={styles.detailInner}>
-        <p className={styles.categoryBadge}>
+        <LightHeroBadge>
           {getNoticeCategoryLabel(notice.category)}
-        </p>
+        </LightHeroBadge>
 
         <article className={styles.article}>
           <header className={styles.articleHeader}>

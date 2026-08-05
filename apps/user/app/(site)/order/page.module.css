@@ -1,4 +1,5 @@
 .orderPage {
+  --order-step-top-gap: 32px;
   --landing-brand-50: #eaf8f9;
   --landing-brand-100: #d5f1f3;
   --landing-brand-500: #30bac3;
@@ -208,12 +209,20 @@
   padding: 72px 20px;
 }
 
+.orderPage[data-order-option-active="true"] .orderFlow {
+  padding-top: var(--site-header-height, 52px);
+}
+
 .orderInner {
   width: 100%;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
   gap: 32px;
+}
+
+.orderPage[data-order-option-active="true"] .orderInner {
+  padding-top: var(--order-step-top-gap);
 }
 
 .visuallyHidden {
@@ -461,7 +470,9 @@
 }
 
 .optionHeader {
-  scroll-margin-top: 96px;
+  scroll-margin-top: calc(
+    var(--site-header-height, 52px) + var(--order-step-top-gap)
+  );
   position: relative;
   display: flex;
   align-items: center;
@@ -1404,6 +1415,7 @@
 }
 
 .resultPage {
+  --order-result-header-height: var(--site-header-height, 52px);
   min-height: 100svh;
 }
 
@@ -1413,7 +1425,7 @@
 
 .resultSection {
   width: 100%;
-  padding: var(--site-page-top-offset, 124px) 20px 72px;
+  padding: var(--order-result-header-height) 20px 72px;
 }
 
 .resultPageContentHeight .resultSection {
@@ -1423,6 +1435,7 @@
 .resultInner {
   width: 100%;
   margin: 0 auto;
+  padding-top: var(--order-step-top-gap);
   display: flex;
   flex-direction: column;
   gap: 32px;
@@ -1717,7 +1730,7 @@
 
 @media (max-width: 639px) {
   .orderPage[data-order-option-active="true"] .orderFlow {
-    padding-top: 100px;
+    padding-top: 64px;
   }
 
   .optionHeader {
@@ -1782,6 +1795,10 @@
 }
 
 @media (max-width: 399px) {
+  .resultPageWithProgress {
+    --order-result-header-height: 64px;
+  }
+
   .resultProgress {
     display: none;
   }
@@ -1794,10 +1811,6 @@
 }
 
 @media (min-width: 400px) {
-  .resultSection {
-    padding-top: var(--site-page-top-offset, 124px);
-  }
-
   .resultMobileHeader {
     display: none;
   }
@@ -1830,16 +1843,6 @@
 
   .methodGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-@media (min-width: 640px) and (max-width: 1079px) {
-  .orderPage[data-order-option-active="true"] .orderFlow {
-    padding-top: 132px;
-  }
-
-  .orderPage[data-order-option-active="true"] .optionHeader {
-    scroll-margin-top: 132px;
   }
 }
 
@@ -1889,6 +1892,10 @@
 }
 
 @media (min-width: 1080px) {
+  .orderPage {
+    --order-step-top-gap: 52px;
+  }
+
   .heroInner {
     width: min(100%, 1080px);
   }
@@ -1911,7 +1918,6 @@
   }
 
   .resultSection {
-    padding-top: var(--site-page-top-offset, 124px);
     padding-bottom: 104px;
   }
 

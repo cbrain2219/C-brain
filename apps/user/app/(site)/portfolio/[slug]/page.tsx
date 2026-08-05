@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { LightHeroBadge } from "../../../../components/LightHeroBadge";
 import { JsonLdScript } from "../../../_components/JsonLdScript";
 import {
   getPortfolioCategoryIdFromValue,
@@ -118,7 +119,7 @@ export default async function PortfolioDetailPage({
       <div className={styles.detailInner}>
         <div className={styles.detailBody}>
           <header className={styles.detailHeader}>
-            <p className={styles.categoryBadge}>{categoryLabel}</p>
+            <LightHeroBadge>{categoryLabel}</LightHeroBadge>
             <div className={styles.titleGroup}>
               <h1 id="portfolio-detail-title">
                 {item.title} - {item.client}

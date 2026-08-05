@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { LightHeroBadge } from "../../../../components/LightHeroBadge";
 import { JsonLdScript } from "../../../_components/JsonLdScript";
 import {
   customerInterviewDetails,
@@ -130,9 +131,9 @@ export default async function CustomerReviewDetailPage({
       />
       <div className={styles.reviewDetailInner}>
         <header className={styles.reviewDetailHeader}>
-          <p className={styles.reviewDetailBadge} itemProp="articleSection">
+          <LightHeroBadge itemProp="articleSection">
             {detail.category}
-          </p>
+          </LightHeroBadge>
           <div className={styles.reviewDetailTitleGroup}>
             <h1 id="customer-review-detail-title" itemProp="headline">
               {detail.title}

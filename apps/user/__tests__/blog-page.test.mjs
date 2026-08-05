@@ -620,7 +620,11 @@ test("blog detail styles match the P/T/F/M responsive detail frame", async () =>
   );
   assert.match(
     styles,
-    /\.blogDetailInner\s*\{[^}]*padding:\s*52px 0;/s,
+    /\.blogDetailInner\s*\{[^}]*padding:\s*32px 0 52px;/s,
+  );
+  assert.match(
+    styles,
+    /@media \(min-width: 1080px\)[\s\S]*?\.blogDetailInner\s*\{[^}]*padding-top:\s*52px;/,
   );
   assert.match(
     styles,

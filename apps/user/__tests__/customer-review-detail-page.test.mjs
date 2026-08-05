@@ -185,7 +185,6 @@ test("customer review detail styles match the P/T/F/M responsive detail frame", 
   const requiredClasses = [
     ".reviewDetailPage",
     ".reviewDetailInner",
-    ".reviewDetailBadge",
     ".reviewDetailVideo",
     ".reviewDetailPlayButton",
     ".reviewDetailBody",
@@ -200,15 +199,13 @@ test("customer review detail styles match the P/T/F/M responsive detail frame", 
   }
 
   assert.match(styles, /width: min\(calc\(100% - 40px\), 640px\);/);
-  assert.match(styles, /padding: 52px 0;/);
+  assert.match(styles, /padding: 32px 0 52px;/);
   assert.match(
     styles,
-    /\.reviewDetailAuthorLine\s*\{[\s\S]*gap: 8px;/,
+    /@media \(min-width: 1080px\)[\s\S]*?\.reviewDetailInner\s*\{[^}]*padding-top:\s*52px;/,
   );
-  assert.match(
-    styles,
-    /\.reviewDetailAuthorIdentity\s*\{[\s\S]*gap: 4px;/,
-  );
+  assert.match(styles, /\.reviewDetailAuthorLine\s*\{[\s\S]*gap: 8px;/);
+  assert.match(styles, /\.reviewDetailAuthorIdentity\s*\{[\s\S]*gap: 4px;/);
   assert.match(styles, /\.reviewDetailVideo\s*\{[\s\S]*height: 233px;/);
   assert.match(
     styles,

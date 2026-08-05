@@ -2,10 +2,7 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 
-const contentPath = new URL(
-  "../app/_content/portfolio.ts",
-  import.meta.url,
-);
+const contentPath = new URL("../app/_content/portfolio.ts", import.meta.url);
 const galleryPath = new URL(
   "../app/(site)/portfolio/PortfolioGallery.tsx",
   import.meta.url,
@@ -14,10 +11,7 @@ const listPagePath = new URL(
   "../app/(site)/portfolio/page.tsx",
   import.meta.url,
 );
-const homePagePath = new URL(
-  "../app/(site)/page.tsx",
-  import.meta.url,
-);
+const homePagePath = new URL("../app/(site)/page.tsx", import.meta.url);
 const landingPortfolioPath = new URL(
   "../app/_components/PortfolioSection.tsx",
   import.meta.url,
@@ -39,10 +33,7 @@ const stylesPath = new URL(
 test("portfolio category hover excludes the active tab", async () => {
   const styles = await readFile(stylesPath, "utf8");
 
-  assert.match(
-    styles,
-    /\.categoryButton:not\(\.categoryButtonActive\):hover/,
-  );
+  assert.match(styles, /\.categoryButton:not\(\.categoryButtonActive\):hover/);
   assert.doesNotMatch(styles, /\.categoryButton:hover/);
 });
 
@@ -79,10 +70,7 @@ test("portfolio grid keeps three columns from the 960px breakpoint", async () =>
     "@media (min-width: 980px)",
     threeColumnStart,
   );
-  const threeColumnStyles = styles.slice(
-    threeColumnStart,
-    nextBreakpointStart,
-  );
+  const threeColumnStyles = styles.slice(threeColumnStart, nextBreakpointStart);
 
   assert.notEqual(threeColumnStart, -1);
   assert.notEqual(nextBreakpointStart, -1);
@@ -99,7 +87,8 @@ test("portfolio grid keeps three columns from the 960px breakpoint", async () =>
 test("portfolio hero keeps frame padding without a fixed hero height", async () => {
   const styles = await readFile(stylesPath, "utf8");
   const baseHero = styles.match(/\.hero\s*\{[\s\S]*?\}/)?.[0] ?? "";
-  const baseHeroContent = styles.match(/\.heroContent\s*\{[\s\S]*?\}/)?.[0] ?? "";
+  const baseHeroContent =
+    styles.match(/\.heroContent\s*\{[\s\S]*?\}/)?.[0] ?? "";
   const foldStart = styles.indexOf("@media (min-width: 640px)");
   const desktopStart = styles.indexOf("@media (min-width: 1080px)");
   const pcStart = styles.indexOf("@media (min-width: 1440px)", desktopStart);
@@ -152,7 +141,10 @@ test("portfolio detail returns to the landing section when opened from the landi
     /export const landingPortfolioCategorySearchParam = "portfolioCategory";/,
   );
   assert.match(content, /type PortfolioDetailSource = "landing"/);
-  assert.match(content, /return `\/\?\$\{landingPortfolioCategorySearchParam\}=\$\{categoryId\}#portfolio`;/);
+  assert.match(
+    content,
+    /return `\/\?\$\{landingPortfolioCategorySearchParam\}=\$\{categoryId\}#portfolio`;/,
+  );
   assert.match(
     landingPortfolio,
     /getPortfolioDetailHref\(item, activeCategoryId, "landing"\)/,
@@ -166,9 +158,18 @@ test("portfolio detail returns to the landing section when opened from the landi
   assert.match(landingPortfolio, /initialCategoryId\?: PortfolioCategoryId/);
   assert.match(landingPortfolio, /landingPortfolioScrollStorageKey/);
   assert.match(landingPortfolio, /window\.sessionStorage\.setItem/);
-  assert.match(landingPortfolio, /try \{[\s\S]*?window\.sessionStorage\.setItem/);
-  assert.match(landingPortfolio, /try \{[\s\S]*?window\.sessionStorage\.getItem/);
-  assert.match(landingPortfolio, /try \{[\s\S]*?window\.sessionStorage\.removeItem/);
+  assert.match(
+    landingPortfolio,
+    /try \{[\s\S]*?window\.sessionStorage\.setItem/,
+  );
+  assert.match(
+    landingPortfolio,
+    /try \{[\s\S]*?window\.sessionStorage\.getItem/,
+  );
+  assert.match(
+    landingPortfolio,
+    /try \{[\s\S]*?window\.sessionStorage\.removeItem/,
+  );
   assert.match(landingPortfolio, /catch \{/);
   assert.match(landingPortfolio, /window\.scrollTo/);
   assert.match(landingPortfolio, /onClick=\{saveLandingPortfolioScroll\}/);
@@ -177,7 +178,10 @@ test("portfolio detail returns to the landing section when opened from the landi
     detailPage,
     /getPortfolioDetailSourceFromValue\(\s*resolvedSearchParams\?\.from,\s*\)/,
   );
-  assert.match(detailPage, /getPortfolioListHref\(listCategoryId, detailSource\)/);
+  assert.match(
+    detailPage,
+    /getPortfolioListHref\(listCategoryId, detailSource\)/,
+  );
 });
 
 test("portfolio cards expose semantic project markup and descriptive alt text", async () => {
@@ -293,18 +297,20 @@ test("portfolio detail spacing is expressed with responsive parent gaps", async 
   assert.match(detailPage, /<div className=\{styles\.detailBody\}>/);
   assert.match(
     detailStyles,
-    /\.detailPage\s*\{[\s\S]*?--site-page-top-gap:\s*52px;[\s\S]*?--site-page-top-offset:\s*calc\(\s*var\(--site-header-height\) \+ var\(--site-page-top-gap\)\s*\);/,
+    /\.detailPage\s*\{[^}]*padding-top:\s*var\(--site-header-height, 52px\);/s,
   );
   assert.match(
     detailStyles,
-    /\.detailInner\s*\{[\s\S]*?padding:\s*var\(--site-page-top-offset\) 0 52px;[\s\S]*?gap:\s*32px;/,
+    /\.detailInner\s*\{[\s\S]*?padding:\s*32px 0 52px;[\s\S]*?gap:\s*32px;/,
   );
+  assert.match(
+    detailStyles,
+    /@media \(min-width:\s*1080px\)[\s\S]*?\.detailInner\s*\{[^}]*padding-top:\s*52px;/,
+  );
+  assert.doesNotMatch(detailStyles, /var\(--site-page-top-offset\)/);
   assert.match(detailStyles, /\.detailBody\s*\{[\s\S]*?gap:\s*20px;/);
   assert.match(detailStyles, /\.detailHeader\s*\{[\s\S]*?gap:\s*20px;/);
-  assert.match(
-    detailStyles,
-    /\.relatedSection\s*\{[\s\S]*?gap:\s*20px;/,
-  );
+  assert.match(detailStyles, /\.relatedSection\s*\{[\s\S]*?gap:\s*20px;/);
   assert.match(
     detailStyles,
     /\.relatedList\s*\{[\s\S]*?margin:\s*0;[\s\S]*?gap:\s*20px;/,
@@ -313,12 +319,12 @@ test("portfolio detail spacing is expressed with responsive parent gaps", async 
     detailStyles,
     /@media \(min-width:\s*1081px\)[\s\S]*?\.detailInner\s*\{[\s\S]*?gap:\s*52px;/,
   );
+  assert.match(
+    detailStyles,
+    /\.backLink\s*\{[^}]*min-height:\s*52px;[^}]*border-radius:\s*16px;[^}]*padding:\s*8px 20px;[^}]*font-weight:\s*700;[^}]*line-height:\s*20px;[^}]*letter-spacing:\s*-0\.21px;/s,
+  );
 
-  for (const selector of [
-    "detailContent",
-    "backLink",
-    "relatedSection",
-  ]) {
+  for (const selector of ["detailContent", "backLink", "relatedSection"]) {
     const rule = detailStyles.match(
       new RegExp(`\\.${selector}\\s*\\{([^}]*)\\}`),
     )?.[1];

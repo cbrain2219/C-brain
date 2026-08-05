@@ -2,6 +2,7 @@ import Image from "next/image";
 import type { CSSProperties, ReactNode } from "react";
 
 import { DarkHeroBadge } from "./DarkHeroBadge";
+import { LightHeroBadge } from "./LightHeroBadge";
 import styles from "./PageHero.module.css";
 
 type PageHeroProps = {
@@ -61,7 +62,7 @@ export function PageHero({
           {tone === "dark" ? (
             <DarkHeroBadge>{badge}</DarkHeroBadge>
           ) : (
-            <p className={styles.badge}>{badge}</p>
+            <LightHeroBadge>{badge}</LightHeroBadge>
           )}
           <div className={styles.heading}>
             <h1 className={styles.title}>{title}</h1>
