@@ -466,7 +466,7 @@ function getPortfolioPlainText(
   content: string,
   contentMode: TableRow<"portfolio_items">["content_mode"],
 ) {
-  if (contentMode === "text") return content;
+  if (contentMode === "markdown") return content;
 
   return content
     .replaceAll("&nbsp;", " ")
@@ -485,18 +485,12 @@ export function mapPortfolioRows(
   rows: readonly TableRow<"portfolio_items">[],
   resolveAssetUrl: PortfolioAssetUrlResolver,
 ): PortfolioItem[] {
-  const pinnedRows = rows.filter((row) => row.is_pinned);
-  const unpinnedRows = rows.filter((row) => !row.is_pinned);
+  const pinnedRows = rows.filter((row) => row.pinned);
+  const unpinnedRows = rows.filter((row) => !row.pinned);
 
   return [...pinnedRows, ...unpinnedRows].flatMap((row) => {
     const client = row.client_name?.trim() || "씨브레인";
     const storedImages = parsePortfolioImages(row.images);
-
-    if (!storedImages.length && row.image_path) {
-      storedImages.push(
-        ...parsePortfolioImages([{ alt: "", path: row.image_path }]),
-      );
-    }
 
     if (!storedImages.length) return [];
 
@@ -516,15 +510,12 @@ export function mapPortfolioRows(
       author: "씨브레인",
       categoryId: getPortfolioCategoryId(row.type.trim()),
       client,
-      description:
-        description || row.summary?.trim() || defaultPortfolioDescription,
+      description: description || defaultPortfolioDescription,
       detailImages,
       image: representativeImage.src,
       imageAlt: representativeImage.alt,
       slug: row.slug,
-      summary:
-        row.summary?.trim() ||
-        `${client}의 제작 목적과 브랜드 톤에 맞춰 완성한 ${row.title}입니다.`,
+      summary: `${client}의 제작 목적과 브랜드 톤에 맞춰 완성한 ${row.title}입니다.`,
       title: row.title,
     }];
   });

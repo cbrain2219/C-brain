@@ -43,7 +43,7 @@ test("portfolio active category underline stays visible while overlapping the ra
 
   assert.match(
     categoryNavStyle ?? "",
-    /background:\s*linear-gradient\(var\(--landing-gray-100\), var\(--landing-gray-100\)\)[\s\S]*center bottom\s*\/\s*100% 1px no-repeat;/,
+    /background:\s*linear-gradient\(var\(--landing-gray-100\), var\(--landing-gray-100\)\)[\s\S]*center bottom\s*\/\s*calc\(100% - 40px\) 1px no-repeat;/,
   );
   assert.doesNotMatch(categoryNavStyle ?? "", /border-bottom:/);
 
