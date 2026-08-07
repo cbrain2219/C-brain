@@ -25,6 +25,12 @@ test('product form composes fixed common and conditional sections', () => {
   assert.match(source, /formatProductSectionHeading\(index, section\.label\)/)
   assert.match(source, /<OptionValuesEditor/)
   assert.match(source, /<QuantityPriceEditor/)
+  assert.match(source, /ProductFormDraft/)
+  assert.match(source, /getActiveProductUiDraft\(draft\)/)
+  assert.match(
+    source,
+    /replaceActiveProductUiDraft\(draft, nextVariantDraft\)/,
+  )
 })
 
 test('option selection controls product-specific price and service rows', () => {
@@ -34,8 +40,8 @@ test('option selection controls product-specific price and service rows', () => 
   assert.match(source, /draft\.priceRowsBySelection\[priceKey\]/)
   assert.match(source, /removeProductPriceOption\(/)
   assert.match(source, /removeProductServiceOption\(/)
-  assert.match(source, /getProductServiceKey\(draft\)/)
-  assert.match(source, /draft\.serviceEstimatesBySelection\[serviceKey\]/)
+  assert.match(source, /getProductServiceKey\(activeDraft\)/)
+  assert.match(source, /activeDraft\.serviceEstimatesBySelection\[/)
 })
 
 test('product form fields stay inside the UI boundary', () => {
@@ -46,10 +52,12 @@ test('product form fields stay inside the UI boundary', () => {
 })
 
 test('compound types use the Figma segmented subtype selector', () => {
-  assert.match(source, /productSubtypeOptions\[draft\.productType\]/)
+  assert.match(source, /getProductVariants\(draft\.productType\)/)
   assert.match(source, /name="productSubtype"/)
-  assert.match(source, /checked=\{draft\.productSubtype === subtype\}/)
-  assert.match(source, /changeProductUiSubtype\(draft, subtype\)/)
+  assert.match(source, /checked=\{draft\.activeVariant === variant\}/)
+  assert.match(source, /selectProductFormVariant\(draft, variant\)/)
+  assert.doesNotMatch(source, /changeProductUiSubtype\(/)
+  assert.doesNotMatch(source, /createProductUiDraft\([^)]*variant/)
   assert.match(source, /type="radio"/)
   assert.match(
     styles,

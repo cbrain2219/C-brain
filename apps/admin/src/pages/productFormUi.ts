@@ -20,6 +20,18 @@ export const productSubtypeOptions = {
 
 export type ProductSubtype = (typeof productSubtypeOptions)[ProductType][number]
 
+export type ProductVariant = ProductType | ProductSubtype
+
+export function getProductVariants(
+  productType: ProductType,
+): readonly ProductVariant[] {
+  const subtypes = productSubtypeOptions[
+    productType
+  ] as readonly ProductSubtype[]
+
+  return subtypes.length > 0 ? subtypes : [productType]
+}
+
 export type ProductOptionSectionKey =
   | 'pageCount'
   | 'paper'
@@ -76,7 +88,6 @@ export type ServiceEstimateDraft = {
 export type ProductUiDraft = {
   optionValues: Partial<Record<ProductOptionSectionKey, string[]>>
   priceRowsBySelection: Record<string, QuantityPriceDraft[]>
-  priceRows: Partial<Record<ProductPriceSectionKey, QuantityPriceDraft[]>>
   productSubtype: ProductSubtype | ''
   productType: ProductType | ''
   selectedOptionIndexes: Partial<Record<ProductOptionSectionKey, number>>
@@ -364,138 +375,6 @@ export function getProductUiProfile(
 }
 
 const sectionNumbers = ['III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX'] as const
-const priceFormatter = new Intl.NumberFormat('ko-KR')
-
-const brochureQuantities = ['100', '200', '300'] as const
-const leafletQuantities = [
-  ['100', '200', '750'],
-  ['100', '300', '500'],
-  ['100', '500', '1000'],
-] as const
-const posterQuantities = ['100', '300', '500'] as const
-const flyerQuantities = ['100', '300', '4000'] as const
-const displayQuantities = ['1', '2', '3'] as const
-const envelopeQuantities = ['500', '1000'] as const
-
-const brochurePriceMatrix = [
-  [
-    [
-      [850000, 1010000, 1130000],
-      [1240000, 1440000, 1620000],
-      [1610000, 1870000, 1910000],
-    ],
-    [
-      [860000, 1020000, 1140000],
-      [1250000, 1450000, 1630000],
-      [1620000, 1900000, 1940000],
-    ],
-    [
-      [860000, 1030000, 1160000],
-      [1250000, 1470000, 1660000],
-      [1620000, 1900000, 2000000],
-    ],
-  ],
-  [
-    [
-      [880000, 1060000, 1210000],
-      [1280000, 1510000, 1720000],
-      [1650000, 1960000, 2090000],
-    ],
-    [
-      [890000, 1080000, 1230000],
-      [1290000, 1540000, 1760000],
-      [1670000, 1990000, 2150000],
-    ],
-    [
-      [900000, 1100000, 1260000],
-      [1300000, 1560000, 1790000],
-      [1680000, 2010000, 2240000],
-    ],
-  ],
-] as const
-
-const leafletPriceMatrix = [
-  [
-    [
-      [780000, 970000, 1020000],
-      [780000, 970000, 1040000],
-      [790000, 980000, 1080000],
-    ],
-    [
-      [780000, 1000000, 1230000],
-      [800000, 1020000, 1250000],
-      [840000, 1060000, 1290000],
-    ],
-  ],
-  [
-    [
-      [640000, 790000, 910000],
-      [640000, 790000, 930000],
-      [640000, 800000, 950000],
-    ],
-    [
-      [660000, 750000, 1010000],
-      [660000, 850000, 1030000],
-      [660000, 840000, 1010000],
-    ],
-  ],
-  [
-    [
-      [370000, 520000, 670000],
-      [370000, 520000, 690000],
-      [370000, 530000, 710000],
-    ],
-    [
-      [380000, 560000, 780000],
-      [380000, 570000, 790000],
-      [380000, 560000, 780000],
-    ],
-  ],
-] as const
-
-const posterPriceMatrix = [
-  [
-    [520000, 590000, 650000],
-    [550000, 660000, 740000],
-  ],
-  [
-    [440000, 540000, 560000],
-    [450000, 570000, 610000],
-  ],
-] as const
-
-const flyerPriceMatrix = [
-  [
-    [130000, 160000, 190000],
-    [190000, 250000, 260000],
-  ],
-  [
-    [130000, 170000, 290000],
-    [200000, 260000, 360000],
-  ],
-] as const
-
-const scrollBannerPriceMatrix = [
-  [130000, 140000],
-  [130000, 160000],
-] as const
-
-const envelopePriceMatrix = [
-  [
-    [90000, 120000],
-    [470000, 560000],
-  ],
-  [
-    [90000, 120000],
-    [470000, 560000],
-  ],
-  [
-    [220000, 260000],
-    [560000, 720000],
-  ],
-] as const
-
-type ProductVariant = ProductType | ProductSubtype
 
 function getProductVariant(
   productType: ProductType | '',
@@ -632,349 +511,20 @@ export function formatProductSectionHeading(index: number, label: string) {
   return `${number}. ${label}`
 }
 
-function formatPrice(value: number | null | undefined) {
-  return value === null || value === undefined
-    ? ''
-    : priceFormatter.format(value)
-}
-
-function createPriceRows(
-  quantities: readonly string[],
-  prices: readonly (number | null)[],
-) {
-  return quantities.map((quantity, index) => ({
-    quantity,
-    unitPrice: formatPrice(prices[index]),
-  }))
-}
-
-function setPriceRows(
-  rowsBySelection: ProductUiDraft['priceRowsBySelection'],
-  optionIndexes: readonly number[],
-  quantities: readonly string[],
-  prices: readonly (number | null)[],
-) {
-  rowsBySelection[optionIndexes.join(':')] = createPriceRows(quantities, prices)
-}
-
-function createPriceRowsBySelection(
-  productType: ProductType | '',
-  productSubtype: ProductSubtype | '',
-) {
-  const rowsBySelection: ProductUiDraft['priceRowsBySelection'] = {}
-  const variant = getProductVariant(productType, productSubtype)
-
-  if (variant === '브로슈어 · 카탈로그') {
-    brochurePriceMatrix.forEach((thicknessPrices, paperIndex) => {
-      thicknessPrices.forEach((pagePrices, thicknessIndex) => {
-        pagePrices.forEach((prices, pageCountIndex) => {
-          for (let coatingIndex = 0; coatingIndex < 2; coatingIndex += 1) {
-            setPriceRows(
-              rowsBySelection,
-              [pageCountIndex, paperIndex, thicknessIndex, coatingIndex],
-              brochureQuantities,
-              prices,
-            )
-          }
-        })
-      })
-    })
-  }
-
-  if (variant === '리플렛 · 팜플렛') {
-    leafletPriceMatrix.forEach((paperPrices, sizeIndex) => {
-      paperPrices.forEach((thicknessPrices, paperIndex) => {
-        thicknessPrices.forEach((prices, thicknessIndex) => {
-          for (let coatingIndex = 0; coatingIndex < 2; coatingIndex += 1) {
-            setPriceRows(
-              rowsBySelection,
-              [sizeIndex, paperIndex, thicknessIndex, coatingIndex],
-              leafletQuantities[sizeIndex],
-              prices,
-            )
-          }
-        })
-      })
-    })
-  }
-
-  if (variant === '포스터') {
-    posterPriceMatrix.forEach((thicknessPrices, sizeIndex) => {
-      thicknessPrices.forEach((prices, thicknessIndex) => {
-        for (let coatingIndex = 0; coatingIndex < 2; coatingIndex += 1) {
-          setPriceRows(
-            rowsBySelection,
-            [sizeIndex, 0, thicknessIndex, coatingIndex],
-            posterQuantities,
-            prices,
-          )
-        }
-      })
-    })
-  }
-
-  if (variant === '전단지') {
-    flyerPriceMatrix.forEach((sidePrices, thicknessIndex) => {
-      sidePrices.forEach((prices, sideIndex) => {
-        setPriceRows(
-          rowsBySelection,
-          [0, 0, thicknessIndex, sideIndex],
-          flyerQuantities,
-          prices,
-        )
-      })
-    })
-  }
-
-  if (variant === '배너') {
-    ;[110000, 130000].forEach((price, standIndex) => {
-      setPriceRows(
-        rowsBySelection,
-        [0, standIndex, 0, 0, 0],
-        displayQuantities,
-        [price, null, null],
-      )
-    })
-  }
-
-  if (variant === '족자') {
-    scrollBannerPriceMatrix.forEach((materialPrices, sizeIndex) => {
-      materialPrices.forEach((price, materialIndex) => {
-        setPriceRows(
-          rowsBySelection,
-          [sizeIndex, materialIndex, 0, 0],
-          displayQuantities,
-          [price, null, null],
-        )
-      })
-    })
-  }
-
-  if (variant === '현수막') {
-    ;[80000, 100000].forEach((price, environmentIndex) => {
-      setPriceRows(
-        rowsBySelection,
-        [0, 0, 0, environmentIndex],
-        displayQuantities,
-        [price, null, null],
-      )
-    })
-  }
-
-  if (variant === '봉투') {
-    envelopePriceMatrix.forEach((thicknessPrices, envelopeTypeIndex) => {
-      thicknessPrices.forEach((prices, thicknessIndex) => {
-        setPriceRows(
-          rowsBySelection,
-          [envelopeTypeIndex, 0, thicknessIndex],
-          envelopeQuantities,
-          prices,
-        )
-      })
-    })
-  }
-
-  return rowsBySelection
-}
-
-function createServiceEstimate(
-  designPrintEstimate: number,
-  planningEstimate?: number,
-) {
-  return {
-    designPrintEstimate: formatPrice(designPrintEstimate),
-    planningEstimate: formatPrice(planningEstimate),
-  }
-}
-
-function createServiceEstimatesBySelection(
-  productType: ProductType | '',
-  productSubtype: ProductSubtype | '',
-): ProductUiDraft['serviceEstimatesBySelection'] {
-  const variant = getProductVariant(productType, productSubtype)
-
-  if (variant === '리플렛 · 팜플렛') {
-    return {
-      '0': createServiceEstimate(80000, 50000),
-      '1': createServiceEstimate(80000, 50000),
-      '2': createServiceEstimate(40000, 30000),
-    }
-  }
-
-  if (variant === '전단지') {
-    return {
-      '0': createServiceEstimate(100000, 60000),
-      '1': createServiceEstimate(75000, 40000),
-    }
-  }
-
-  if (variant === '로고') {
-    return {
-      '0': createServiceEstimate(50000),
-      '2': createServiceEstimate(80000),
-    }
-  }
-
-  if (variant === '명함') {
-    return {
-      '0:0': createServiceEstimate(50000, 20000),
-      '0:1': createServiceEstimate(60000, 20000),
-      '1:0': createServiceEstimate(50000, 20000),
-      '1:1': createServiceEstimate(60000, 20000),
-    }
-  }
-
-  const servicePrices: Partial<
-    Record<ProductVariant, readonly [number, number]>
-  > = {
-    '브로슈어 · 카탈로그': [80000, 50000],
-    포스터: [250000, 200000],
-    배너: [80000, 50000],
-    족자: [80000, 50000],
-    현수막: [50000, 30000],
-    봉투: [30000, 20000],
-  }
-  const prices = variant ? servicePrices[variant] : undefined
-
-  return prices ? { '': createServiceEstimate(...prices) } : {}
-}
-
-function createBlankPriceRows(quantities: readonly string[]) {
-  return quantities.map((quantity) => ({ quantity, unitPrice: '' }))
-}
-
-function createTypeSpecificState(
+function createBlankOptionValues(
   productType: ProductType | '',
   productSubtype: ProductSubtype | '',
 ) {
   const optionValues: ProductUiDraft['optionValues'] = {}
-  const priceRows: ProductUiDraft['priceRows'] = {}
-  const variant = getProductVariant(productType, productSubtype)
 
-  if (variant === '브로슈어 · 카탈로그') {
-    return {
-      optionValues: {
-        pageCount: ['8', '12', '16'],
-        paper: ['일반지(스노우지)', '고급지(랑데뷰)'],
-        thickness: ['얇은', '보통', '두꺼운'],
-        coverCoating: ['무광', '유광'],
-      },
-      priceRows: { quantity: createBlankPriceRows(brochureQuantities) },
-    }
+  if (!productType) return optionValues
+
+  for (const section of getProductUiProfile(productType, productSubtype)
+    .sections) {
+    if (section.kind === 'options') optionValues[section.key] = ['']
   }
 
-  if (variant === '리플렛 · 팜플렛') {
-    return {
-      optionValues: {
-        size: ['국3절(620x297mm)', 'A3(420x297mm)', 'A4(297x210mm)'],
-        paper: ['일반지(스노우지)', '고급지(량데뷰)'],
-        thickness: ['얇은', '보통', '두꺼운'],
-        coverCoating: ['무광', '유광'],
-      },
-      priceRows: { quantity: createBlankPriceRows(leafletQuantities[0]) },
-    }
-  }
-
-  if (variant === '포스터') {
-    return {
-      optionValues: {
-        size: ['A1(594x841mm)', 'A2(420x594mm)'],
-        paper: ['일반지(아트지)'],
-        thickness: ['얇은', '두꺼운'],
-        coating: ['무광', '유광'],
-      },
-      priceRows: { quantity: createBlankPriceRows(posterQuantities) },
-    }
-  }
-
-  if (variant === '전단지') {
-    return {
-      optionValues: {
-        size: ['A4(210x297mm)'],
-        paper: ['일반지(아트지)'],
-        thickness: ['얇은', '두꺼운'],
-        side: ['단면', '양면'],
-      },
-      priceRows: { quantity: createBlankPriceRows(flyerQuantities) },
-    }
-  }
-
-  if (variant === '배너') {
-    return {
-      optionValues: {
-        size: ['600x1800mm'],
-        stand: ['실내용', '실외용(물통포함)'],
-        material: ['패트지'],
-        side: ['단면'],
-        coating: ['무광'],
-      },
-      priceRows: { quantity: createBlankPriceRows(displayQuantities) },
-    }
-  }
-
-  if (variant === '족자') {
-    return {
-      optionValues: {
-        size: ['900x1500mm', '900x2300mm'],
-        material: ['현수막천', '패트지(무광코팅)'],
-        rod: ['원형족자봉(상, 하)'],
-        hookCount: ['2'],
-      },
-      priceRows: { quantity: createBlankPriceRows(displayQuantities) },
-    }
-  }
-
-  if (variant === '현수막') {
-    return {
-      optionValues: {
-        size: ['5000x900mm'],
-        material: ['현수막천'],
-        cutting: ['열재단(10mm 여백)'],
-        environment: ['실내용', '실외용'],
-      },
-      priceRows: { quantity: createBlankPriceRows(displayQuantities) },
-    }
-  }
-
-  if (variant === '명함') {
-    return {
-      optionValues: {
-        size: ['90x50mm'],
-        baseQuantity: ['일반지 500', '고급지 200'],
-        material: ['일반지(스노우, 무광코팅)', '고급지(랑데뷰)'],
-        thickness: ['보통', '두꺼운'],
-        people: ['1', '2', '3'],
-      },
-      priceRows: {},
-    }
-  }
-
-  if (variant === '봉투') {
-    return {
-      optionValues: {
-        envelopeType: [
-          '소봉투 일반형(220x105mm)',
-          '소봉투 자켓형(220x105mm)',
-          '대봉투(330x245mm)',
-        ],
-        material: ['일반 봉투재질(백모조지)'],
-        thickness: ['보통', '두꺼운'],
-      },
-      priceRows: { quantity: createBlankPriceRows(envelopeQuantities) },
-    }
-  }
-
-  if (variant === '로고') {
-    return {
-      optionValues: {
-        logoType: ['워드마크 타입', '심볼타입', '워드마크+심볼 타입'],
-        proposalCount: ['1', '2', '3'],
-      },
-      priceRows: {},
-    }
-  }
-
-  return { optionValues, priceRows }
+  return optionValues
 }
 
 function getDefaultProductSubtype(
@@ -989,43 +539,21 @@ export function createProductUiDraft(
   productType: ProductType | '' = '',
   productSubtype: ProductSubtype | '' = getDefaultProductSubtype(productType),
 ): ProductUiDraft {
-  const typeSpecificState = createTypeSpecificState(productType, productSubtype)
+  const optionValues = createBlankOptionValues(productType, productSubtype)
   const selectedOptionIndexes: ProductUiDraft['selectedOptionIndexes'] = {}
 
   for (const optionKey of Object.keys(
-    typeSpecificState.optionValues,
+    optionValues,
   ) as ProductOptionSectionKey[]) {
     selectedOptionIndexes[optionKey] = 0
   }
 
   return {
-    priceRowsBySelection: createPriceRowsBySelection(
-      productType,
-      productSubtype,
-    ),
+    optionValues,
+    priceRowsBySelection: {},
     productSubtype,
     productType,
     selectedOptionIndexes,
-    serviceEstimatesBySelection: createServiceEstimatesBySelection(
-      productType,
-      productSubtype,
-    ),
-    ...typeSpecificState,
+    serviceEstimatesBySelection: {},
   }
-}
-
-export function changeProductUiType(
-  _draft: ProductUiDraft,
-  productType: ProductType,
-) {
-  return createProductUiDraft(productType)
-}
-
-export function changeProductUiSubtype(
-  draft: ProductUiDraft,
-  productSubtype: ProductSubtype,
-) {
-  return draft.productType
-    ? createProductUiDraft(draft.productType, productSubtype)
-    : draft
 }

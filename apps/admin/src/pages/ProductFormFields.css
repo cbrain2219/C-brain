@@ -337,6 +337,10 @@ fieldset.product-ui-section > .product-ui-section__legend {
   font-weight: 500;
 }
 
+.product-ui-hint--error {
+  color: var(--admin-error-500);
+}
+
 @media (max-width: 720px) {
   .product-ui-remove-button {
     position: static;

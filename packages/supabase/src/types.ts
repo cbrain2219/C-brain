@@ -367,49 +367,28 @@ export type Database = {
       };
       products: {
         Row: {
+          configuration: Json;
           created_at: string;
-          design_print_estimate: number;
           id: string;
-          name: string;
-          order_quantities: number[];
-          page_counts: number[];
-          paper_types: string[];
-          planning_estimate: number;
+          product_type: string;
           sort_order: number;
           status: ProductStatus;
-          type: string;
-          unit_prices: Json;
-          updated_at: string;
         };
         Insert: {
+          configuration?: Json;
           created_at?: string;
-          design_print_estimate: number;
           id?: string;
-          name: string;
-          order_quantities: number[];
-          page_counts: number[];
-          paper_types: string[];
-          planning_estimate: number;
+          product_type: string;
           sort_order?: number;
           status?: ProductStatus;
-          type: string;
-          unit_prices?: Json;
-          updated_at?: string;
         };
         Update: {
+          configuration?: Json;
           created_at?: string;
-          design_print_estimate?: number;
           id?: string;
-          name?: string;
-          order_quantities?: number[];
-          page_counts?: number[];
-          paper_types?: string[];
-          planning_estimate?: number;
+          product_type?: string;
           sort_order?: number;
           status?: ProductStatus;
-          type?: string;
-          unit_prices?: Json;
-          updated_at?: string;
         };
         Relationships: [];
       };

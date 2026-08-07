@@ -6,13 +6,11 @@ import {
   ServiceSelectionEditor,
 } from './ProductFormSectionEditors'
 import {
-  changeProductUiSubtype,
-  changeProductUiType,
   formatProductSectionHeading,
   getProductPriceKey,
   getProductServiceKey,
   getProductUiProfile,
-  productSubtypeOptions,
+  getProductVariants,
   productTypes,
   removeProductPriceOption,
   removeProductServiceOption,
@@ -23,15 +21,24 @@ import type {
   ProductUiSection,
   QuantityPriceDraft,
 } from './productFormUi'
+import {
+  changeProductFormType,
+  getActiveProductUiDraft,
+  replaceActiveProductUiDraft,
+  selectProductFormVariant,
+} from './productFormGroup.ts'
+import type { ProductFormDraft } from './productFormGroup.ts'
 import './ProductFormFields.css'
 
 type ProductFormFieldsProps = {
-  draft: ProductUiDraft
-  onChange: (nextDraft: ProductUiDraft) => void
+  draft: ProductFormDraft
+  onChange: (nextDraft: ProductFormDraft) => void
 }
 
-type RenderSectionArgs = ProductFormFieldsProps & {
+type RenderSectionArgs = {
+  draft: ProductUiDraft
   index: number
+  onChange: (nextDraft: ProductUiDraft) => void
   section: ProductUiSection
 }
 
@@ -41,8 +48,8 @@ function isProductType(value: string): value is ProductType {
 
 function TypeSelection({ draft, onChange }: ProductFormFieldsProps) {
   const inputId = useId()
-  const subtypeOptions = draft.productType
-    ? productSubtypeOptions[draft.productType]
+  const variants = draft.productType
+    ? getProductVariants(draft.productType)
     : []
 
   return (
@@ -56,7 +63,7 @@ function TypeSelection({ draft, onChange }: ProductFormFieldsProps) {
           name="productType"
           onCommit={(value) => {
             if (isProductType(value))
-              onChange(changeProductUiType(draft, value))
+              onChange(changeProductFormType(draft, value))
           }}
           options={productTypes}
           placeholder="상품 유형을 선택해주세요."
@@ -64,31 +71,31 @@ function TypeSelection({ draft, onChange }: ProductFormFieldsProps) {
           value={draft.productType}
         />
       </div>
-      {subtypeOptions.length > 0 ? (
+      {variants.length > 1 ? (
         <fieldset className="product-ui-subtype-field">
           <legend className="admin-sr-only">세부 유형 선택</legend>
           <div className="product-ui-subtype-options">
-            {subtypeOptions.map((subtype) => (
+            {variants.map((variant) => (
               <label
                 className={
-                  draft.productSubtype === subtype
+                  draft.activeVariant === variant
                     ? 'product-ui-subtype-option product-ui-subtype-option--selected'
                     : 'product-ui-subtype-option'
                 }
-                key={subtype}
+                key={variant}
               >
                 <input
-                  checked={draft.productSubtype === subtype}
+                  checked={draft.activeVariant === variant}
                   className="admin-sr-only"
                   name="productSubtype"
                   onChange={() =>
-                    onChange(changeProductUiSubtype(draft, subtype))
+                    onChange(selectProductFormVariant(draft, variant))
                   }
                   required
                   type="radio"
-                  value={subtype}
+                  value={variant}
                 />
-                <span>{subtype}</span>
+                <span>{variant}</span>
               </label>
             ))}
           </div>
@@ -190,8 +197,7 @@ function renderProductUiSection({
   }
 
   const priceKey = getProductPriceKey(draft)
-  const rows =
-    draft.priceRowsBySelection[priceKey] ?? draft.priceRows[section.key] ?? []
+  const rows = draft.priceRowsBySelection[priceKey] ?? []
 
   function updateRows(nextRows: QuantityPriceDraft[]) {
     onChange({
@@ -225,20 +231,27 @@ function renderProductUiSection({
 }
 
 export function ProductFormFields({ draft, onChange }: ProductFormFieldsProps) {
-  const profile = draft.productType
-    ? getProductUiProfile(draft.productType, draft.productSubtype)
+  const activeDraft = getActiveProductUiDraft(draft)
+  const profile = activeDraft.productType
+    ? getProductUiProfile(activeDraft.productType, activeDraft.productSubtype)
     : null
-  const serviceKey = getProductServiceKey(draft)
-  const serviceEstimate = draft.serviceEstimatesBySelection[serviceKey] ?? {
+  const serviceKey = getProductServiceKey(activeDraft)
+  const serviceEstimate = activeDraft.serviceEstimatesBySelection[
+    serviceKey
+  ] ?? {
     designPrintEstimate: '',
     planningEstimate: '',
   }
 
+  function updateActiveDraft(nextVariantDraft: ProductUiDraft) {
+    onChange(replaceActiveProductUiDraft(draft, nextVariantDraft))
+  }
+
   function updateServiceEstimate(nextEstimate: typeof serviceEstimate) {
-    onChange({
-      ...draft,
+    updateActiveDraft({
+      ...activeDraft,
       serviceEstimatesBySelection: {
-        ...draft.serviceEstimatesBySelection,
+        ...activeDraft.serviceEstimatesBySelection,
         [serviceKey]: nextEstimate,
       },
     })
@@ -266,7 +279,12 @@ export function ProductFormFields({ draft, onChange }: ProductFormFieldsProps) {
         </p>
       )}
       {profile?.sections.map((section, index) =>
-        renderProductUiSection({ draft, index, onChange, section }),
+        renderProductUiSection({
+          draft: activeDraft,
+          index,
+          onChange: updateActiveDraft,
+          section,
+        }),
       )}
     </div>
   )

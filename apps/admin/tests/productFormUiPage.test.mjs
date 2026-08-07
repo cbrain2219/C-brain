@@ -6,6 +6,10 @@ const productFormUiSource = await readFile(
   new URL('../src/pages/ProductFormUiPage.tsx', import.meta.url),
   'utf8',
 )
+const productFormDataSource = await readFile(
+  new URL('../src/pages/productFormUi.ts', import.meta.url),
+  'utf8',
+)
 const appSource = await readFile(
   new URL('../src/App.tsx', import.meta.url),
   'utf8',
@@ -17,14 +21,23 @@ const comboboxCssSource = await readFile(
   ),
   'utf8',
 )
+const legacySubtypeColumn = ['product', 'subtype'].join('_')
 
-test('new product form ui cannot mutate product data yet', () => {
-  assert.doesNotMatch(productFormUiSource, /@repo\/supabase/)
+test('product form loads and mutates JSONB products', () => {
+  assert.match(productFormUiSource, /@repo\/supabase/)
+  assert.match(productFormUiSource, /getAdminProduct/)
+  assert.match(productFormUiSource, /createProduct/)
+  assert.match(productFormUiSource, /updateProduct/)
+  assert.match(productFormUiSource, /deleteProduct/)
+  assert.match(productFormUiSource, /toProductFormDraft\(product\)/)
+  assert.match(productFormUiSource, /toProductWriteInput/)
+  assert.doesNotMatch(productFormUiSource, new RegExp(legacySubtypeColumn))
+  assert.match(productFormUiSource, /<AdminDeleteDialog/)
+  assert.match(productFormUiSource, /상품 정보를 불러오는 중입니다\./)
   assert.doesNotMatch(
     productFormUiSource,
-    /\b(?:createProduct|updateProduct|deleteProduct)\b/,
+    /현재 UI만 적용되어 저장되지 않습니다/,
   )
-  assert.match(productFormUiSource, /현재 UI만 적용되어 저장되지 않습니다\./)
   assert.match(productFormUiSource, /<AdminFooter/)
   assert.match(productFormUiSource, /useParams/)
   assert.match(appSource, /import\.meta\.env\.DEV/)
@@ -43,14 +56,14 @@ test('new product ui is applied to both product form routes', () => {
   assert.doesNotMatch(appSource, /ProductFormPage/)
 })
 
-test('brochure preview gets spreadsheet prices from its draft factory', () => {
+test('new product drafts do not bundle spreadsheet product data', () => {
   assert.match(
     productFormUiSource,
-    /createProductUiDraft\(["']브로슈어 · 카탈로그["']\)/,
+    /createProductFormDraft\(["']브로슈어 · 카탈로그["']\)/,
   )
-  assert.doesNotMatch(productFormUiSource, /designPrintEstimate:\s*'80,000'/)
-  assert.doesNotMatch(productFormUiSource, /planningEstimate:\s*'50,000'/)
-  assert.doesNotMatch(productFormUiSource, /unitPrice:\s*'2,100'/)
+  assert.doesNotMatch(productFormDataSource, /PriceMatrix/)
+  assert.doesNotMatch(productFormDataSource, /createServiceEstimate/)
+  assert.doesNotMatch(productFormDataSource, /850000|2240000|250000/)
 })
 
 test('product type dropdown keeps scrolling while hiding its scrollbar', () => {
