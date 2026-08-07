@@ -14,7 +14,7 @@ import { NoticeFormPage } from './pages/NoticeFormPage'
 import { NoticePage } from './pages/NoticePage'
 import { PortfolioFormPage } from './pages/PortfolioFormPage'
 import { PortfolioPage } from './pages/PortfolioPage'
-import { ProductFormPage } from './pages/ProductFormPage'
+import { ProductFormUiPage } from './pages/ProductFormUiPage'
 import { ProductPage } from './pages/ProductPage'
 import { ReviewFormPage } from './pages/ReviewFormPage'
 import { ReviewPage } from './pages/ReviewPage'
@@ -67,12 +67,17 @@ export function App() {
   return (
     <Routes>
       <Route element={<AdminLoginPage />} path="/login" />
+      {import.meta.env.DEV ? (
+        <Route element={<AuthenticatedAdminShell />}>
+          <Route element={<ProductFormUiPage />} path="/products/ui-preview" />
+        </Route>
+      ) : null}
       <Route element={<AdminSessionGate />}>
         <Route element={<AuthenticatedAdminShell />}>
           <Route element={<Navigate replace to="/products" />} index />
           <Route element={<ProductPage />} path="/products" />
-          <Route element={<ProductFormPage />} path="/products/new" />
-          <Route element={<ProductFormPage />} path="/products/:productId" />
+          <Route element={<ProductFormUiPage />} path="/products/new" />
+          <Route element={<ProductFormUiPage />} path="/products/:productId" />
           <Route element={<PortfolioPage />} path="/portfolio" />
           <Route element={<PortfolioFormPage />} path="/portfolio/new" />
           <Route element={<PortfolioFormPage />} path="/portfolio/:portfolioId" />

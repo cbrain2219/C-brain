@@ -1,0 +1,138 @@
+.admin-footer {
+  width: 100%;
+  padding: 52px 40px;
+  border-top: 1px solid #f3f2ef;
+  background: var(--admin-gray-50);
+  color: #2a2928;
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+  letter-spacing: -0.01em;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.admin-footer__top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.admin-footer__logo {
+  width: 78px;
+  height: 28px;
+  flex: 0 0 auto;
+  text-decoration: none;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.admin-footer__logo img {
+  display: block;
+  height: auto;
+}
+
+.admin-footer__logo-wordmark {
+  width: 77px;
+}
+
+.admin-footer__logo-subtitle {
+  width: 76px;
+}
+
+.admin-footer__socials {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 4px;
+}
+
+.admin-footer__socials a {
+  height: 40px;
+  padding: 0 16px;
+  border: 1px solid #f3f2ef;
+  border-radius: 24px;
+  background: var(--admin-surface);
+  color: #2a2928;
+  font-size: 12px;
+  line-height: 18px;
+  letter-spacing: -0.015em;
+  text-decoration: none;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+.admin-footer__social-icon {
+  position: relative;
+  width: 20px;
+  height: 20px;
+  flex: 0 0 20px;
+  overflow: hidden;
+}
+
+.admin-footer__social-icon img {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  display: block;
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+  transform: translate(-50%, -50%);
+}
+
+.admin-footer__divider {
+  height: 1px;
+  background: #f3f2ef;
+}
+
+.admin-footer__links-and-support,
+.admin-footer__policy-links,
+.admin-footer__support,
+.admin-footer__company-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.admin-footer__links-and-support,
+.admin-footer__policy-links {
+  gap: 16px;
+}
+
+.admin-footer__support,
+.admin-footer__company-info {
+  gap: 4px;
+}
+
+.admin-footer__policy-links a {
+  width: fit-content;
+  color: inherit;
+  text-decoration: none;
+}
+
+.admin-footer__policy-link--strong,
+.admin-footer__copyright {
+  font-weight: 700;
+}
+
+@media (max-width: 720px) {
+  .admin-footer {
+    padding: 40px 20px;
+  }
+
+  .admin-footer__top {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .admin-footer__socials {
+    justify-content: flex-start;
+  }
+}
