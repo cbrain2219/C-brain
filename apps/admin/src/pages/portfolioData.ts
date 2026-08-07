@@ -11,7 +11,7 @@ export type PortfolioImage = {
 export type PortfolioFormValues = {
   readonly clientName: string
   readonly content: string
-  readonly contentMode: 'html' | 'text'
+  readonly contentMode: 'html' | 'markdown'
   readonly images: readonly PortfolioImage[]
   readonly isLandingEnabled: boolean
   readonly isPinned: boolean
@@ -39,9 +39,9 @@ export type PortfolioMutationInput = Pick<
   | 'content'
   | 'content_mode'
   | 'images'
-  | 'is_landing_enabled'
-  | 'is_pinned'
+  | 'pinned'
   | 'published_at'
+  | 'show_on_landing'
   | 'slug'
   | 'status'
   | 'title'
@@ -68,8 +68,8 @@ export function toPortfolioListRow(item: TableRow<'portfolio_items'>): Portfolio
     createdAt: formatAdminDate(item.created_at),
     detailHref: '/portfolio/' + item.id,
     id: item.id,
-    isPinned: item.is_pinned,
-    landingStatus: item.is_landing_enabled ? 'published' : 'none',
+    isPinned: item.pinned,
+    landingStatus: item.show_on_landing ? 'published' : 'none',
     status: item.status,
     title: item.title,
     type: item.type,
@@ -85,8 +85,8 @@ export function toPortfolioFormValues(
     content: item.content,
     contentMode: item.content_mode,
     images: getPortfolioImages(item.images),
-    isLandingEnabled: item.is_landing_enabled,
-    isPinned: item.is_pinned,
+    isLandingEnabled: item.show_on_landing,
+    isPinned: item.pinned,
     slug: item.slug,
     title: item.title,
     type: item.type,
@@ -117,9 +117,9 @@ export function toPortfolioMutationInput(
     content: form.content,
     content_mode: form.contentMode,
     images: images.map((image) => ({ alt: image.alt.trim(), path: image.path })) as Json,
-    is_landing_enabled: form.isLandingEnabled,
-    is_pinned: form.isPinned,
+    pinned: form.isPinned,
     published_at: status === 'published' ? publishedAt : null,
+    show_on_landing: form.isLandingEnabled,
     slug,
     status,
     title,

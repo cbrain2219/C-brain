@@ -5,7 +5,7 @@ const acceptedImageTypes = new Set(['image/jpeg', 'image/png', 'image/webp'])
 export type PortfolioUploadFile = Pick<File, 'size' | 'type'>
 
 export function isValidPortfolioSlug(value: string) {
-  return /^[A-Za-z-]+$/.test(value)
+  return /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(value)
 }
 
 export function getPortfolioImageError(file: PortfolioUploadFile) {

@@ -144,20 +144,15 @@ export type Database = {
           content_mode: ContentMode;
           created_at: string;
           id: string;
-          image_path: string | null;
           images: Json;
-          is_landing_enabled: boolean;
-          is_pinned: boolean;
+          pinned: boolean;
           published_at: string | null;
-          seo: Json | null;
-          seo_description: string | null;
+          show_on_landing: boolean;
           slug: string;
           sort_order: number;
           status: PublishStatus;
-          summary: string | null;
           title: string;
           type: string;
-          updated_at: string;
           view_count: number;
         };
         Insert: {
@@ -166,20 +161,15 @@ export type Database = {
           content_mode?: ContentMode;
           created_at?: string;
           id?: string;
-          image_path?: string | null;
           images?: Json;
-          is_landing_enabled?: boolean;
-          is_pinned?: boolean;
+          pinned?: boolean;
           published_at?: string | null;
-          seo?: Json | null;
-          seo_description?: string | null;
+          show_on_landing?: boolean;
           slug: string;
           sort_order?: number;
           status?: PublishStatus;
-          summary?: string | null;
           title: string;
           type: string;
-          updated_at?: string;
           view_count?: number;
         };
         Update: {
@@ -188,20 +178,15 @@ export type Database = {
           content_mode?: ContentMode;
           created_at?: string;
           id?: string;
-          image_path?: string | null;
           images?: Json;
-          is_landing_enabled?: boolean;
-          is_pinned?: boolean;
+          pinned?: boolean;
           published_at?: string | null;
-          seo?: Json | null;
-          seo_description?: string | null;
+          show_on_landing?: boolean;
           slug?: string;
           sort_order?: number;
           status?: PublishStatus;
-          summary?: string | null;
           title?: string;
           type?: string;
-          updated_at?: string;
           view_count?: number;
         };
         Relationships: [];
@@ -629,7 +614,7 @@ export type Database = {
       };
     };
     Enums: {
-      content_mode: "html" | "text";
+      content_mode: "html" | "text" | "markdown";
       inquiry_status: "received" | "processing" | "resolved";
       post_kind: "blog" | "notice";
       publish_status: "draft" | "published" | "archived";
