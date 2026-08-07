@@ -187,6 +187,7 @@ export function BlogFormPage() {
     setForm((current) => ({
       ...current,
       thumbnail: null,
+      thumbnailAlt: '',
       thumbnailPath: null,
       thumbnailPreviewUrl: null,
     }))
@@ -289,7 +290,7 @@ export function BlogFormPage() {
     }
 
     if (!isValidEnglishSlug(form.slug)) {
-      setSlugError('Slug는 영문과 하이픈만 입력할 수 있습니다.')
+      setSlugError('Slug는 영문 소문자, 숫자, 하이픈만 입력할 수 있습니다.')
       window.requestAnimationFrame(() => {
         document.getElementById(formId + '-slug')?.focus()
       })
@@ -412,14 +413,18 @@ export function BlogFormPage() {
           name="slug"
           onChange={(event) => {
             const rawValue = event.currentTarget.value
-            const slug = rawValue.replace(/[^A-Za-z-]/g, '')
+            const slug = rawValue.toLowerCase().replace(/[^a-z0-9-]/g, '')
 
             updateForm('slug', slug)
-            setSlugError(rawValue === slug ? '' : '영어와 하이픈만 입력해주세요.')
+            setSlugError(
+              rawValue === slug ? '' : '영문 소문자, 숫자, 하이픈만 입력해주세요.',
+            )
           }}
-          onInvalid={() => setSlugError('Slug는 영문과 하이픈만 입력할 수 있습니다.')}
-          pattern="[A-Za-z-]+"
-          placeholder="블로그 Slug를 입력해주세요. (영문만 작성)"
+          onInvalid={() =>
+            setSlugError('Slug는 영문 소문자, 숫자, 하이픈만 입력할 수 있습니다.')
+          }
+          pattern="[a-z0-9]+(?:-[a-z0-9]+)*"
+          placeholder="블로그 Slug를 입력해주세요. (영문 소문자, 숫자, 하이픈)"
           required
           type="text"
           value={form.slug}
@@ -553,13 +558,13 @@ export function BlogFormPage() {
             HTML 작성
           </button>
           <button
-            aria-pressed={form.contentMode === 'text'}
+            aria-pressed={form.contentMode === 'markdown'}
             className={
-              form.contentMode === 'text'
+              form.contentMode === 'markdown'
                 ? 'blog-form__mode-tab blog-form__mode-tab--active'
                 : 'blog-form__mode-tab'
             }
-            onClick={() => updateForm('contentMode', 'text')}
+            onClick={() => updateForm('contentMode', 'markdown')}
             type="button"
           >
             TEXT Editor 작성

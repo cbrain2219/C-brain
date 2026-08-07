@@ -68,15 +68,15 @@ export type Database = {
           content_mode: ContentMode;
           created_at: string;
           excerpt: string | null;
+          featured: boolean;
           id: string;
-          is_banner_enabled: boolean;
-          is_featured_enabled: boolean;
-          is_landing_enabled: boolean;
           is_pinned: boolean;
           kind: PostKind;
+          pinned: boolean;
           published_at: string | null;
-          seo: Json | null;
           seo_description: string | null;
+          show_as_banner: boolean;
+          show_on_landing: boolean;
           slug: string;
           sort_order: number;
           status: PublishStatus;
@@ -84,7 +84,6 @@ export type Database = {
           thumbnail_path: string | null;
           title: string;
           type: string;
-          updated_at: string;
           view_count: number;
         };
         Insert: {
@@ -92,15 +91,15 @@ export type Database = {
           content_mode?: ContentMode;
           created_at?: string;
           excerpt?: string | null;
+          featured?: boolean;
           id?: string;
-          is_banner_enabled?: boolean;
-          is_featured_enabled?: boolean;
-          is_landing_enabled?: boolean;
           is_pinned?: boolean;
-          kind?: PostKind;
+          kind: PostKind;
+          pinned?: boolean;
           published_at?: string | null;
-          seo?: Json | null;
           seo_description?: string | null;
+          show_as_banner?: boolean;
+          show_on_landing?: boolean;
           slug: string;
           sort_order?: number;
           status?: PublishStatus;
@@ -108,7 +107,6 @@ export type Database = {
           thumbnail_path?: string | null;
           title: string;
           type: string;
-          updated_at?: string;
           view_count?: number;
         };
         Update: {
@@ -116,15 +114,15 @@ export type Database = {
           content_mode?: ContentMode;
           created_at?: string;
           excerpt?: string | null;
+          featured?: boolean;
           id?: string;
-          is_banner_enabled?: boolean;
-          is_featured_enabled?: boolean;
-          is_landing_enabled?: boolean;
           is_pinned?: boolean;
           kind?: PostKind;
+          pinned?: boolean;
           published_at?: string | null;
-          seo?: Json | null;
           seo_description?: string | null;
+          show_as_banner?: boolean;
+          show_on_landing?: boolean;
           slug?: string;
           sort_order?: number;
           status?: PublishStatus;
@@ -132,7 +130,6 @@ export type Database = {
           thumbnail_path?: string | null;
           title?: string;
           type?: string;
-          updated_at?: string;
           view_count?: number;
         };
         Relationships: [];

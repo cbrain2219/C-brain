@@ -16,15 +16,14 @@ function makePost(overrides = {}) {
     content_mode: 'html',
     created_at: '2026-07-21T00:00:00.000Z',
     excerpt: null,
+    featured: false,
     id: 'post-1',
-    is_banner_enabled: true,
-    is_featured_enabled: false,
-    is_landing_enabled: true,
-    is_pinned: false,
     kind: 'blog',
+    pinned: false,
     published_at: '2026-07-21T00:00:00.000Z',
-    seo: null,
     seo_description: '검색 설명',
+    show_as_banner: true,
+    show_on_landing: true,
     slug: 'first-blog',
     sort_order: 0,
     status: 'published',
@@ -32,7 +31,6 @@ function makePost(overrides = {}) {
     thumbnail_path: 'blog-thumbnails/post.webp',
     title: '첫 블로그',
     type: '디자인',
-    updated_at: '2026-07-21T00:00:00.000Z',
     view_count: 1234,
     ...overrides,
   }
@@ -87,13 +85,13 @@ test('form maps to a blog mutation with trimmed values and publication settings'
     content: '<p>본문</p>',
     content_mode: 'html',
     excerpt: null,
-    is_banner_enabled: false,
-    is_featured_enabled: true,
-    is_landing_enabled: true,
-    is_pinned: false,
+    featured: true,
     kind: 'blog',
+    pinned: false,
     published_at: '2026-07-20T15:00:00.000Z',
     seo_description: '검색 설명',
+    show_as_banner: false,
+    show_on_landing: true,
     slug: 'first-blog',
     status: 'draft',
     thumbnail_alt: '썸네일',
@@ -103,14 +101,31 @@ test('form maps to a blog mutation with trimmed values and publication settings'
   })
 })
 
+test('mutation clears thumbnail alt text when no thumbnail path is saved', () => {
+  const form = {
+    ...createInitialBlogForm(),
+    content: '<p>본문</p>',
+    publishedAt: '2026-07-21',
+    slug: 'first-blog',
+    thumbnailAlt: '남아 있는 대체 텍스트',
+    title: '첫 블로그',
+    type: '디자인',
+  }
+
+  const mutation = toBlogMutationInput(form, 'draft')
+
+  assert.equal(mutation.thumbnail_alt, null)
+  assert.equal(mutation.thumbnail_path, null)
+})
+
 test('list filtering and setting counts use loaded post rows', () => {
   const posts = [
     makePost(),
     makePost({
+      featured: true,
       id: 'post-2',
-      is_banner_enabled: false,
-      is_featured_enabled: true,
-      is_landing_enabled: false,
+      show_as_banner: false,
+      show_on_landing: false,
       status: 'draft',
       title: '둘째 글',
       type: '인쇄',
