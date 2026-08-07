@@ -9,6 +9,10 @@ import { createProductFormDraft } from './productFormGroup.ts'
 import type { ProductFormDraft } from './productFormGroup.ts'
 import {
   createProductUiDraft,
+  getProductPriceSelectionIndexes,
+  getProductPriceSelectionKeys,
+  getProductServiceSelectionIndexes,
+  getProductServiceSelectionKeys,
   getProductVariants,
   getProductUiProfile,
   productSubtypeOptions,
@@ -19,8 +23,8 @@ import type {
   ProductSubtype,
   ProductType,
   ProductUiDraft,
+  ProductVariant,
   QuantityPriceDraft,
-  ServiceEstimateDraft,
 } from './productFormUi.ts'
 
 type JsonObject = Record<string, Json | undefined>
@@ -28,6 +32,27 @@ type JsonObject = Record<string, Json | undefined>
 export type ProductWriteInput = Required<
   Pick<ProductInsert, 'configuration' | 'product_type' | 'status'>
 >
+
+export type ProductValidationFocusTarget =
+  | { kind: 'option'; optionKey: ProductOptionSectionKey; rowIndex: number }
+  | { kind: 'option-add'; optionKey: ProductOptionSectionKey }
+  | {
+      field: keyof QuantityPriceDraft
+      kind: 'price-row'
+      rowIndex: number
+    }
+  | { kind: 'price-add' }
+  | { kind: 'service' }
+  | { kind: 'type' }
+
+export type ProductValidationIssue = {
+  focusTarget?: ProductValidationFocusTarget
+  message: string
+  selectedOptionIndexes?: ProductUiDraft['selectedOptionIndexes']
+  variant?: ProductVariant
+}
+
+type VariantValidationIssue = Omit<ProductValidationIssue, 'variant'>
 
 function isJsonObject(value: Json | undefined): value is JsonObject {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
@@ -241,104 +266,224 @@ function serializeVariantDraft(
   }
 }
 
-function hasCompleteOptions(draft: ProductUiDraft) {
-  if (!draft.productType) return false
+function getOptionValidationIssue(
+  draft: ProductUiDraft,
+): VariantValidationIssue | null {
+  if (!draft.productType) return null
 
   const profile = getProductUiProfile(draft.productType, draft.productSubtype)
 
-  return profile.sections.every((section) => {
-    if (section.kind !== 'options') return true
+  for (const section of profile.sections) {
+    if (section.kind !== 'options') continue
 
     const values = draft.optionValues[section.key]
 
-    if (
-      !values ||
-      values.length === 0 ||
-      values.some((value) => !value.trim())
-    ) {
-      return false
+    if (!values || values.length === 0) {
+      return {
+        focusTarget: { kind: 'option-add', optionKey: section.key },
+        message: '모든 상품 옵션을 입력해주세요.',
+      }
     }
 
     const normalizedValues = values.map((value) =>
       value.trim().toLocaleLowerCase('ko-KR'),
     )
+    const invalidIndex = normalizedValues.findIndex(
+      (value, index) => !value || normalizedValues.indexOf(value) !== index,
+    )
 
-    return new Set(normalizedValues).size === normalizedValues.length
-  })
-}
-
-function hasValidPriceRows(draft: ProductUiDraft) {
-  if (!draft.productType) return false
-
-  const profile = getProductUiProfile(draft.productType, draft.productSubtype)
-  const selections = Object.values(draft.priceRowsBySelection)
-
-  if (
-    profile.sections.some((section) => section.kind === 'quantity-prices') &&
-    selections.length === 0
-  ) {
-    return false
+    if (invalidIndex >= 0) {
+      return {
+        focusTarget: {
+          kind: 'option',
+          optionKey: section.key,
+          rowIndex: invalidIndex,
+        },
+        message: '모든 상품 옵션을 입력해주세요.',
+        selectedOptionIndexes: {
+          ...draft.selectedOptionIndexes,
+          [section.key]: invalidIndex,
+        },
+      }
+    }
   }
 
-  return selections.every(
-    (rows) =>
-      rows.length > 0 &&
-      rows.every((row) => {
-        const quantity = toStoredNumber(row.quantity)
-
-        toStoredNumber(row.unitPrice)
-        return quantity !== null && quantity > 0
-      }),
-  )
+  return null
 }
 
-function hasValidServiceEstimates(draft: ProductUiDraft) {
-  if (!draft.productType) return false
+function getSelectionKeysToValidate(
+  expectedKeys: readonly string[],
+  storedValues: Record<string, unknown>,
+) {
+  return [
+    ...expectedKeys,
+    ...Object.keys(storedValues).filter((key) => !expectedKeys.includes(key)),
+  ]
+}
+
+function getPriceValidationIssue(
+  draft: ProductUiDraft,
+): VariantValidationIssue | null {
+  if (!draft.productType) return null
 
   const profile = getProductUiProfile(draft.productType, draft.productSubtype)
-  const estimates = Object.values(draft.serviceEstimatesBySelection)
 
-  if (estimates.length === 0) return false
+  if (!profile.sections.some((section) => section.kind === 'quantity-prices')) {
+    return null
+  }
 
-  return estimates.every((estimate: ServiceEstimateDraft) => {
+  const selectionKeys = getSelectionKeysToValidate(
+    getProductPriceSelectionKeys(draft),
+    draft.priceRowsBySelection,
+  )
+
+  for (const selectionKey of selectionKeys) {
+    const selectedOptionIndexes = {
+      ...draft.selectedOptionIndexes,
+      ...getProductPriceSelectionIndexes(draft, selectionKey),
+    }
+    const rows = draft.priceRowsBySelection[selectionKey]
+
+    if (!rows || rows.length === 0) {
+      return {
+        focusTarget: { kind: 'price-add' },
+        message: '모든 수량과 인쇄 단가를 입력해주세요.',
+        selectedOptionIndexes,
+      }
+    }
+
+    for (const [rowIndex, row] of rows.entries()) {
+      const quantity = toStoredNumber(row.quantity)
+
+      if (quantity === null || quantity <= 0) {
+        return {
+          focusTarget: { field: 'quantity', kind: 'price-row', rowIndex },
+          message: '모든 수량과 인쇄 단가를 입력해주세요.',
+          selectedOptionIndexes,
+        }
+      }
+
+      if (toStoredNumber(row.unitPrice) === null) {
+        return {
+          focusTarget: { field: 'unitPrice', kind: 'price-row', rowIndex },
+          message: '모든 수량과 인쇄 단가를 입력해주세요.',
+          selectedOptionIndexes,
+        }
+      }
+    }
+  }
+
+  return null
+}
+
+function getServiceValidationIssue(
+  draft: ProductUiDraft,
+): VariantValidationIssue | null {
+  if (!draft.productType) return null
+
+  const profile = getProductUiProfile(draft.productType, draft.productSubtype)
+  const selectionKeys = getSelectionKeysToValidate(
+    getProductServiceSelectionKeys(draft),
+    draft.serviceEstimatesBySelection,
+  )
+
+  for (const selectionKey of selectionKeys) {
+    const selectedOptionIndexes = {
+      ...draft.selectedOptionIndexes,
+      ...getProductServiceSelectionIndexes(draft, selectionKey),
+    }
+    const estimate = draft.serviceEstimatesBySelection[selectionKey]
+
+    if (!estimate) {
+      return {
+        focusTarget: { kind: 'service' },
+        message: '모든 서비스 견적을 입력해주세요.',
+        selectedOptionIndexes,
+      }
+    }
+
     const designPrintEstimate = toStoredNumber(estimate.designPrintEstimate)
     const planningEstimate = toStoredNumber(estimate.planningEstimate)
 
-    return (
-      designPrintEstimate !== null &&
-      (!profile.showPlanningEstimate || planningEstimate !== null)
-    )
-  })
+    if (
+      designPrintEstimate === null ||
+      (profile.showPlanningEstimate && planningEstimate === null)
+    ) {
+      return {
+        focusTarget: { kind: 'service' },
+        message: '모든 서비스 견적을 입력해주세요.',
+        selectedOptionIndexes,
+      }
+    }
+  }
+
+  return null
 }
 
-function getVariantValidationMessage(
+function getVariantValidationIssue(
   draft: ProductUiDraft,
   status: ProductStatus,
-) {
+): VariantValidationIssue | null {
   if (!draft.productType || !isProductType(draft.productType)) {
-    return '상품 유형을 선택해주세요.'
+    return {
+      focusTarget: { kind: 'type' },
+      message: '상품 유형을 선택해주세요.',
+    }
   }
   if (!isProductSubtype(draft.productType, draft.productSubtype)) {
-    return '상품 세부 유형을 선택해주세요.'
+    return { message: '상품 세부 유형을 선택해주세요.' }
   }
 
   try {
     serializePriceRows(draft.priceRowsBySelection)
     serializeServiceEstimates(draft.serviceEstimatesBySelection)
   } catch {
-    return '숫자 입력값을 확인해주세요.'
+    return { message: '숫자 입력값을 확인해주세요.' }
   }
 
   if (status === 'draft') return null
-  if (!hasCompleteOptions(draft)) return '모든 상품 옵션을 입력해주세요.'
 
   try {
-    if (!hasValidPriceRows(draft)) return '모든 수량을 입력해주세요.'
-    if (!hasValidServiceEstimates(draft)) {
-      return '모든 서비스 견적을 입력해주세요.'
-    }
+    return (
+      getOptionValidationIssue(draft) ??
+      getPriceValidationIssue(draft) ??
+      getServiceValidationIssue(draft)
+    )
   } catch {
-    return '숫자 입력값을 확인해주세요.'
+    return { message: '숫자 입력값을 확인해주세요.' }
+  }
+}
+
+export function getProductValidationIssue(
+  draft: ProductFormDraft,
+  status: ProductStatus,
+): ProductValidationIssue | null {
+  if (!draft.productType || !isProductType(draft.productType)) {
+    return {
+      focusTarget: { kind: 'type' },
+      message: '상품 유형을 선택해주세요.',
+    }
+  }
+
+  const variantNames = getProductVariants(draft.productType)
+
+  if (
+    Object.keys(draft.variants).length !== variantNames.length ||
+    variantNames.some((variant) => !draft.variants[variant])
+  ) {
+    return { message: '상품 설정의 세부 유형을 확인해주세요.' }
+  }
+
+  for (const variant of variantNames) {
+    const issue = getVariantValidationIssue(draft.variants[variant]!, status)
+
+    if (issue) {
+      return {
+        ...issue,
+        message: `${variant}: ${issue.message}`,
+        variant,
+      }
+    }
   }
 
   return null
@@ -348,29 +493,7 @@ export function getProductValidationMessage(
   draft: ProductFormDraft,
   status: ProductStatus,
 ) {
-  if (!draft.productType || !isProductType(draft.productType)) {
-    return '상품 유형을 선택해주세요.'
-  }
-
-  const variantNames = getProductVariants(draft.productType)
-
-  if (
-    Object.keys(draft.variants).length !== variantNames.length ||
-    variantNames.some((variant) => !draft.variants[variant])
-  ) {
-    return '상품 설정의 세부 유형을 확인해주세요.'
-  }
-
-  for (const variant of variantNames) {
-    const message = getVariantValidationMessage(
-      draft.variants[variant]!,
-      status,
-    )
-
-    if (message) return `${variant}: ${message}`
-  }
-
-  return null
+  return getProductValidationIssue(draft, status)?.message ?? null
 }
 
 export function toProductWriteInput(

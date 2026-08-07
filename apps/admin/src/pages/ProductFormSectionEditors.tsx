@@ -2,7 +2,10 @@ import { useEffect, useRef } from 'react'
 import type { RefCallback } from 'react'
 import { AdminIcon } from '../components/AdminIcon'
 import { formatNumericValue } from './productData'
-import type { QuantityPriceDraft } from './productFormUi'
+import type {
+  ProductOptionSectionKey,
+  QuantityPriceDraft,
+} from './productFormUi'
 import './ProductFormFields.css'
 
 type PriceInputProps = {
@@ -20,11 +23,13 @@ function PriceInput({ label, onChange, value }: PriceInputProps) {
           aria-label={label}
           autoComplete="off"
           className="product-ui-control__input"
+          data-product-service-input
           inputMode="numeric"
           onChange={(event) =>
             onChange(formatNumericValue(event.currentTarget.value))
           }
           placeholder="0"
+          required
           type="text"
           value={value}
         />
@@ -103,6 +108,7 @@ type OptionValuesEditorProps = {
   onRemove: (index: number) => void
   onSelect: (index: number) => void
   onValueChange: (index: number, value: string) => void
+  optionKey: ProductOptionSectionKey
   selectedIndex: number
   valueUnit?: 'p' | '부' | '명' | '개' | '장' | '종'
   values: readonly string[]
@@ -115,6 +121,7 @@ export function OptionValuesEditor({
   onRemove,
   onSelect,
   onValueChange,
+  optionKey,
   selectedIndex,
   valueUnit,
   values,
@@ -140,6 +147,7 @@ export function OptionValuesEditor({
                       aria-label={`${heading} ${index + 1}`}
                       autoComplete="off"
                       className="product-ui-control__input product-ui-control__input--option"
+                      data-product-option-key={optionKey}
                       data-row-index={index}
                       inputMode={
                         inputMode === 'numeric' ? 'numeric' : undefined
@@ -154,6 +162,7 @@ export function OptionValuesEditor({
                       }
                       placeholder="입력해주세요."
                       ref={registerInput}
+                      required
                       type="text"
                       value={value}
                     />
@@ -201,6 +210,7 @@ export function OptionValuesEditor({
         <button
           aria-label={`${heading} 항목 추가`}
           className="product-ui-add-button"
+          data-product-option-add={optionKey}
           onClick={onAdd}
           type="button"
         >
@@ -215,6 +225,7 @@ export function OptionValuesEditor({
 type NumericControlProps = {
   ariaLabel: string
   dataRowIndex?: number
+  field: keyof QuantityPriceDraft
   inputRef?: RefCallback<HTMLInputElement>
   onChange: (value: string) => void
   placeholder: string
@@ -225,6 +236,7 @@ type NumericControlProps = {
 function NumericControl({
   ariaLabel,
   dataRowIndex,
+  field,
   inputRef,
   onChange,
   placeholder,
@@ -237,6 +249,7 @@ function NumericControl({
         aria-label={ariaLabel}
         autoComplete="off"
         className="product-ui-control__input product-ui-control__input--center"
+        data-product-price-field={field}
         data-row-index={dataRowIndex}
         inputMode="numeric"
         onChange={(event) =>
@@ -244,6 +257,7 @@ function NumericControl({
         }
         placeholder={placeholder}
         ref={inputRef}
+        required
         type="text"
         value={value}
       />
@@ -286,6 +300,7 @@ export function QuantityPriceEditor({
                 <NumericControl
                   ariaLabel={`${heading} ${index + 1} 수량`}
                   dataRowIndex={index}
+                  field="quantity"
                   inputRef={registerQuantityInput}
                   onChange={(quantity) =>
                     onRowChange(index, { ...row, quantity })
@@ -296,6 +311,8 @@ export function QuantityPriceEditor({
                 />
                 <NumericControl
                   ariaLabel={`${heading} ${index + 1} 인쇄 단가`}
+                  dataRowIndex={index}
+                  field="unitPrice"
                   onChange={(unitPrice) =>
                     onRowChange(index, { ...row, unitPrice })
                   }
@@ -318,6 +335,7 @@ export function QuantityPriceEditor({
         <button
           aria-label={`${heading} 항목 추가`}
           className="product-ui-add-button product-ui-add-button--center"
+          data-product-price-add
           onClick={onAdd}
           type="button"
         >

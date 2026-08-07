@@ -437,6 +437,35 @@ function getServiceOptionKeys(selection: ProductSelection) {
   return variant ? (serviceOptionKeysByVariant[variant] ?? []) : []
 }
 
+function getSelectionKeys(
+  optionKeys: readonly ProductOptionSectionKey[],
+  optionValues: ProductUiDraft['optionValues'],
+) {
+  return optionKeys.reduce<string[]>(
+    (selectionKeys, optionKey) => {
+      const values = optionValues[optionKey] ?? []
+
+      return selectionKeys.flatMap((selectionKey) =>
+        values.map((_, index) =>
+          selectionKey ? `${selectionKey}:${index}` : String(index),
+        ),
+      )
+    },
+    [''],
+  )
+}
+
+function getSelectionIndexes(
+  optionKeys: readonly ProductOptionSectionKey[],
+  selectionKey: string,
+) {
+  const indexes = selectionKey.split(':').map(Number)
+
+  return Object.fromEntries(
+    optionKeys.map((optionKey, index) => [optionKey, indexes[index] ?? 0]),
+  ) as ProductUiDraft['selectedOptionIndexes']
+}
+
 export function getProductPriceKey(selection: ProductSelection) {
   return getSelectionKey(
     getPriceOptionKeys(selection),
@@ -449,6 +478,28 @@ export function getProductServiceKey(selection: ProductSelection) {
     getServiceOptionKeys(selection),
     selection.selectedOptionIndexes,
   )
+}
+
+export function getProductPriceSelectionKeys(draft: ProductUiDraft) {
+  return getSelectionKeys(getPriceOptionKeys(draft), draft.optionValues)
+}
+
+export function getProductServiceSelectionKeys(draft: ProductUiDraft) {
+  return getSelectionKeys(getServiceOptionKeys(draft), draft.optionValues)
+}
+
+export function getProductPriceSelectionIndexes(
+  draft: ProductUiDraft,
+  selectionKey: string,
+) {
+  return getSelectionIndexes(getPriceOptionKeys(draft), selectionKey)
+}
+
+export function getProductServiceSelectionIndexes(
+  draft: ProductUiDraft,
+  selectionKey: string,
+) {
+  return getSelectionIndexes(getServiceOptionKeys(draft), selectionKey)
 }
 
 function removeSelectionOption<T>(

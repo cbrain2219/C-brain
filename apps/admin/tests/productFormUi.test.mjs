@@ -4,7 +4,11 @@ import {
   createProductUiDraft,
   formatProductSectionHeading,
   getProductPriceKey,
+  getProductPriceSelectionIndexes,
+  getProductPriceSelectionKeys,
   getProductServiceKey,
+  getProductServiceSelectionIndexes,
+  getProductServiceSelectionKeys,
   getProductUiProfile,
   getProductVariants,
   productSubtypeOptions,
@@ -135,6 +139,34 @@ test('selection keys follow the current blank or DB-backed option indexes', () =
 
   assert.equal(getProductPriceKey(flyer), '0:0:1:1')
   assert.equal(getProductServiceKey(flyer), '1')
+})
+
+test('selection helpers enumerate and restore every price and service combination', () => {
+  const flyer = createProductUiDraft('포스터 · 전단지', '전단지')
+
+  flyer.optionValues = {
+    paper: ['일반지'],
+    side: ['단면', '양면'],
+    size: ['A4', 'A5'],
+    thickness: ['얇은'],
+  }
+
+  assert.deepEqual(getProductPriceSelectionKeys(flyer), [
+    '0:0:0:0',
+    '0:0:0:1',
+    '1:0:0:0',
+    '1:0:0:1',
+  ])
+  assert.deepEqual(getProductServiceSelectionKeys(flyer), ['0', '1'])
+  assert.deepEqual(getProductPriceSelectionIndexes(flyer, '1:0:0:1'), {
+    paper: 0,
+    side: 1,
+    size: 1,
+    thickness: 0,
+  })
+  assert.deepEqual(getProductServiceSelectionIndexes(flyer, '1'), {
+    side: 1,
+  })
 })
 
 test('removing an option keeps stored DB selections aligned', () => {

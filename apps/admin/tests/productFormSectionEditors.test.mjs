@@ -26,6 +26,10 @@ test('section editors use semantic controls and shared icons', () => {
   assert.match(source, /aria-label=\{`\$\{heading\} 항목 추가`\}/)
   assert.match(source, /수량 및 단위를 입력해주세요\./)
   assert.match(source, /인쇄 단가를 입력해주세요\./)
+  assert.match(source, /data-product-service-input/)
+  assert.match(source, /data-product-option-key=\{optionKey\}/)
+  assert.match(source, /data-product-price-field=\{field\}/)
+  assert.match(source, /required/)
   assert.doesNotMatch(source, /figma\.com\/api/)
 })
 

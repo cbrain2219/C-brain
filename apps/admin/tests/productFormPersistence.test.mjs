@@ -2,6 +2,7 @@ import assert from 'node:assert/strict'
 import { readFile } from 'node:fs/promises'
 import test from 'node:test'
 import {
+  getProductValidationIssue,
   getProductValidationMessage,
   toProductFormDraft,
   toProductWriteInput,
@@ -252,6 +253,68 @@ test('blank frontend drafts cannot be published without DB-backed values', () =>
 
   assert.equal(
     getProductValidationMessage(draft, 'published'),
-    '브로슈어 · 카탈로그: 모든 수량을 입력해주세요.',
+    '브로슈어 · 카탈로그: 모든 수량과 인쇄 단가를 입력해주세요.',
   )
+})
+
+test('drafts allow blank added inputs while publishing targets the blank field', () => {
+  const draft = toProductFormDraft(groupedProductRecord())
+  const poster = draft.variants.포스터
+
+  draft.activeVariant = '전단지'
+  poster.priceRowsBySelection['0:0:0:0'][0].unitPrice = ''
+
+  assert.equal(getProductValidationIssue(draft, 'draft'), null)
+  assert.deepEqual(getProductValidationIssue(draft, 'published'), {
+    focusTarget: { field: 'unitPrice', kind: 'price-row', rowIndex: 0 },
+    message: '포스터: 모든 수량과 인쇄 단가를 입력해주세요.',
+    selectedOptionIndexes: {
+      coating: 0,
+      paper: 0,
+      size: 0,
+      thickness: 0,
+    },
+    variant: '포스터',
+  })
+})
+
+test('publishing requires price rows for every selectable price combination', () => {
+  const draft = toProductFormDraft(groupedProductRecord())
+  const poster = draft.variants.포스터
+
+  poster.optionValues.size.push('A2(420x594mm)')
+
+  assert.deepEqual(getProductValidationIssue(draft, 'published'), {
+    focusTarget: { kind: 'price-add' },
+    message: '포스터: 모든 수량과 인쇄 단가를 입력해주세요.',
+    selectedOptionIndexes: {
+      coating: 0,
+      paper: 0,
+      size: 1,
+      thickness: 0,
+    },
+    variant: '포스터',
+  })
+})
+
+test('publishing requires service estimates for every selectable service combination', () => {
+  const draft = toProductFormDraft(groupedProductRecord())
+  const flyer = draft.variants.전단지
+
+  flyer.optionValues.side.push('양면')
+  flyer.priceRowsBySelection['0:0:0:1'] = [
+    { quantity: '100', unitPrice: '150,000' },
+  ]
+
+  assert.deepEqual(getProductValidationIssue(draft, 'published'), {
+    focusTarget: { kind: 'service' },
+    message: '전단지: 모든 서비스 견적을 입력해주세요.',
+    selectedOptionIndexes: {
+      paper: 0,
+      side: 1,
+      size: 0,
+      thickness: 0,
+    },
+    variant: '전단지',
+  })
 })

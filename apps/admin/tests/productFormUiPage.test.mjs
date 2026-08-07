@@ -31,6 +31,9 @@ test('product form loads and mutates JSONB products', () => {
   assert.match(productFormUiSource, /deleteProduct/)
   assert.match(productFormUiSource, /toProductFormDraft\(product\)/)
   assert.match(productFormUiSource, /toProductWriteInput/)
+  assert.match(productFormUiSource, /getProductValidationIssue/)
+  assert.match(productFormUiSource, /focusValidationIssue/)
+  assert.match(productFormUiSource, /formNoValidate/)
   assert.doesNotMatch(productFormUiSource, new RegExp(legacySubtypeColumn))
   assert.match(productFormUiSource, /<AdminDeleteDialog/)
   assert.match(productFormUiSource, /상품 정보를 불러오는 중입니다\./)
@@ -42,6 +45,7 @@ test('product form loads and mutates JSONB products', () => {
   assert.match(productFormUiSource, /useParams/)
   assert.match(appSource, /import\.meta\.env\.DEV/)
   assert.match(appSource, /path="\/products\/ui-preview"/)
+  assert.match(appSource, /control\.focus\(\{ preventScroll: true \}\)/)
 })
 
 test('new product ui is applied to both product form routes', () => {

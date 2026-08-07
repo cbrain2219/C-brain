@@ -16,10 +16,11 @@ import { supabase } from '../lib/supabase'
 import { getSubmitIntent } from './contentListState.ts'
 import { ProductFormFields } from './ProductFormFields'
 import {
-  getProductValidationMessage,
+  getProductValidationIssue,
   toProductFormDraft,
   toProductWriteInput,
 } from './productFormPersistence.ts'
+import type { ProductValidationIssue } from './productFormPersistence.ts'
 import { createProductFormDraft } from './productFormGroup.ts'
 import type { ProductFormDraft } from './productFormGroup.ts'
 
@@ -39,11 +40,102 @@ function getSaveErrorMessage(error: unknown) {
   return '상품을 저장하지 못했습니다. 입력값과 권한을 확인해주세요.'
 }
 
+function revealValidationIssue(
+  draft: ProductFormDraft,
+  issue: ProductValidationIssue,
+) {
+  if (!issue.variant) return draft
+
+  const variantDraft = draft.variants[issue.variant]
+
+  if (!variantDraft) return draft
+
+  return {
+    ...draft,
+    activeVariant: issue.variant,
+    variants: {
+      ...draft.variants,
+      [issue.variant]: issue.selectedOptionIndexes
+        ? {
+            ...variantDraft,
+            selectedOptionIndexes: {
+              ...variantDraft.selectedOptionIndexes,
+              ...issue.selectedOptionIndexes,
+            },
+          }
+        : variantDraft,
+    },
+  }
+}
+
+function getValidationFocusTarget(
+  form: HTMLFormElement,
+  issue: ProductValidationIssue,
+) {
+  const target = issue.focusTarget
+
+  if (target?.kind === 'option') {
+    return form.querySelector<HTMLElement>(
+      `[data-product-option-key="${target.optionKey}"][data-row-index="${target.rowIndex}"]`,
+    )
+  }
+  if (target?.kind === 'option-add') {
+    return form.querySelector<HTMLElement>(
+      `[data-product-option-add="${target.optionKey}"]`,
+    )
+  }
+  if (target?.kind === 'price-row') {
+    return form.querySelector<HTMLElement>(
+      `[data-product-price-field="${target.field}"][data-row-index="${target.rowIndex}"]`,
+    )
+  }
+  if (target?.kind === 'price-add') {
+    return form.querySelector<HTMLElement>('[data-product-price-add]')
+  }
+  if (target?.kind === 'service') {
+    return (
+      form.querySelector<HTMLElement>('[data-product-service-input]:invalid') ??
+      form.querySelector<HTMLElement>('[data-product-service-input]')
+    )
+  }
+  if (target?.kind === 'type') {
+    return form.querySelector<HTMLElement>('[name="productType"]')
+  }
+
+  return form.querySelector<HTMLElement>(
+    'input:invalid, select:invalid, textarea:invalid',
+  )
+}
+
+function focusValidationIssue(
+  form: HTMLFormElement,
+  issue: ProductValidationIssue,
+) {
+  window.requestAnimationFrame(() => {
+    const control =
+      getValidationFocusTarget(form, issue) ??
+      form.querySelector<HTMLElement>(
+        'input:invalid, select:invalid, textarea:invalid',
+      )
+
+    if (!control) return
+
+    control.focus({ preventScroll: true })
+    control.scrollIntoView({
+      behavior: 'smooth',
+      block: 'center',
+      inline: 'nearest',
+    })
+  })
+}
+
 type ProductFormUiPageContentProps = {
   readonly productId?: string
 }
 
-function ProductFormUiPageContent({ productId }: ProductFormUiPageContentProps) {
+function ProductFormUiPageContent({
+  productId,
+}: ProductFormUiPageContentProps) {
   const navigate = useNavigate()
   const isEditing = productId !== undefined
   const [draft, setDraft] = useState(createInitialFormDraft)
@@ -82,14 +174,18 @@ function ProductFormUiPageContent({ productId }: ProductFormUiPageContentProps) 
     }
   }, [productId])
 
-  async function persist(status: ProductStatus) {
+  async function persist(status: ProductStatus, form: HTMLFormElement) {
     if (isSaving || isDeleting) return
 
-    const validationMessage = getProductValidationMessage(draft, status)
+    const validationIssue = getProductValidationIssue(draft, status)
 
-    if (validationMessage) {
-      setSaveError(validationMessage)
-      toast.error(validationMessage)
+    if (validationIssue) {
+      setDraft((currentDraft) =>
+        revealValidationIssue(currentDraft, validationIssue),
+      )
+      setSaveError(validationIssue.message)
+      toast.error(validationIssue.message)
+      focusValidationIssue(form, validationIssue)
       return
     }
 
@@ -156,7 +252,10 @@ function ProductFormUiPageContent({ productId }: ProductFormUiPageContentProps) 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
 
-    void persist(getSubmitIntent(event) === 'draft' ? 'draft' : 'published')
+    void persist(
+      getSubmitIntent(event) === 'draft' ? 'draft' : 'published',
+      event.currentTarget,
+    )
   }
 
   if (isLoadingProduct || loadError) {
@@ -213,6 +312,7 @@ function ProductFormUiPageContent({ productId }: ProductFormUiPageContentProps) 
               <button
                 className="admin-form__button admin-form__button--outline"
                 disabled={isSaving || isDeleting}
+                formNoValidate
                 name="intent"
                 type="submit"
                 value="draft"

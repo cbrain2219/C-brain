@@ -45,6 +45,7 @@ function scrollToFirstInvalidControl(event: FormEvent<HTMLElement>) {
       : control
 
   window.requestAnimationFrame(() => {
+    control.focus({ preventScroll: true })
     scrollTarget.scrollIntoView({
       behavior: 'smooth',
       block: 'center',

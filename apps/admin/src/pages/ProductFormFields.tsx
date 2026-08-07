@@ -189,6 +189,7 @@ function renderProductUiSection({
             },
           })
         }
+        optionKey={section.key}
         selectedIndex={selectedIndex}
         valueUnit={section.valueUnit}
         values={values}
