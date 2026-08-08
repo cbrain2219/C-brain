@@ -28,10 +28,10 @@ export function AdminDeleteDialog({
         <AlertDialog.Viewport className="admin-delete-dialog__viewport">
           <AlertDialog.Popup className="admin-delete-dialog">
             <AlertDialog.Title className="admin-delete-dialog__title">
-              {itemLabel}을(를) 삭제할까요?
+              {itemLabel} 삭제
             </AlertDialog.Title>
             <AlertDialog.Description className="admin-delete-dialog__description">
-              삭제한 항목은 복구할 수 없습니다.
+              이 항목을 삭제하면 복구할 수 없습니다.
             </AlertDialog.Description>
             <div className="admin-delete-dialog__actions">
               <AlertDialog.Close className="admin-delete-dialog__button" type="button">

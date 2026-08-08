@@ -93,6 +93,11 @@
   background: var(--admin-brand-600);
 }
 
+.admin-form__button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
 @media (max-width: 720px) {
   .admin-form-page {
     padding: 40px 20px 72px;
