@@ -6,9 +6,8 @@ import { notFound } from "next/navigation";
 import { LightHeroBadge } from "../../../../components/LightHeroBadge";
 import { JsonLdScript } from "../../../_components/JsonLdScript";
 import {
-  customerInterviewDetails,
-  getCustomerInterviewDetailBySlug,
   getCustomerInterviewDetailSeo,
+  getPublishedCustomerInterviewDetailBySlug,
   reviewPlayLargeIcon,
 } from "../../../_content/customerReviews";
 import { createArticleStructuredData } from "../../../_content/structured-data";
@@ -24,17 +23,11 @@ function getAbsoluteUrl(path: string, siteUrl: string | undefined) {
   return siteUrl ? new URL(path, siteUrl).toString() : undefined;
 }
 
-export function generateStaticParams() {
-  return customerInterviewDetails.map((detail) => ({
-    slug: detail.slug,
-  }));
-}
-
 export async function generateMetadata({
   params,
 }: CustomerReviewDetailPageProps): Promise<Metadata> {
   const { slug } = await params;
-  const detail = getCustomerInterviewDetailBySlug(slug);
+  const detail = await getPublishedCustomerInterviewDetailBySlug(slug);
 
   if (!detail) {
     return {
@@ -81,7 +74,7 @@ export default async function CustomerReviewDetailPage({
   params,
 }: CustomerReviewDetailPageProps) {
   const { slug } = await params;
-  const detail = getCustomerInterviewDetailBySlug(slug);
+  const detail = await getPublishedCustomerInterviewDetailBySlug(slug);
 
   if (!detail) {
     notFound();

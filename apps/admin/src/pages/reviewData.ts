@@ -2,7 +2,7 @@ import type { PublishStatus, TableInsert, TableRow } from '@repo/supabase/types'
 import { formatAdminDate, toDateInputValue, toPublishedAt } from './contentListState.ts'
 import type { ReviewType } from './reviewFormState.ts'
 
-export type ReviewContentMode = 'html' | 'text'
+export type ReviewContentMode = 'html' | 'markdown'
 
 export type ReviewFormState = {
   readonly company: string
@@ -34,14 +34,14 @@ export type ReviewListRow = {
 
 export type ReviewMutationInput = Pick<
   TableInsert<'reviews'>,
-  | 'company'
+  | 'company_name'
   | 'content'
   | 'content_mode'
-  | 'is_landing_enabled'
   | 'kind'
-  | 'manager'
+  | 'manager_name'
   | 'published_at'
   | 'seo_description'
+  | 'show_on_landing'
   | 'slug'
   | 'status'
   | 'title'
@@ -69,7 +69,7 @@ export function createInitialReviewForm(): ReviewFormState {
 }
 
 function getTestimonialTitle(review: TableRow<'reviews'>) {
-  const attribution = [review.company, review.manager].filter(Boolean).join(' ')
+  const attribution = [review.company_name, review.manager_name].filter(Boolean).join(' ')
 
   if (attribution) return `${attribution} 후기`
 
@@ -83,7 +83,7 @@ export function toReviewListRow(review: TableRow<'reviews'>): ReviewListRow {
     createdAt: formatAdminDate(review.created_at),
     detailHref: `/reviews/${review.id}`,
     id: review.id,
-    landingStatus: review.is_landing_enabled ? 'published' : 'none',
+    landingStatus: review.show_on_landing ? 'published' : 'none',
     status: review.status,
     title: review.kind === 'interview' ? review.title || '제목 없는 인터뷰' : getTestimonialTitle(review),
     type: review.kind === 'interview' ? '인터뷰' : '후기',
@@ -96,11 +96,11 @@ export function toReviewFormState(
   videoPreviewUrl: string | null,
 ): ReviewFormState {
   return {
-    company: review.company,
+    company: review.company_name,
     content: review.content,
     contentMode: review.content_mode,
-    isLandingEnabled: review.is_landing_enabled,
-    manager: review.manager ?? '',
+    isLandingEnabled: review.show_on_landing,
+    manager: review.manager_name ?? '',
     publishedAt: toDateInputValue(review.published_at),
     seoDescription: review.seo_description ?? '',
     slug: review.slug ?? '',
@@ -136,14 +136,14 @@ export function toReviewMutationInput(
   }
 
   return {
-    company,
+    company_name: company,
     content,
     content_mode: form.contentMode,
-    is_landing_enabled: isInterview ? false : form.isLandingEnabled,
     kind: isInterview ? 'interview' : 'testimonial',
-    manager: isInterview ? null : manager || null,
+    manager_name: isInterview ? null : manager || null,
     published_at: publishedAt,
     seo_description: isInterview ? form.seoDescription.trim() || null : null,
+    show_on_landing: isInterview ? false : form.isLandingEnabled,
     slug: isInterview ? slug || null : null,
     status,
     title: isInterview ? title || null : null,

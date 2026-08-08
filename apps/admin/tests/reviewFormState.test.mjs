@@ -16,10 +16,11 @@ test('review types contain only the two fixed Figma choices', () => {
   assert.equal(isReviewType(''), false)
 })
 
-test('interview slug follows the existing English letters and hyphens rule', () => {
+test('interview slug follows the database lowercase slug rule', () => {
   assert.equal(isValidInterviewSlug('customer-interview'), true)
-  assert.equal(isValidInterviewSlug('CustomerInterview'), true)
-  assert.equal(isValidInterviewSlug('customer-01'), false)
+  assert.equal(isValidInterviewSlug('customer-01'), true)
+  assert.equal(isValidInterviewSlug('CustomerInterview'), false)
+  assert.equal(isValidInterviewSlug('-customer'), false)
   assert.equal(isValidInterviewSlug('고객-인터뷰'), false)
 })
 

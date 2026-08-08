@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next";
 
 import { getNoticePageData } from "./(site)/notice/_data/notices";
-import { customerInterviews } from "./_content/customerReviews";
+import { getCustomerReviewPageData } from "./_content/customerReviews";
 import {
   createSitemapEntries,
   type SitemapDynamicRoute,
@@ -14,9 +14,10 @@ import {
 export const revalidate = 0;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const [posts, items, noticePageData] = await Promise.all([
+  const [posts, items, reviewPageData, noticePageData] = await Promise.all([
     getPublishedBlogPosts(),
     getPublishedPortfolioItems(),
+    getCustomerReviewPageData(),
     getNoticePageData("all"),
   ]);
   const portfolioRoutes = items.map((item) => ({
@@ -36,7 +37,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     path: `/notice/${notice.id}`,
     priority: notice.isPinned ? 0.65 : 0.55,
   })) satisfies SitemapDynamicRoute[];
-  const reviewRoutes = customerInterviews.map((interview) => ({
+  const reviewRoutes = reviewPageData.customerInterviews.map((interview) => ({
     changeFrequency: "monthly",
     lastModified: interview.publishedAt,
     path: `/reviews/${interview.detailSlug}`,

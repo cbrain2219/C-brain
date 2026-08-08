@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { Buffer } from "node:buffer";
 import { stat, readFile } from "node:fs/promises";
 import test from "node:test";
 
@@ -53,17 +54,6 @@ const quoteMarkIconPath = new URL(
   import.meta.url,
 );
 
-function extractConstArray(source, constName) {
-  const startMarker = `export const ${constName} = [`;
-  const start = source.indexOf(startMarker);
-  assert.notEqual(start, -1, `${constName} array should exist`);
-
-  const end = source.indexOf("] as const", start);
-  assert.notEqual(end, -1, `${constName} array should end with as const`);
-
-  return source.slice(start, end);
-}
-
 function extractCssBlock(source, marker) {
   const start = source.indexOf(marker);
   assert.notEqual(start, -1, `${marker} block should exist`);
@@ -84,6 +74,53 @@ function extractCssBlock(source, marker) {
   }
 
   assert.fail(`${marker} block should close`);
+}
+
+async function importCustomerReviewMappers() {
+  const source = await readFile(contentPath, "utf8");
+  const runnableSource = `
+const cache = (loader) => loader;
+const connection = async () => {};
+const createPublicUserSupabaseClient = () => null;
+const getPublicAssetUrl = (_client, path) => \`https://assets.test/\${path}\`;
+const getPublishedReview = async () => null;
+const listPublishedReviews = async () => [];
+${source.replace(/import[\s\S]*?from "[^"]+";\n/g, "")}
+`;
+  const ts = await import("typescript");
+  const { outputText } = ts.transpileModule(runnableSource, {
+    compilerOptions: {
+      module: ts.ModuleKind.ESNext,
+      target: ts.ScriptTarget.ES2022,
+    },
+  });
+
+  return import(
+    `data:text/javascript;base64,${Buffer.from(outputText).toString("base64")}`
+  );
+}
+
+function reviewRow(overrides = {}) {
+  return {
+    company_name: "새 고객사",
+    content: "새 고객 후기입니다.",
+    content_mode: "markdown",
+    created_at: "2026-08-01T00:00:00.000Z",
+    id: "review-id",
+    kind: "testimonial",
+    manager_name: "김담당님",
+    published_at: "2026-08-02T00:00:00.000Z",
+    seo_description: null,
+    show_on_landing: false,
+    slug: null,
+    sort_order: 1,
+    status: "published",
+    title: null,
+    video_alt: null,
+    video_path: null,
+    view_count: 0,
+    ...overrides,
+  };
 }
 
 test("customer reviews page exposes the Figma review page sections", async () => {
@@ -111,10 +148,10 @@ test("customer review content is shared by the reviews page", async () => {
   const contentSource = await readFile(contentPath, "utf8");
   const pageSource = await readFile(pagePath, "utf8");
 
-  assert.match(contentSource, /export const customerTestimonials/);
-  assert.match(contentSource, /export const customerInterviewRecords/);
-  assert.match(contentSource, /export const customerInterviews/);
-  assert.match(contentSource, /export const featuredCustomerInterview/);
+  assert.match(contentSource, /export function mapCustomerReviewRows/);
+  assert.match(contentSource, /export function mapCustomerInterviewDetail/);
+  assert.match(contentSource, /export const getCustomerReviewPageData/);
+  assert.match(contentSource, /export const getLandingCustomerTestimonials/);
   assert.match(pageSource, /customerTestimonials/);
   assert.match(pageSource, /customerInterviews/);
   assert.match(pageSource, /featuredCustomerInterview/);
@@ -151,7 +188,7 @@ test("shared testimonial cards use compact 20px padding", async () => {
   );
 });
 
-test("review list, detail, and landing stay fixture-only", async () => {
+test("review list, detail, and landing load published Supabase rows", async () => {
   const contentSource = await readFile(contentPath, "utf8");
   const pageSource = await readFile(pagePath, "utf8");
   const landingSource = await readFile(landingSectionPath, "utf8");
@@ -160,23 +197,123 @@ test("review list, detail, and landing stay fixture-only", async () => {
     "utf8",
   );
 
-  assert.doesNotMatch(contentSource, /@repo\/supabase/);
-  assert.doesNotMatch(contentSource, /createUserSupabaseClient/);
-  assert.doesNotMatch(contentSource, /listPublishedReviews/);
-  assert.doesNotMatch(contentSource, /getPublishedReview/);
-  assert.doesNotMatch(contentSource, /getPublicAssetUrl/);
-  assert.match(contentSource, /export function getCustomerReviewPageData/);
-  assert.match(contentSource, /customerInterviews: \[\.\.\.customerInterviews\]/);
-  assert.match(
-    contentSource,
-    /customerTestimonials: \[\.\.\.customerTestimonials\]/,
-  );
-  assert.match(contentSource, /return customerTestimonials\.slice\(0, 3\)/);
-  assert.doesNotMatch(contentSource, /getPublishedCustomerInterviewDetailBySlug/);
+  assert.match(contentSource, /@repo\/supabase/);
+  assert.match(contentSource, /createPublicUserSupabaseClient/);
+  assert.match(contentSource, /listPublishedReviews/);
+  assert.match(contentSource, /getPublishedReview/);
+  assert.match(contentSource, /getPublicAssetUrl/);
+  assert.match(contentSource, /await connection\(\)/);
+  assert.match(contentSource, /getPublishedCustomerInterviewDetailBySlug/);
+  assert.doesNotMatch(contentSource, /dangerouslySetInnerHTML/);
+  assert.doesNotMatch(contentSource, /export const customerTestimonials\s*=\s*\[/);
+  assert.doesNotMatch(contentSource, /export const customerInterviewRecords\s*=\s*\[/);
   assert.match(pageSource, /await getCustomerReviewPageData\(\)/);
   assert.match(landingSource, /await getLandingCustomerTestimonials\(\)/);
-  assert.match(detailSource, /getCustomerInterviewDetailBySlug/);
-  assert.doesNotMatch(detailSource, /getPublishedCustomerInterviewDetailBySlug/);
+  assert.match(detailSource, /getPublishedCustomerInterviewDetailBySlug/);
+  assert.match(detailSource, /await getPublishedCustomerInterviewDetailBySlug\(slug\)/);
+  assert.doesNotMatch(detailSource, /getCustomerInterviewDetailBySlug/);
+});
+
+test("review mappers separate kinds, sanitize content, and keep presentation metadata", async () => {
+  const {
+    getCustomerReviewPageData,
+    getLandingCustomerTestimonials,
+    getPublishedCustomerInterviewDetailBySlug,
+    mapCustomerInterviewDetail,
+    mapLandingCustomerTestimonials,
+    mapCustomerReviewRows,
+    reviewInterviewEducationImage,
+    reviewInterviewImage,
+  } = await importCustomerReviewMappers();
+  const rows = [
+    reviewRow({
+      content:
+        "<p>좋은 결과였습니다.</p><script>window.stolen = true</script><style>body{display:none}</style>&lt;script&gt;encodedStolen=true&lt;/script&gt;",
+      content_mode: "html",
+      id: "testimonial-1",
+      show_on_landing: true,
+    }),
+    reviewRow({
+      content: "## 어떤 상황이었나요?\n\n본문입니다.\n\n> 만족합니다.",
+      id: "interview-1",
+      kind: "interview",
+      manager_name: null,
+      seo_description: "새 인터뷰 설명",
+      show_on_landing: false,
+      slug: "new-interview",
+      title: "새 고객 인터뷰",
+      video_alt: "새 고객 인터뷰 영상",
+      video_path: "reviews/new-interview.mp4",
+    }),
+    reviewRow({
+      id: "testimonial-2",
+      show_on_landing: true,
+    }),
+    reviewRow({
+      id: "testimonial-3",
+      show_on_landing: true,
+    }),
+    reviewRow({
+      id: "testimonial-4",
+      show_on_landing: true,
+    }),
+  ];
+  const mapped = mapCustomerReviewRows(
+    rows,
+    (path) => `https://assets.test/${path}`,
+  );
+  const detail = mapCustomerInterviewDetail(
+    rows[1],
+    (path) => `https://assets.test/${path}`,
+  );
+
+  assert.equal(mapped.customerInterviews.length, 1);
+  assert.equal(mapped.customerTestimonials.length, 4);
+  assert.deepEqual(
+    mapLandingCustomerTestimonials(rows).map(({ id }) => id),
+    ["testimonial-1", "testimonial-2", "testimonial-3"],
+  );
+  assert.equal(mapped.customerTestimonials[0].body, "좋은 결과였습니다.");
+  assert.doesNotMatch(
+    mapped.customerTestimonials[0].body,
+    /script|style|stolen|display|encoded|<|>/i,
+  );
+  assert.deepEqual(
+    detail.content.map(({ id, type }) => ({ id, type })),
+    [
+      { id: "interview-1-heading-0", type: "heading" },
+      { id: "interview-1-paragraph-1", type: "paragraph" },
+      { id: "interview-1-quote-2", type: "quote" },
+    ],
+  );
+  assert.equal(detail.thumbnail, reviewInterviewImage);
+  assert.equal(detail.projectInfo[0].value, "새 고객사");
+  assert.equal(detail.videoUrl, "https://assets.test/reviews/new-interview.mp4");
+
+  const legacy = mapCustomerReviewRows([
+    reviewRow({
+      company_name: "청강문화산업대학교 게임콘텐츠스쿨",
+      id: "legacy-interview",
+      kind: "interview",
+      manager_name: null,
+      slug: "chungkang-college",
+      title: "청강 인터뷰",
+      video_path: "reviews/chungkang.mp4",
+    }),
+  ]);
+
+  assert.equal(legacy.customerInterviews[0].category, "교육");
+  assert.equal(legacy.customerInterviews[0].thumbnail, reviewInterviewEducationImage);
+  assert.deepEqual(legacy.featuredCustomerInterview.headlineLines, [
+    "처음 맡겼는데",
+    "결과물이 기대 이상이였어요.",
+  ]);
+  assert.equal((await getCustomerReviewPageData()).customerInterviews.length, 0);
+  assert.deepEqual(await getLandingCustomerTestimonials(), []);
+  assert.equal(
+    await getPublishedCustomerInterviewDetailBySlug("new-interview"),
+    undefined,
+  );
 });
 
 test("review list and landing render clear empty states", async () => {
@@ -507,9 +644,9 @@ test("customer interview markup stays semantic and uses admin video alt text", a
   const pageSource = await readFile(pagePath, "utf8");
   const stylesSource = await readFile(stylesPath, "utf8");
 
-  assert.match(contentSource, /detailSlug: record\.slug/);
+  assert.match(contentSource, /detailSlug: detail\.slug/);
   assert.match(contentSource, /publishedAt: string/);
-  assert.match(contentSource, /publishedAt: record\.publishedAt/);
+  assert.match(contentSource, /publishedAt: detail\.publishedAt/);
   assert.match(contentSource, /videoAlt:/);
   assert.match(pageSource, /alt=\{featuredCustomerInterview\.videoAlt\}/);
   assert.match(pageSource, /alt=\{interview\.videoAlt\}/);
@@ -550,81 +687,29 @@ test("customer interview markup stays semantic and uses admin video alt text", a
 
 test("customer interview data stays consistent for dynamic admin content", async () => {
   const contentSource = await readFile(contentPath, "utf8");
-  const recordsBlock = extractConstArray(
-    contentSource,
-    "customerInterviewRecords",
-  );
-  const chungkangQuoteMatches = contentSource.match(
-    /완료보고서를 선보이면서 긍정적인 피드백을 받을 정도로 퀄리티가 좋았습니다\./g,
-  );
 
+  assert.match(contentSource, /const customerInterviewPresentation[^=]*= \[/);
+  assert.match(contentSource, /slug: "seojin-instech"/);
+  assert.match(contentSource, /slug: "ninebell-healthcare"/);
+  assert.match(contentSource, /slug: "chungkang-college"/);
+  assert.match(contentSource, /thumbnail: reviewInterviewImage/);
+  assert.match(contentSource, /thumbnail: reviewInterviewHealthcareImage/);
+  assert.match(contentSource, /thumbnail: reviewInterviewEducationImage/);
   assert.match(
     contentSource,
-    /export const customerInterviews = customerInterviewRecords\.map/,
+    /headlineLines: \["처음 맡겼는데", "결과물이 기대 이상이였어요\."\]/,
   );
-  assert.match(
-    contentSource,
-    /export const customerInterviewDetails = customerInterviewRecords\.map/,
-  );
-  assert.match(contentSource, /function getLatestCustomerInterviewRecord\(/);
-  assert.match(contentSource, /Date\.parse\(latestRecord\.publishedAt\)/);
-  assert.match(
-    contentSource,
-    /const customerInterviewRecordList: readonly CustomerInterviewRecord\[\] =\s*customerInterviewRecords;/,
-  );
-  assert.match(
-    contentSource,
-    /const featuredCustomerInterviewRecord =[\s\S]*customerInterviewRecordList\.find[\s\S]*\?\?[\s\S]*getLatestCustomerInterviewRecord\(\);/,
-  );
-  assert.match(
-    recordsBlock,
-    /featured:\s*\{[\s\S]*headlineLines: \["처음 맡겼는데", "결과물이 기대 이상이였어요\."\],[\s\S]*projectName: "게임 졸업 프로젝트 완료 보고서"/,
-  );
-  assert.doesNotMatch(contentSource, /대표 고객 인터뷰 데이터가 필요합니다/);
-  assert.match(contentSource, /publishedAt: record\.publishedAt/);
-  assert.match(contentSource, /id: record\.slug/);
-  assert.match(contentSource, /detailSlug: record\.slug/);
-  assert.match(contentSource, /title: record\.title/);
-  assert.match(contentSource, /quote: getCustomerInterviewQuote\(record\)/);
-  assert.match(contentSource, /thumbnail: record\.thumbnail/);
-  assert.match(contentSource, /videoAlt: record\.videoAlt/);
-  assert.match(contentSource, /description: getCustomerInterviewIntro\(record\)/);
-  assert.match(contentSource, /projectName,/);
+  assert.match(contentSource, /projectName: "게임 졸업 프로젝트 완료 보고서"/);
+  assert.match(contentSource, /row\.kind === "interview"/);
+  assert.match(contentSource, /row\.kind === "testimonial"/);
+  assert.match(contentSource, /row\.show_on_landing/);
+  assert.match(contentSource, /\.slice\(0, 3\)/);
   assert.match(
     contentSource,
     /export type CustomerInterviewProjectInfoId = "client" \| "deliverable" \| "usage";/,
   );
-  assert.match(
-    contentSource,
-    /function getCustomerInterviewProjectValue\(\s*record: CustomerInterviewRecord,\s*id: CustomerInterviewProjectInfoId,/,
-  );
-  assert.match(contentSource, /item\.id === id/);
-  assert.match(
-    contentSource,
-    /getCustomerInterviewProjectValue\(record, "deliverable"\)/,
-  );
-  assert.doesNotMatch(contentSource, /function getCustomerInterviewCardTitle/);
-  assert.doesNotMatch(
-    contentSource,
-    /getCustomerInterviewProjectValue\(record, "제작물"\)/,
-  );
-  assert.match(
-    contentSource,
-    /const featuredCustomerInterviewRecord =[\s\S]*customerInterviewRecordList\.find/,
-  );
-  assert.equal(
-    chungkangQuoteMatches?.length,
-    1,
-    "card and detail should not keep separate 청강 quote copies",
-  );
-  assert.doesNotMatch(
-    recordsBlock,
-    /완료 보고서를 선보이면 긍정의 피드백을 받을 정도로 퀄리티가 좋았습니다\./,
-  );
-  assert.match(
-    contentSource,
-    /slug: "chungkang-college"[\s\S]*thumbnail: reviewInterviewEducationImage/,
-  );
+  assert.doesNotMatch(contentSource, /완료보고서를 선보이면서 긍정적인 피드백/);
+  assert.doesNotMatch(contentSource, /export const customerInterviewDetails/);
 });
 
 test("customer reviews page reveals testimonials in responsive batches", async () => {
@@ -739,16 +824,12 @@ test("customer testimonials are ready for dynamic admin data", async () => {
   const contentSource = await readFile(contentPath, "utf8");
   const testimonialListSource = await readFile(testimonialListPath, "utf8");
   const testimonialCardSource = await readFile(testimonialCardPath, "utf8");
-  const testimonialsBlock = extractConstArray(
-    contentSource,
-    "customerTestimonials",
-  );
 
   assert.match(contentSource, /export type CustomerTestimonial/);
-  assert.equal(testimonialsBlock.match(/id: "/g)?.length, 12);
-  assert.match(testimonialsBlock, /id: "/);
-  assert.match(testimonialsBlock, /publishedAt: "/);
-  assert.match(testimonialsBlock, /title: "/);
+  assert.match(contentSource, /id: row\.id/);
+  assert.match(contentSource, /publishedAt: getPublishedAt\(row\)/);
+  assert.match(contentSource, /title:/);
+  assert.doesNotMatch(contentSource, /export const customerTestimonials\s*=\s*\[/);
   assert.match(testimonialListSource, /key=\{review\.id\}/);
   assert.match(
     testimonialCardSource,
