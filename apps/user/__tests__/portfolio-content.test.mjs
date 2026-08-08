@@ -9,7 +9,7 @@ const portfolioModuleUrl = new URL(
   import.meta.url,
 ).href;
 
-test("portfolio DB rows preserve content, pinned order, and valid images", async () => {
+test("portfolio DB rows preserve content, database order, and valid images", async () => {
   const check = `
     import assert from "node:assert/strict";
     const portfolio = await import(${JSON.stringify(portfolioModuleUrl)});
@@ -65,19 +65,19 @@ test("portfolio DB rows preserve content, pinned order, and valid images", async
       },
     ], (path) => "https://assets.example/" + path);
 
-    assert.deepEqual(items.map((item) => item.slug), ["pinned", "ordered-images"]);
-    assert.equal(items[0].showOnLanding, true);
-    assert.equal(items[1].showOnLanding, false);
-    assert.equal(items[1].categoryId, "leaflet-pamphlet");
-    assert.equal(items[1].description, "안전한 & 본문");
-    assert.doesNotMatch(items[1].description, /<|alert/);
-    assert.deepEqual(items[1].detailImages.map((image) => image.src), [
+    assert.deepEqual(items.map((item) => item.slug), ["ordered-images", "pinned"]);
+    assert.equal(items[0].showOnLanding, false);
+    assert.equal(items[1].showOnLanding, true);
+    assert.equal(items[0].categoryId, "leaflet-pamphlet");
+    assert.equal(items[0].description, "안전한 & 본문");
+    assert.doesNotMatch(items[0].description, /<|alert/);
+    assert.deepEqual(items[0].detailImages.map((image) => image.src), [
       "https://assets.example/portfolio/first.webp",
       "/figma-assets/portfolio-axis.png",
     ]);
-    assert.equal(getPortfolioDetailBySlug("ordered-images", items)?.item, items[1]);
-    assert.equal(getPortfolioItemBySlug("ordered-images", items), items[1]);
-    assert.deepEqual(getRelatedPortfolioItems("pinned", items, 1), [items[1]]);
+    assert.equal(getPortfolioDetailBySlug("ordered-images", items)?.item, items[0]);
+    assert.equal(getPortfolioItemBySlug("ordered-images", items), items[0]);
+    assert.deepEqual(getRelatedPortfolioItems("pinned", items, 1), [items[0]]);
 
     const ordered = mapPortfolioRows([
       { slug: "unpinned-1", pinned: false, sort_order: 1 },
@@ -96,9 +96,9 @@ test("portfolio DB rows preserve content, pinned order, and valid images", async
     })), (path) => path);
 
     assert.deepEqual(ordered.map((item) => item.slug), [
+      "unpinned-1",
       "pinned-1",
       "pinned-2",
-      "unpinned-1",
       "unpinned-2",
     ]);
 

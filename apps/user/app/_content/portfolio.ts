@@ -159,10 +159,7 @@ export function mapPortfolioRows(
   rows: readonly TableRow<"portfolio_items">[],
   resolveAssetUrl: PortfolioAssetUrlResolver,
 ): PortfolioItem[] {
-  const pinnedRows = rows.filter((row) => row.pinned);
-  const unpinnedRows = rows.filter((row) => !row.pinned);
-
-  return [...pinnedRows, ...unpinnedRows].flatMap((row) => {
+  return rows.flatMap((row) => {
     const client = row.client_name?.trim() || "씨브레인";
     const storedImages = parsePortfolioImages(row.images);
 
