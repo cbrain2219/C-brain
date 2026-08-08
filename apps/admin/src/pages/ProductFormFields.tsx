@@ -22,7 +22,6 @@ import type {
   QuantityPriceDraft,
 } from './productFormUi'
 import {
-  changeProductFormType,
   getActiveProductUiDraft,
   replaceActiveProductUiDraft,
   selectProductFormVariant,
@@ -33,6 +32,7 @@ import './ProductFormFields.css'
 type ProductFormFieldsProps = {
   draft: ProductFormDraft
   onChange: (nextDraft: ProductFormDraft) => void
+  onProductTypeChange: (productType: ProductType) => void
 }
 
 type RenderSectionArgs = {
@@ -46,7 +46,11 @@ function isProductType(value: string): value is ProductType {
   return productTypes.some((productType) => productType === value)
 }
 
-function TypeSelection({ draft, onChange }: ProductFormFieldsProps) {
+function TypeSelection({
+  draft,
+  onChange,
+  onProductTypeChange,
+}: ProductFormFieldsProps) {
   const inputId = useId()
   const variants = draft.productType
     ? getProductVariants(draft.productType)
@@ -62,8 +66,7 @@ function TypeSelection({ draft, onChange }: ProductFormFieldsProps) {
           inputId={inputId}
           name="productType"
           onCommit={(value) => {
-            if (isProductType(value))
-              onChange(changeProductFormType(draft, value))
+            if (isProductType(value)) onProductTypeChange(value)
           }}
           options={productTypes}
           placeholder="상품 유형을 선택해주세요."
@@ -231,7 +234,11 @@ function renderProductUiSection({
   )
 }
 
-export function ProductFormFields({ draft, onChange }: ProductFormFieldsProps) {
+export function ProductFormFields({
+  draft,
+  onChange,
+  onProductTypeChange,
+}: ProductFormFieldsProps) {
   const activeDraft = getActiveProductUiDraft(draft)
   const profile = activeDraft.productType
     ? getProductUiProfile(activeDraft.productType, activeDraft.productSubtype)
@@ -260,7 +267,11 @@ export function ProductFormFields({ draft, onChange }: ProductFormFieldsProps) {
 
   return (
     <div className="product-ui-sections">
-      <TypeSelection draft={draft} onChange={onChange} />
+      <TypeSelection
+        draft={draft}
+        onChange={onChange}
+        onProductTypeChange={onProductTypeChange}
+      />
       {profile ? (
         <ServiceSelectionEditor
           designPrintEstimate={serviceEstimate.designPrintEstimate}

@@ -1,7 +1,7 @@
 import {
   createProduct,
   deleteProduct,
-  getAdminProduct,
+  listAdminProducts,
   updateProduct,
 } from '@repo/supabase'
 import type { ProductRecord, ProductStatus } from '@repo/supabase'
@@ -21,8 +21,12 @@ import {
   toProductWriteInput,
 } from './productFormPersistence.ts'
 import type { ProductValidationIssue } from './productFormPersistence.ts'
-import { createProductFormDraft } from './productFormGroup.ts'
+import {
+  changeProductFormType,
+  createProductFormDraft,
+} from './productFormGroup.ts'
 import type { ProductFormDraft } from './productFormGroup.ts'
+import type { ProductType } from './productFormUi.ts'
 
 function createInitialFormDraft(): ProductFormDraft {
   return createProductFormDraft('브로슈어 · 카탈로그')
@@ -140,7 +144,10 @@ function ProductFormUiPageContent({
   const isEditing = productId !== undefined
   const [draft, setDraft] = useState(createInitialFormDraft)
   const [loadedProduct, setLoadedProduct] = useState<ProductRecord | null>(null)
-  const [isLoadingProduct, setIsLoadingProduct] = useState(isEditing)
+  const [storedProducts, setStoredProducts] = useState<
+    readonly ProductRecord[]
+  >([])
+  const [isLoadingProduct, setIsLoadingProduct] = useState(true)
   const [loadError, setLoadError] = useState('')
   const [saveError, setSaveError] = useState('')
   const [isSaving, setIsSaving] = useState(false)
@@ -148,16 +155,20 @@ function ProductFormUiPageContent({
 
   useEffect(() => {
     let isCurrent = true
-    const id = productId
-
-    if (!id) return
-
-    void getAdminProduct(supabase, id)
-      .then((product) => {
+    void listAdminProducts(supabase)
+      .then((products) => {
         if (!isCurrent) return
 
-        setDraft(toProductFormDraft(product))
-        setLoadedProduct(product)
+        setStoredProducts(products)
+
+        if (productId) {
+          const product = products.find(({ id }) => id === productId)
+
+          if (!product) throw new Error('Product not found')
+
+          setDraft(toProductFormDraft(product))
+          setLoadedProduct(product)
+        }
       })
       .catch(() => {
         if (!isCurrent) return
@@ -173,6 +184,24 @@ function ProductFormUiPageContent({
       isCurrent = false
     }
   }, [productId])
+
+  function handleProductTypeChange(productType: ProductType) {
+    const storedProduct = storedProducts.find(
+      (product) => product.product_type === productType,
+    )
+
+    if (storedProduct) {
+      if (storedProduct.id !== loadedProduct?.id) {
+        navigate('/products/' + storedProduct.id, { replace: true })
+      }
+
+      return
+    }
+
+    setDraft((currentDraft) =>
+      changeProductFormType(currentDraft, productType),
+    )
+  }
 
   async function persist(status: ProductStatus, form: HTMLFormElement) {
     if (isSaving || isDeleting) return
@@ -339,7 +368,11 @@ function ProductFormUiPageContent({
             {saveError}
           </p>
         ) : null}
-        <ProductFormFields draft={draft} onChange={setDraft} />
+        <ProductFormFields
+          draft={draft}
+          onChange={setDraft}
+          onProductTypeChange={handleProductTypeChange}
+        />
       </AdminFormLayout>
       <AdminFooter />
     </>

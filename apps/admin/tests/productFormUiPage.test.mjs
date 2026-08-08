@@ -25,7 +25,7 @@ const legacySubtypeColumn = ['product', 'subtype'].join('_')
 
 test('product form loads and mutates JSONB products', () => {
   assert.match(productFormUiSource, /@repo\/supabase/)
-  assert.match(productFormUiSource, /getAdminProduct/)
+  assert.match(productFormUiSource, /listAdminProducts/)
   assert.match(productFormUiSource, /createProduct/)
   assert.match(productFormUiSource, /updateProduct/)
   assert.match(productFormUiSource, /deleteProduct/)
@@ -46,6 +46,22 @@ test('product form loads and mutates JSONB products', () => {
   assert.match(appSource, /import\.meta\.env\.DEV/)
   assert.match(appSource, /path="\/products\/ui-preview"/)
   assert.match(appSource, /control\.focus\(\{ preventScroll: true \}\)/)
+})
+
+test('changing to a stored product type loads its DB-backed edit row', () => {
+  assert.match(productFormUiSource, /setStoredProducts\(products\)/)
+  assert.match(
+    productFormUiSource,
+    /product\.product_type === productType/,
+  )
+  assert.match(
+    productFormUiSource,
+    /navigate\('\/products\/' \+ storedProduct\.id, \{ replace: true \}\)/,
+  )
+  assert.match(
+    productFormUiSource,
+    /onProductTypeChange=\{handleProductTypeChange\}/,
+  )
 })
 
 test('new product ui is applied to both product form routes', () => {

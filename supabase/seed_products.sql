@@ -562,7 +562,7 @@ $variants$
         ],
         "paper": [
           "일반지(스노우지)",
-          "고급지(량데뷰)"
+          "고급지(랑데뷰)"
         ],
         "thickness": [
           "얇은",
@@ -1362,28 +1362,12 @@ $variants$
           {
             "quantity": 1,
             "unitPrice": 110000
-          },
-          {
-            "quantity": 2,
-            "unitPrice": null
-          },
-          {
-            "quantity": 3,
-            "unitPrice": null
           }
         ],
         "0:1:0:0:0": [
           {
             "quantity": 1,
             "unitPrice": 130000
-          },
-          {
-            "quantity": 2,
-            "unitPrice": null
-          },
-          {
-            "quantity": 3,
-            "unitPrice": null
           }
         ]
       },
@@ -1422,56 +1406,24 @@ $variants$
           {
             "quantity": 1,
             "unitPrice": 130000
-          },
-          {
-            "quantity": 2,
-            "unitPrice": null
-          },
-          {
-            "quantity": 3,
-            "unitPrice": null
           }
         ],
         "0:1:0:0": [
           {
             "quantity": 1,
             "unitPrice": 140000
-          },
-          {
-            "quantity": 2,
-            "unitPrice": null
-          },
-          {
-            "quantity": 3,
-            "unitPrice": null
           }
         ],
         "1:0:0:0": [
           {
             "quantity": 1,
             "unitPrice": 130000
-          },
-          {
-            "quantity": 2,
-            "unitPrice": null
-          },
-          {
-            "quantity": 3,
-            "unitPrice": null
           }
         ],
         "1:1:0:0": [
           {
             "quantity": 1,
             "unitPrice": 160000
-          },
-          {
-            "quantity": 2,
-            "unitPrice": null
-          },
-          {
-            "quantity": 3,
-            "unitPrice": null
           }
         ]
       },
@@ -1509,28 +1461,12 @@ $variants$
           {
             "quantity": 1,
             "unitPrice": 80000
-          },
-          {
-            "quantity": 2,
-            "unitPrice": null
-          },
-          {
-            "quantity": 3,
-            "unitPrice": null
           }
         ],
         "0:0:0:1": [
           {
             "quantity": 1,
             "unitPrice": 100000
-          },
-          {
-            "quantity": 2,
-            "unitPrice": null
-          },
-          {
-            "quantity": 3,
-            "unitPrice": null
           }
         ]
       },
