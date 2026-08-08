@@ -10,13 +10,7 @@ async function getGateState(): Promise<GateState> {
 
   if (!user) return 'login'
 
-  const { data: profile, error } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .maybeSingle()
-
-  if (error || profile?.role !== 'admin') {
+  if (user.app_metadata?.role !== 'admin') {
     await supabase.auth.signOut()
     return 'login'
   }

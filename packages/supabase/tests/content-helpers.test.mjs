@@ -27,6 +27,7 @@ register(`data:text/javascript,${encodeURIComponent(loader)}`, import.meta.url);
 
 const { createPost, listPublishedPosts, reorderPosts } =
   await import("../src/content.ts");
+const { requireAdmin } = await import("../src/auth.ts");
 const { createSignedFileUpload, createStoragePath, getFileInfo } =
   await import("../src/files.ts");
 const { createInquiryAttachment } = await import("../src/inquiries.ts");
@@ -52,7 +53,12 @@ function createFakeClient(dataByTable = {}) {
   const client = {
     auth: {
       async getUser() {
-        return { data: { user: { id: "admin-id" } }, error: null };
+        return {
+          data: {
+            user: { app_metadata: { role: "admin" }, id: "admin-id" },
+          },
+          error: null,
+        };
       },
     },
     from(table) {
@@ -133,6 +139,14 @@ function createFakeClient(dataByTable = {}) {
 
   return { calls, client };
 }
+
+test("admin authorization uses app metadata without a profiles query", async () => {
+  const { calls, client } = createFakeClient();
+
+  await requireAdmin(client);
+
+  assert.equal(calls.some((call) => call.table === "profiles"), false);
+});
 
 function orderCalls(calls, table) {
   return calls
