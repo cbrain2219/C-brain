@@ -48,8 +48,15 @@ const {
   listAdminPaymentLinks,
   updatePaymentOrder,
 } = await import("../src/paymentLinks.ts");
-const { getLowestProductUnitPrice, listPublishedProducts } =
-  await import("../src/products.ts");
+const {
+  createProduct,
+  deleteProduct,
+  getAdminProduct,
+  getLowestProductPrice,
+  getLowestProductUnitPrice,
+  listPublishedProducts,
+  updateProduct,
+} = await import("../src/products.ts");
 const { listPublishedPortfolioItems, reorderPortfolioItems } =
   await import("../src/portfolio.ts");
 const { listPublishedReviews, reorderReviews } =
@@ -180,7 +187,7 @@ test("published content queries use stable display ordering", async () => {
       (call) =>
         call.method === "select" &&
         call.table === "products" &&
-        call.columns === "id, name, sort_order, type, unit_prices",
+        call.columns === "id, configuration, product_type, sort_order",
     ),
   );
   assert.ok(
@@ -203,18 +210,91 @@ test("published content queries use stable display ordering", async () => {
   );
 });
 
-test("product pricing uses the lowest valid unit price", () => {
+test("product pricing uses the lowest valid unit price across variants", () => {
+  const poster = {
+    priceRowsBySelection: {
+      "0:0:0": [
+        { quantity: 100, unitPrice: 160000 },
+        { quantity: 200, unitPrice: 120000 },
+        { quantity: 300, unitPrice: null },
+      ],
+      invalid: [{ quantity: 1, unitPrice: "100000" }],
+    },
+    serviceEstimatesBySelection: {
+      "": { designPrintEstimate: 50000, planningEstimate: 20000 },
+    },
+  };
+
+  assert.equal(getLowestProductUnitPrice(poster), 120000);
   assert.equal(
-    getLowestProductUnitPrice({
-      "0:0:0": 160000,
-      "0:0:1": 120000,
-      invalid: "100000",
-      negative: -1,
+    getLowestProductPrice({
+      variants: {
+        포스터: poster,
+        전단지: {
+          priceRowsBySelection: {
+            flyer: [{ quantity: 100, unitPrice: 130000 }],
+          },
+          serviceEstimatesBySelection: {
+            "": { designPrintEstimate: 10000 },
+          },
+        },
+      },
     }),
     120000,
   );
+  assert.equal(
+    getLowestProductPrice({
+      variants: {
+        포스터: {
+          priceRowsBySelection: {},
+          serviceEstimatesBySelection: {
+            "0": { designPrintEstimate: 60000 },
+          },
+        },
+        전단지: {
+          priceRowsBySelection: {},
+          serviceEstimatesBySelection: {
+            "1": { designPrintEstimate: 50000 },
+          },
+        },
+      },
+    }),
+    50000,
+  );
   assert.equal(getLowestProductUnitPrice({}), null);
   assert.equal(getLowestProductUnitPrice([]), null);
+});
+
+test("product helpers use the JSONB product contract", async () => {
+  const product = {
+    configuration: { variants: { "브로슈어 · 카탈로그": {} } },
+    created_at: "2026-08-07T00:00:00.000Z",
+    id: "product-id",
+    product_type: "브로슈어 · 카탈로그",
+    sort_order: 1,
+    status: "draft",
+  };
+  const { calls, client } = createFakeClient({ products: product });
+  const input = {
+    configuration: product.configuration,
+    product_type: product.product_type,
+    status: "draft",
+  };
+
+  assert.deepEqual(await getAdminProduct(client, product.id), product);
+  assert.deepEqual(await createProduct(client, input), product);
+  assert.deepEqual(
+    await updateProduct(client, product.id, {
+      configuration: product.configuration,
+      status: "published",
+    }),
+    product,
+  );
+  await deleteProduct(client, product.id);
+
+  assert.ok(calls.some((call) => call.method === "insert"));
+  assert.ok(calls.some((call) => call.method === "update"));
+  assert.ok(calls.some((call) => call.method === "delete"));
 });
 
 test("post and attachment mutations pass payloads unchanged", async () => {
