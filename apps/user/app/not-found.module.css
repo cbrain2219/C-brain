@@ -1,0 +1,121 @@
+.section {
+  width: 100%;
+  min-height: 100svh;
+  padding: var(--site-header-height) 20px 72px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #ffffff;
+}
+
+.content,
+.message {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.content {
+  width: min(640px, 100%);
+  gap: 32px;
+}
+
+.message {
+  gap: 8px;
+}
+
+.visual {
+  width: min(560px, 100%);
+  min-height: clamp(220px, 56vw, 320px);
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  place-items: center;
+}
+
+.visual::before,
+.visual::after {
+  content: "";
+  position: absolute;
+  pointer-events: none;
+}
+
+.visual::before {
+  width: 82%;
+  height: 88%;
+  z-index: -2;
+  border-radius: 43% 57% 52% 48% / 55% 41% 59% 45%;
+  background: var(--landing-brand-50);
+  transform: rotate(-5deg);
+}
+
+.visual::after {
+  width: 58%;
+  height: 28px;
+  bottom: 16%;
+  z-index: -1;
+  border-radius: 50%;
+  background: rgba(28, 101, 108, 0.16);
+  filter: blur(3px);
+  transform: rotate(2deg);
+}
+
+.code {
+  color: #217888;
+  font-family: var(--font-sans);
+  font-size: clamp(112px, 24vw, 224px);
+  font-weight: 700;
+  line-height: 0.8;
+  letter-spacing: -0.07em;
+  transform: perspective(720px) rotateX(5deg) rotateY(-2deg) rotateZ(-1deg);
+  text-shadow:
+    0 2px 0 #1c6f7e,
+    0 4px 0 #196978,
+    0 6px 0 #176372,
+    0 8px 0 #145d6c,
+    0 10px 0 #125766,
+    0 12px 0 #0f5160,
+    0 24px 24px rgba(15, 81, 96, 0.24);
+}
+
+.title {
+  color: var(--landing-gray-800);
+}
+
+.description {
+  color: var(--landing-gray-600);
+}
+
+.homeLink {
+  width: 164px;
+  height: 52px;
+  padding: 8px 24px;
+  border: 1px solid transparent;
+  border-radius: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background:
+    var(--landing-button-brand-fill) padding-box,
+    var(--landing-button-border-end) border-box,
+    var(--landing-button-border-start) border-box;
+  background-clip: padding-box, border-box, border-box;
+  background-origin: padding-box, border-box, border-box;
+  color: #fefefe;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.homeLink:focus-visible {
+  outline: 2px solid var(--landing-brand-500);
+  outline-offset: 4px;
+}
+
+@media (min-width: 1081px) {
+  .section {
+    padding-right: 32px;
+    padding-bottom: 104px;
+    padding-left: 32px;
+  }
+}
