@@ -12,11 +12,17 @@ const portfolioModuleUrl = new URL(
 test("portfolio DB rows preserve content, pinned order, and valid images", async () => {
   const check = `
     import assert from "node:assert/strict";
+    const portfolio = await import(${JSON.stringify(portfolioModuleUrl)});
     const {
       getPortfolioDetailBySlug,
+      getPortfolioItemBySlug,
+      getRelatedPortfolioItems,
       mapPortfolioRows,
       parsePortfolioImages,
-    } = await import(${JSON.stringify(portfolioModuleUrl)});
+    } = portfolio;
+
+    assert.equal("portfolioItems" in portfolio, false);
+    assert.equal("featuredPortfolioItems" in portfolio, false);
 
     assert.deepEqual(parsePortfolioImages([
       null,
@@ -41,6 +47,7 @@ test("portfolio DB rows preserve content, pinned order, and valid images", async
           { alt: "", path: "/figma-assets/portfolio-axis.png" },
         ],
         pinned: false,
+        show_on_landing: false,
         slug: "ordered-images",
         title: "순서 테스트",
         type: "리플렛 · 팜플렛",
@@ -51,6 +58,7 @@ test("portfolio DB rows preserve content, pinned order, and valid images", async
         content_mode: "markdown",
         images: [{ alt: "", path: "portfolio/pinned.webp" }],
         pinned: true,
+        show_on_landing: true,
         slug: "pinned",
         title: "고정 테스트",
         type: "브로슈어 · 카탈로그",
@@ -58,6 +66,8 @@ test("portfolio DB rows preserve content, pinned order, and valid images", async
     ], (path) => "https://assets.example/" + path);
 
     assert.deepEqual(items.map((item) => item.slug), ["pinned", "ordered-images"]);
+    assert.equal(items[0].showOnLanding, true);
+    assert.equal(items[1].showOnLanding, false);
     assert.equal(items[1].categoryId, "leaflet-pamphlet");
     assert.equal(items[1].description, "안전한 & 본문");
     assert.doesNotMatch(items[1].description, /<|alert/);
@@ -66,6 +76,8 @@ test("portfolio DB rows preserve content, pinned order, and valid images", async
       "/figma-assets/portfolio-axis.png",
     ]);
     assert.equal(getPortfolioDetailBySlug("ordered-images", items)?.item, items[1]);
+    assert.equal(getPortfolioItemBySlug("ordered-images", items), items[1]);
+    assert.deepEqual(getRelatedPortfolioItems("pinned", items, 1), [items[1]]);
 
     const ordered = mapPortfolioRows([
       { slug: "unpinned-1", pinned: false, sort_order: 1 },
@@ -77,6 +89,7 @@ test("portfolio DB rows preserve content, pinned order, and valid images", async
       content: "본문",
       content_mode: "markdown",
       images: [{ alt: "", path: "portfolio/order.webp" }],
+      show_on_landing: false,
       title: row.slug,
       type: "브로슈어 · 카탈로그",
       ...row,
@@ -96,6 +109,7 @@ test("portfolio DB rows preserve content, pinned order, and valid images", async
         content_mode: "markdown",
         images: { invalid: true },
         pinned: false,
+        show_on_landing: false,
         slug: "fallback",
         title: "기본값",
         type: "알 수 없는 유형",
@@ -110,6 +124,7 @@ test("portfolio DB rows preserve content, pinned order, and valid images", async
       content_mode: "markdown",
       images: [{ alt: "", path: "https://images.example/remote.webp" }],
       pinned: false,
+      show_on_landing: false,
       slug: "remote-only",
       title: "외부 이미지",
       type: "브로슈어 · 카탈로그",

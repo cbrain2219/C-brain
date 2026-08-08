@@ -1,22 +1,30 @@
 import type { MetadataRoute } from "next";
 
-import { blogPosts } from "./(site)/blog/_data/blogPosts";
 import { getNoticePageData } from "./(site)/notice/_data/notices";
 import { customerInterviews } from "./_content/customerReviews";
-import { portfolioItems } from "./_content/portfolio";
 import {
   createSitemapEntries,
   type SitemapDynamicRoute,
 } from "./_content/sitemap";
+import {
+  getPublishedBlogPosts,
+  getPublishedPortfolioItems,
+} from "../lib/publicContent";
 
-export default function sitemap(): MetadataRoute.Sitemap {
-  const portfolioRoutes = portfolioItems.map((item) => ({
+export const revalidate = 0;
+
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const [posts, items] = await Promise.all([
+    getPublishedBlogPosts(),
+    getPublishedPortfolioItems(),
+  ]);
+  const portfolioRoutes = items.map((item) => ({
     changeFrequency: "monthly",
     path: `/portfolio/${item.slug}`,
     priority: 0.7,
   })) satisfies SitemapDynamicRoute[];
   const noticePageData = getNoticePageData("all");
-  const blogRoutes = blogPosts.map((post) => ({
+  const blogRoutes = posts.map((post) => ({
     changeFrequency: "monthly",
     lastModified: post.publishedAtIso,
     path: `/blog/${post.slug}`,

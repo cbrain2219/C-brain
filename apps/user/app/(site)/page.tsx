@@ -16,6 +16,10 @@ import {
 } from "../_content/portfolio";
 import { createPageMetadata } from "../_content/seo";
 import { createHomeStructuredData } from "../_content/structured-data";
+import {
+  getPublishedBlogPosts,
+  getPublishedPortfolioItems,
+} from "../../lib/publicContent";
 
 export const metadata = createPageMetadata("home");
 
@@ -24,7 +28,15 @@ type HomeProps = {
 };
 
 export default async function Home({ searchParams }: HomeProps) {
-  const resolvedSearchParams = await searchParams;
+  const [
+    resolvedSearchParams,
+    publishedBlogPosts,
+    publishedPortfolioItems,
+  ] = await Promise.all([
+    searchParams,
+    getPublishedBlogPosts(),
+    getPublishedPortfolioItems(),
+  ]);
   const initialPortfolioCategoryId = getPortfolioCategoryIdFromValue(
     resolvedSearchParams?.[landingPortfolioCategorySearchParam],
   );
@@ -34,11 +46,14 @@ export default async function Home({ searchParams }: HomeProps) {
       <JsonLdScript data={createHomeStructuredData()} />
       <Hero />
       <Metrics />
-      <PortfolioSection initialCategoryId={initialPortfolioCategoryId} />
+      <PortfolioSection
+        initialCategoryId={initialPortfolioCategoryId}
+        items={publishedPortfolioItems}
+      />
       <ServicesSection />
       <AboutSection />
       <CustomerReviewSection />
-      <BlogSection />
+      <BlogSection posts={publishedBlogPosts} />
       <CtaSection
         badge="지금 바로 시작하세요"
         description="빠른 상담 · 전국 납품 · 소량부터 대량까지"

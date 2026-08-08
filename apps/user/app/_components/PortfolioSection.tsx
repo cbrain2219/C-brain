@@ -8,12 +8,11 @@ import { HorizontalDragScroll } from "../../components/HorizontalDragScroll";
 import { Icon } from "../../components/Icon";
 import { SectionLayout } from "../../components/SectionLayout";
 import {
-  featuredPortfolioItems,
   getPortfolioDetailHref,
   getPortfolioListHref,
-  portfolioItems,
   portfolioCategories,
   type PortfolioCategoryId,
+  type PortfolioItem,
 } from "../_content/portfolio";
 import styles from "../page.module.css";
 import { createGradientBorderButtonStyle } from "./buttonStyles";
@@ -23,20 +22,23 @@ const landingPortfolioScrollStorageKey = "cbrain:landing-portfolio-scroll-y";
 
 type PortfolioSectionProps = {
   initialCategoryId?: PortfolioCategoryId;
+  items: readonly PortfolioItem[];
 };
 
-export function PortfolioSection({ initialCategoryId }: PortfolioSectionProps) {
+export function PortfolioSection({
+  initialCategoryId,
+  items,
+}: PortfolioSectionProps) {
   const initialActiveCategoryId =
     initialCategoryId ?? portfolioCategories[0].id;
   const [activeCategoryId, setActiveCategoryId] = useState<PortfolioCategoryId>(
     initialActiveCategoryId,
   );
-  const activePortfolioItems =
-    activeCategoryId === portfolioCategories[0].id
-      ? featuredPortfolioItems
-      : portfolioItems
-          .filter((item) => item.categoryId === activeCategoryId)
-          .slice(0, 12);
+  const activePortfolioItems = items
+    .filter(
+      (item) => item.showOnLanding && item.categoryId === activeCategoryId,
+    )
+    .slice(0, 12);
 
   const handleCategoryClick = (categoryId: PortfolioCategoryId) => {
     setActiveCategoryId(categoryId);

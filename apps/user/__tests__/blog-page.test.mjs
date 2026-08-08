@@ -39,6 +39,7 @@ const paths = {
     import.meta.url,
   ),
   page: new URL("../app/(site)/blog/page.tsx", import.meta.url),
+  homePage: new URL("../app/(site)/page.tsx", import.meta.url),
   styles: new URL("../app/(site)/blog/page.module.css", import.meta.url),
   landingStyles: new URL("../app/page.module.css", import.meta.url),
 };
@@ -95,12 +96,15 @@ test("blog page keeps the shared header, hero, category, and CTA contracts", asy
   );
   assert.match(blogSection, /import Link from "next\/link"/);
   assert.match(blogSection, /import Image from "next\/image"/);
-  assert.match(blogSection, /import \{ blogPosts \}/);
+  assert.match(blogSection, /type BlogSectionProps = \{/);
+  assert.match(blogSection, /posts: readonly BlogPost\[\]/);
+  assert.match(blogSection, /export function BlogSection\(\{ posts \}/);
   assert.match(blogSection, /post\.landingRank !== undefined/);
   assert.match(blogSection, /<HorizontalDragScroll/);
   assert.match(blogSection, /className=\{styles\.blogGrid\}/);
   assert.match(blogSection, /href=\{`\/blog\/\$\{post\.slug\}`\}/);
   assert.match(blogSection, /src=\{post\.image\}/);
+  assert.match(blogSection, /alt=\{post\.imageAlt\}/);
   assert.match(blogSection, /\{post\.summary\}/);
   assert.match(blogSection, /dateTime=\{post\.publishedAtIso\}/);
   assert.match(blogSection, /<Link[\s\S]*href="\/blog"/);
@@ -270,9 +274,9 @@ test("blog data mirrors admin landing, banner, and popular settings", async () =
   assert.match(types, /bannerRank\?: number/);
   assert.match(types, /popularRank\?: number/);
   assert.doesNotMatch(types, /featured: boolean/);
-  assert.match(posts, /landingRank: 1/);
-  assert.match(posts, /bannerRank: 1/);
-  assert.match(posts, /popularRank: 1/);
+  assert.match(posts, /row\.show_on_landing \? \+\+landingRank : undefined/);
+  assert.match(posts, /row\.show_as_banner \? \+\+bannerRank : undefined/);
+  assert.match(posts, /row\.featured \? \+\+popularRank : undefined/);
   assert.doesNotMatch(posts, /featured:/);
   assert.match(board, /getBannerSlides/);
   assert.match(board, /post\.bannerRank/);
@@ -479,29 +483,45 @@ test("blog hero relies on shared frame padding without a custom fixed height", a
   );
 });
 
-test("blog detail page follows portfolio detail route conventions", async () => {
-  const [detailPage, posts] = await Promise.all([
+test("blog pages load DB content while keeping detail route conventions", async () => {
+  const [detailPage, homePage, page, posts, blogSection, card, featuredCard] = await Promise.all([
     source("detailPage"),
+    source("homePage"),
+    source("page"),
     source("posts"),
+    source("blogSection"),
+    source("card"),
+    source("featuredCard"),
   ]);
 
   assert.match(posts, /slug:/);
   assert.match(posts, /detail:/);
   assert.match(posts, /body:/);
-  assert.match(posts, /relatedBlogPosts/);
+  assert.doesNotMatch(posts, /export const blogPosts/);
+  assert.match(homePage, /getPublishedBlogPosts/);
+  assert.match(homePage, /<BlogSection posts=\{publishedBlogPosts\} \/>/);
+  assert.match(page, /getPublishedBlogPosts/);
+  assert.match(page, /posts=\{posts\}/);
+  assert.match(blogSection, /posts: readonly BlogPost\[\]/);
+  assert.match(card, /alt=\{post\.imageAlt\}/);
+  assert.match(featuredCard, /alt=\{post\.imageAlt\}/);
   assert.match(detailPage, /import type \{ Metadata \} from "next"/);
   assert.match(detailPage, /import Image from "next\/image"/);
   assert.match(detailPage, /import Link from "next\/link"/);
   assert.match(detailPage, /import \{ notFound \} from "next\/navigation"/);
-  assert.match(detailPage, /export function generateStaticParams\(\)/);
+  assert.doesNotMatch(detailPage, /generateStaticParams/);
+  assert.match(detailPage, /export const revalidate = 0/);
   assert.match(detailPage, /export async function generateMetadata/);
+  assert.match(detailPage, /getPublishedBlogPosts/);
   assert.match(detailPage, /process\.env\.NEXT_PUBLIC_SITE_URL/);
   assert.match(
     detailPage,
     /alternates: canonicalUrl \? \{ canonical: canonicalUrl \} : undefined/,
   );
   assert.match(detailPage, /openGraph: \{[\s\S]*type: "article"/);
-  assert.match(detailPage, /blogPosts\.map\(\(post\) => \(\{\s*slug: post\.slug/);
+  assert.match(detailPage, /getBlogPostBySlug\(slug, posts\)/);
+  assert.match(detailPage, /getRelatedBlogPosts\(post\.slug, posts\)/);
+  assert.match(detailPage, /alt=\{relatedPost\.imageAlt\}/);
   assert.match(detailPage, /notFound\(\)/);
 });
 

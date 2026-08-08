@@ -308,7 +308,7 @@ export function BlogFeaturedCard({
             >
               <div className={styles.blogFeaturedImage}>
                 <Image
-                  alt={post.title}
+                  alt={post.imageAlt}
                   className={styles.blogFeaturedImageAsset}
                   draggable={false}
                   fill

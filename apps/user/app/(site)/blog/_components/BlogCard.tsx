@@ -23,7 +23,7 @@ export function BlogCard({ detailHref, post }: BlogCardProps) {
         >
           <div className={styles.blogCardImage}>
             <Image
-              alt={post.title}
+              alt={post.imageAlt}
               className={styles.blogCardImageAsset}
               fill
               sizes="(min-width: 1080px) 340px, (min-width: 640px) 50vw, 100vw"

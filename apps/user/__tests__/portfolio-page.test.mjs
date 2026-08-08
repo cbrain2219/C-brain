@@ -153,7 +153,7 @@ test("portfolio detail returns to the landing section when opened from the landi
   assert.match(homePage, /landingPortfolioCategorySearchParam/);
   assert.match(
     homePage,
-    /<PortfolioSection initialCategoryId=\{initialPortfolioCategoryId\} \/>/,
+    /<PortfolioSection[\s\S]*initialCategoryId=\{initialPortfolioCategoryId\}[\s\S]*items=\{publishedPortfolioItems\}[\s\S]*\/>/,
   );
   assert.match(landingPortfolio, /initialCategoryId\?: PortfolioCategoryId/);
   assert.match(landingPortfolio, /landingPortfolioScrollStorageKey/);
@@ -213,24 +213,35 @@ test("portfolio filtered list keeps a clear empty state", async () => {
   assert.match(listStyles, /\.emptyState/);
 });
 
-test("portfolio landing, list, and detail stay fixture-only", async () => {
-  const [listPage, detailPage, landingPortfolio] = await Promise.all([
+test("portfolio landing, list, and detail use DB content through the server loader", async () => {
+  const [listPage, detailPage, homePage, landingPortfolio, content] = await Promise.all([
     readFile(listPagePath, "utf8"),
     readFile(detailPagePath, "utf8"),
+    readFile(homePagePath, "utf8"),
     readFile(landingPortfolioPath, "utf8"),
+    readFile(contentPath, "utf8"),
   ]);
 
-  for (const source of [listPage, detailPage, landingPortfolio]) {
+  for (const source of [listPage, detailPage, homePage, landingPortfolio]) {
     assert.doesNotMatch(source, /@repo\/supabase/);
     assert.doesNotMatch(source, /createUserSupabaseClient/);
     assert.doesNotMatch(source, /listPublishedPortfolioItems/);
     assert.doesNotMatch(source, /mapPortfolioRows/);
   }
 
-  assert.match(listPage, /items=\{portfolioItems\}/);
+  assert.doesNotMatch(content, /export const portfolioItems/);
+  assert.doesNotMatch(content, /export const featuredPortfolioItems/);
+  assert.match(listPage, /getPublishedPortfolioItems/);
+  assert.match(listPage, /items=\{items\}/);
+  assert.match(homePage, /getPublishedPortfolioItems/);
+  assert.match(homePage, /items=\{publishedPortfolioItems\}/);
+  assert.match(landingPortfolio, /items: readonly PortfolioItem\[\]/);
+  assert.match(landingPortfolio, /item\.showOnLanding/);
   assert.match(landingPortfolio, /activePortfolioItems\.map/);
-  assert.match(detailPage, /getPortfolioDetailBySlug\(slug\)/);
-  assert.match(detailPage, /portfolioItems\.map\(\(item\) =>/);
+  assert.match(detailPage, /getPublishedPortfolioItems/);
+  assert.match(detailPage, /getPortfolioDetailBySlug\(slug, items\)/);
+  assert.doesNotMatch(detailPage, /generateStaticParams/);
+  assert.match(detailPage, /export const revalidate = 0/);
 });
 
 test("portfolio detail metadata and related cards reuse representative image semantics", async () => {
