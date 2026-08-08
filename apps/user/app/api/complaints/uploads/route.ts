@@ -73,23 +73,25 @@ export async function DELETE(request: Request) {
 
   try {
     const client = createAdminSupabaseClient();
-    const { data: activeInquiry, error: inquiryError } = await client
-      .from("inquiries")
+    const { data: activeComplaint, error: complaintError } = await client
+      .from("complaints")
       .select("id")
       .eq("id", cleanup.submissionId)
       .maybeSingle();
 
-    if (inquiryError) throw inquiryError;
-    if (activeInquiry) return new NextResponse(null, { status: 204 });
+    if (complaintError) throw complaintError;
+    if (activeComplaint) return new NextResponse(null, { status: 204 });
 
     const { data, error } = await client
-      .from("inquiry_attachments")
-      .select("path")
-      .in("path", cleanup.paths);
+      .from("complaint_attachments")
+      .select("object_path")
+      .in("object_path", cleanup.paths);
 
     if (error) throw error;
 
-    const referencedPaths = new Set(data.map(({ path }) => path));
+    const referencedPaths = new Set(
+      data.map(({ object_path }) => object_path),
+    );
     const orphanPaths = cleanup.paths.filter(
       (path) => !referencedPaths.has(path),
     );

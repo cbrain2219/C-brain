@@ -1,7 +1,83 @@
 import { requireAdmin } from "./auth.ts";
 import { unwrapSupabaseData } from "./result.ts";
 import type { CBrainSupabaseClient } from "./server.ts";
-import type { InquiryStatus, TableInsert, TableUpdate } from "./types.ts";
+import type {
+  ComplaintStatus,
+  InquiryStatus,
+  TableInsert,
+  TableUpdate,
+} from "./types.ts";
+
+export async function listAdminComplaints(client: CBrainSupabaseClient) {
+  await requireAdmin(client);
+
+  const { data, error } = await client
+    .from("complaints")
+    .select("*, complaint_attachments(*)")
+    .order("created_at", { ascending: false })
+    .order("id", { ascending: false });
+
+  return unwrapSupabaseData(data, error);
+}
+
+export async function getAdminComplaint(
+  client: CBrainSupabaseClient,
+  id: string,
+) {
+  await requireAdmin(client);
+
+  const { data, error } = await client
+    .from("complaints")
+    .select("*, complaint_attachments(*)")
+    .eq("id", id)
+    .single();
+
+  return unwrapSupabaseData(data, error);
+}
+
+export async function updateComplaintStatus(
+  client: CBrainSupabaseClient,
+  id: string,
+  status: ComplaintStatus,
+) {
+  await requireAdmin(client);
+
+  const { data, error } = await client
+    .from("complaints")
+    .update({ status })
+    .eq("id", id)
+    .select("*")
+    .single();
+
+  return unwrapSupabaseData(data, error);
+}
+
+export async function createComplaint(
+  client: CBrainSupabaseClient,
+  input: TableInsert<"complaints">,
+) {
+  const { data, error } = await client
+    .from("complaints")
+    .insert(input)
+    .select("*")
+    .single();
+
+  return unwrapSupabaseData(data, error);
+}
+
+export async function createComplaintAttachments(
+  client: CBrainSupabaseClient,
+  inputs: TableInsert<"complaint_attachments">[],
+) {
+  if (inputs.length === 0) return [];
+
+  const { data, error } = await client
+    .from("complaint_attachments")
+    .insert(inputs)
+    .select("*");
+
+  return unwrapSupabaseData(data, error);
+}
 
 export async function createInquiry(
   client: CBrainSupabaseClient,

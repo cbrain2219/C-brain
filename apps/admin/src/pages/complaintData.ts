@@ -3,20 +3,20 @@ export const complaintStatuses = ['received', 'processing', 'resolved'] as const
 export type ComplaintStatus = (typeof complaintStatuses)[number]
 
 export type ComplaintAttachmentSource = {
-  readonly bucket: string
-  readonly file_name: string
+  readonly bucket_id: string
   readonly file_size: number | null
   readonly id: string
-  readonly path: string
+  readonly object_path: string
+  readonly original_file_name: string
 }
 
 export type ComplaintSource = {
   readonly complaint_type: string
   readonly content: string
   readonly created_at: string
-  readonly email: string
+  readonly email: string | null
   readonly id: string
-  readonly inquiry_attachments?: readonly ComplaintAttachmentSource[] | null
+  readonly complaint_attachments?: readonly ComplaintAttachmentSource[] | null
   readonly name: string
   readonly phone: string
   readonly phone_verified: boolean
@@ -113,42 +113,42 @@ export function formatComplaintFileSize(bytes: number | null) {
     : `${new Intl.NumberFormat('ko-KR', { maximumFractionDigits: 1 }).format(megabytes)}MB`
 }
 
-export function toComplaintRow(inquiry: ComplaintSource): ComplaintRow {
+export function toComplaintRow(complaint: ComplaintSource): ComplaintRow {
   return {
-    attachmentCount: inquiry.inquiry_attachments?.length ?? 0,
-    complaintType: inquiry.complaint_type,
-    createdAt: formatComplaintDateTime(inquiry.created_at),
-    detail: inquiry.content,
-    detailHref: `/complaints/${inquiry.id}`,
-    id: inquiry.id,
-    name: inquiry.name,
-    service: inquiry.service,
-    status: inquiry.status,
+    attachmentCount: complaint.complaint_attachments?.length ?? 0,
+    complaintType: complaint.complaint_type,
+    createdAt: formatComplaintDateTime(complaint.created_at),
+    detail: complaint.content,
+    detailHref: `/complaints/${complaint.id}`,
+    id: complaint.id,
+    name: complaint.name,
+    service: complaint.service,
+    status: complaint.status,
   }
 }
 
 export function toComplaintRecord(
-  inquiry: ComplaintSource,
+  complaint: ComplaintSource,
   attachmentDownloadUrls: Readonly<Record<string, string>> = {},
 ): ComplaintRecord {
   return {
-    attachments: (inquiry.inquiry_attachments ?? []).map((attachment) => ({
+    attachments: (complaint.complaint_attachments ?? []).map((attachment) => ({
       downloadUrl: attachmentDownloadUrls[attachment.id] ?? '',
       id: attachment.id,
-      name: attachment.file_name,
+      name: attachment.original_file_name,
       sizeLabel: formatComplaintFileSize(attachment.file_size),
     })),
-    complaintType: inquiry.complaint_type,
-    createdAt: formatComplaintDateTime(inquiry.created_at),
-    detail: inquiry.content,
-    email: inquiry.email,
-    id: inquiry.id,
-    name: inquiry.name,
-    phone: inquiry.phone,
-    phoneVerified: inquiry.phone_verified,
-    privacyAgreedAt: formatComplaintDateTime(inquiry.privacy_agreed_at),
-    service: inquiry.service,
-    status: inquiry.status,
+    complaintType: complaint.complaint_type,
+    createdAt: formatComplaintDateTime(complaint.created_at),
+    detail: complaint.content,
+    email: complaint.email ?? '-',
+    id: complaint.id,
+    name: complaint.name,
+    phone: complaint.phone,
+    phoneVerified: complaint.phone_verified,
+    privacyAgreedAt: formatComplaintDateTime(complaint.privacy_agreed_at),
+    service: complaint.service,
+    status: complaint.status,
   }
 }
 

@@ -1,4 +1,4 @@
-import { listAdminInquiries } from '@repo/supabase'
+import { listAdminComplaints } from '@repo/supabase'
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { toast } from 'sonner'
@@ -101,9 +101,9 @@ export function ComplaintPage() {
 
     async function loadComplaints() {
       try {
-        const inquiries = await listAdminInquiries(supabase)
+        const complaints = await listAdminComplaints(supabase)
 
-        if (isCurrent) setRows(inquiries.map(toComplaintRow))
+        if (isCurrent) setRows(complaints.map(toComplaintRow))
       } catch {
         if (!isCurrent) return
         setLoadError('불편접수 내역을 불러오지 못했습니다. 잠시 후 다시 시도해주세요.')

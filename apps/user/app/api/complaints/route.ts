@@ -1,7 +1,7 @@
 import {
   createAdminSupabaseClient,
-  createInquiry,
-  createInquiryAttachments,
+  createComplaint,
+  createComplaintAttachments,
   getFileInfo,
   STORAGE_BUCKETS,
 } from "@repo/supabase";
@@ -9,7 +9,7 @@ import { NextResponse } from "next/server";
 
 import {
   parseComplaintSubmission,
-  toComplaintInquiryInput,
+  toComplaintInput,
 } from "../../(site)/complaint/complaintSubmission";
 
 export const runtime = "nodejs";
@@ -33,21 +33,13 @@ export async function POST(request: Request) {
   }
 
   const uploadedPaths = submission.attachments.map(({ path }) => path);
-  let inquiryId: string | null = null;
+  let complaintId: string | null = null;
   let failureMessage =
     "접수 저장에 실패했습니다. 잠시 후 다시 시도해주세요.";
   let failureStatus = 500;
 
   try {
     const client = createAdminSupabaseClient();
-    const inquiry = await createInquiry(client, {
-      ...toComplaintInquiryInput(
-        submission.values,
-        new Date().toISOString(),
-      ),
-      id: submission.submissionId,
-    });
-    inquiryId = inquiry.id;
     const storedAttachments = await Promise.all(
       submission.attachments.map(async (attachment) => ({
         attachment,
@@ -70,38 +62,44 @@ export async function POST(request: Request) {
       throw new Error(failureMessage);
     }
 
-    await createInquiryAttachments(
+    const complaint = await createComplaint(client, {
+      ...toComplaintInput(submission.values, new Date().toISOString()),
+      id: submission.submissionId,
+    });
+    complaintId = complaint.id;
+
+    await createComplaintAttachments(
       client,
       submission.attachments.map((attachment) => ({
-        bucket: STORAGE_BUCKETS.privateAttachments,
+        bucket_id: STORAGE_BUCKETS.privateAttachments,
+        complaint_id: complaint.id,
         content_type: attachment.type,
-        file_name: attachment.name,
         file_size: attachment.size,
-        inquiry_id: inquiry.id,
-        path: attachment.path,
+        object_path: attachment.path,
+        original_file_name: attachment.name,
       })),
     );
 
-    return NextResponse.json({ id: inquiry.id }, { status: 201 });
+    return NextResponse.json({ id: complaint.id }, { status: 201 });
   } catch {
     try {
       const cleanupClient = createAdminSupabaseClient();
 
-      if (inquiryId) {
+      if (complaintId) {
         const { error: deleteError } = await cleanupClient
-          .from("inquiries")
+          .from("complaints")
           .delete()
-          .eq("id", inquiryId);
+          .eq("id", complaintId);
 
         if (deleteError) throw deleteError;
+      }
 
-        if (uploadedPaths.length > 0) {
-          const { error: removeError } = await cleanupClient.storage
-            .from(STORAGE_BUCKETS.privateAttachments)
-            .remove(uploadedPaths);
+      if (uploadedPaths.length > 0) {
+        const { error: removeError } = await cleanupClient.storage
+          .from(STORAGE_BUCKETS.privateAttachments)
+          .remove(uploadedPaths);
 
-          if (removeError) throw removeError;
-        }
+        if (removeError) throw removeError;
       }
     } catch {
       // Best-effort cleanup; the original persistence error is returned below.

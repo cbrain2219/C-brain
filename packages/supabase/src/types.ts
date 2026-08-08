@@ -18,6 +18,7 @@ export type TableUpdate<TableName extends keyof PublicTables> =
 
 export type PublishStatus = PublicEnums["publish_status"];
 export type ContentMode = PublicEnums["content_mode"];
+export type ComplaintStatus = PublicEnums["inquiry_status"];
 export type InquiryStatus = PublicEnums["inquiry_status"];
 export type PostKind = PublicEnums["post_kind"];
 export type PaymentLinkStatus = PublicEnums["payment_link_status"];
@@ -244,6 +245,88 @@ export type Database = {
           view_count?: number;
         };
         Relationships: [];
+      };
+      complaints: {
+        Row: {
+          complaint_type: string;
+          content: string;
+          created_at: string;
+          email: string | null;
+          id: string;
+          name: string;
+          phone: string;
+          phone_verified: boolean;
+          privacy_agreed_at: string;
+          service: string;
+          status: ComplaintStatus;
+        };
+        Insert: {
+          complaint_type: string;
+          content: string;
+          created_at?: string;
+          email?: string | null;
+          id?: string;
+          name: string;
+          phone: string;
+          phone_verified?: boolean;
+          privacy_agreed_at: string;
+          service: string;
+          status?: ComplaintStatus;
+        };
+        Update: {
+          complaint_type?: string;
+          content?: string;
+          created_at?: string;
+          email?: string | null;
+          id?: string;
+          name?: string;
+          phone?: string;
+          phone_verified?: boolean;
+          privacy_agreed_at?: string;
+          service?: string;
+          status?: ComplaintStatus;
+        };
+        Relationships: [];
+      };
+      complaint_attachments: {
+        Row: {
+          bucket_id: string;
+          complaint_id: string;
+          content_type: string;
+          created_at: string;
+          file_size: number;
+          id: string;
+          object_path: string;
+          original_file_name: string;
+        };
+        Insert: {
+          bucket_id?: string;
+          complaint_id: string;
+          content_type: string;
+          created_at?: string;
+          file_size: number;
+          id?: string;
+          object_path: string;
+          original_file_name: string;
+        };
+        Update: {
+          bucket_id?: string;
+          complaint_id?: string;
+          content_type?: string;
+          created_at?: string;
+          file_size?: number;
+          id?: string;
+          object_path?: string;
+          original_file_name?: string;
+        };
+        Relationships: [
+          {
+            columns: ["complaint_id"];
+            foreignKeyName: "complaint_attachments_complaint_id_fkey";
+            referencedColumns: ["id"];
+            referencedRelation: "complaints";
+          },
+        ];
       };
       payment_links: {
         Row: {

@@ -30,7 +30,14 @@ const { createPost, listPublishedPosts, reorderPosts } =
 const { requireAdmin } = await import("../src/auth.ts");
 const { createSignedFileUpload, createStoragePath, getFileInfo } =
   await import("../src/files.ts");
-const { createInquiryAttachment } = await import("../src/inquiries.ts");
+const {
+  createComplaint,
+  createComplaintAttachments,
+  createInquiryAttachment,
+  getAdminComplaint,
+  listAdminComplaints,
+  updateComplaintStatus,
+} = await import("../src/inquiries.ts");
 const {
   completePaymentOrder,
   createPaymentLink,
@@ -242,6 +249,95 @@ test("post and attachment mutations pass payloads unchanged", async () => {
         call.method === "insert" && call.table === "inquiry_attachments",
     )?.value,
     attachment,
+  );
+});
+
+test("complaint admin helpers use only the current complaint tables", async () => {
+  const complaint = {
+    complaint_attachments: [],
+    complaint_type: "기타",
+    content: "내용",
+    created_at: "2026-08-07T00:00:00.000Z",
+    email: null,
+    id: "complaint-id",
+    name: "고객",
+    phone: "01012345678",
+    phone_verified: true,
+    privacy_agreed_at: "2026-08-07T00:00:00.000Z",
+    service: "브로슈어",
+    status: "received",
+  };
+  const { calls, client } = createFakeClient({ complaints: complaint });
+
+  await listAdminComplaints(client);
+  assert.deepEqual(await getAdminComplaint(client, complaint.id), complaint);
+  await updateComplaintStatus(client, complaint.id, "resolved");
+
+  assert.ok(calls.some((call) => call.table === "complaints"));
+  assert.ok(
+    calls.some(
+      (call) =>
+        call.method === "select" &&
+        call.table === "complaints" &&
+        call.columns === "*, complaint_attachments(*)",
+    ),
+  );
+  assert.ok(
+    calls.some(
+      (call) =>
+        call.method === "update" &&
+        call.table === "complaints" &&
+        call.value.status === "resolved",
+    ),
+  );
+  assert.equal(calls.some((call) => call.table === "inquiries"), false);
+});
+
+test("complaint submission helpers write only the current complaint tables", async () => {
+  const complaint = {
+    complaint_type: "불친절한 서비스",
+    content: "상담 과정에서 불편했습니다.",
+    email: "customer@example.com",
+    name: "고객",
+    phone: "01012345678",
+    phone_verified: false,
+    privacy_agreed_at: "2026-08-08T00:00:00.000Z",
+    service: "로고",
+    status: "received",
+  };
+  const attachment = {
+    bucket_id: "private-attachments",
+    complaint_id: "complaint-id",
+    content_type: "image/png",
+    file_size: 123,
+    object_path: "complaints/complaint-id/proof.png",
+    original_file_name: "proof.png",
+  };
+  const { calls, client } = createFakeClient();
+
+  await createComplaint(client, complaint);
+  await createComplaintAttachments(client, [attachment]);
+  assert.deepEqual(await createComplaintAttachments(client, []), []);
+
+  assert.deepEqual(
+    calls.find(
+      (call) => call.method === "insert" && call.table === "complaints",
+    )?.value,
+    complaint,
+  );
+  assert.deepEqual(
+    calls.find(
+      (call) =>
+        call.method === "insert" && call.table === "complaint_attachments",
+    )?.value,
+    [attachment],
+  );
+  assert.equal(
+    calls.filter(
+      (call) =>
+        call.method === "insert" && call.table === "complaint_attachments",
+    ).length,
+    1,
   );
 });
 
