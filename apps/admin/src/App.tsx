@@ -12,6 +12,7 @@ import { LinkPayFormPage } from './pages/LinkPayFormPage'
 import { LinkPayPage } from './pages/LinkPayPage'
 import { NoticeFormPage } from './pages/NoticeFormPage'
 import { NoticePage } from './pages/NoticePage'
+import { NotFoundPage } from './pages/NotFoundPage'
 import { PortfolioFormPage } from './pages/PortfolioFormPage'
 import { PortfolioPage } from './pages/PortfolioPage'
 import { ProductFormUiPage } from './pages/ProductFormUiPage'
@@ -97,7 +98,7 @@ export function App() {
           <Route element={<LinkPayFormPage />} path="/linkpay/new" />
           <Route element={<LinkPayFormPage />} path="/linkpay/:linkPayId" />
           <Route element={<SalesPage />} path="/sales" />
-          <Route element={<Navigate replace to="/products" />} path="*" />
+          <Route element={<NotFoundPage />} path="*" />
         </Route>
       </Route>
     </Routes>
