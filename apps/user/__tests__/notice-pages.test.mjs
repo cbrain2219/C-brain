@@ -1,10 +1,15 @@
 import assert from "node:assert/strict";
+import { Buffer } from "node:buffer";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 
 const paths = {
   board: new URL(
     "../app/(site)/notice/_components/NoticeBoard.tsx",
+    import.meta.url,
+  ),
+  categories: new URL(
+    "../app/(site)/notice/_constants/noticeCategories.ts",
     import.meta.url,
   ),
   data: new URL("../app/(site)/notice/_data/notices.ts", import.meta.url),
@@ -33,33 +38,135 @@ async function source(name) {
   return readFile(paths[name], "utf8");
 }
 
+async function importNoticeMappers() {
+  const [categoriesSource, dataSource] = await Promise.all([
+    source("categories"),
+    source("data"),
+  ]);
+  const stripImports = (value) =>
+    value.replace(/import[\s\S]*?from "[^"]+";\n/g, "");
+  const runnableSource = `
+const cache = (loader) => loader;
+const createPublicUserSupabaseClient = () => null;
+const getPublishedPost = async () => null;
+const listPublishedPosts = async () => [];
+${stripImports(categoriesSource)}
+${stripImports(dataSource)}
+`;
+  const ts = await import("typescript");
+  const { outputText } = ts.transpileModule(runnableSource, {
+    compilerOptions: {
+      module: ts.ModuleKind.ESNext,
+      target: ts.ScriptTarget.ES2022,
+    },
+  });
+
+  return import(
+    `data:text/javascript;base64,${Buffer.from(outputText).toString("base64")}`
+  );
+}
+
+function noticeRow(overrides = {}) {
+  return {
+    content: "공지 본문입니다.",
+    content_mode: "markdown",
+    created_at: "2026-08-01T00:00:00.000Z",
+    excerpt: "공지 요약입니다.",
+    featured: false,
+    id: "post-id",
+    kind: "notice",
+    pinned: false,
+    published_at: "2026-08-02T00:00:00.000Z",
+    seo_description: null,
+    show_as_banner: false,
+    show_on_landing: false,
+    slug: "notice-slug",
+    sort_order: 1,
+    status: "published",
+    thumbnail_alt: null,
+    thumbnail_path: null,
+    title: "공지 제목",
+    type: "공지",
+    view_count: 0,
+    ...overrides,
+  };
+}
+
 test("notice data feeds pinned, regular, filtered, and detail views", async () => {
-  const data = await source("data");
-  const fixtureBlock = data.slice(
-    data.indexOf("const noticeFixtures = ["),
-    data.indexOf("] satisfies NoticeSummary[];"),
+  const {
+    getNoticeById,
+    getNoticePageData,
+    mapNoticeDetail,
+    mapNoticeRows,
+  } = await importNoticeMappers();
+  const rows = [
+    noticeRow({ id: "1", pinned: true, slug: "first", type: "공지" }),
+    noticeRow({ id: "2", slug: "second", type: "이벤트" }),
+    noticeRow({ id: "3", slug: "third", type: "휴무 안내" }),
+    noticeRow({ id: "4", slug: "fourth", type: "서비스 변경" }),
+    noticeRow({ id: "5", slug: "fifth", type: "수상 · 소식" }),
+    noticeRow({ id: "6", slug: "sixth", type: "새 분류" }),
+  ];
+  const pageData = mapNoticeRows(rows, "all");
+
+  assert.deepEqual(
+    pageData.notices.map(({ id }) => id),
+    ["first", "second", "third", "fourth", "fifth", "sixth"],
+  );
+  assert.deepEqual(
+    pageData.notices.map(({ category }) => category),
+    ["notice", "event", "holiday", "service", "news", "notice"],
+  );
+  assert.equal(pageData.notices[0].isPinned, true);
+  assert.equal(pageData.totalCount, 6);
+  assert.deepEqual(
+    mapNoticeRows(rows, "event").notices.map(({ id }) => id),
+    ["second"],
   );
 
-  assert.match(data, /const noticeFixtures = \[/);
-  assert.equal(fixtureBlock.match(/\bid: "/g)?.length, 15);
-  assert.match(data, /isPinned: true/);
-  assert.match(data, /isPinned: false/);
-  assert.match(data, /activeCategory === "all"/);
-  assert.match(data, /item\.id === id/);
-  assert.match(data, /\.\.\.sharedDetailContent/);
-  assert.doesNotMatch(data, /dangerouslySetInnerHTML/);
+  const markdownDetail = mapNoticeDetail(
+    noticeRow({
+      content:
+        "안내 문단입니다.\n\n1. 첫 번째 안내\n   - 세부 내용 A\n   - 세부 내용 B\n2. 두 번째 안내\n   - 세부 내용 C",
+    }),
+  );
+  assert.deepEqual(markdownDetail.content, [
+    { text: "안내 문단입니다.", type: "paragraph" },
+    {
+      items: [
+        { title: "첫 번째 안내", details: ["세부 내용 A", "세부 내용 B"] },
+        { title: "두 번째 안내", details: ["세부 내용 C"] },
+      ],
+      type: "ordered-list",
+    },
+  ]);
+
+  const htmlDetail = mapNoticeDetail(
+    noticeRow({
+      content:
+        "<p>안전한 공지입니다.</p><script>window.stolen=true</script><style>body{display:none}</style>&lt;script&gt;encodedStolen=true&lt;/script&gt;",
+      content_mode: "html",
+    }),
+  );
+  const htmlText = JSON.stringify(htmlDetail.content);
+  assert.match(htmlText, /안전한 공지입니다/);
+  assert.doesNotMatch(htmlText, /script|style|stolen|display|encoded|<|>/i);
+  assert.equal((await getNoticePageData("all")).totalCount, 0);
+  assert.equal(await getNoticeById("notice-slug"), undefined);
 });
 
-test("notice list and detail stay fixture-only", async () => {
+test("notice list and detail load published Supabase rows", async () => {
   const data = await source("data");
 
-  assert.doesNotMatch(data, /@repo\/supabase/);
-  assert.doesNotMatch(data, /createUserSupabaseClient/);
-  assert.doesNotMatch(data, /listPublishedPosts/);
-  assert.doesNotMatch(data, /getPublishedPost/);
-  assert.match(data, /export function getNoticePageData/);
-  assert.match(data, /totalCount: noticeFixtures\.length/);
-  assert.match(data, /export function getNoticeById/);
+  assert.match(data, /@repo\/supabase/);
+  assert.match(data, /createPublicUserSupabaseClient/);
+  assert.match(data, /listPublishedPosts\(client, "notice"\)/);
+  assert.match(data, /getPublishedPost\(client, "notice", id\)/);
+  assert.match(data, /export const getNoticePageData/);
+  assert.match(data, /export const getNoticeById/);
+  assert.match(data, /mapNoticeCategory/);
+  assert.doesNotMatch(data, /const noticeFixtures/);
+  assert.doesNotMatch(data, /dangerouslySetInnerHTML/);
 });
 
 test("notice list keeps category, pinned, detail-link, and shared-icon contracts", async () => {
@@ -88,7 +195,7 @@ test("notice active category underline stays visible while overlapping the rail"
 
   assert.match(
     categoryRailStyle ?? "",
-    /background:\s*linear-gradient\(var\(--landing-gray-100\), var\(--landing-gray-100\)\)[\s\S]*center bottom\s*\/\s*100% 1px no-repeat;/,
+    /background:\s*linear-gradient\(var\(--landing-gray-100\), var\(--landing-gray-100\)\)[\s\S]*center bottom\s*\/\s*calc\(100% - 40px\) 1px no-repeat;/,
   );
   assert.doesNotMatch(styles, /\.categoryRail::before/);
   assert.doesNotMatch(styles, /\.categoryRail::after/);

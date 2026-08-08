@@ -14,16 +14,16 @@ import {
 export const revalidate = 0;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const [posts, items] = await Promise.all([
+  const [posts, items, noticePageData] = await Promise.all([
     getPublishedBlogPosts(),
     getPublishedPortfolioItems(),
+    getNoticePageData("all"),
   ]);
   const portfolioRoutes = items.map((item) => ({
     changeFrequency: "monthly",
     path: `/portfolio/${item.slug}`,
     priority: 0.7,
   })) satisfies SitemapDynamicRoute[];
-  const noticePageData = getNoticePageData("all");
   const blogRoutes = posts.map((post) => ({
     changeFrequency: "monthly",
     lastModified: post.publishedAtIso,

@@ -70,10 +70,9 @@ export type Database = {
           excerpt: string | null;
           featured: boolean;
           id: string;
-          is_pinned: boolean;
           kind: PostKind;
           pinned: boolean;
-          published_at: string | null;
+          published_at: string;
           seo_description: string | null;
           show_as_banner: boolean;
           show_on_landing: boolean;
@@ -93,10 +92,9 @@ export type Database = {
           excerpt?: string | null;
           featured?: boolean;
           id?: string;
-          is_pinned?: boolean;
           kind: PostKind;
           pinned?: boolean;
-          published_at?: string | null;
+          published_at?: string;
           seo_description?: string | null;
           show_as_banner?: boolean;
           show_on_landing?: boolean;
@@ -116,10 +114,9 @@ export type Database = {
           excerpt?: string | null;
           featured?: boolean;
           id?: string;
-          is_pinned?: boolean;
           kind?: PostKind;
           pinned?: boolean;
-          published_at?: string | null;
+          published_at?: string;
           seo_description?: string | null;
           show_as_banner?: boolean;
           show_on_landing?: boolean;
@@ -611,7 +608,7 @@ export type Database = {
       };
     };
     Enums: {
-      content_mode: "html" | "text" | "markdown";
+      content_mode: "html" | "markdown";
       inquiry_status: "received" | "processing" | "resolved";
       post_kind: "blog" | "notice";
       publish_status: "draft" | "published" | "archived";

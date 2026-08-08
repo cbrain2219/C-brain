@@ -19,9 +19,10 @@ import {
   toNoticeMutationInput,
 } from './noticeData'
 import type { NoticeFormState } from './noticeData'
+import { isValidPortfolioSlug } from './portfolioFormState'
 import './BlogFormPage.css'
 
-const contentModes = ['html', 'text'] as const
+const contentModes = ['html', 'markdown'] as const
 
 export function NoticeFormPage() {
   const formId = useId().replaceAll(':', '')
@@ -105,7 +106,7 @@ export function NoticeFormPage() {
       return false
     }
 
-    if (!/^[a-z0-9-]+$/.test(form.slug)) {
+    if (!isValidPortfolioSlug(form.slug)) {
       setSlugError('Slug는 영문 소문자, 숫자, 하이픈만 입력할 수 있습니다.')
       window.requestAnimationFrame(() => {
         document.getElementById(formId + '-slug')?.focus()
@@ -284,7 +285,7 @@ export function NoticeFormPage() {
           name="slug"
           onChange={(event) => {
             const rawValue = event.currentTarget.value
-            const slug = rawValue.replace(/[^a-z0-9-]/g, '')
+            const slug = rawValue.toLowerCase().replace(/[^a-z0-9-]/g, '')
 
             updateForm('slug', slug)
             setSlugError(
@@ -294,7 +295,7 @@ export function NoticeFormPage() {
           onInvalid={() =>
             setSlugError('Slug는 영문 소문자, 숫자, 하이픈만 입력할 수 있습니다.')
           }
-          pattern="[a-z0-9-]+"
+          pattern="[a-z0-9]+(?:-[a-z0-9]+)*"
           placeholder="공지사항 Slug를 입력해주세요. (영문 소문자, 숫자, 하이픈)"
           required
           type="text"
