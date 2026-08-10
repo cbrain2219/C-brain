@@ -39,14 +39,9 @@ const {
   updateComplaintStatus,
 } = await import("../src/inquiries.ts");
 const {
-  completePaymentOrder,
   createPaymentLink,
   deletePaymentLink,
-  getOrCreatePaymentOrder,
-  getPaymentOrderByOrderId,
-  getPublicPaymentLink,
   listAdminPaymentLinks,
-  updatePaymentOrder,
 } = await import("../src/paymentLinks.ts");
 const {
   createProduct,
@@ -132,10 +127,7 @@ function createFakeClient(dataByTable = {}) {
     rpc(name, args) {
       calls.push({ args, method: "rpc", name });
       const result = {
-        data:
-          name === "get_or_create_payment_order"
-            ? (dataByTable.payment_orders ?? { id: "payment-order-id" })
-            : null,
+        data: null,
         error: null,
       };
 
@@ -553,82 +545,5 @@ test("payment link helpers use admin-scoped newest-first access", async () => {
         call.column === "id" &&
         call.value === "payment-link-id",
     ),
-  );
-});
-
-test("payment order helpers use server-only lookup and atomic RPC contracts", async () => {
-  const paymentLink = { id: "payment-link-id", public_token: "public-token" };
-  const paymentOrder = {
-    id: "payment-order-id",
-    order_id: "LPORDER",
-    payment_link_id: paymentLink.id,
-  };
-  const { calls, client } = createFakeClient({
-    payment_links: paymentLink,
-    payment_orders: paymentOrder,
-  });
-
-  await getPublicPaymentLink(client, paymentLink.public_token);
-  await getPaymentOrderByOrderId(client, paymentOrder.order_id);
-  await getOrCreatePaymentOrder(client, paymentLink.public_token);
-  await completePaymentOrder(client, {
-    amount: 120000,
-    nicepayTid: "nicepay-tid",
-    orderId: paymentOrder.order_id,
-    paidAt: "2026-07-23T00:00:00.000Z",
-    payMethod: "card",
-    receiptUrl: "https://example.com/receipt",
-    resultCode: "0000",
-    resultMessage: "정상 처리되었습니다.",
-  });
-  await updatePaymentOrder(client, paymentOrder.order_id, {
-    provider_status: "failed",
-    result_code: "9999",
-  });
-
-  assert.ok(
-    calls.some(
-      (call) =>
-        call.method === "eq" &&
-        call.table === "payment_links" &&
-        call.column === "public_token" &&
-        call.value === paymentLink.public_token,
-    ),
-  );
-  assert.ok(
-    calls.some(
-      (call) =>
-        call.method === "eq" &&
-        call.table === "payment_orders" &&
-        call.column === "order_id" &&
-        call.value === paymentOrder.order_id,
-    ),
-  );
-  assert.deepEqual(
-    calls
-      .filter((call) => call.method === "rpc")
-      .map(({ args, name }) => ({
-        args,
-        name,
-      })),
-    [
-      {
-        args: { p_public_token: paymentLink.public_token },
-        name: "get_or_create_payment_order",
-      },
-      {
-        args: {
-          p_amount: 120000,
-          p_nicepay_tid: "nicepay-tid",
-          p_order_id: paymentOrder.order_id,
-          p_paid_at: "2026-07-23T00:00:00.000Z",
-          p_pay_method: "card",
-          p_receipt_url: "https://example.com/receipt",
-          p_result_code: "0000",
-          p_result_message: "정상 처리되었습니다.",
-        },
-        name: "complete_payment_order",
-      },
-    ],
   );
 });

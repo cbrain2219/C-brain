@@ -4501,7 +4501,7 @@
       <p class="subtitle">재사용형 LinkPay 1개가 독립 주문 N개를 만드는 최소 관계 모델</p>
     </div>
 
-    <script id="archify-guided-views-data" type="application/json">[{"id":"link-orders","label":"링크 1개 · 주문 N개","focus":["payment_links","orders"],"note":"관리자는 결제 템플릿을 만들고 고객 제출마다 새 주문이 생깁니다."},{"id":"order-payments","label":"주문별 결제 시도","focus":["orders","payments"],"note":"일반 주문과 LinkPay 주문은 같은 Payment 원장을 사용합니다."},{"id":"refund-sales","label":"환불과 순매출","focus":["payments","refunds","sales_view"],"note":"원 결제별 환불을 합산하고 검증된 금액으로 순매출을 계산합니다."}]</script>
+    <script id="archify-guided-views-data" type="application/json">[{"id":"link-orders","label":"링크 1개 · 주문 N개","focus":["payment_links","orders"],"note":"관리자는 결제 템플릿을 만들고 고객 제출마다 새 주문이 생깁니다."},{"id":"order-payments","label":"주문별 결제 시도","focus":["orders","payments"],"note":"일반 주문과 LinkPay 주문은 같은 Payment 원장을 사용합니다."},{"id":"refund-sales","label":"환불과 순매출","focus":["payments","refunds"],"note":"원 결제별 성공 환불을 합산하고 두 원장 조회로 순매출을 계산합니다."}]</script>
 
     <div class="guided-views no-print" id="guided-views" hidden aria-label="Guided diagram views">
       <button id="guided-view-prev" type="button" aria-label="Previous guided view" title="Previous guided view ([)">&#8592;</button>
@@ -4544,7 +4544,7 @@
 
     <!-- Main Diagram -->
     <div class="diagram-container" data-detail-level="read">
-      <svg viewBox="0 0 1624 734" role="img" aria-labelledby="archify-diagram-title archify-diagram-description" data-preset="blueprint" data-quality-profile="showcase">
+      <svg viewBox="0 0 1624 488" role="img" aria-labelledby="archify-diagram-title archify-diagram-description" data-preset="blueprint" data-quality-profile="showcase">
         <title id="archify-diagram-title">통합 결제 원장 ERD</title>
         <desc id="archify-diagram-description">재사용형 LinkPay 1개가 독립 주문 N개를 만드는 최소 관계 모델</desc>
         <!-- Definitions -->
@@ -4570,7 +4570,7 @@
         <rect width="100%" height="100%" fill="url(#grid)" />
 
         <!-- Boundaries (behind everything) -->
-        <rect data-graph-role="structural-frame" data-composition-frame-kind="region" data-composition-frame-id="0" x="36" y="276" width="1548" height="390" rx="12" class="c-region" stroke-width="1"/>
+        <rect data-graph-role="structural-frame" data-composition-frame-kind="region" data-composition-frame-id="0" x="36" y="276" width="1548" height="144" rx="12" class="c-region" stroke-width="1"/>
         <text x="44" y="294" class="t-cloud" font-size="9" font-weight="600">PostgreSQL · 통합 거래 원장</text>
 
         <rect data-graph-role="structural-frame" data-composition-frame-kind="security-group" data-composition-frame-id="1" x="414" y="284" width="1162" height="136" rx="8" class="c-security-group" stroke-width="1"/>
@@ -4580,12 +4580,10 @@
         <path data-edge-from="payment_links" data-edge-to="orders" data-edge-label="1 : N" data-edge-key="0" data-composition-points="310,348;334,348;334,366;406,366;406,350;430,350" d="M 310 348 L 326 348 Q 334 348 334 356 L 334 358 Q 334 366 342 366 L 398 366 Q 406 366 406 358 L 406 358 Q 406 350 414 350 L 430 350" class="a-emphasis" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
         <path data-edge-from="orders" data-edge-to="payments" data-edge-label="1 : N attempts" data-edge-key="1" data-composition-points="710,350;830,350" d="M 710 350 L 830 350" class="a-emphasis" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
         <path data-edge-from="payments" data-edge-to="refunds" data-edge-label="1 : N refunds" data-edge-key="2" data-composition-points="1140,350;1260,350" d="M 1140 350 L 1260 350" class="a-security" stroke-width="1.5" marker-end="url(#arrowhead-security)"/>
-        <path data-edge-from="payments" data-edge-to="sales_view" data-edge-label="PAID" data-edge-key="3" data-composition-points="985,400;985,475;1145,475;1145,550" d="M 985 400 L 985 467 Q 985 475 993 475 L 1137 475 Q 1145 475 1145 483 L 1145 550" class="a-emphasis" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
-        <path data-edge-from="refunds" data-edge-to="sales_view" data-edge-label="SUCCEEDED" data-edge-key="4" data-composition-points="1410,400;1410,475;1145,475;1145,550" d="M 1410 400 L 1410 467 Q 1410 475 1402 475 L 1153 475 Q 1145 475 1145 483 L 1145 550" class="a-security" stroke-width="1.5" marker-end="url(#arrowhead-security)"/>
 
         <!-- Components -->
-        <g id="node-payment_links" data-node-id="payment_links" data-node-label="payment_links" tabindex="0" role="button" aria-label="Focus payment_links, id · public_token · amount · snapshot · status, PostgreSQL · 통합 거래 원장" aria-pressed="false" data-node-kind="database" data-node-sublabel="id · public_token · amount · snapshot · status" data-node-tag="재사용 템플릿" data-node-context="PostgreSQL · 통합 거래 원장">
-          <title>payment_links · id · public_token · amount · snapshot · status · PostgreSQL · 통합 거래 원장 · 재사용 템플릿</title>
+        <g id="node-payment_links" data-node-id="payment_links" data-node-label="payment_links" tabindex="0" role="button" aria-label="Focus payment_links, id · public_token · amount · disabled_at, PostgreSQL · 통합 거래 원장" aria-pressed="false" data-node-kind="database" data-node-sublabel="id · public_token · amount · disabled_at" data-node-tag="재사용 템플릿" data-node-context="PostgreSQL · 통합 거래 원장">
+          <title>payment_links · id · public_token · amount · disabled_at · PostgreSQL · 통합 거래 원장 · 재사용 템플릿</title>
           <rect x="60" y="300" width="250" height="96" rx="6" class="c-mask"/>
           <rect x="60" y="300" width="250" height="96" rx="6" class="c-database" stroke-width="1.5"/>
           <g aria-hidden="true" data-semantic-sigil="database" class="semantic-sigil s-database" transform="translate(66 306) scale(0.6875)">
@@ -4593,7 +4591,7 @@
             <path d="M3 4v8c0 1.1 2.2 2 5 2s5-.9 5-2V4M3 8c0 1.1 2.2 2 5 2s5-.9 5-2"/>
           </g>
           <text data-detail-anchor x="185" y="346" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">payment_links</text>
-        <text data-detail="context" x="185" y="362" class="t-muted" font-size="8.7" text-anchor="middle">id · public_token · amount · snapshot · status</text>
+        <text data-detail="context" x="185" y="362" class="t-muted" font-size="9" text-anchor="middle">id · public_token · amount · disabled_at</text>
         <text data-detail="fine" x="185" y="388" class="t-database" font-size="7" text-anchor="middle">재사용 템플릿</text>
         </g>
 
@@ -4636,19 +4634,6 @@
         <text data-detail="fine" x="1410" y="392" class="t-database" font-size="7" text-anchor="middle">부분 · 전액</text>
         </g>
 
-        <g id="node-sales_view" data-node-id="sales_view" data-node-label="sales_report_view" tabindex="0" role="button" aria-label="Focus sales_report_view, gross · refunded · net · channel · occurred_at, PostgreSQL · 통합 거래 원장" aria-pressed="false" data-node-kind="database" data-node-sublabel="gross · refunded · net · channel · occurred_at" data-node-tag="검증 원장에서 파생" data-node-context="PostgreSQL · 통합 거래 원장">
-          <title>sales_report_view · gross · refunded · net · channel · occurred_at · PostgreSQL · 통합 거래 원장 · 검증 원장에서 파생</title>
-          <rect x="1010" y="550" width="270" height="96" rx="6" class="c-mask"/>
-          <rect x="1010" y="550" width="270" height="96" rx="6" class="c-database" stroke-width="1.5"/>
-          <g aria-hidden="true" data-semantic-sigil="database" class="semantic-sigil s-database" transform="translate(1016 556) scale(0.6875)">
-            <ellipse cx="8" cy="4" rx="5" ry="2"/>
-            <path d="M3 4v8c0 1.1 2.2 2 5 2s5-.9 5-2V4M3 8c0 1.1 2.2 2 5 2s5-.9 5-2"/>
-          </g>
-          <text data-detail-anchor x="1145" y="596" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">sales_report_view</text>
-        <text data-detail="context" x="1145" y="612" class="t-muted" font-size="9" text-anchor="middle">gross · refunded · net · channel · occurred_at</text>
-        <text data-detail="fine" x="1145" y="638" class="t-database" font-size="7" text-anchor="middle">검증 원장에서 파생</text>
-        </g>
-
         <!-- Connection labels -->
         <g data-detail="context" data-edge-from="payment_links" data-edge-to="orders" data-edge-label="1 : N" data-edge-key="0">
           <rect x="317" y="337" width="34" height="14" rx="3" class="c-mask"/>
@@ -4662,21 +4647,13 @@
           <rect x="1163.8" y="330" width="72.4" height="14" rx="3" class="c-mask"/>
           <text x="1200" y="340" class="t-security" font-size="8" text-anchor="middle">1 : N refunds</text>
         </g>
-        <g data-detail="context" data-edge-from="payments" data-edge-to="sales_view" data-edge-label="PAID" data-edge-key="3">
-          <rect x="1050" y="455" width="30" height="14" rx="3" class="c-mask"/>
-          <text x="1065" y="465" class="t-backend" font-size="8" text-anchor="middle">PAID</text>
-        </g>
-        <g data-detail="context" data-edge-from="refunds" data-edge-to="sales_view" data-edge-label="SUCCEEDED" data-edge-key="4">
-          <rect x="1250.9" y="455" width="53.199999999999996" height="14" rx="3" class="c-mask"/>
-          <text x="1277.5" y="465" class="t-security" font-size="8" text-anchor="middle">SUCCEEDED</text>
-        </g>
 
         <!-- Legend -->
         <g data-legend data-legend-bridge>
-          <text x="40" y="698" class="t-primary" font-size="10" font-weight="600">Legend</text>
-          <g data-legend-semantic-kind="database" data-legend-kind="database" data-legend-label="Database" data-legend-x="40" data-legend-baseline="718" data-legend-width="82">
-            <rect x="40" y="710" width="14" height="9" rx="2" class="c-database" stroke-width="1"/>
-            <text x="61" y="718" class="t-muted" font-size="8">Database</text>
+          <text x="40" y="452" class="t-primary" font-size="10" font-weight="600">Legend</text>
+          <g data-legend-semantic-kind="database" data-legend-kind="database" data-legend-label="Database" data-legend-x="40" data-legend-baseline="472" data-legend-width="82">
+            <rect x="40" y="464" width="14" height="9" rx="2" class="c-database" stroke-width="1"/>
+            <text x="61" y="472" class="t-muted" font-size="8">Database</text>
           </g>
         </g>
       </svg>
@@ -4870,7 +4847,7 @@
         <ul>
           <li>&bull; payment_links 1개는 orders 여러 개와 연결됩니다</li>
           <li>&bull; 사이트 주문은 payment_link_id가 NULL입니다</li>
-          <li>&bull; 결제 후에도 payment_links.status는 ACTIVE를 유지합니다</li>
+          <li>&bull; 결제 결과와 무관하게 disabled_at만 링크 유효성을 결정합니다</li>
         </ul>
       </div>
 
@@ -4894,7 +4871,7 @@
         <ul>
           <li>&bull; Payment 1건에 부분 환불 여러 건이 연결될 수 있습니다</li>
           <li>&bull; 성공 환불 누계는 Payment balance를 넘을 수 없습니다</li>
-          <li>&bull; 별도 sales 원본 테이블 없이 조회로 시작합니다</li>
+          <li>&bull; 별도 sales 테이블이나 view 없이 두 원장을 조회합니다</li>
         </ul>
       </div>
 

@@ -4624,8 +4624,8 @@
         <path data-edge-from="refund_ledger" data-edge-to="sales_dashboard" data-edge-label="재집계" data-edge-key="11" data-composition-points="476,739;476,786;579,786;579,863" d="M 476 739 L 476 786 L 579 786 L 579 863" class="a-emphasis" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
 
         <!-- Nodes -->
-        <g id="node-public_link" data-node-id="public_link" data-node-label="공개 LinkPay" tabindex="0" role="button" aria-label="Focus 공개 LinkPay, 항상 접속 · 반복 결제, 공개 · 재사용 LinkPay › 두 주문 채널" aria-pressed="false" data-node-kind="frontend" data-node-sublabel="항상 접속 · 반복 결제" data-node-tag="ACTIVE 유지" data-node-context="공개 · 재사용 LinkPay › 두 주문 채널">
-          <title>공개 LinkPay · 항상 접속 · 반복 결제 · 공개 · 재사용 LinkPay › 두 주문 채널 · ACTIVE 유지</title>
+        <g id="node-public_link" data-node-id="public_link" data-node-label="공개 LinkPay" tabindex="0" role="button" aria-label="Focus 공개 LinkPay, 항상 접속 · 반복 결제, 공개 · 재사용 LinkPay › 두 주문 채널" aria-pressed="false" data-node-kind="frontend" data-node-sublabel="항상 접속 · 반복 결제" data-node-tag="결제 후에도 재사용" data-node-context="공개 · 재사용 LinkPay › 두 주문 채널">
+          <title>공개 LinkPay · 항상 접속 · 반복 결제 · 공개 · 재사용 LinkPay › 두 주문 채널 · 결제 후에도 재사용</title>
           <rect x="174" y="85" width="92" height="68" rx="6" class="c-mask"/>
           <rect x="174" y="85" width="92" height="68" rx="6" class="c-frontend" stroke-width="1.5"/>
           <g aria-hidden="true" data-semantic-sigil="frontend" class="semantic-sigil s-frontend" transform="translate(180 91) scale(0.6875)">
@@ -4636,7 +4636,7 @@
           </g>
           <text data-detail-anchor x="220" y="106" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">공개 LinkPay</text>
           <text data-detail="context" x="220" y="123" class="t-muted" font-size="6.6" text-anchor="middle">항상 접속 · 반복 결제</text>
-        <text data-detail="fine" x="220" y="141" class="t-frontend" font-size="7" text-anchor="middle">ACTIVE 유지</text>
+        <text data-detail="fine" x="220" y="141" class="t-frontend" font-size="7" text-anchor="middle">결제 후에도 재사용</text>
         </g>
 
         <g id="node-site_checkout" data-node-id="site_checkout" data-node-label="사이트 주문" tabindex="0" role="button" aria-label="Focus 사이트 주문, 회원 또는 비회원, 사이트 일반 주문 › 두 주문 채널" aria-pressed="false" data-node-kind="frontend" data-node-sublabel="회원 또는 비회원" data-node-context="사이트 일반 주문 › 두 주문 채널">
@@ -5000,7 +5000,7 @@
         </div>
         <ul>
           <li>&bull; 공개 LinkPay URL은 여러 고객이 반복해서 사용합니다</li>
-          <li>&bull; 링크에는 PAID 상태가 없고 ACTIVE · DISABLED · EXPIRED만 둡니다</li>
+          <li>&bull; 링크에는 PAID 상태가 없고 관리자가 중단할 때만 disabled_at을 기록합니다</li>
           <li>&bull; 한 결제의 성공 · 실패 · 환불은 다음 고객의 진입을 막지 않습니다</li>
         </ul>
       </div>
@@ -5035,8 +5035,8 @@
           <h3>공개 링크 보호</h3>
         </div>
         <ul>
-          <li>&bull; 누구나 페이지를 보되 ACTIVE 링크에서만 결제를 제출합니다</li>
-          <li>&bull; 추측하기 어려운 token · noindex · 요청 제한을 적용합니다</li>
+          <li>&bull; 누구나 페이지를 보되 중단되지 않은 링크에서만 결제를 제출합니다</li>
+          <li>&bull; 추측하기 어려운 token · noindex · 서버 입력 검증을 적용합니다</li>
           <li>&bull; 공개 화면에는 다른 구매자의 결제 여부나 개인정보를 표시하지 않습니다</li>
         </ul>
       </div>

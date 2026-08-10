@@ -46,8 +46,20 @@
 }
 
 .admin-sales-period__date {
+  position: relative;
   gap: 4px;
+  cursor: pointer;
   white-space: nowrap;
+}
+
+.admin-sales-period__input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  opacity: 0;
+  cursor: pointer;
 }
 
 .admin-sales-period__calendar {
@@ -189,6 +201,21 @@
 .admin-sales-chart-chip--info {
   gap: 4px;
   color: var(--admin-info-500);
+}
+
+.admin-sales-chart-chip--channel {
+  position: relative;
+  cursor: pointer;
+}
+
+.admin-sales-chart-chip__select {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  opacity: 0;
+  cursor: pointer;
 }
 
 .admin-sales-chart-chip__dot {
@@ -387,7 +414,7 @@
 }
 
 .admin-sales-table__heading:not(:last-child)::after {
-  content: '';
+  content: "";
   position: absolute;
   top: 10px;
   right: 0;
@@ -485,7 +512,8 @@
 
 .admin-refund-dialog {
   width: min(600px, calc(100vw - 32px));
-  height: 344px;
+  min-height: 430px;
+  height: auto;
   max-width: none;
   max-height: calc(100dvh - 32px);
   margin: auto;
@@ -598,6 +626,38 @@
 
 .admin-refund-dialog__primary--refund {
   width: 81px;
+}
+
+.admin-refund-dialog__error {
+  width: 100%;
+  color: var(--admin-error-500);
+}
+
+.admin-refund-dialog__primary:disabled,
+.admin-refund-dialog__close:disabled {
+  cursor: default;
+  opacity: 0.6;
+}
+
+.admin-sales-load-state {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px;
+  border-radius: 16px;
+  background: var(--admin-gray-50);
+  color: var(--admin-gray-600);
+}
+
+.admin-sales-reload {
+  min-height: 36px;
+  padding: 6px 12px;
+  border: 0;
+  border-radius: 12px;
+  background: var(--admin-brand-500);
+  color: var(--admin-text-inverse);
+  cursor: pointer;
 }
 
 @media (max-width: 1199px) {

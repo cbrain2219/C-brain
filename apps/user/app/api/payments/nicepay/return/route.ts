@@ -1,16 +1,14 @@
 import {
-  completePaymentOrder,
   createAdminSupabaseClient,
-  getPaymentOrderByLinkId,
-  getPublicPaymentLink,
-  updatePaymentOrder,
+  finishPayment,
+  getPaymentByProviderOrderId,
   type CBrainSupabaseClient,
+  type PaymentWithOrder,
 } from "@repo/supabase";
 
 import {
   approveNicepayPayment,
   getNicepayConfig,
-  isUuid,
   netCancelNicepayPayment,
   parseNicepayAuthCallback,
   retrieveNicepayPayment,
@@ -22,20 +20,14 @@ import {
 
 export const runtime = "nodejs";
 
-type ResultState = "failed" | "pending" | "success";
-
-function resultRedirect(
-  config: NicepayConfig,
-  publicToken: string,
-  result: ResultState,
-) {
-  const location = new URL(`/linkpay/${publicToken}/result`, config.siteUrl);
-  location.searchParams.set("result", result);
-
+function resultRedirect(config: NicepayConfig, publicToken: string) {
   return new Response(null, {
     headers: {
       "Cache-Control": "no-store",
-      Location: location.toString(),
+      Location: new URL(
+        `/payment/result/${publicToken}`,
+        config.siteUrl,
+      ).toString(),
     },
     status: 303,
   });
@@ -48,10 +40,6 @@ function toProviderTimestamp(value: string | null) {
   return Number.isNaN(date.getTime()) ? null : date.toISOString();
 }
 
-function toRecordedTimestamp(value: string | null) {
-  return toProviderTimestamp(value) ?? new Date().toISOString();
-}
-
 function isAuthenticPayment(
   payment: NicepayPayment | null,
   expected: { amount: number; orderId: string; tid: string },
@@ -62,71 +50,196 @@ function isAuthenticPayment(
   );
 }
 
-async function saveFailedAttempt(
+async function recordPayment(
   client: CBrainSupabaseClient,
-  orderId: string,
-  resultCode: string,
-  resultMessage: string,
+  order: PaymentWithOrder,
+  input: {
+    balanceAmount: number | null;
+    canPartCancel: boolean | null;
+    cancelledAt: string | null;
+    nicepayTid: string | null;
+    paidAt: string | null;
+    payMethod: string | null;
+    receiptUrl: string | null;
+    resultCode: string | null;
+    resultMessage: string | null;
+    status: "paid" | "failed" | "expired" | "unknown";
+  },
+) {
+  return finishPayment(client, {
+    amount: order.amount,
+    balanceAmount: input.balanceAmount,
+    canPartCancel: input.canPartCancel,
+    cancelledAt: input.cancelledAt,
+    nicepayTid: input.nicepayTid,
+    paidAt: input.paidAt,
+    payMethod: input.payMethod,
+    providerOrderId: order.providerOrderId,
+    receiptUrl: input.receiptUrl,
+    resultCode: input.resultCode,
+    resultMessage: input.resultMessage,
+    status: input.status,
+  });
+}
+
+async function recordProviderPayment(
+  client: CBrainSupabaseClient,
+  order: PaymentWithOrder,
+  payment: NicepayPayment,
+  status: "paid" | "failed" | "expired" | "unknown",
+) {
+  await recordPayment(client, order, {
+    balanceAmount: payment.balanceAmt,
+    canPartCancel: payment.card?.canPartCancel ?? null,
+    cancelledAt: toProviderTimestamp(payment.cancelledAt),
+    nicepayTid: payment.tid,
+    paidAt: toProviderTimestamp(payment.paidAt),
+    payMethod: payment.payMethod,
+    receiptUrl: payment.receiptUrl,
+    resultCode: payment.resultCode,
+    resultMessage: payment.resultMsg,
+    status,
+  });
+}
+
+async function recordUnknownApproval(
+  client: CBrainSupabaseClient,
+  order: PaymentWithOrder,
 ) {
   try {
-    await updatePaymentOrder(client, orderId, {
-      provider_status: "failed",
-      result_code: resultCode.slice(0, 64),
-      result_message: resultMessage.slice(0, 500),
+    await recordPayment(client, order, {
+      balanceAmount: null,
+      canPartCancel: null,
+      cancelledAt: null,
+      // The authentication callback signature does not bind its TID. Store a
+      // TID only after a signed provider response has authenticated it.
+      nicepayTid: null,
+      paidAt: null,
+      payMethod: null,
+      receiptUrl: null,
+      resultCode: "APPROVAL_UNKNOWN",
+      resultMessage: "결제 승인 결과를 확인 중입니다.",
+      status: "unknown",
     });
   } catch {
-    // A concurrent signed webhook may already have completed the order.
+    // Preserve a concurrent, more certain callback or webhook result.
   }
 }
 
-async function saveProviderState(
+async function recordUnknownNetCancel(
   client: CBrainSupabaseClient,
+  order: PaymentWithOrder,
   payment: NicepayPayment,
 ) {
-  if (payment.status === "paid") return;
-
   try {
-    await updatePaymentOrder(client, payment.orderId, {
-      cancelled_at:
-        payment.status === "cancelled" || payment.status === "partialCancelled"
-          ? toRecordedTimestamp(payment.cancelledAt)
-          : null,
-      nicepay_tid: payment.tid,
-      provider_status: payment.status,
-      result_code: payment.resultCode,
-      result_message: payment.resultMsg,
+    await recordPayment(client, order, {
+      balanceAmount: null,
+      canPartCancel: payment.card?.canPartCancel ?? null,
+      cancelledAt: toProviderTimestamp(payment.cancelledAt),
+      nicepayTid: payment.tid,
+      paidAt: null,
+      payMethod: payment.payMethod,
+      receiptUrl: payment.receiptUrl,
+      resultCode: "NET_CANCEL_PERSISTENCE_UNKNOWN",
+      resultMessage: "망취소 완료 후 원장 반영을 확인 중입니다.",
+      status: "unknown",
     });
   } catch {
-    // Keep the more authoritative state written by a concurrent callback/webhook.
+    // A signed cancellation webhook can recover by TID or original order ID.
   }
 }
 
-async function tryNetCancel(
+async function markNetCancelRequested(
   client: CBrainSupabaseClient,
-  config: NicepayConfig,
-  orderId: string,
-  amount: number,
+  order: PaymentWithOrder,
 ) {
   try {
-    const payment = await netCancelNicepayPayment(config, orderId);
-
-    if (
-      !payment ||
-      !["cancelled", "partialCancelled"].includes(payment.status) ||
-      !verifyNicepayPayment(
-        payment,
-        { amount, orderId, tid: payment.tid },
-        config.secretKey,
-      )
-    ) {
-      return false;
-    }
-
-    await saveProviderState(client, payment);
+    await recordPayment(client, order, {
+      balanceAmount: null,
+      canPartCancel: null,
+      cancelledAt: null,
+      nicepayTid: null,
+      paidAt: null,
+      payMethod: null,
+      receiptUrl: null,
+      resultCode: "NET_CANCEL_REQUESTED",
+      resultMessage: "승인 복구를 위해 망취소를 요청합니다.",
+      status: "unknown",
+    });
     return true;
   } catch {
     return false;
   }
+}
+
+type NetCancelOutcome = "cancelled" | "not_started" | "pending";
+
+async function tryNetCancel(
+  client: CBrainSupabaseClient,
+  config: NicepayConfig,
+  order: PaymentWithOrder,
+): Promise<NetCancelOutcome> {
+  // A durable marker is the causality proof used by webhook recovery. Never
+  // issue a provider net-cancel if the marker could not be persisted first.
+  if (!(await markNetCancelRequested(client, order))) return "not_started";
+
+  let payment: NicepayPayment | null;
+
+  try {
+    payment = await netCancelNicepayPayment(
+      config,
+      order.providerOrderId,
+    );
+  } catch {
+    return "pending";
+  }
+
+  if (
+    !payment ||
+    !isAuthenticPayment(
+      payment,
+      {
+        amount: order.amount,
+        orderId: order.providerOrderId,
+        // Unlike the browser callback, the response signature binds this TID.
+        tid: payment.tid,
+      },
+      config,
+    ) ||
+    payment.resultCode !== "0000" ||
+    payment.status !== "cancelled" ||
+    payment.balanceAmt !== 0
+  ) {
+    return "pending";
+  }
+
+  try {
+    await recordPayment(client, order, {
+      balanceAmount: payment.balanceAmt,
+      canPartCancel: payment.card?.canPartCancel ?? null,
+      cancelledAt: toProviderTimestamp(payment.cancelledAt),
+      nicepayTid: payment.tid,
+      paidAt: null,
+      payMethod: payment.payMethod,
+      receiptUrl: payment.receiptUrl,
+      resultCode: "NET_CANCELLED",
+      resultMessage: payment.resultMsg,
+      status: "failed",
+    });
+  } catch {
+    await recordUnknownNetCancel(client, order, payment);
+  }
+
+  return "cancelled";
+}
+
+async function recoverApproval(
+  client: CBrainSupabaseClient,
+  config: NicepayConfig,
+  order: PaymentWithOrder,
+) {
+  const outcome = await tryNetCancel(client, config, order);
+  if (outcome === "not_started") await recordUnknownApproval(client, order);
 }
 
 export async function POST(request: Request) {
@@ -138,54 +251,34 @@ export async function POST(request: Request) {
     return new Response("Payment configuration error.", { status: 500 });
   }
 
-  const publicToken = new URL(request.url).searchParams.get("token") ?? "";
-
-  if (!isUuid(publicToken)) {
-    return new Response("Invalid payment link.", { status: 400 });
-  }
-
-  const client = createAdminSupabaseClient();
-  const link = await getPublicPaymentLink(client, publicToken);
-
-  if (!link) return new Response("Payment link not found.", { status: 404 });
-
-  const order = await getPaymentOrderByLinkId(client, link.id);
-
-  if (!order) return resultRedirect(config, publicToken, "failed");
-  if (order.provider_status === "paid" || link.status === "paid") {
-    return resultRedirect(config, publicToken, "success");
-  }
-
   let formData: FormData;
 
   try {
     formData = await request.formData();
   } catch {
-    await saveFailedAttempt(
-      client,
-      order.order_id,
-      "INVALID_FORM",
-      "인증 결과 형식이 올바르지 않습니다.",
-    );
-    return resultRedirect(config, publicToken, "failed");
+    return new Response("Invalid payment callback.", { status: 400 });
+  }
+
+  const providerOrderId = formData.get("orderId");
+  if (typeof providerOrderId !== "string" || !providerOrderId) {
+    return new Response("Invalid payment callback.", { status: 400 });
+  }
+
+  const client = createAdminSupabaseClient();
+  const order = await getPaymentByProviderOrderId(client, providerOrderId);
+  if (!order) return new Response("Payment not found.", { status: 404 });
+
+  const redirect = () => resultRedirect(config, order.order.publicToken);
+  if (["paid", "partial_cancelled", "cancelled"].includes(order.status)) {
+    return redirect();
   }
 
   const authResultCode = formData.get("authResultCode");
-
   if (authResultCode !== "0000") {
-    await saveFailedAttempt(
-      client,
-      order.order_id,
-      typeof authResultCode === "string" ? authResultCode : "AUTH_FAILED",
-      typeof formData.get("authResultMsg") === "string"
-        ? String(formData.get("authResultMsg"))
-        : "결제 인증에 실패했습니다.",
-    );
-    return resultRedirect(config, publicToken, "failed");
+    return redirect();
   }
 
   const callback = parseNicepayAuthCallback(formData);
-
   if (
     !callback ||
     !verifyNicepayAuthCallback(
@@ -193,33 +286,26 @@ export async function POST(request: Request) {
       {
         amount: order.amount,
         clientKey: config.clientKey,
-        orderId: order.order_id,
+        orderId: order.providerOrderId,
       },
       config.secretKey,
     )
   ) {
-    await saveFailedAttempt(
-      client,
-      order.order_id,
-      "INVALID_CALLBACK",
-      "결제 인증 검증에 실패했습니다.",
-    );
-    return resultRedirect(config, publicToken, "failed");
+    return redirect();
   }
 
   const expectedPayment = {
     amount: order.amount,
-    orderId: order.order_id,
+    orderId: order.providerOrderId,
     tid: callback.tid,
   };
   let payment: NicepayPayment | null = null;
-  let approvalWasUncertain = false;
 
   try {
     payment = await approveNicepayPayment(config, callback.tid, order.amount);
-    approvalWasUncertain = !payment;
   } catch {
-    approvalWasUncertain = true;
+    // The retrieval fallback below distinguishes a transport failure from a
+    // provider approval that has already completed.
   }
 
   if (!isAuthenticPayment(payment, expectedPayment, config)) {
@@ -228,109 +314,38 @@ export async function POST(request: Request) {
         config,
         callback.tid,
       );
-
       if (isAuthenticPayment(retrievedPayment, expectedPayment, config)) {
         payment = retrievedPayment;
-      } else {
-        approvalWasUncertain = true;
       }
     } catch {
-      approvalWasUncertain = true;
+      // Net-cancel and an unknown ledger state are the safe final fallback.
     }
   }
 
   if (!isAuthenticPayment(payment, expectedPayment, config)) {
-    const cancelled = await tryNetCancel(
-      client,
-      config,
-      order.order_id,
-      order.amount,
-    );
-    return resultRedirect(
-      config,
-      publicToken,
-      cancelled ? "failed" : "pending",
-    );
+    await recoverApproval(client, config, order);
+    return redirect();
   }
 
-  if (payment.status === "paid" && payment.resultCode !== "0000") {
-    const cancelled = await tryNetCancel(
-      client,
-      config,
-      order.order_id,
-      order.amount,
-    );
-    return resultRedirect(
-      config,
-      publicToken,
-      cancelled ? "failed" : "pending",
-    );
-  }
-
-  if (payment.status !== "paid") {
-    await saveProviderState(client, payment);
-
-    if (approvalWasUncertain && payment.status === "ready") {
-      const cancelled = await tryNetCancel(
-        client,
-        config,
-        order.order_id,
-        order.amount,
-      );
-      return resultRedirect(
-        config,
-        publicToken,
-        cancelled ? "failed" : "pending",
-      );
+  if (payment.status === "paid" && payment.resultCode === "0000") {
+    if (!toProviderTimestamp(payment.paidAt)) {
+      await recoverApproval(client, config, order);
+      return redirect();
     }
 
-    return resultRedirect(
-      config,
-      publicToken,
-      payment.status === "ready" ? "pending" : "failed",
-    );
+    try {
+      await recordProviderPayment(client, order, payment, "paid");
+    } catch {
+      await recordUnknownApproval(client, order);
+    }
+    return redirect();
   }
 
-  const paidAt = toProviderTimestamp(payment.paidAt);
-
-  if (!paidAt) {
-    const cancelled = await tryNetCancel(
-      client,
-      config,
-      order.order_id,
-      order.amount,
-    );
-    return resultRedirect(
-      config,
-      publicToken,
-      cancelled ? "failed" : "pending",
-    );
+  if (payment.status === "failed" || payment.status === "expired") {
+    await recordProviderPayment(client, order, payment, payment.status);
+    return redirect();
   }
 
-  try {
-    await completePaymentOrder(client, {
-      amount: order.amount,
-      nicepayTid: payment.tid,
-      orderId: order.order_id,
-      paidAt,
-      payMethod: payment.payMethod,
-      receiptUrl: payment.receiptUrl,
-      resultCode: payment.resultCode,
-      resultMessage: payment.resultMsg,
-    });
-  } catch {
-    const cancelled = await tryNetCancel(
-      client,
-      config,
-      order.order_id,
-      order.amount,
-    );
-    return resultRedirect(
-      config,
-      publicToken,
-      cancelled ? "failed" : "pending",
-    );
-  }
-
-  return resultRedirect(config, publicToken, "success");
+  await recoverApproval(client, config, order);
+  return redirect();
 }

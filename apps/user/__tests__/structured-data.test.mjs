@@ -52,11 +52,11 @@ const detailPageSources = {
 };
 
 const privatePaymentPageSources = [
-  new URL("../app/(site)/order/success/page.tsx", import.meta.url),
-  new URL("../app/(site)/order/fail/page.tsx", import.meta.url),
   new URL("../app/(site)/linkpay/[id]/page.tsx", import.meta.url),
-  new URL("../app/(site)/linkpay/[id]/success/page.tsx", import.meta.url),
-  new URL("../app/(site)/linkpay/[id]/fail/page.tsx", import.meta.url),
+  new URL(
+    "../app/(site)/payment/result/[publicToken]/page.tsx",
+    import.meta.url,
+  ),
 ];
 
 test("structured data helpers centralize site, company, breadcrumb, and FAQ data", async () => {

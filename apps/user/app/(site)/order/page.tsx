@@ -1,8 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { CtaSection } from "../../_components/CtaSection";
 import { JsonLdScript } from "../../_components/JsonLdScript";
@@ -18,11 +17,16 @@ import {
 } from "../../_content/services";
 import type { OrderPaymentSubmitPayload } from "./OrderCustomerInfoStep";
 import { OrderFlowSection } from "./OrderFlowSection";
-import { submitOrderPayment } from "./payment";
+import { getOrderCheckoutPayloadKey, submitOrderPayment } from "./payment";
 import styles from "./page.module.css";
 
 export default function OrderPage() {
-  const router = useRouter();
+  const checkoutRequestRef = useRef<{
+    payloadKey: string;
+    requestId: string;
+  } | null>(null);
+  const paymentSubmissionInFlightRef = useRef(false);
+  const [isPaymentSubmitting, setIsPaymentSubmitting] = useState(false);
   const [orderStep, setOrderStep] = useState<OrderStepId>("category");
   const [selectedDirectService, setSelectedDirectService] =
     useState<ServiceItem | null>(null);
@@ -51,11 +55,46 @@ export default function OrderPage() {
   };
 
   const handlePaymentSubmit = async (payload: OrderPaymentSubmitPayload) => {
-    const result = await submitOrderPayment(payload);
-    const fallbackHref =
-      result.status === "success" ? "/order/success" : "/order/fail";
+    if (paymentSubmissionInFlightRef.current) return;
 
-    router.push(result.redirectHref ?? fallbackHref);
+    paymentSubmissionInFlightRef.current = true;
+    setIsPaymentSubmitting(true);
+
+    const releasePaymentSubmission = () => {
+      paymentSubmissionInFlightRef.current = false;
+      setIsPaymentSubmitting(false);
+    };
+    const payloadKey = getOrderCheckoutPayloadKey(payload);
+    const checkoutRequest = checkoutRequestRef.current;
+    const checkoutRequestId =
+      checkoutRequest?.payloadKey === payloadKey
+        ? checkoutRequest.requestId
+        : crypto.randomUUID();
+
+    checkoutRequestRef.current = {
+      payloadKey,
+      requestId: checkoutRequestId,
+    };
+    const result = await submitOrderPayment(payload, checkoutRequestId);
+
+    if (result.status === "failure") {
+      releasePaymentSubmission();
+      window.alert(result.failureReason);
+      return;
+    }
+
+    try {
+      const { requestNicepayPayment } =
+        await import("../../../lib/paymentCheckout");
+
+      await requestNicepayPayment(result.checkout, (message) => {
+        releasePaymentSubmission();
+        window.alert(message);
+      });
+    } catch {
+      releasePaymentSubmission();
+      window.alert("결제를 진행하지 못했습니다. 잠시 후 다시 시도해주세요.");
+    }
   };
 
   useEffect(() => {
@@ -134,6 +173,7 @@ export default function OrderPage() {
         onDirectServiceSelect={handleDirectServiceSelect}
         onOptionBack={handleOptionBack}
         onPaymentSubmit={handlePaymentSubmit}
+        isPaymentSubmitting={isPaymentSubmitting}
         orderStep={orderStep}
         selectedDirectService={selectedDirectService}
         selectedOrderSummary={selectedOrderSummary}

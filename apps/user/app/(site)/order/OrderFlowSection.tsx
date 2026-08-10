@@ -20,6 +20,7 @@ import { OrderProgress } from "./OrderProgress";
 import styles from "./page.module.css";
 
 type OrderFlowSectionProps = {
+  isPaymentSubmitting: boolean;
   onCategoryReset: () => void;
   onCustomerInfoStart: (summary: OrderSelectionSummary) => void;
   onDirectServiceSelect: (service: ServiceItem) => void;
@@ -33,6 +34,7 @@ type OrderFlowSectionProps = {
 };
 
 export function OrderFlowSection({
+  isPaymentSubmitting,
   onCategoryReset,
   onCustomerInfoStart,
   onDirectServiceSelect,
@@ -122,6 +124,7 @@ export function OrderFlowSection({
         {selectedDirectService ? (
           isCustomerStep ? (
             <OrderCustomerInfoStep
+              isPaymentSubmitting={isPaymentSubmitting}
               onPaymentSubmit={onPaymentSubmit}
               summary={selectedOrderSummary}
             />

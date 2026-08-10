@@ -1,1270 +1,937 @@
-# Unified Site and LinkPay Payments, Sales, and Refunds MVP Implementation Plan
+# Reusable LinkPay and Unified Payments, Sales, and Partial Refunds MVP Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (- [ ]) syntax for tracking.
 
-**Goal:** 사이트의 정찰제 일반 주문과 관리자가 발급하는 LinkPay가 하나의 NICEPAY 결제·매출·환불 원장을 사용하도록 최소 기능부터 단계적으로 구현한다.
+**Goal:** 사이트 일반 결제와 공개 재사용형 LinkPay가 하나의 NICEPAY 원장을 사용하고, 같은 LinkPay로 여러 고객이 독립 결제하며, 관리자가 결제별 부분·전액환불과 순매출을 처리할 수 있게 한다.
 
-**Architecture:** `orders`, `payments`, `refunds` 세 테이블만 거래 원장으로 사용한다. `orders.channel`이 `site`와 `linkpay`를 구분하고, 채널별 코드는 주문을 만드는 지점까지만 분리한다. 이후 결제 준비, NICEPAY 승인 검증, 웹훅, 결과 불명 복구, 매출 집계, 전액·부분환불은 같은 서비스와 상태 규칙을 공유한다.
+**Architecture:** payment_links는 결제 상태가 없는 재사용 템플릿이다. 고객이 결제를 제출할 때마다 서버가 링크 또는 사이트 상품 정보를 orders에 스냅샷하고 독립 payments를 만든다. 승인·환불 원장은 payments와 refunds가 담당하며 매출은 두 테이블을 조회해 계산하고 별도 sales 테이블이나 DB view를 만들지 않는다.
 
-**Tech Stack:** React 19, Next.js 16 App Router, Vite admin, TypeScript 5.9, Supabase/PostgreSQL, Supabase CLI 2.113.0, NICEPAY JS SDK 및 Server 승인·조회·취소 API
+**Tech Stack:** React 19, Next.js 16 App Router, Vite admin, TypeScript 5.9, Supabase/PostgreSQL, NICEPAY JS SDK 및 Server 승인·조회·취소 API
+
+## Execution Override
+
+- DB schema와 migration SQL의 작성·적용은 프로젝트 소유자가 직접 수행한다.
+- 구현 에이전트는 Docker를 시작하거나 로컬·원격 Supabase DB에 접속하지 않고, `supabase/migrations`와 `supabase/tests`도 수정하지 않는다.
+- 아래 Task 1의 SQL은 애플리케이션 타입과 RPC 호출을 맞추기 위한 계약 참고용이다. 이번 실행에서는 `packages/supabase`의 타입·wrapper와 이후 애플리케이션 작업만 수행한다.
+
+## Implementation Status (2026-08-09)
+
+- 애플리케이션 구현 완료: 재사용 LinkPay, 사이트 일반 결제, 공통 NICEPAY 승인·결과, 매출 조회, 부분·전액환불, 취소 웹훅, 수동 reconciliation.
+- 자동 검증 완료: 전체 test, typecheck, lint, build. SQL contract test 한 건은 DB 소유자 작업으로 명시적으로 skip한다.
+- DB 적용 대기: 네 테이블·다섯 RPC와 `reserve_refund.should_execute`를 담은 migration은 작성되었고, 소유자가 검토 후 직접 실행한다.
+- 운영 검증 대기: SQL 적용 후 NICEPAY sandbox 수동 시나리오와 DB 원자성/RLS 검증을 수행한다.
 
 ## Global Constraints
 
-- 이 계획은 기존 결제 데이터가 개발용이며 삭제 가능하다는 사용자 설명을 전제로 한다. 실거래가 한 건이라도 확인되면 기존 payment migration 삭제와 `db reset`을 중단하고 forward migration으로 다시 계획한다.
-- 1차 결제수단은 KRW 카드 결제만 지원한다. 계좌이체, 가상계좌, 간편결제, 정기결제는 제외한다.
-- 사이트 일반 주문과 LinkPay는 별도 결제 원장을 만들지 않는다. 차이는 `orders.channel`과 주문 스냅샷뿐이다.
-- 일반 주문 금액은 서버가 현재 `apps/user/app/_content/order.ts` 카탈로그로 다시 계산한다. 브라우저가 보낸 합계·라벨·단가는 저장 또는 승인 기준으로 사용하지 않는다.
-- LinkPay 금액과 항목은 관리자가 생성한 `orders` 행에서만 읽는다. 결제 시도가 생긴 뒤 금액과 항목은 수정할 수 없다.
-- NICEPAY 주문번호, 승인 TID, 환불 요청 ID, 환불 주문번호, 취소 TID는 각각 고유해야 한다.
-- 승인·환불 결과가 불명확하면 실패로 간주하지 않고 `unknown`으로 잠근다. 조회나 검증된 웹훅으로 확정되기 전에는 재결제 또는 추가 환불을 허용하지 않는다.
-- 매출은 성공 승인액, 환불은 성공 취소액, 순매출은 두 값의 차이다. 별도 `sales` 테이블과 추정 정산액·카드 수수료는 만들지 않는다.
-- Supabase secret/service-role 키와 NICEPAY secret key는 서버에서만 사용한다. 고객정보와 provider payload를 로그에 남기지 않는다.
-- public 스키마의 새 테이블은 RLS와 명시적 `GRANT`를 같은 migration에 둔다. `anon`은 결제 원장에 직접 접근하지 않는다.
-- 기존 주문·LinkPay·매출 UI 구조와 디자인은 유지한다. 이 계획은 결제 상태 표시와 실제 데이터 연결에 필요한 최소 JSX만 바꾸며 CSS 재설계를 포함하지 않는다.
-- 기존의 사용자 작업 중인 변경을 되돌리지 않는다. 이 계획에 명시된 파일만 수정하고 요청 전에는 커밋·푸시·배포·원격 DB 쓰기를 하지 않는다.
+- 기존 결제 데이터가 개발용이고 삭제 가능하다는 전제에서만 기존 결제 migration을 교체한다. 보존할 거래가 한 건이라도 있으면 DB reset을 중단하고 forward migration을 별도로 작성한다.
+- 1차 결제수단은 KRW 카드만 지원한다. 계좌이체, 가상계좌, 간편결제, 정기결제, 정산 예정액과 카드 수수료는 범위 밖이다.
+- LinkPay URL은 로그인 없이 누구나 열 수 있다. disabled_at이 있는 링크도 안내 화면은 열리지만 새 결제는 만들 수 없다.
+- payment_links는 결제 성공·실패·환불로 변경되지 않는다. 링크의 유효 상태는 disabled_at 하나로만 결정한다.
+- LinkPay Form 제출마다 새 checkout_request_id를 사용해 독립 Order와 첫 Payment를 만든다. 같은 checkout_request_id 재호출은 같은 거래를 반환한다.
+- 일반 주문 금액은 서버 카탈로그로 다시 계산한다. LinkPay 금액과 설명은 서버가 payment_links에서 읽어 orders.item_snapshot에 복사한다.
+- 브라우저가 보낸 amount, provider order ID, 상태, 결과 URL은 신뢰하지 않는다.
+- 승인 결과가 불명확하면 해당 Payment만 unknown으로 잠근다. 같은 LinkPay의 다른 고객 결제는 계속 허용한다.
+- 부분환불은 필수다. 환불 누계와 NICEPAY balanceAmt가 일치해야 하며, 환불 하나가 unknown이면 같은 Payment의 추가 환불만 잠근다.
+- 매출은 검증된 승인액, 환불은 검증된 성공 취소액, 순매출은 두 값의 차이다.
+- provider_order_id, NICEPAY TID, 환불 request_id, 환불 orderId, cancelledTid는 각각 고유해야 한다.
+- secret/service-role 키와 NICEPAY secret key는 서버에서만 사용한다. 고객정보와 전체 provider payload를 로그에 남기지 않는다.
+- public 스키마의 네 테이블은 RLS와 명시적 GRANT를 같은 migration에서 설정한다. anon은 테이블을 직접 읽지 않는다.
+- UI를 수정하기 전에 design.md를 읽고 기존 typography, icon, asset, component 규칙을 유지한다.
+- 요청 전에는 커밋·푸시·배포·원격 DB 쓰기를 하지 않는다.
 
 ---
 
-## 확인된 현재 상태
+## Target Flow and Data Contract
 
-| 영역             | 현재                                                                                                 | 이 계획의 목표                                                     |
-| ---------------- | ---------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
-| 사이트 일반 결제 | 상품·옵션·고객정보 UI와 서버 금액 재계산이 있으나 `payment-not-ready`로 종료                         | 서버 주문 생성부터 NICEPAY 승인·결과 페이지까지 완주               |
-| LinkPay          | 전용 `payment_links`/`payment_orders`와 NICEPAY return/webhook 일부 구현, 공개 페이지는 fixture 의존 | `orders(channel = 'linkpay')`로 옮기고 공통 결제 파이프라인 재사용 |
-| NICEPAY return   | `token` query와 LinkPay URL에 결합                                                                   | callback `orderId`로 payment를 찾고 DB의 channel로 결과 URL 결정   |
-| 매출             | fixture와 로컬 환불 상태                                                                             | 두 채널의 검증된 승인·환불 event를 기간·채널별 집계                |
-| 환불             | dialog만 있고 provider 호출 없음                                                                     | 관리자 인증, 중복 방지, 전액·부분취소, 결과 불명 처리              |
+- [통합 workflow](./2026-08-09-unified-payments-sales-refunds.workflow.html)
+- [통합 ERD](./2026-08-09-unified-payments-sales-refunds.erd.html)
 
-전체 흐름은 [통합 Archify workflow](./2026-08-09-unified-payments-sales-refunds.workflow.html)를 기준으로 한다. 이전 `2026-08-08-linkpay-sales-refunds-mvp.md`는 LinkPay 단독 가정이므로 이 문서가 대체한다.
+ERD에는 실제 테이블 네 개만 표시한다. 매출은 별도 table이나 materialized view 없이 packages/supabase/src/sales.ts에서 payments와 refunds 두 조회를 합쳐 계산한다.
 
-## Data Contract
+~~~text
+payment_links 1 ── N orders 1 ── N payments 1 ── N refunds
 
-### 주문 스냅샷
-
-`orders.item_snapshot`은 결제 후 상품 설정이 바뀌어도 거래 당시 내용을 보존한다. 애플리케이션 타입은 다음 두 형태만 허용한다.
-
-```ts
-export type SiteOrderSnapshot = {
-  channel: "site";
-  hasPlanning: boolean;
-  pageId: string;
-  pageLabel: string;
-  paperId: string;
-  paperLabel: string;
-  quantityId: string;
-  quantityLabel: string;
-  schemaVersion: 1;
-  serviceId: string;
-  serviceLabel: string;
-  unitPrice: number;
-};
-
-export type LinkPayOrderSnapshot = {
-  category: string;
-  channel: "linkpay";
-  pageQuantity: string;
-  paper: string;
-  schemaVersion: 1;
-  service: string;
-};
-
-export type OrderItemSnapshot = SiteOrderSnapshot | LinkPayOrderSnapshot;
-```
-
-사이트 snapshot의 모든 라벨·단가·합계는 서버 카탈로그에서 다시 만든다. LinkPay snapshot은 결제 시도가 생기기 전 관리자 입력만 허용한다.
+site order:    orders.payment_link_id IS NULL
+LinkPay order: orders.payment_link_id IS NOT NULL
+~~~
 
 ### 상태 규칙
 
-```text
+~~~text
+effective LinkPay state
+  disabled_at IS NOT NULL       → disabled
+  otherwise                     → active
+
 orders.open
-  └─ payment 생성 → orders.payment_pending + payments.ready
-       ├─ 검증된 실패/만료 → orders.open + payments.failed|expired
+  └─ Payment 생성 → orders.payment_pending + payments.ready
+       ├─ 확정 실패/만료 → orders.open + payments.failed|expired
        ├─ 결과 불명 → orders.payment_pending + payments.unknown
        └─ 승인 성공 → orders.paid + payments.paid
-            ├─ 부분환불 → orders.partially_refunded + payments.partial_cancelled
-            └─ 전액환불 → orders.refunded + payments.cancelled
-```
+            ├─ 일부 취소 → orders.partially_refunded + payments.partial_cancelled
+            └─ 잔액 전부 취소 → orders.refunded + payments.cancelled
+~~~
 
-`paid`, `partially_refunded`, `refunded` 주문에는 새 payment를 만들지 않는다. 한 주문에 `ready`, `unknown`, `paid`, `partial_cancelled`, `cancelled` 중 하나가 있으면 다른 payment 시도를 만들지 않는 partial unique index를 둔다.
+- 한 Order에는 ready, unknown, paid, partial_cancelled, cancelled 중 최대 한 Payment만 존재한다.
+- failed 또는 expired Payment 뒤에는 같은 Order에 새 Payment를 만들 수 있다.
+- 한 Payment에는 성공한 부분환불 여러 건이 존재할 수 있다.
+- refunds의 requested 또는 unknown 예약액과 성공 환불 누계는 payment.balance_amount를 초과할 수 없다.
+- refunded Order와 cancelled Payment는 다시 결제하거나 환불하지 않는다.
 
 ---
 
-### Task 1: 두 채널을 수용하는 통합 거래 원장
+### Task 1: 재사용 링크와 통합 거래 원장
 
 **Files:**
 
-- Delete after development-data verification: `supabase/migrations/20260722000000_create_payment_links.sql`
-- Delete after development-data verification: `supabase/migrations/20260723000000_add_payment_link_details.sql`
-- Delete after development-data verification: `supabase/migrations/20260723000001_create_payment_orders.sql`
-- Delete after development-data verification: `supabase/migrations/20260723000002_allow_admin_payment_link_delete.sql`
-- Create via CLI: `supabase/migrations/*_create_unified_payment_ledger.sql`
-- Create: `supabase/tests/unified_payment_ledger.sql`
-- Modify: `packages/supabase/src/types.ts`
-- Create: `packages/supabase/src/orders.ts`
-- Create: `packages/supabase/src/payments.ts`
-- Modify: `packages/supabase/src/index.ts`
-- Replace: `packages/supabase/tests/payment-links-contract.test.mjs` → `packages/supabase/tests/unified-payments-contract.test.mjs`
+- Delete after local-data verification: supabase/migrations/20260722000000_create_payment_links.sql
+- Delete after local-data verification: supabase/migrations/20260723000000_add_payment_link_details.sql
+- Delete after local-data verification: supabase/migrations/20260723000001_create_payment_orders.sql
+- Delete after local-data verification: supabase/migrations/20260723000002_allow_admin_payment_link_delete.sql
+- Create: supabase/migrations/20260810021018_create_reusable_unified_payment_ledger.sql
+- Create: supabase/tests/reusable_unified_payment_ledger.sql
+- Replace: packages/supabase/tests/payment-links-contract.test.mjs
+- Modify: packages/supabase/src/types.ts
 
 **Interfaces:**
 
-- Produces `OrderChannel = "site" | "linkpay"`.
-- Produces `OrderStatus = "open" | "payment_pending" | "paid" | "partially_refunded" | "refunded"`.
-- Produces `PaymentStatus = "ready" | "unknown" | "paid" | "failed" | "partial_cancelled" | "cancelled" | "expired"`.
-- Produces `RefundStatus = "requested" | "unknown" | "succeeded" | "failed"`.
-- Produces `create_site_checkout(...) -> payments`, `prepare_linkpay_checkout(...) -> payments`, `complete_payment(...) -> payments`, `record_payment_outcome(...) -> payments`, `reserve_payment_refund(...) -> refunds`, `record_refund_outcome(...) -> refunds`, `finalize_payment_refund(...) -> refunds`, `sync_provider_cancellations(...) -> payments`.
+- Produces OrderChannel = "site" | "linkpay".
+- Produces OrderStatus = "open" | "payment_pending" | "paid" | "partially_refunded" | "refunded".
+- Produces PaymentStatus = "ready" | "unknown" | "paid" | "failed" | "partial_cancelled" | "cancelled" | "expired".
+- Produces RefundStatus = "requested" | "unknown" | "succeeded" | "failed".
+- Produces SQL RPCs create_site_checkout, create_linkpay_checkout, finish_payment, reserve_refund, finish_refund.
 
-- [ ] **Step 1: 로컬 DB가 삭제 가능한지 증거를 남긴다**
+- [ ] **Step 1: 삭제 가능한 로컬 데이터인지 확인한다**
 
-  현재 연결 대상과 migration 상태를 먼저 확인한다.
+Run:
 
-  ```bash
-  pnpm dlx supabase@2.113.0 --version
-  pnpm dlx supabase@2.113.0 status
-  pnpm dlx supabase@2.113.0 migration list --local
-  ```
+~~~bash
+pnpm dlx supabase@2.113.0 status
+pnpm dlx supabase@2.113.0 migration list --local
+~~~
 
-  로컬 DB가 실행 중이면 다음 count를 기록한다.
+로컬 DB가 실행 중이면 다음 결과를 작업 기록에 남긴다.
 
-  ```sql
-  select
-    (select count(*) from public.payment_links) as payment_links,
-    (select count(*) from public.payment_orders) as payment_orders;
-  ```
+~~~sql
+select
+  (select count(*) from public.payment_links) as payment_links,
+  (select count(*) from public.payment_orders) as payment_orders;
+~~~
 
-  Expected: 실거래가 없고 사용자 확인이 끝난 경우에만 기존 네 payment migration을 삭제한다. 하나라도 보존 대상이면 이 task를 중단한다.
+Expected: 보존할 결제가 0건이라는 확인 후에만 기존 네 migration을 삭제한다.
 
-- [ ] **Step 2: CLI를 고정하고 빈 migration을 생성한다**
+- [ ] **Step 2: 새 원장 계약 테스트를 먼저 실패시킨다**
 
-  ```bash
-  pnpm add -Dw supabase@2.113.0
-  pnpm exec supabase --help
-  pnpm exec supabase migration new --help
-  pnpm exec supabase migration new create_unified_payment_ledger
-  ```
+packages/supabase/tests/payment-links-contract.test.mjs가 새 migration을 읽고 다음 핵심 계약을 검사하게 바꾼다.
 
-  Expected: timestamp가 붙은 빈 `*_create_unified_payment_ledger.sql`이 생성된다.
+~~~js
+for (const contract of [
+  "create table public.payment_links",
+  "create table public.orders",
+  "create table public.payments",
+  "create table public.refunds",
+  "create function public.create_site_checkout",
+  "create function public.create_linkpay_checkout",
+  "create function public.finish_payment",
+  "create function public.reserve_refund",
+  "create function public.finish_refund",
+]) {
+  assert.match(migration, new RegExp(contract.replaceAll(".", "\\.")));
+}
 
-- [ ] **Step 3: 새 원장 계약 테스트를 먼저 실패시킨다**
+assert.doesNotMatch(migration, /create table public\.sales/);
+assert.doesNotMatch(migration, /create (?:materialized )?view public\.sales/);
+assert.doesNotMatch(migration, /payment_link_status[\s\S]*paid/);
+assert.doesNotMatch(migration, /payment_link_id uuid not null unique/);
+~~~
 
-  `packages/supabase/tests/unified-payments-contract.test.mjs`가 suffix로 migration을 찾고 다음 객체를 요구하게 한다.
+Run: pnpm --filter @repo/supabase test
 
-  ```js
-  for (const sqlContract of [
-    "create table public.orders",
-    "create table public.payments",
-    "create table public.refunds",
-    "create_site_checkout",
-    "prepare_linkpay_checkout",
-    "complete_payment",
-    "record_payment_outcome",
-    "reserve_payment_refund",
-    "record_refund_outcome",
-    "finalize_payment_refund",
-    "sync_provider_cancellations",
-    "orders.channel",
-    "payments.status",
-  ]) {
-    assert.match(migration, new RegExp(sqlContract.replaceAll(".", "\\.")));
-  }
+Expected: 새 migration이 없어서 FAIL.
 
-  assert.doesNotMatch(migration, /create table public\.sales/);
-  assert.doesNotMatch(migration, /create table public\.payment_links/);
-  ```
+- [ ] **Step 3: 네 테이블과 고유성 제약을 만든다**
 
-  Run: `pnpm --filter @repo/supabase test`
+새 migration의 테이블 계약을 다음으로 고정한다.
 
-  Expected: 빈 migration 때문에 required SQL assertion이 FAIL.
+~~~sql
+create type public.order_channel as enum ('site', 'linkpay');
+create type public.order_status as enum (
+  'open', 'payment_pending', 'paid', 'partially_refunded', 'refunded'
+);
+create type public.payment_status as enum (
+  'ready', 'unknown', 'paid', 'failed',
+  'partial_cancelled', 'cancelled', 'expired'
+);
+create type public.refund_status as enum (
+  'requested', 'unknown', 'succeeded', 'failed'
+);
 
-- [ ] **Step 4: 세 테이블과 고유성 제약을 구현한다**
+create table public.payment_links (
+  id uuid primary key default gen_random_uuid(),
+  public_token uuid not null unique default gen_random_uuid(),
+  client_name text not null check (char_length(trim(client_name)) between 1 and 100),
+  payment_name text not null check (char_length(trim(payment_name)) between 1 and 100),
+  amount bigint not null check (amount between 1 and 999999999999),
+  category text not null check (char_length(trim(category)) between 1 and 100),
+  service text not null check (char_length(trim(service)) between 1 and 100),
+  paper text not null check (char_length(trim(paper)) between 1 and 100),
+  page_quantity text not null check (char_length(trim(page_quantity)) between 1 and 100),
+  disabled_at timestamptz,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
 
-  migration의 핵심 스키마를 다음으로 고정한다.
+create table public.orders (
+  id uuid primary key default gen_random_uuid(),
+  public_token uuid not null unique default gen_random_uuid(),
+  checkout_request_id uuid not null unique,
+  payment_link_id uuid references public.payment_links(id) on delete restrict,
+  channel public.order_channel not null,
+  customer_label text not null check (char_length(trim(customer_label)) between 1 and 100),
+  order_name text not null check (char_length(trim(order_name)) between 1 and 100),
+  amount bigint not null check (amount between 1 and 999999999999),
+  currency text not null default 'KRW' check (currency = 'KRW'),
+  item_snapshot jsonb not null check (jsonb_typeof(item_snapshot) = 'object'),
+  buyer_name text not null check (char_length(trim(buyer_name)) between 1 and 30),
+  buyer_company text check (buyer_company is null or char_length(trim(buyer_company)) <= 100),
+  buyer_phone text not null check (buyer_phone ~ '^01[016789][0-9]{7,8}$'),
+  buyer_email text not null check (char_length(trim(buyer_email)) between 3 and 60),
+  privacy_agreed_at timestamptz not null,
+  status public.order_status not null default 'open',
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  check (
+    (channel = 'site' and payment_link_id is null)
+    or (channel = 'linkpay' and payment_link_id is not null)
+  ),
+  check (item_snapshot ->> 'channel' = channel::text)
+);
 
-  ```sql
-  create type public.order_channel as enum ('site', 'linkpay');
-  create type public.order_status as enum (
-    'open', 'payment_pending', 'paid',
-    'partially_refunded', 'refunded'
-  );
-  create type public.payment_status as enum (
-    'ready', 'unknown', 'paid', 'failed',
-    'partial_cancelled', 'cancelled', 'expired'
-  );
-  create type public.refund_status as enum (
-    'requested', 'unknown', 'succeeded', 'failed'
-  );
+create table public.payments (
+  id uuid primary key default gen_random_uuid(),
+  order_id uuid not null references public.orders(id) on delete restrict,
+  provider_order_id text not null unique
+    check (provider_order_id ~ '^[A-Za-z0-9_-]{1,64}$'),
+  amount bigint not null check (amount between 1 and 999999999999),
+  balance_amount bigint check (balance_amount between 0 and amount),
+  status public.payment_status not null default 'ready',
+  nicepay_tid text unique
+    check (nicepay_tid is null or char_length(nicepay_tid) between 1 and 30),
+  result_code text,
+  result_message text,
+  pay_method text,
+  receipt_url text,
+  can_part_cancel boolean,
+  paid_at timestamptz,
+  cancelled_at timestamptz,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
 
-  create table public.orders (
-    id uuid primary key default gen_random_uuid(),
-    public_token uuid not null unique default gen_random_uuid(),
-    checkout_request_id uuid not null unique default gen_random_uuid(),
-    channel public.order_channel not null,
-    customer_label text not null check (char_length(trim(customer_label)) between 1 and 100),
-    order_name text not null check (char_length(trim(order_name)) between 1 and 100),
-    amount bigint not null check (amount between 1 and 999999999999),
-    currency text not null default 'KRW' check (currency = 'KRW'),
-    item_snapshot jsonb not null check (jsonb_typeof(item_snapshot) = 'object'),
-    buyer_name text check (buyer_name is null or char_length(trim(buyer_name)) between 1 and 30),
-    buyer_company text check (buyer_company is null or char_length(trim(buyer_company)) <= 100),
-    buyer_phone text check (buyer_phone is null or buyer_phone ~ '^01[016789][0-9]{7,8}$'),
-    buyer_email text check (buyer_email is null or char_length(trim(buyer_email)) between 3 and 60),
-    privacy_agreed_at timestamptz,
-    status public.order_status not null default 'open',
-    created_by uuid,
-    created_at timestamptz not null default now(),
-    updated_at timestamptz not null default now(),
-    check (
-      item_snapshot ->> 'channel' = channel::text
-      and item_snapshot ->> 'schemaVersion' = '1'
-    ),
-    check (
-      (channel = 'linkpay' and created_by is not null)
-      or (channel = 'site' and created_by is null)
-    ),
-    check (
-      status = 'open'
-      or (
-        buyer_name is not null
-        and buyer_phone is not null
-        and buyer_email is not null
-        and privacy_agreed_at is not null
-      )
-    )
-  );
+create unique index payments_one_blocking_attempt_per_order
+  on public.payments (order_id)
+  where status in ('ready', 'unknown', 'paid', 'partial_cancelled', 'cancelled');
 
-  create table public.payments (
-    id uuid primary key default gen_random_uuid(),
-    order_id uuid not null references public.orders(id) on delete restrict,
-    provider_order_id text not null unique check (
-      provider_order_id ~ '^[A-Za-z0-9_-]{1,64}$'
-    ),
-    amount bigint not null check (amount between 1 and 999999999999),
-    balance_amount bigint check (balance_amount between 0 and amount),
-    status public.payment_status not null default 'ready',
-    nicepay_tid text unique check (
-      nicepay_tid is null or char_length(nicepay_tid) between 1 and 30
-    ),
-    result_code text,
-    result_message text,
-    pay_method text,
-    receipt_url text,
-    can_part_cancel boolean,
-    paid_at timestamptz,
-    cancelled_at timestamptz,
-    created_at timestamptz not null default now(),
-    updated_at timestamptz not null default now()
-  );
+create table public.refunds (
+  id uuid primary key default gen_random_uuid(),
+  payment_id uuid not null references public.payments(id) on delete restrict,
+  request_id uuid not null unique,
+  provider_refund_order_id text not null unique
+    check (provider_refund_order_id ~ '^[A-Za-z0-9_-]{1,64}$'),
+  amount bigint not null check (amount > 0),
+  reason text not null check (char_length(trim(reason)) between 1 and 100),
+  status public.refund_status not null default 'requested',
+  requested_by uuid not null,
+  nicepay_cancelled_tid text unique,
+  result_code text,
+  result_message text,
+  receipt_url text,
+  requested_at timestamptz not null default now(),
+  refunded_at timestamptz,
+  updated_at timestamptz not null default now()
+);
+~~~
 
-  create unique index payments_one_blocking_attempt_per_order
-    on public.payments (order_id)
-    where status in (
-      'ready', 'unknown', 'paid', 'partial_cancelled', 'cancelled'
-    );
+orders(channel, created_at), payments(paid_at), refunds(payment_id), refunds(refunded_at)에 index를 추가하고 네 테이블에 공용 updated_at trigger를 적용한다.
 
-  create table public.refunds (
-    id uuid primary key default gen_random_uuid(),
-    payment_id uuid not null references public.payments(id) on delete restrict,
-    request_id uuid not null unique,
-    provider_refund_order_id text not null unique check (
-      provider_refund_order_id ~ '^[A-Za-z0-9_-]{1,64}$'
-    ),
-    amount bigint not null check (amount > 0),
-    reason text not null check (char_length(trim(reason)) between 1 and 100),
-    status public.refund_status not null default 'requested',
-    origin text not null default 'admin' check (origin in ('admin', 'provider')),
-    requested_by uuid,
-    nicepay_cancelled_tid text unique,
-    result_code text,
-    result_message text,
-    receipt_url text,
-    requested_at timestamptz not null default now(),
-    refunded_at timestamptz,
-    updated_at timestamptz not null default now(),
-    check (
-      (origin = 'admin' and requested_by is not null)
-      or (origin = 'provider' and requested_by is null)
-    )
-  );
-  ```
+- [ ] **Step 4: 다섯 RPC의 transaction 계약을 구현한다**
 
-  `orders(channel, created_at)`, `payments(paid_at)`, `refunds(payment_id)`, `refunds(refunded_at)` index와 공용 `updated_at` trigger를 추가한다.
+정확한 함수 책임은 다음과 같다.
 
-- [ ] **Step 5: 상태 변경 RPC를 transaction 단위로 구현한다**
+~~~text
+create_site_checkout
+  server-calculated snapshot + customer + checkout_request_id
+  → Order(site) + Payment(ready)를 한 transaction에서 생성
 
-  `create_site_checkout`는 서버가 계산한 주문 snapshot과 고객정보를 받아 `orders(channel = 'site', status = 'payment_pending')`와 `payments(status = 'ready')`를 한 transaction에서 만든다. `checkout_request_id`가 이미 있으면 amount, snapshot, 이름·회사·이메일·전화가 모두 같을 때만 기존 payment를 반환하고 하나라도 다르면 예외를 발생시킨다. provider 주문번호는 `PAY` + payment UUID의 하이픈 제거 문자열로 만든다.
+create_linkpay_checkout
+  public_token으로 Link를 잠그고 disabled_at 검사
+  → Link 내용을 snapshot한 Order(linkpay) + Payment(ready) 생성
+  → Link row는 변경하지 않음
 
-  `prepare_linkpay_checkout`는 `public_token`으로 `orders(channel = 'linkpay')`를 `FOR UPDATE` 잠근다.
+동일 checkout_request_id
+  ready|unknown|paid|partial_cancelled|cancelled → 기존 Order/Payment 반환
+  failed|expired → 같은 Order에 새 Payment 생성
 
-  ```text
-  open + payment 없음       → 고객정보 저장, ready payment 생성
-  open + failed/expired만   → 새 ready payment 생성
-  ready                     → 같은 payment 반환
-  unknown                   → 예외, 새 결제 차단
-  paid/partial/refunded     → 예외, 새 결제 차단
-  ```
+finish_payment
+  provider_order_id로 Order/Payment 잠금
+  paid → TID, amount, balance, paidAt 검증 후 Order와 Payment 동시 확정
+  failed|expired → Order open
+  unknown → Order payment_pending
 
-  `complete_payment`는 provider 주문번호로 payment와 order를 같은 순서로 잠그고 DB 금액과 승인 금액을 비교한다. 같은 TID로 이미 `paid`면 idempotent하게 기존 row를 반환하고, 다른 TID면 거절한다. 성공 시 `payments.paid`, `balance_amount = amount`, `orders.paid`를 같은 transaction에 기록한다.
+reserve_refund
+  Payment와 기존 Refund를 잠금
+  amount <= balance_amount
+  requested + unknown 예약액 합계가 balance_amount 이하
+  같은 request_id면 기존 Refund와 should_execute = false를 반환
+  새 예약을 이번 호출이 원자적으로 생성/claim한 경우에만 should_execute = true를 반환
+  should_execute = true인 호출만 NICEPAY 취소를 실행한다
 
-  `record_payment_outcome`은 `failed`, `expired`, `unknown`만 인자로 허용한다. `failed|expired`면 order를 `open`, `unknown`이면 `payment_pending`으로 유지한다. `paid|partial_cancelled|cancelled`를 이 함수로 쓸 수 없게 한다.
+finish_refund
+  succeeded → cancelledTid와 provider balance 검증 후 잔액/상태 동시 갱신
+  failed → 예약 해제
+  unknown → 예약 유지
+~~~
 
-  `reserve_payment_refund`는 request ID 재호출 시 기존 refund를 반환하고 payment를 잠근 뒤 새 금액과 기존 `requested + unknown` 예약액의 합이 현재 `balance_amount`를 넘지 않는지 검사한다. 성공 환불은 이미 balance에서 차감되므로 예약 합계에 다시 더하지 않는다. `record_refund_outcome`은 `failed|unknown`만 허용한다. `finalize_payment_refund`는 이번 환불까지의 `succeeded` 합계와 NICEPAY `balanceAmt` 합이 원 payment amount와 같은지 검증한 뒤 payment/order/refund를 한 transaction으로 갱신한다.
+모든 RPC는 SECURITY INVOKER, SET search_path = public을 사용한다. PUBLIC, anon, authenticated의 execute 권한을 revoke하고 service_role에만 grant한다.
 
-  `sync_provider_cancellations`는 payment/order를 잠그고 검증된 provider status, balance, 취소 목록 JSON을 받는다. balance가 기존 값보다 증가하거나 `succeeded` refund 합계와 원 payment amount가 맞지 않으면 payment를 `unknown`으로 잠근다. 정상 목록은 취소 TID로 idempotent upsert한다.
+- [ ] **Step 5: RLS와 관리자 LinkPay 쓰기 규칙을 고정한다**
 
-  모든 결제·환불 RPC는 `SECURITY INVOKER`, `SET search_path = public`을 사용하고 `PUBLIC`, `anon`, `authenticated`의 execute를 revoke한 뒤 `service_role`만 grant한다.
+- authenticated admin은 payment_links를 조회·생성·수정할 수 있다.
+- 연결 Order가 없는 Link만 삭제할 수 있다. 거래가 있는 Link는 disabled_at을 설정한다.
+- 활성 Link의 내용 수정은 허용한다. 이미 생성된 Order는 item_snapshot과 amount가 바뀌지 않는다.
+- authenticated admin은 orders, payments, refunds를 읽을 수 있지만 직접 insert/update/delete하지 않는다.
+- anon은 네 테이블과 RPC에 직접 접근하지 않는다.
+- service_role만 public checkout route, callback, webhook, refund route에서 원장을 쓴다.
 
-- [ ] **Step 6: LinkPay 관리자 쓰기와 원장 읽기 권한을 명시한다**
+- [ ] **Step 6: DB와 타입 계약을 검증한다**
 
-  세 테이블 모두 RLS를 활성화한다. `orders`에는 admin select와 LinkPay 전용 insert/update/delete 정책을 둔다. authenticated update column은 `customer_label`, `order_name`, `amount`, `item_snapshot`으로 제한한다. update/delete는 `channel = 'linkpay'`, `status = 'open'`, 연결 payment 없음일 때만 허용한다.
+Run:
 
-  ```sql
-  revoke all on public.orders, public.payments, public.refunds
-    from anon, authenticated;
+~~~bash
+pnpm dlx supabase@2.113.0 db reset
+pnpm dlx supabase@2.113.0 test db supabase/tests/reusable_unified_payment_ledger.sql
+pnpm --filter @repo/supabase test
+pnpm --filter @repo/supabase check-types
+~~~
 
-  grant select on public.orders, public.payments, public.refunds
-    to authenticated;
-  grant insert (channel, customer_label, order_name, amount, item_snapshot, created_by)
-    on public.orders to authenticated;
-  grant update (customer_label, order_name, amount, item_snapshot)
-    on public.orders to authenticated;
-  grant delete on public.orders to authenticated;
+Expected:
 
-  grant all on public.orders, public.payments, public.refunds
-    to service_role;
-  ```
+- 같은 Link token과 서로 다른 request ID로 서로 다른 Order 두 건 생성.
+- 두 결제 성공 후에도 payment_links row 변경 없음.
+- 같은 request ID 재호출은 Order/Payment 중복 없음.
+- 부분환불 두 건의 성공 누계와 balance_amount 일치.
+- 잔액 초과와 unknown 중 추가 환불 차단.
 
-  admin 정책은 `public.is_admin()`과 `created_by = (select auth.uid())`를 사용한다. public LinkPay 페이지도 secret server helper를 통해 읽으므로 `anon` 정책을 만들지 않는다.
+- [ ] **Step 7: 원장 변경을 커밋한다**
 
-- [ ] **Step 7: pgTAP으로 원장 불변식을 검증한다**
+~~~bash
+git add supabase/migrations supabase/tests packages/supabase/src/types.ts packages/supabase/tests/payment-links-contract.test.mjs
+git commit -m "feat: add reusable unified payment ledger"
+~~~
 
-  `supabase/tests/unified_payment_ledger.sql`에서 최소 다음을 검증한다.
-  - site와 linkpay 주문 모두 생성 가능.
-  - site checkout의 브라우저 합계가 아니라 RPC 인자 금액이 payment에 복사됨.
-  - 한 주문에 동시에 두 ready payment를 만들 수 없음.
-  - unknown payment가 있으면 재시도가 차단됨.
-  - 같은 승인 TID 재완료는 동일 payment를 반환함.
-  - 다른 승인 TID로 같은 주문을 완료하면 실패함.
-  - 같은 refund request ID는 동일 refund를 반환함.
-  - 예약 환불을 포함한 누계가 balance를 넘으면 실패함.
-  - 부분환불은 order를 `partially_refunded`, 전액환불은 `refunded`로 만듦.
-  - anon은 세 테이블과 RPC에 접근할 수 없음.
+---
 
-  Run:
+### Task 2: 공통 Supabase API와 NICEPAY 승인 경로
 
-  ```bash
-  pnpm exec supabase start
-  pnpm exec supabase db reset --local --no-seed
-  pnpm exec supabase test db --local
-  ```
+**Files:**
 
-  Expected: 모든 pgTAP assertion 통과.
+- Modify: packages/supabase/src/paymentLinks.ts
+- Create: packages/supabase/src/payments.ts
+- Create: packages/supabase/src/refunds.ts
+- Modify: packages/supabase/src/index.ts
+- Modify: apps/user/lib/nicepay.ts
+- Create: apps/user/lib/paymentCheckout.ts
+- Modify: apps/user/app/api/payments/nicepay/return/route.ts
+- Modify: apps/user/app/api/payments/nicepay/webhook/route.ts
+- Create: apps/user/app/(site)/payment/result/[publicToken]/page.tsx
+- Modify: apps/user/app/(site)/order/OrderPaymentResult.tsx
+- Modify: apps/user/__tests__/nicepay.test.mjs
+- Modify: apps/user/__tests__/linkpay-payment.test.mjs
+- Create: apps/user/__tests__/payment-result.test.mjs
 
-- [ ] **Step 8: Supabase 타입과 helper를 새 명칭으로 교체한다**
+**Interfaces:**
 
-  `orders.ts`는 LinkPay 관리와 공개 token 조회를 담당한다.
+- Produces createSiteCheckout(client, input) -> CheckoutSession.
+- Produces createLinkPayCheckout(client, input) -> CheckoutSession.
+- Produces finishPayment(client, input) -> PaymentRow.
+- Produces getPaymentByProviderOrderId(client, providerOrderId) -> PaymentWithOrder.
+- Produces getOrderResultByPublicToken(client, publicToken) -> SafeOrderResult.
+- Produces NicepayCheckoutRequest = { amount, clientId, goodsName, method: "card", orderId, returnUrl }.
 
-  ```ts
-  export type OrderRow = TableRow<"orders">;
-  export type LinkPayOrderInput = {
+- [ ] **Step 1: 공통 결제 helper 계약 테스트를 실패시킨다**
+
+테스트에서 다음을 검사한다.
+
+~~~js
+assert.match(paymentHelpers, /createSiteCheckout/);
+assert.match(paymentHelpers, /createLinkPayCheckout/);
+assert.match(paymentHelpers, /finishPayment/);
+assert.match(returnRoute, /getPaymentByProviderOrderId/);
+assert.doesNotMatch(returnRoute, /searchParams\\.get\\("token"\\)/);
+assert.match(resultPage, /getOrderResultByPublicToken/);
+~~~
+
+Run: pnpm --filter user test
+
+Expected: 새 helper와 공통 결과 페이지가 없어 FAIL.
+
+- [ ] **Step 2: Supabase wrapper와 안전한 결과 DTO를 구현한다**
+
+paymentLinks.ts는 템플릿 CRUD와 public token 조회만 담당한다. payments.ts는 checkout/finish RPC와 provider_order_id 조회를 담당하고 refunds.ts는 Task 6에서 사용할 환불 RPC wrapper를 export한다.
+
+공개 결과 DTO는 다음 필드만 반환한다.
+
+~~~ts
+export type SafeOrderResult = {
+  channel: "site" | "linkpay";
+  orderName: string;
+  paymentMethod: string | null;
+  status:
+    | "open"
+    | "payment_pending"
+    | "paid"
+    | "partially_refunded"
+    | "refunded";
+  totalAmount: number;
+};
+~~~
+
+buyer_name, buyer_phone, buyer_email, 다른 고객의 Order 목록은 공개 DTO에 포함하지 않는다.
+
+- [ ] **Step 3: NICEPAY 응답 parser를 원장 필드까지 확장한다**
+
+NicepayPayment에 다음 필드를 추가하고 parser 테스트를 작성한다.
+
+~~~ts
+export type NicepayPayment = {
+  amount: number;
+  balanceAmt: number;
+  cancelledAt: string | null;
+  cancelledTid: string | null;
+  cancels: ReadonlyArray<{
     amount: number;
-    customer_label: string;
-    item_snapshot: LinkPayOrderSnapshot;
-    order_name: string;
-  };
-
-  export function listAdminLinkPayOrders(
-    client: CBrainSupabaseClient,
-  ): Promise<OrderRow[]>;
-  export function getAdminLinkPayOrder(
-    client: CBrainSupabaseClient,
-    id: string,
-  ): Promise<OrderRow>;
-  export function createLinkPayOrder(
-    client: CBrainSupabaseClient,
-    input: LinkPayOrderInput,
-  ): Promise<OrderRow>;
-  export function updateOpenLinkPayOrder(
-    client: CBrainSupabaseClient,
-    id: string,
-    input: LinkPayOrderInput,
-  ): Promise<OrderRow>;
-  export function deleteOpenLinkPayOrder(
-    client: CBrainSupabaseClient,
-    id: string,
-  ): Promise<void>;
-  export function getOrderByPublicToken(
-    client: CBrainSupabaseClient,
-    token: string,
-  ): Promise<OrderRow | null>;
-  ```
-
-  `createLinkPayOrder`는 `channel = "linkpay"`와 `requireAdmin(client)`가 반환한 `user.id`를 DB input에 주입한다. 호출자가 channel이나 다른 사용자 ID를 전달하는 인터페이스는 만들지 않는다.
-
-  `payments.ts`는 서버 전용 RPC wrapper와 payment 조회를 담당한다.
-
-  ```ts
-  export type PaymentRow = TableRow<"payments">;
-  export type RefundRow = TableRow<"refunds">;
-  export type PaymentWithOrder = PaymentRow & { order: OrderRow };
-
-  export type CreateSiteCheckoutInput = {
-    amount: number;
-    buyerCompany: string | null;
-    buyerEmail: string;
-    buyerName: string;
-    buyerPhone: string;
-    customerLabel: string;
-    itemSnapshot: SiteOrderSnapshot;
-    orderName: string;
-    privacyAgreedAt: string;
-    requestId: string;
-  };
-
-  export type PrepareLinkPayCheckoutInput = {
-    buyerCompany: string | null;
-    buyerEmail: string;
-    buyerName: string;
-    buyerPhone: string;
-    privacyAgreedAt: string;
-    publicToken: string;
-  };
-
-  export type CompletePaymentInput = {
-    amount: number;
-    canPartCancel: boolean;
-    nicepayTid: string;
-    paidAt: string;
-    payMethod: string | null;
-    providerOrderId: string;
-    receiptUrl: string | null;
-    resultCode: string;
-    resultMessage: string;
-  };
-
-  export type RecordPaymentOutcomeInput = {
-    providerOrderId: string;
-    resultCode: string;
-    resultMessage: string;
-    status: "failed" | "expired" | "unknown";
-  };
-
-  export type ReservePaymentRefundInput = {
-    amount: number;
-    paymentId: string;
+    cancelledAt: string;
     reason: string;
-    requestId: string;
-    requestedBy: string;
-  };
-
-  export type RecordRefundOutcomeInput = {
-    refundId: string;
-    resultCode: string;
-    resultMessage: string;
-    status: "failed" | "unknown";
-  };
-
-  export type FinalizePaymentRefundInput = {
-    balanceAmount: number;
-    cancelledTid: string;
     receiptUrl: string | null;
-    refundId: string;
-    refundedAt: string;
-    resultCode: string;
-    resultMessage: string;
-  };
-
-  export type ProviderCancellationSnapshot = {
-    balanceAmount: number;
-    cancellations: readonly {
-      amount: number;
-      cancelledAt: string;
-      reason: string;
-      receiptUrl: string | null;
-      tid: string;
-    }[];
-    paymentStatus: "paid" | "partial_cancelled" | "cancelled";
-  };
-
-  export function createSiteCheckout(
-    client: CBrainSupabaseClient,
-    input: CreateSiteCheckoutInput,
-  ): Promise<PaymentWithOrder>;
-  export function prepareLinkPayCheckout(
-    client: CBrainSupabaseClient,
-    input: PrepareLinkPayCheckoutInput,
-  ): Promise<PaymentWithOrder>;
-  export function getLatestPaymentByOrderId(
-    client: CBrainSupabaseClient,
-    orderId: string,
-  ): Promise<PaymentRow | null>;
-  export function getPaymentByProviderOrderId(
-    client: CBrainSupabaseClient,
-    providerOrderId: string,
-  ): Promise<PaymentWithOrder | null>;
-  export function completePayment(
-    client: CBrainSupabaseClient,
-    input: CompletePaymentInput,
-  ): Promise<PaymentRow>;
-  export function recordPaymentOutcome(
-    client: CBrainSupabaseClient,
-    input: RecordPaymentOutcomeInput,
-  ): Promise<PaymentRow>;
-  export function reservePaymentRefund(
-    client: CBrainSupabaseClient,
-    input: ReservePaymentRefundInput,
-  ): Promise<RefundRow>;
-  export function recordRefundOutcome(
-    client: CBrainSupabaseClient,
-    input: RecordRefundOutcomeInput,
-  ): Promise<RefundRow>;
-  export function finalizePaymentRefund(
-    client: CBrainSupabaseClient,
-    input: FinalizePaymentRefundInput,
-  ): Promise<RefundRow>;
-  export function syncProviderCancellations(
-    client: CBrainSupabaseClient,
-    paymentId: string,
-    snapshot: ProviderCancellationSnapshot,
-  ): Promise<PaymentRow>;
-  ```
-
-  `types.ts`는 새 enum/table/RPC를 반영하고 `index.ts`에서 두 파일을 export한다. 기존 `paymentLinks.ts`는 Task 4에서 소비처를 모두 옮긴 뒤 삭제한다.
-
-- [ ] **Step 9: DB·타입·보안 gate를 통과시킨다**
-
-  ```bash
-  pnpm exec supabase db reset --local --no-seed
-  pnpm exec supabase test db --local
-  pnpm exec supabase db advisors --local
-  pnpm --filter @repo/supabase test
-  pnpm --filter @repo/supabase check-types
-  pnpm --filter @repo/supabase lint
-  ```
-
-  Expected: 모두 exit 0이며 새 원장 관련 security/performance advisor warning이 0이다.
-
----
-
-### Task 2: 채널 중립 NICEPAY 결제 코어
-
-**Files:**
-
-- Create: `apps/user/lib/paymentCheckout.ts`
-- Modify: `apps/user/lib/nicepay.ts`
-- Modify: `apps/user/app/api/payments/nicepay/return/route.ts`
-- Modify: `apps/user/app/api/payments/nicepay/webhook/route.ts`
-- Create: `apps/user/__tests__/payment-checkout.test.mjs`
-- Modify: `apps/user/__tests__/nicepay.test.mjs`
-- Modify: `apps/user/__tests__/linkpay-payment.test.mjs`
-
-**Interfaces:**
-
-- Produces `NicepayCheckoutRequest` used by both site and LinkPay.
-- Produces `buildNicepayCheckoutRequest(order, payment, config)`.
-- Produces `getPaymentResultLocation(order, "success" | "failed" | "pending")`.
-- The common return endpoint finds the payment from the signed callback `orderId`; it does not accept a LinkPay token.
-
-- [ ] **Step 1: 두 채널 공통 계약 테스트를 먼저 작성한다**
-
-  ```js
-  assert.doesNotMatch(returnRoute, /searchParams\.get\(["']token["']\)/);
-  assert.match(returnRoute, /getPaymentByProviderOrderId/);
-  assert.match(returnRoute, /getPaymentResultLocation/);
-  assert.match(checkoutCore, /order\.channel === "site"/);
-  assert.match(checkoutCore, /order\.channel === "linkpay"/);
-  assert.match(webhookRoute, /getPaymentByProviderOrderId/);
-  ```
-
-  Run: `pnpm --filter user test`
-
-  Expected: `paymentCheckout.ts`가 없고 return이 token에 결합되어 있어 FAIL.
-
-- [ ] **Step 2: 공통 checkout request builder를 구현한다**
-
-  ```ts
-  export type NicepayCheckoutRequest = {
-    amount: number;
-    buyerEmail: string;
-    buyerName: string;
-    buyerTel: string;
-    clientId: string;
-    goodsName: string;
-    method: "card";
-    orderId: string;
-    returnUrl: string;
-  };
-  ```
-
-  `buildNicepayCheckoutRequest`는 `order.amount === payment.amount`, `payment.status === "ready"`, 구매자 필드 존재를 검사하고 공통 return URL `/api/payments/nicepay/return`을 만든다. 브라우저 payload는 인자로 받지 않는다.
-
-- [ ] **Step 3: return route를 payment 중심으로 바꾼다**
-
-  route는 form을 parse한 뒤 callback `orderId`로 `payments.provider_order_id`를 조회한다. DB의 payment/order 금액과 callback 금액, client key, TID, signature를 검증한 뒤 현재 승인→거래조회→망취소 순서를 유지한다.
-
-  ```text
-  승인 또는 조회로 paid 증명       → completePayment
-  서명된 failed/expired 증명       → recordPaymentOutcome
-  승인·조회·망취소 모두 불명확     → recordPaymentOutcome(unknown)
-  변조된 callback                  → provider 승인 호출 없이 400
-  ```
-
-  저장 후 `order.channel`과 `order.public_token`으로 결과 URL을 정한다.
-
-  ```ts
-  const resultPaths = {
-    site: {
-      success: "/order/success",
-      failed: "/order/fail",
-      pending: "/order/pending",
-    },
-    linkpay: {
-      success: `/linkpay/${order.public_token}/success`,
-      failed: `/linkpay/${order.public_token}/fail`,
-      pending: `/linkpay/${order.public_token}/pending`,
-    },
-  } as const;
-  ```
-
-  site URL에는 `token=orders.public_token` query를 붙인다. malformed form처럼 order를 찾을 수 없는 요청은 redirect하지 않고 400을 반환한다.
-
-- [ ] **Step 4: webhook을 channel-neutral하게 만든다**
-
-  webhook은 `payment_links`를 조회하지 않는다. provider `orderId`로 payment+order를 찾고 서명, 금액, TID를 검증한 뒤 같은 `completePayment`/`recordPaymentOutcome`을 호출한다. NICEPAY webhook test의 존재하지 않는 주문은 기존처럼 정확한 `OK`로 응답하되, 알려진 주문의 mismatch는 400이다.
-
-- [ ] **Step 5: 공통 코어 테스트를 통과시킨다**
-
-  다음을 mock 테스트한다.
-  - site/linkpay가 같은 return URL과 서로 다른 결과 URL을 사용함.
-  - callback orderId가 없는 경우 provider API를 호출하지 않음.
-  - DB amount와 callback amount가 다르면 승인하지 않음.
-  - 승인 timeout + 조회 실패 + 망취소 실패는 `unknown` 저장.
-  - 동일 TID callback과 webhook은 idempotent.
-  - cancelled/partialCancelled가 늦은 paid webhook으로 되돌아가지 않음.
-
-  Run:
-
-  ```bash
-  pnpm --filter user test
-  pnpm --filter user check-types
-  pnpm --filter user lint
-  ```
-
-  Expected: 모두 exit 0.
-
----
-
-### Task 3: 사이트 일반 주문 결제 완주
-
-**Files:**
-
-- Modify: `apps/user/app/(site)/order/payment.ts`
-- Modify: `apps/user/app/(site)/order/page.tsx`
-- Modify: `apps/user/app/(site)/order/OrderCustomerInfoStep.tsx`
-- Modify: `apps/user/app/(site)/order/OrderPaymentResult.tsx`
-- Modify: `apps/user/app/(site)/order/success/page.tsx`
-- Modify: `apps/user/app/(site)/order/fail/page.tsx`
-- Create: `apps/user/app/(site)/order/pending/page.tsx`
-- Modify: `apps/user/__tests__/order-page.test.mjs`
-- Create: `apps/user/__tests__/site-payment.test.mjs`
-
-**Interfaces:**
-
-- `submitOrderPayment(payload)` consumes a stable `requestId` and returns `{ status: "ready", checkout: NicepayCheckoutRequest }` or a verified validation failure.
-- `resolveSiteOrderQuote(ids)` returns only server-derived amount, order name, and `SiteOrderSnapshot`.
-- The browser invokes `AUTHNICE.requestPay(checkout)` once.
-
-```ts
-export type SiteOrderQuote = {
-  amount: number;
-  orderName: string;
-  snapshot: SiteOrderSnapshot;
-};
-
-export type OrderPaymentSubmitPayload = {
-  agreements: Record<AgreementId, boolean>;
-  customer: OrderCustomerInfo;
-  requestId: string;
-  summary: OrderSelectionSummary;
-};
-```
-
-- [ ] **Step 1: payment-not-ready 테스트를 실제 checkout 계약으로 바꾼다**
-
-  ```js
-  assert.match(paymentAction, /createSiteCheckout/);
-  assert.match(paymentAction, /buildNicepayCheckoutRequest/);
-  assert.doesNotMatch(paymentAction, /payment-not-ready/);
-  assert.match(orderPage, /AUTHNICE\.requestPay/);
-  assert.match(orderPage, /checkout/);
-  ```
-
-  Run: `pnpm --filter user test`
-
-  Expected: 기존 server action이 `payment-not-ready`를 반환하므로 FAIL.
-
-- [ ] **Step 2: 서버가 사이트 주문 견적과 snapshot을 재구성한다**
-
-  `resolveSiteOrderQuote`는 `serviceId`, `pageId`, `paperId`, `quantityId`, `hasPlanning`만 사용한다. `getOrderOptionConfig`, `getOrderQuantityOptions`, `getDirectServiceItemById`로 유효 옵션을 찾고 다음 값을 서버에서 만든다.
-
-  ```ts
-  const amount =
-    selectedQuantity.total +
-    (ids.hasPlanning ? optionConfig.planningService.fee : 0);
-
-  return {
-    amount,
-    orderName: service.title,
-    snapshot: {
-      channel: "site",
-      hasPlanning: ids.hasPlanning,
-      pageId: selectedPage.id,
-      pageLabel: selectedPage.label,
-      paperId: selectedPaper.id,
-      paperLabel: selectedPaper.label,
-      quantityId: selectedQuantity.id,
-      quantityLabel: selectedQuantity.quantity,
-      schemaVersion: 1,
-      serviceId: service.id,
-      serviceLabel: service.title,
-      unitPrice: selectedQuantity.unitPriceAmount,
-    },
-  } satisfies SiteOrderQuote;
-  ```
-
-  payload의 `summary.totalPrice`, label, unit price는 비교용으로도 의존하지 않는다. 서버에서 option ID를 찾지 못하면 `invalid-product`, 가격표가 없으면 `invalid-price`를 반환한다.
-
-- [ ] **Step 3: server action이 주문과 payment를 만들고 checkout 값을 반환한다**
-
-  request ID가 UUID인지 확인하고 이름 1~30자, 회사명 0~100자, 국내 휴대전화 숫자, 이메일 3~60자, 두 약관 `true`를 서버에서 다시 검증한다. 전화번호는 숫자만 저장하고 `privacy_agreed_at = new Date().toISOString()`을 기록한다.
-
-  고객정보 step은 한 checkout 시도 동안 유지되는 `crypto.randomUUID()`를 만들고 payload의 `requestId`로 전달한다. server action은 `customerLabel = customerCompany.trim() || customerName.trim()`으로 만들고 `createSiteCheckout`에 request ID, server quote, 고객정보를 전달한다. 반환 payment와 연결 order로 `buildNicepayCheckoutRequest`를 호출하며 성공 result에 내부 DB ID는 포함하지 않는다.
-
-- [ ] **Step 4: 기존 결제 버튼을 NICEPAY SDK에 연결한다**
-
-  `page.tsx` 또는 가장 가까운 client component에서 공식 SDK `https://pay.nicepay.co.kr/v1/js/`를 `next/script`로 한 번 로드한다. 중복 submit을 막고 server action 성공 시에만 호출한다.
-
-  ```ts
-  const result = await submitOrderPayment(payload);
-
-  if (result.status !== "ready") {
-    router.push(result.redirectHref);
-    return;
-  }
-
-  window.AUTHNICE.requestPay({
-    ...result.checkout,
-    fnError() {
-      setIsSubmitting(false);
-    },
-  });
-  ```
-
-  `Window.AUTHNICE` 최소 타입만 선언하고 SDK wrapper class나 새 상태관리 라이브러리는 만들지 않는다.
-
-- [ ] **Step 5: site success/fail/pending 페이지를 실제 order 상태로 연결한다**
-
-  세 페이지는 `token` query로 server-only `getOrderByPublicToken`을 호출하고 `channel === "site"`인지 확인한다.
-  - success: `paid|partially_refunded|refunded`만 성공 UI, 나머지는 pending/fail로 redirect.
-  - fail: `open`이면서 최신 payment가 `failed|expired`일 때만 실패 UI. query의 오류 문구를 그대로 출력하지 않는다.
-  - pending: `payment_pending`만 “결제 결과 확인 중이며 다시 결제하지 마세요” 표시.
-
-  기존 `OrderPaymentResult`에 `pending` variant를 추가하되 구조와 CSS는 재사용한다.
-
-- [ ] **Step 6: 자동 테스트를 통과시킨다**
-
-  다음을 검증한다.
-  - 변조한 브라우저 합계가 payment amount에 반영되지 않음.
-  - 존재하지 않는 옵션 조합은 DB row를 만들지 않음.
-  - 약관·이름·전화·이메일 누락은 NICEPAY 호출 전에 실패.
-  - 같은 requestId의 double click/네트워크 재시도는 같은 payment를 반환하고 `requestPay`를 한 번만 실행.
-  - site order의 success URL이 LinkPay URL로 가지 않음.
-  - pending 화면에 재결제 버튼이 없음.
-
-  Run:
-
-  ```bash
-  pnpm --filter user test
-  pnpm --filter user check-types
-  pnpm --filter user lint
-  pnpm --filter user build
-  ```
-
-  Expected: 모두 exit 0.
-
-- [ ] **Step 7: 첫 번째 수동 체크포인트로 사이트 결제를 검증한다**
-
-  NICEPAY sandbox에서 현재 카탈로그의 한 상품을 선택해 결제한다.
-  1. 브라우저 표시 합계와 server-created `orders.amount`가 같다.
-  2. `orders.channel = site`, snapshot에 선택 옵션이 기록된다.
-  3. NICEPAY 결제창 금액이 DB payment amount와 같다.
-  4. 승인 후 order/payment가 각각 `paid`가 된다.
-  5. `/order/success?token=...`이 실제 주문 내용을 표시한다.
-
-  이 체크포인트가 통과하기 전에는 LinkPay 마이그레이션을 진행하지 않는다.
-
----
-
-### Task 4: LinkPay를 같은 주문·결제 파이프라인으로 이동
-
-**Files:**
-
-- Modify: `apps/admin/src/pages/LinkPayPage.tsx`
-- Modify: `apps/admin/src/pages/LinkPayFormPage.tsx`
-- Modify: `apps/admin/src/pages/linkPayData.ts`
-- Modify: `apps/admin/tests/linkPayData.test.mjs`
-- Modify: `apps/admin/tests/linkPayFormPage.test.mjs`
-- Modify: `apps/admin/tests/linkPayPage.test.mjs`
-- Modify: `apps/user/app/(site)/linkpay/[id]/page.tsx`
-- Modify: `apps/user/app/(site)/linkpay/[id]/LinkPayPaymentForm.tsx`
-- Delete: `apps/user/app/(site)/linkpay/[id]/payment.ts`
-- Delete: `apps/user/app/_content/linkPay.ts`
-- Modify: `apps/user/app/(site)/linkpay/[id]/success/page.tsx`
-- Modify: `apps/user/app/(site)/linkpay/[id]/fail/page.tsx`
-- Create: `apps/user/app/(site)/linkpay/[id]/pending/page.tsx`
-- Modify: `apps/user/app/api/linkpay/[publicToken]/order/route.ts`
-- Modify: `apps/user/__tests__/linkpay-page.test.mjs`
-- Modify: `apps/user/__tests__/linkpay-payment.test.mjs`
-- Delete: `packages/supabase/src/paymentLinks.ts`
-
-**Interfaces:**
-
-- Admin LinkPay CRUD reads/writes `orders where channel = "linkpay"`.
-- `POST /api/linkpay/:publicToken/order` consumes only `{ customer, agreements }` and returns `NicepayCheckoutRequest`.
-- LinkPay and site payment share Task 2 return/webhook code without channel branches outside result routing.
-
-- [ ] **Step 1: 관리자 LinkPay 테스트를 새 order helper 이름으로 바꾼다**
-
-  ```js
-  assert.match(pageSource, /listAdminLinkPayOrders/);
-  assert.match(formSource, /createLinkPayOrder/);
-  assert.match(formSource, /updateOpenLinkPayOrder/);
-  assert.match(formSource, /deleteOpenLinkPayOrder/);
-  assert.doesNotMatch(pageSource + formSource, /PaymentLink/);
-  ```
-
-  Run: `pnpm --filter admin test`
-
-  Expected: 기존 paymentLinks helper를 사용하므로 FAIL.
-
-- [ ] **Step 2: LinkPay form 값을 order row와 snapshot으로 변환한다**
-
-  ```ts
-  export function toLinkPayOrderInput(
-    form: LinkPayFormState,
-  ): LinkPayOrderInput {
-    const amountText = form.amount.replaceAll(",", "");
-    const amount = Number(amountText);
-    const category = form.category.trim();
-    const customerLabel = form.client.trim();
-    const orderName = form.paymentName.trim();
-    const pageQuantity = form.pageQuantity.trim();
-    const paper = form.paper.trim();
-    const service = form.service.trim();
-
-    if (
-      !/^\d+$/.test(amountText) ||
-      !Number.isSafeInteger(amount) ||
-      amount < 1 ||
-      amount > 999_999_999_999 ||
-      [category, customerLabel, orderName, pageQuantity, paper, service].some(
-        (value) => value.length === 0,
-      )
-    ) {
-      throw new Error("링크페이 정보를 확인해주세요.");
-    }
-
-    return {
-      amount,
-      customer_label: customerLabel,
-      item_snapshot: {
-        category,
-        channel: "linkpay",
-        pageQuantity,
-        paper,
-        schemaVersion: 1,
-        service,
-      },
-      order_name: orderName,
-    };
-  }
-  ```
-
-  list status는 `orders.open = 결제전`, `paid|partially_refunded|refunded = 결제완료`, `payment_pending = 확인중`으로 표시한다. 기존 링크 복사는 `orders.public_token`을 그대로 사용한다.
-
-- [ ] **Step 3: 공개 LinkPay 페이지의 fixture를 제거한다**
-
-  page/success/fail/pending은 `getOrderByPublicToken`으로 `channel === "linkpay"`를 확인한다. `item_snapshot`을 parse해 기존 상세 row로 변환한다. invalid shape는 결제 버튼을 표시하지 않고 404 처리한다.
-
-  `open`만 결제 form을 보여준다. `payment_pending`은 pending 화면, 승인·환불 상태는 success 화면으로 보낸다.
-
-- [ ] **Step 4: LinkPay order endpoint가 공통 payment를 준비한다**
-
-  body의 고객정보와 약관을 Task 3과 동일한 validator로 검증한다. route는 public token으로 order를 찾고 `prepareLinkPayCheckout`을 호출한 뒤 Task 2 builder를 반환한다. body의 amount, orderId, returnUrl, status는 읽지 않는다.
-
-  응답 상태는 invalid body 400, 없는 token 404, pending/paid/refunded 409, server/provider config 500으로 고정한다.
-
-- [ ] **Step 5: LinkPay form이 같은 NICEPAY 호출을 사용한다**
-
-  기존 form validation 뒤 endpoint를 호출하고 `AUTHNICE.requestPay(response)`를 실행한다. site와 동일한 client helper를 추출할 필요가 생기더라도 두 component에서 10줄 이하 호출이 중복되는 동안은 새 hook을 만들지 않는다.
-
-- [ ] **Step 6: LinkPay 자동·수동 체크포인트를 통과시킨다**
-
-  자동 테스트:
-  - fixture import가 없음.
-  - admin open LinkPay만 수정·삭제 가능.
-  - 브라우저 amount가 무시되고 order amount만 NICEPAY에 전달됨.
-  - unknown LinkPay는 409이며 결제 버튼이 없음.
-  - callback 결과가 `/linkpay/:token/...`으로 돌아감.
-
-  Run:
-
-  ```bash
-  pnpm --filter @repo/supabase test
-  pnpm --filter admin test
-  pnpm --filter admin build
-  pnpm --filter user test
-  pnpm --filter user build
-  ```
-
-  수동 sandbox에서는 1,004원 LinkPay 생성 → URL 복사 → 고객 결제 → `orders.channel = linkpay` → 공통 `payments.paid` → success 화면을 확인한다.
-
----
-
-### Task 5: 두 채널 통합 매출 조회
-
-**Files:**
-
-- Create: `packages/supabase/src/sales.ts`
-- Modify: `packages/supabase/src/index.ts`
-- Create: `packages/supabase/tests/sales.test.mjs`
-- Modify: `apps/admin/src/pages/salesData.ts`
-- Modify: `apps/admin/src/pages/SalesPage.tsx`
-- Modify: `apps/admin/src/components/admin-sales/SalesSummaryCards.tsx`
-- Modify: `apps/admin/src/components/admin-sales/SalesTrendChart.tsx`
-- Modify: `apps/admin/src/components/admin-sales/SalesTransactionsTable.tsx`
-- Modify: `apps/admin/tests/salesData.test.mjs`
-
-**Interfaces:**
-
-- `getAdminSalesDashboard(client, { channel, from, to }) -> SalesDashboardData`.
-- `channel`은 `"all" | "site" | "linkpay"`.
-- `SalesSummary = { grossSalesAmount, paymentCount, refundedAmount, netSalesAmount }`.
-- 표의 event는 `kind: "payment" | "refund"`이고 order channel을 포함한다.
-
-```ts
-export type SalesSummary = {
-  grossSalesAmount: number;
-  netSalesAmount: number;
-  paymentCount: number;
-  refundedAmount: number;
-};
-
-type SalesEventBase = {
-  amount: number;
-  channel: OrderChannel;
-  customerLabel: string;
-  occurredAt: string;
+    tid: string;
+  }>;
+  card: { canPartCancel: boolean } | null;
   orderId: string;
-  orderName: string;
-  paymentId: string;
+  paidAt: string | null;
+  payMethod: string | null;
   receiptUrl: string | null;
-  refundableAmount: number;
+  resultCode: string;
+  resultMsg: string;
+  signature: string;
+  status: NicepayPaymentStatus;
+  tid: string;
 };
+~~~
 
-export type SalesEvent = SalesEventBase &
-  (
-    | {
-        kind: "payment";
-        status: "paid" | "partial_cancelled" | "cancelled" | "unknown";
-      }
-    | { kind: "refund"; status: "succeeded" | "unknown" }
-  );
+기존 timingSafeEqual 서명 검증, 30초 AbortSignal timeout, approve/retrieve/net-cancel helper는 유지한다.
 
-export type SalesDashboardData = {
-  events: readonly SalesEvent[];
-  summary: SalesSummary;
-};
-```
+- [ ] **Step 4: callback을 Link token에서 분리한다**
 
-- [ ] **Step 1: fixture 테스트를 실제 event 계산 계약으로 바꾼다**
+공통 return URL은 /api/payments/nicepay/return 하나만 사용한다.
 
-  ```js
-  const summary = summarizeSalesEvents([
+~~~text
+signed callback orderId
+  → DB에서 Payment + Order 조회
+  → amount/clientId/orderId/signature 검증
+  → NICEPAY 승인
+  → 승인 응답 amount/TID/orderId/signature 검증
+  → finishPayment
+  → /payment/result/{orders.public_token} 303 redirect
+~~~
+
+승인 응답이 불명확하면 거래 조회를 한 번 수행한다. 그래도 불명확하면 먼저 `finish_payment(unknown, result_code=NET_CANCEL_REQUESTED)`로 내구성 있는 망취소 표식을 저장하고, 이 저장에 성공한 호출만 `netCancelNicepayPayment`를 호출한다. 망취소 성공은 결제 후 환불이 아니라 승인 실패 복구이므로 `payments.failed`와 `result_code=NET_CANCELLED`로 기록해 같은 Order의 재결제를 허용한다. 성공 응답 뒤 원장 쓰기가 실패하면 서명 검증된 TID와 `NET_CANCEL_PERSISTENCE_UNKNOWN`을 한 번 더 기록하고, 웹훅은 이 두 표식이 있는 결제만 원 주문 ID로 복구한다. 표식 없는 외부 취소는 `unknown` 수동 검토로 남긴다. `payments.cancelled`는 로컬에서 paid였던 거래의 환불 잔액이 0원이 된 경우에만 사용한다. 브라우저 query string의 status나 result는 읽지 않는다.
+
+- [ ] **Step 5: webhook을 같은 finishPayment 경로에 연결한다**
+
+- provider payload를 parse하고 서명을 검증한다.
+- provider orderId로 Payment를 찾고 DB amount 및 기존 TID와 비교한다.
+- 로컬 TID가 없으면 NICEPAY 거래 조회 결과까지 검증한다.
+- paid, failed, expired는 finishPayment로 기록하고, partialCancelled와 cancelled는 Task 7의 취소·환불 동기화 helper로 기록한다.
+- NICEPAY webhook test의 존재하지 않는 orderId는 정확한 text/html OK로 응답한다.
+- 알려진 거래의 amount/TID mismatch는 400이다.
+
+- [ ] **Step 6: 단일 결과 페이지를 DB 상태로 렌더링한다**
+
+OrderPaymentResult에 pending variant를 추가한다.
+
+~~~ts
+type OrderPaymentResultProps =
+  | { variant: "success"; data: OrderPaymentSuccessData }
+  | { variant: "failure"; data: OrderPaymentFailureData }
+  | { variant: "pending" };
+~~~
+
+/payment/result/[publicToken]은 DB 상태만 사용한다.
+
+~~~text
+open                 → failure
+payment_pending      → pending
+paid                 → success
+partially_refunded   → success + 부분환불 표시
+refunded             → success + 환불완료 표시
+~~~
+
+페이지 metadata는 noindex로 설정한다.
+
+- [ ] **Step 7: 공통 승인 경로를 검증하고 커밋한다**
+
+~~~bash
+pnpm --filter @repo/supabase test
+pnpm --filter user test
+pnpm --filter user check-types
+git add packages/supabase/src apps/user/lib apps/user/app/api/payments apps/user/app/\(site\)/payment apps/user/app/\(site\)/order/OrderPaymentResult.tsx apps/user/__tests__
+git commit -m "feat: unify NICEPAY payment completion"
+~~~
+
+---
+
+### Task 3: LinkPay를 공개 재사용 템플릿으로 전환
+
+**Files:**
+
+- Modify: apps/admin/src/pages/linkPayData.ts
+- Modify: apps/admin/src/pages/LinkPayPage.tsx
+- Modify: apps/admin/src/pages/LinkPayFormPage.tsx
+- Modify: apps/admin/tests/linkPayData.test.mjs
+- Modify: apps/admin/tests/linkPayPage.test.mjs
+- Modify: apps/admin/tests/linkPayFormPage.test.mjs
+- Modify: apps/user/app/(site)/linkpay/[id]/page.tsx
+- Modify: apps/user/app/(site)/linkpay/[id]/LinkPayPaymentForm.tsx
+- Delete: apps/user/app/_content/linkPay.ts
+- Delete: apps/user/app/(site)/linkpay/[id]/payment.ts
+- Delete: apps/user/app/(site)/linkpay/[id]/success/page.tsx
+- Delete: apps/user/app/(site)/linkpay/[id]/fail/page.tsx
+- Modify: apps/user/app/api/linkpay/[publicToken]/order/route.ts
+- Modify: apps/user/__tests__/linkpay-page.test.mjs
+- Modify: apps/user/__tests__/linkpay-payment.test.mjs
+
+**Interfaces:**
+
+- LinkPayEffectiveState = "active" | "disabled".
+- POST /api/linkpay/:publicToken/order consumes { checkoutRequestId, customer, agreements }.
+- Success returns NicepayCheckoutRequest from Task 2.
+- Same token plus different checkoutRequestId returns different provider order IDs.
+
+- [ ] **Step 1: 재사용 계약 테스트를 먼저 실패시킨다**
+
+~~~js
+assert.doesNotMatch(pageSource, /status !== "pending".*redirect/s);
+assert.doesNotMatch(routeSource, /link\\.status === "paid"/);
+assert.match(routeSource, /createLinkPayCheckout/);
+assert.match(routeSource, /checkoutRequestId/);
+assert.match(formSource, /crypto\\.randomUUID/);
+~~~
+
+DB integration test에는 다음 세 assertion을 추가한다.
+
+~~~js
+assert.notEqual(firstCheckout.order_id, secondCheckout.order_id);
+assert.equal(replayedCheckout.order_id, firstCheckout.order_id);
+assert.equal(linkAfterBothPayments.disabled_at, null);
+~~~
+
+- [ ] **Step 2: 관리자 LinkPay 상태와 동작을 변경한다**
+
+- 결제전/결제완료 필터를 활성/중단으로 교체한다.
+- 결제 완료 여부를 payment_links에 표시하지 않는다.
+- 링크 URL 복사 기능은 public_token을 그대로 사용한다.
+- 거래가 있어도 템플릿 수정은 허용하고 기존 Order snapshot은 유지한다.
+- 거래가 없는 Link만 삭제하고, 거래가 있으면 중단 버튼으로 disabled_at을 설정한다.
+
+- [ ] **Step 3: 공개 LinkPay 페이지를 항상 열리게 한다**
+
+page.tsx는 fixture 대신 getPublicPaymentLink를 사용한다.
+
+~~~text
+active   → 결제 상세 + Form
+disabled → 결제 상세 + "현재 결제가 중단된 링크입니다"
+missing  → 404
+~~~
+
+과거 Order나 결제 건수, 결제 성공 여부, 구매자 정보는 표시하지 않는다.
+
+- [ ] **Step 4: Form 제출을 새 Order 생성 API에 연결한다**
+
+유효한 제출을 시작할 때 crypto.randomUUID()를 한 번 만들고 네트워크 재시도에는 같은 값을 사용한다. route는 customer와 agreements를 서버에서 다시 검증하고 body의 amount, orderId, status, returnUrl은 읽지 않는다.
+
+응답 상태:
+
+~~~text
+invalid body              → 400
+missing token             → 404
+disabled link             → 409
+configuration failure     → 500
+checkout created          → 200
+~~~
+
+200 응답을 AUTHNICE.requestPay에 전달한다.
+
+- [ ] **Step 5: LinkPay 테스트와 빌드를 통과시키고 커밋한다**
+
+~~~bash
+pnpm --filter admin test
+pnpm --filter admin build
+pnpm --filter user test
+pnpm --filter user build
+git add apps/admin/src/pages apps/admin/tests apps/user/app/\(site\)/linkpay apps/user/app/api/linkpay apps/user/__tests__
+git commit -m "feat: make LinkPay reusable"
+~~~
+
+---
+
+### Task 4: 사이트 일반 결제를 공통 checkout에 연결
+
+**Files:**
+
+- Create: apps/user/app/api/orders/checkout/route.ts
+- Modify: apps/user/app/(site)/order/payment.ts
+- Modify: apps/user/app/(site)/order/page.tsx
+- Delete: apps/user/app/(site)/order/success/page.tsx
+- Delete: apps/user/app/(site)/order/fail/page.tsx
+- Modify: apps/user/__tests__/order-page.test.mjs
+- Create: apps/user/__tests__/site-payment.test.mjs
+
+**Interfaces:**
+
+- POST /api/orders/checkout consumes { checkoutRequestId, customer, agreements, selection }.
+- selection contains only catalog IDs and hasPlanning.
+- Success returns NicepayCheckoutRequest from Task 2.
+
+- [ ] **Step 1: 서버 가격 재계산 계약 테스트를 실패시킨다**
+
+~~~js
+assert.match(routeSource, /getOrderOptionConfig/);
+assert.match(routeSource, /getOrderQuantityOptions/);
+assert.match(routeSource, /createSiteCheckout/);
+assert.doesNotMatch(routeSource, /body\\.amount/);
+assert.doesNotMatch(routeSource, /body\\.totalPrice/);
+~~~
+
+- [ ] **Step 2: 사이트 checkout route를 구현한다**
+
+- serviceId, pageId, paperId, quantityId, hasPlanning을 현재 catalog에서 조회한다.
+- unit price와 planning fee를 서버에서 합산한다.
+- label과 가격을 SiteOrderSnapshot으로 만든다.
+- customer와 agreements를 LinkPay route와 같은 규칙으로 검증한다.
+- createSiteCheckout을 호출해 Order + Payment를 만든다.
+- returnUrl은 공통 callback만 사용한다.
+
+- [ ] **Step 3: 주문 Form을 NICEPAY 호출에 연결한다**
+
+payment.ts의 fixture 반환을 실제 fetch로 교체하고 LinkPay와 같은 checkout response 타입을 사용한다. 두 component의 AUTHNICE.requestPay 호출이 10줄을 넘지 않으면 별도 React hook을 만들지 않는다.
+
+- [ ] **Step 4: 일반 결제 결과를 공통 결과 페이지로 연결한다**
+
+callback이 Order public token으로 /payment/result/[publicToken]에 보내므로 기존 /order/success와 /order/fail은 삭제한다. 결과 page는 channel에 따라 일반 주문 CTA 또는 LinkPay CTA를 선택한다.
+
+- [ ] **Step 5: 일반 결제 테스트와 빌드를 통과시키고 커밋한다**
+
+~~~bash
+pnpm --filter user test
+pnpm --filter user build
+git add apps/user/app/api/orders apps/user/app/\(site\)/order apps/user/__tests__
+git commit -m "feat: connect site checkout to NICEPAY"
+~~~
+
+---
+
+### Task 5: 검증 원장에서 통합 매출 계산
+
+**Files:**
+
+- Create: packages/supabase/src/sales.ts
+- Create: packages/supabase/tests/sales.test.mjs
+- Modify: packages/supabase/src/index.ts
+- Modify: apps/admin/src/pages/salesData.ts
+- Modify: apps/admin/src/pages/SalesPage.tsx
+- Modify: apps/admin/src/components/admin-sales/SalesSummaryCards.tsx
+- Modify: apps/admin/src/components/admin-sales/SalesTrendChart.tsx
+- Modify: apps/admin/src/components/admin-sales/SalesTransactionsTable.tsx
+- Modify: apps/admin/tests/salesData.test.mjs
+
+**Interfaces:**
+
+- getAdminSalesDashboard(client, { channel, from, to }) -> SalesDashboardData.
+- channel = "all" | "site" | "linkpay".
+- SalesSummary = { grossSalesAmount, paymentCount, refundedAmount, netSalesAmount }.
+- SalesEvent.kind = "payment" | "refund".
+
+- [ ] **Step 1: 매출 계산 테스트를 먼저 실패시킨다**
+
+~~~js
+assert.deepEqual(
+  summarizeSalesEvents([
     { amount: 10000, channel: "site", kind: "payment", status: "paid" },
     { amount: 7000, channel: "linkpay", kind: "payment", status: "paid" },
     { amount: 4000, channel: "site", kind: "refund", status: "succeeded" },
     { amount: 9000, channel: "site", kind: "payment", status: "unknown" },
-  ]);
-
-  assert.deepEqual(summary, {
+  ]),
+  {
     grossSalesAmount: 17000,
     paymentCount: 2,
     refundedAmount: 4000,
     netSalesAmount: 13000,
-  });
-  ```
+  },
+);
+~~~
 
-  Run: `pnpm --filter admin test`
+Run: pnpm --filter admin test
 
-  Expected: 실제 event helper가 없어 FAIL.
+Expected: 실제 event helper가 없어 FAIL.
 
-- [ ] **Step 2: 승인·환불 event read model을 구현한다**
+- [ ] **Step 2: 두 조회로 read model을 만든다**
 
-  payments query는 `paid_at` 기간 안의 `paid|partial_cancelled|cancelled`와 `created_at` 기간 안의 `unknown`을 orders와 join한다. refunds query는 `refunded_at` 기간 안의 `succeeded`와 `requested_at` 기간 안의 `unknown`을 payment/order와 join한다. 승인 payment와 성공 refund만 summary에 포함하고, unknown은 표와 상태 확인 동작에만 포함한다. refund 금액은 UI에서만 음수로 표시한다.
+- payments에서 paid_at 기간의 paid, partial_cancelled, cancelled를 orders와 join한다.
+- refunds에서 refunded_at 기간의 succeeded를 payments와 orders에 join한다.
+- unknown Payment와 Refund는 거래 표에만 포함하고 summary에서는 제외한다.
+- channel filter는 두 조회에 같은 orders.channel 조건을 적용한다.
+- 기간은 KST 시작 inclusive, 종료 다음 날 exclusive, 최대 366일이다.
+- 별도 sales table, view, cache를 만들지 않는다.
 
-  `channel !== all`이면 두 query 모두 `orders.channel`을 같은 값으로 필터한다. 날짜는 `YYYY-MM-DD`, KST 시작 inclusive, 종료 다음 날 exclusive로 변환하며 최대 366일만 허용한다.
+- [ ] **Step 3: fixture UI를 실제 데이터로 교체한다**
 
-- [ ] **Step 3: 매출 UI를 실제 지표와 채널 필터로 교체한다**
+요약 카드는 기간 순매출, 총 승인액, 결제 건수, 환불액만 표시한다. 거래 표는 다음 열만 유지한다.
 
-  summary 카드 순서는 기간 순매출, 총 승인액, 결제 건수, 환불액이다. table 열은 다음으로 고정한다.
+~~~text
+채널 | 구분 | 상태 | 주문명 | 고객 | 거래일자 | 거래금액 | 환불가능액 | 영수증 | 환불
+~~~
 
-  ```text
-  채널 | 구분 | 상태 | 주문명 | 고객 | 거래일자 | 거래금액 | 환불가능액 | 영수증 | 환불
-  ```
+cardFee, settlementAmount, scheduled, settled, monthlyVisitorCount, preview query, applyLocalRefund를 제거한다.
 
-  `cardFee`, `settlementAmount`, `scheduled`, `settled`, `monthlyVisitorCount`, fixture preview와 `applyLocalRefund`를 제거한다. 상태는 결제완료, 부분환불, 환불완료, 확인중만 사용한다.
+- [ ] **Step 4: 매출 테스트와 빌드를 통과시키고 커밋한다**
 
-- [ ] **Step 4: 실제 데이터 로드와 테스트를 완료한다**
-
-  기본 기간은 오늘 포함 최근 30일, 기본 channel은 all이다. loading/empty/error를 기존 페이지 영역 안에 표시한다.
-
-  다음을 테스트한다.
-  - site 1건 + linkpay 1건이 all 합계에 포함됨.
-  - site filter는 LinkPay event를 제외함.
-  - 기간 밖 승인 거래의 기간 내 환불은 그 기간 환불액에 포함됨.
-  - 환불가능액 0인 row에는 환불 버튼이 없음.
-  - 화면에 예정 정산 금액과 카드수수료가 없음.
-
-  Run:
-
-  ```bash
-  pnpm --filter @repo/supabase test
-  pnpm --filter admin test
-  pnpm --filter admin build
-  pnpm --filter admin lint
-  ```
-
-  수동 확인에서 Task 3 site 승인과 Task 4 LinkPay 승인이 각각 올바른 채널과 금액으로 나타나야 한다.
+~~~bash
+pnpm --filter @repo/supabase test
+pnpm --filter admin test
+pnpm --filter admin build
+git add packages/supabase/src/sales.ts packages/supabase/tests/sales.test.mjs packages/supabase/src/index.ts apps/admin/src/pages apps/admin/src/components/admin-sales apps/admin/tests/salesData.test.mjs
+git commit -m "feat: show verified payment sales"
+~~~
 
 ---
 
-### Task 6: 공통 전액·부분환불
+### Task 6: 결제별 부분·전액환불
 
 **Files:**
 
-- Modify: `apps/user/lib/nicepay.ts`
-- Create: `apps/user/app/api/admin/payments/[paymentId]/refund/route.ts`
-- Create: `apps/user/lib/adminPaymentAuth.ts`
-- Create: `apps/admin/src/lib/paymentApi.ts`
-- Modify: `apps/admin/src/pages/SalesPage.tsx`
-- Modify: `apps/admin/src/components/admin-sales/RefundDialog.tsx`
-- Modify: `apps/admin/src/pages/salesData.ts`
-- Modify: `apps/user/__tests__/nicepay.test.mjs`
-- Create: `apps/user/__tests__/payment-refund.test.mjs`
-- Modify: `apps/admin/tests/salesData.test.mjs`
+- Modify: apps/user/lib/nicepay.ts
+- Create: apps/user/lib/adminPaymentAuth.ts
+- Create: apps/user/app/api/admin/payments/[paymentId]/refund/route.ts
+- Create: apps/admin/src/lib/paymentApi.ts
+- Modify: apps/admin/src/pages/SalesPage.tsx
+- Modify: apps/admin/src/components/admin-sales/RefundDialog.tsx
+- Modify: apps/admin/tests/salesData.test.mjs
+- Modify: apps/user/__tests__/nicepay.test.mjs
+- Create: apps/user/__tests__/payment-refund.test.mjs
 
 **Interfaces:**
 
-- `POST /api/admin/payments/:paymentId/refund` consumes `{ requestId, amount, reason }`.
-- Success: HTTP 200 `{ status: "succeeded", refundedAmount, refundableAmount }`.
-- 불명: HTTP 202 `{ status: "unknown" }`.
-- 검증된 거절/초과: HTTP 409 `{ status: "failed", error }`.
+- POST /api/admin/payments/:paymentId/refund consumes { requestId, amount, reason }.
+- Success: 200 { status: "succeeded", refundedAmount, refundableAmount }.
+- Pending verification: 202 { status: "unknown" }.
+- Invalid request: 400 { error }.
+- Reservation conflict: 409 { error }.
+- Provider rejection: 409 { status: "failed", error }.
 
-- [ ] **Step 1: NICEPAY cancel client 테스트를 먼저 작성한다**
+- [ ] **Step 1: NICEPAY 취소 계약 테스트를 먼저 실패시킨다**
 
-  취소 응답의 `cancelledTid`, `balanceAmt`, `cancels`, `card.canPartCancel` parse와 signature 검증을 테스트한다. 전액취소 body에는 `cancelAmt`가 없고 부분취소 body에는 정수 금액이 있는지 검사한다.
+테스트는 다음을 고정한다.
 
-  Run: `pnpm --filter user test`
+~~~js
+assert.equal(fullCancelBody.cancelAmt, undefined);
+assert.equal(partialCancelBody.cancelAmt, 4000);
+assert.equal(partialCancelBody.orderId, refundOrderId);
+assert.equal(parsed.balanceAmt, 6000);
+assert.equal(parsed.cancelledTid, "cancel-tid");
+assert.equal(parsed.card.canPartCancel, true);
+~~~
 
-  Expected: `cancelNicepayPayment`가 없어 FAIL.
+Run: pnpm --filter user test
 
-- [ ] **Step 2: 취소 helper를 구현한다**
+Expected: cancelNicepayPayment가 없어 FAIL.
 
-  ```ts
-  export async function cancelNicepayPayment(
-    config: NicepayConfig,
-    tid: string,
-    input: {
-      amount: number;
-      fullAmount: number;
-      orderId: string;
-      reason: string;
-    },
-  ): Promise<NicepayPayment>;
-  ```
+- [ ] **Step 2: 취소 helper를 공식 REST 계약대로 구현한다**
 
-  `POST /v1/payments/{tid}/cancel`을 호출하고 `amount === fullAmount`이면 `cancelAmt`를 생략한다. 원 TID, 원 결제금액, response signature, `balanceAmt`, `cancelledTid`를 검증한다. 부분환불은 DB의 `can_part_cancel = true`일 때만 요청한다.
+~~~ts
+export async function cancelNicepayPayment(
+  config: NicepayConfig,
+  tid: string,
+  input: {
+    amount: number;
+    currentBalance: number;
+    orderId: string;
+    reason: string;
+  },
+): Promise<NicepayPayment>;
+~~~
 
-- [ ] **Step 3: 관리자 인증과 Origin 검증을 구현한다**
+POST /v1/payments/{tid}/cancel을 사용한다.
 
-  `adminPaymentAuth.ts`는 다음 순서만 허용한다.
-  1. `Origin === ADMIN_APP_URL`.
-  2. 단일 `Authorization: Bearer <token>`.
-  3. publishable server client의 `auth.getUser(token)`으로 현재 user 검증.
-  4. `user.app_metadata.role === "admin"`.
+- amount가 currentBalance보다 작으면 cancelAmt를 넣는다.
+- amount가 currentBalance와 같으면 cancelAmt를 생략해 남은 잔액을 전액취소한다.
+- 부분취소 orderId는 Refund마다 고유해야 한다.
+- 응답의 원 TID, 서명, amount, balanceAmt, cancelledTid, cancels를 검증한다.
+- card.canPartCancel이 false인 Payment의 부분환불은 provider 호출 전에 거절한다.
 
-  secret client는 인증이 끝난 뒤 DB RPC에만 사용한다. CORS `OPTIONS`는 허용 origin에만 `POST, OPTIONS`와 `Authorization, Content-Type`을 반환한다.
+공식 계약 근거:
 
-- [ ] **Step 4: DB 예약 → NICEPAY 취소 → DB 확정 순서로 route를 구현한다**
+- https://github.com/nicepayments/nicepay-manual/blob/main/api/cancel.md
+- https://start.nicepay.co.kr/manual/quickguide/overview.do
 
-  ```text
-  input 검증
-    → reservePaymentRefund(requestId)
-    → 기존 succeeded/unknown이면 provider 재호출 없이 반환
-    → cancelNicepayPayment(original TID)
-    → signed response와 balanceAmt 검증
-    → finalizePaymentRefund
-  ```
+- [ ] **Step 3: 관리자 인증을 한 파일로 구현한다**
 
-  timeout 후 거래 조회에서도 취소 사실을 확인할 수 없으면 `recordRefundOutcome(..., status: "unknown")`을 호출하고 202를 반환한다. 검증된 provider 거절은 같은 helper로 `failed`를 기록한다. unknown 금액은 계속 예약되므로 추가 환불이 차단된다.
+adminPaymentAuth.ts는 다음 순서로만 인증한다.
+
+~~~text
+Origin === ADMIN_APP_URL
+  → Authorization: Bearer token 한 개
+  → publishable Supabase client의 auth.getUser(token)
+  → user.app_metadata.role === "admin"
+~~~
+
+인증이 끝난 뒤에만 service-role client를 만든다. CORS OPTIONS는 허용 origin에만 POST, OPTIONS와 Authorization, Content-Type을 반환한다.
+
+- [ ] **Step 4: 예약 → provider 취소 → 원장 확정 route를 구현한다**
+
+~~~text
+입력 검증
+  → reserveRefund(requestId)
+  → 기존 succeeded/unknown이면 provider 재호출 없이 반환
+  → cancelNicepayPayment(original TID)
+  → signed response와 balanceAmt 검증
+  → finishRefund
+~~~
+
+검증된 provider 거절은 failed로 기록한다. timeout 후 거래 조회에서도 취소 내역을 확인할 수 없으면 unknown으로 기록하고 202를 반환한다. unknown 예약액은 추가 환불을 계속 차단한다.
 
 - [ ] **Step 5: RefundDialog를 실제 API에 연결한다**
 
-  admin client는 현재 Supabase session token을 Authorization header에 넣는다. dialog은 열릴 때 `crypto.randomUUID()`를 한 번 만들고 같은 제출 재시도에 재사용한다. 최대값은 `refundableAmount`, 사유는 1~100자다. 성공 시 dashboard를 reload하고 202이면 성공 문구 대신 “환불 결과 확인 중”을 표시한다.
+- dialog를 열 때 crypto.randomUUID()를 한 번 만들고 같은 제출 재시도에 재사용한다.
+- 최대값은 refundableAmount다.
+- 사유는 trim 후 1~100자다.
+- 성공하면 매출 데이터를 다시 불러온다.
+- 202이면 완료 문구 대신 "환불 결과 확인 중"을 표시한다.
 
-- [ ] **Step 6: 두 채널에서 동일한 환불 계약을 테스트한다**
-  - 인증 없음 401, non-admin 403, 잘못된 Origin 403.
-  - 같은 requestId 두 번은 NICEPAY 호출 한 번.
-  - 10,000원에서 4,000원 환불 후 balance 6,000원.
-  - 나머지 6,000원 환불 후 balance 0원.
-  - 부분취소 불가 카드의 4,000원 요청은 provider 호출 전 409.
-  - timeout은 unknown/202이고 추가 환불을 차단.
-  - site와 linkpay payment가 같은 endpoint와 RPC를 사용.
+- [ ] **Step 6: 부분→잔액 전액환불을 검증한다**
 
-  Run:
+자동 테스트:
 
-  ```bash
-  pnpm exec supabase test db --local
-  pnpm --filter user test
-  pnpm --filter user check-types
-  pnpm --filter admin test
-  pnpm --filter admin build
-  ```
+- 인증 없음 401, non-admin 403, 잘못된 Origin 403.
+- 같은 requestId 두 번은 NICEPAY 호출 한 번.
+- 10,000원 Payment에서 4,000원 환불 후 balance 6,000원.
+- 나머지 6,000원 환불 후 balance 0원과 cancelled/refunded.
+- 부분취소 불가 카드의 4,000원 요청은 provider 호출 전 409.
+- timeout은 unknown/202이고 같은 Payment 추가 환불 차단.
+- LinkPay와 site Payment가 같은 endpoint 사용.
 
-  수동 sandbox에서는 site 결제 한 건을 부분→전액환불하고 LinkPay 결제 한 건을 전액환불한다. 각 채널의 순매출과 환불가능액이 즉시 갱신되어야 한다.
+Run:
+
+~~~bash
+pnpm --filter user test
+pnpm --filter admin test
+pnpm --filter user build
+pnpm --filter admin build
+~~~
+
+- [ ] **Step 7: 환불 변경을 커밋한다**
+
+~~~bash
+git add apps/user/lib apps/user/app/api/admin apps/user/__tests__ apps/admin/src/lib apps/admin/src/pages/SalesPage.tsx apps/admin/src/components/admin-sales/RefundDialog.tsx apps/admin/tests/salesData.test.mjs
+git commit -m "feat: support partial and full refunds"
+~~~
 
 ---
 
-### Task 7: 웹훅 재조정과 출시 gate
+### Task 7: 결과 불명 복구와 최종 검증
 
 **Files:**
 
-- Modify: `apps/user/app/api/payments/nicepay/webhook/route.ts`
-- Create: `apps/user/app/api/admin/payments/[paymentId]/reconcile/route.ts`
-- Modify: `apps/admin/src/lib/paymentApi.ts`
-- Modify: `apps/admin/src/pages/SalesPage.tsx`
-- Modify: `apps/admin/src/components/admin-sales/SalesTransactionsTable.tsx`
-- Modify: `apps/user/__tests__/payment-checkout.test.mjs`
-- Modify: `apps/user/__tests__/payment-refund.test.mjs`
-- Create: `docs/nicepay-unified-payments-runbook.md`
-- Modify: `apps/user/.env.example`
-- Modify: `apps/admin/.env.example`
+- Create: apps/user/app/api/admin/payments/[paymentId]/reconcile/route.ts
+- Modify: apps/user/app/api/payments/nicepay/webhook/route.ts
+- Modify: apps/user/__tests__/payment-refund.test.mjs
+- Create: docs/payments-runbook.md
 
 **Interfaces:**
 
-- Verified webhook synchronizes the shared payment and refund ledger for both channels.
-- `POST /api/admin/payments/:paymentId/reconcile` only retrieves provider state; it never re-approves or re-cancels.
-- unknown sales rows expose “상태 확인” and do not expose refund.
-- `syncProviderCancellations(client, paymentId, snapshot)` upserts verified external cancels by `nicepay_cancelled_tid` and updates the remaining balance monotonically.
+- POST /api/admin/payments/:paymentId/reconcile returns 200 resolved or 202 still unknown.
+- 자동 reconcile은 기존 Refund 예약과 일치하는 NICEPAY 취소만 확정한다. 예약 없는 외부 취소는 자동 원장화하지 않는다.
 
-`apps/user`가 검증된 `NicepayPayment`를 이 DTO로 변환하며 `@repo/supabase`가 app 타입을 import하지 않는다.
+- [ ] **Step 1: reconciliation 테스트를 먼저 실패시킨다**
 
-- [ ] **Step 1: provider 밖 취소와 늦은 webhook 테스트를 작성한다**
+다음 경우를 고정한다.
 
-  다음을 검증한다.
-  - 서명되지 않은 cancelled/partialCancelled webhook은 400.
-  - 검증된 `cancels`는 `nicepay_cancelled_tid` 기준 중복 없이 refunds에 기록.
-  - NICEPAY 관리자에서 발생한 취소는 `origin = provider`, `requested_by = null`.
-  - 늦은 paid webhook은 partial_cancelled/cancelled를 되돌리지 않음.
-  - site/linkpay 어느 channel도 별도 webhook 분기를 사용하지 않음.
+- unknown Payment 조회 결과가 paid면 결제 원장 확정.
+- unknown Refund의 예약 금액과 provider 잔액 감소가 일치하면 cancelledTid를 기록하고 원장 확정.
+- 로컬 예약 없이 partialCancelled 또는 cancelled가 발견되면 Payment를 unknown으로 유지하고 관리자 확인을 요구.
+- provider balance가 증가하거나 성공 환불 누계와 불일치하면 unknown 유지.
+- 같은 callback, webhook, reconcile 재호출은 Refund 중복 없음.
 
-- [ ] **Step 2: webhook이 잔액과 외부 환불을 단조롭게 동기화한다**
+- [ ] **Step 2: 관리자 상태 확인 endpoint를 구현한다**
 
-  provider 조회 결과의 `cancels` 배열을 취소 TID로 upsert한다. 내부 request ID가 없는 외부 취소에는 새 UUID request ID와 `RFWEBHOOK{cancelledTid}` provider refund order ID를 사용한다. provider `balanceAmt`가 기존 값보다 증가하거나 성공 환불 누계와 모순되면 자동 덮어쓰지 않고 payment를 `unknown`으로 잠근다.
+Task 6의 adminPaymentAuth를 재사용한다. DB의 원 TID로 NICEPAY 거래를 조회하고 서명, orderId, amount, TID를 검증한 뒤 기존 finishPayment와 finishRefund만 호출한다. 새 상태 머신이나 worker를 만들지 않는다.
 
-- [ ] **Step 3: 단일 payment 재확인 endpoint를 구현한다**
+- [ ] **Step 3: webhook 취소 상태를 기존 Refund 예약에만 연결한다**
 
-  Task 6 관리자 인증을 재사용한다. NICEPAY 거래 조회 후 다음만 수행한다.
-  - verified paid: 승인 완료 또는 현재 balance/cancel 목록 동기화.
-  - verified failed/expired: unresolved payment를 해당 상태로 확정.
-  - verified cancelled/partialCancelled: refund 목록과 balance 동기화.
-  - 여전히 불명: DB를 바꾸지 않고 HTTP 202.
+provider cancel이 기존 requested 또는 unknown Refund의 금액·예상 잔액과 일치할 때만 cancelledTid로 idempotent 확정한다. 일치하는 예약이 없으면 임의의 Refund를 만들지 않고 Payment를 unknown으로 유지한다. MVP 운영에서는 모든 환불을 관리자 화면에서 시작하고 NICEPAY 콘솔 직접 취소는 금지한다.
 
-  승인 API와 취소 API는 호출하지 않는다.
+- [ ] **Step 4: 자동 검증을 모두 통과시킨다**
 
-- [ ] **Step 4: 관리자 상태 확인 동작을 연결한다**
+~~~bash
+pnpm dlx supabase@2.113.0 db reset
+pnpm dlx supabase@2.113.0 test db supabase/tests/reusable_unified_payment_ledger.sql
+pnpm test
+pnpm check-types
+pnpm lint
+pnpm build
+rg "figma.com/api/mcp/asset|https://www.figma.com/api" apps packages
+~~~
 
-  unknown payment/refund row는 환불 버튼 대신 `상태 확인`을 표시한다. reconcile 성공 후 dashboard를 다시 조회하고 202이면 “아직 NICEPAY에서 결과를 확인할 수 없습니다.”를 표시한다.
+Expected: 모든 명령 성공, 마지막 rg는 출력 없음.
 
-- [ ] **Step 5: 환경변수와 운영 runbook을 확정한다**
+- [ ] **Step 5: NICEPAY sandbox 수동 시나리오를 통과시킨다**
 
-  `apps/user/.env.example`:
+1. LinkPay 하나를 만들고 동일 URL을 브라우저 두 개에서 연다.
+2. 서로 다른 고객정보로 두 결제를 완료하고 서로 다른 Order, provider order ID, TID를 확인한다.
+3. 첫 Payment를 부분환불하고 LinkPay URL에서 세 번째 결제가 계속 가능한지 확인한다.
+4. 첫 Payment의 남은 잔액을 전액환불하고 두 번째 Payment가 그대로 paid인지 확인한다.
+5. 사이트 일반 주문 한 건을 결제하고 같은 매출 화면에 channel=site로 나타나는지 확인한다.
+6. 총 승인액, 환불액, 순매출을 DB와 NICEPAY TID/cancelledTid로 대조한다.
+7. LinkPay를 disabled 처리하고 기존 URL은 안내 화면이 열리지만 새 checkout은 409인지 확인한다.
 
-  ```dotenv
-  NEXT_PUBLIC_SITE_URL=
-  NICEPAY_MODE=sandbox
-  NEXT_PUBLIC_NICEPAY_CLIENT_KEY=
-  NICEPAY_SECRET_KEY=
-  ADMIN_APP_URL=http://localhost:5173
-  ```
+- [ ] **Step 6: 운영 runbook을 작성한다**
 
-  `apps/admin/.env.example`:
+docs/payments-runbook.md에 다음 명령과 대응만 기록한다.
 
-  ```dotenv
-  VITE_SUPABASE_URL=
-  VITE_SUPABASE_PUBLISHABLE_KEY=
-  VITE_USER_APP_URL=http://localhost:3000
-  ```
+- sandbox/production key와 domain 전환
+- 공통 return URL과 webhook URL
+- webhook의 정확한 OK 응답
+- unknown Payment/Refund 상태 확인 절차
+- LinkPay 중단 확인
+- provider TID/cancelledTid와 DB 대조
+- 부분취소 계약 및 canPartCancel=false 대응
+- NICEPAY 콘솔 직접 취소 금지와 예상하지 못한 취소의 수동 확인
 
-  runbook에는 sandbox/production key 전환, return URL, webhook URL, 정확한 `OK` acknowledgement, site/LinkPay 소액 결제, 결과 불명 대응, 부분·전액환불, DB와 NICEPAY TID 대조 절차를 기록한다.
+- [ ] **Step 7: 최종 변경을 커밋한다**
 
-- [ ] **Step 6: 전체 자동 gate를 실행한다**
+~~~bash
+git add apps/user/app/api/admin apps/user/app/api/payments apps/user/__tests__ docs/payments-runbook.md
+git commit -m "test: verify reusable payment lifecycle"
+~~~
 
-  ```bash
-  pnpm exec supabase db reset --local --no-seed
-  pnpm exec supabase test db --local
-  pnpm exec supabase db advisors --local
-  pnpm --filter @repo/supabase test
-  pnpm --filter @repo/supabase check-types
-  pnpm --filter @repo/supabase lint
-  pnpm --filter user test
-  pnpm --filter user check-types
-  pnpm --filter user lint
-  pnpm --filter user build
-  pnpm --filter admin test
-  pnpm --filter admin build
-  pnpm --filter admin lint
-  rg "figma.com/api/mcp/asset|https://www.figma.com/api" apps packages
-  ```
+---
 
-  Expected: 모든 test/type/lint/build/advisor 명령이 통과하고 마지막 검색은 무출력이다.
+## Completion Criteria
 
-- [ ] **Step 7: 운영 go/no-go를 두 채널 각각 수행한다**
-
-  production HTTPS에서 허용되는 최소 금액으로 site 1건과 LinkPay 1건을 결제한다. 각 거래에 대해 callback, webhook, 매출 반영, 부분 또는 전액환불, refund webhook, 최종 순매출을 같은 provider order ID/TID/cancelled TID로 대조한다.
-
-  다음 중 하나라도 발생하면 출시하지 않는다.
-  - 브라우저 금액과 DB/NICEPAY 승인금액 불일치.
-  - site 결과가 LinkPay URL로 가거나 반대 channel로 표시됨.
-  - callback/webhook 서명 검증 실패.
-  - unknown 상태에서 재결제 또는 추가 환불 가능.
-  - 동일 request ID의 provider 중복 호출.
-  - 환불 성공 후 balance 또는 매출 지표 미반영.
-  - NICEPAY 관리자 거래와 DB 원장 불일치.
-
-## Deferred Scope
-
-- 관리자 상품 DB와 사이트 주문 카탈로그의 실시간 연결. 현재 사이트가 사용하는 정적 카탈로그를 서버도 같은 resolver로 사용한다.
-- NICEPAY 정산·입금 대사, 실제 카드 수수료, 정산 예정액.
-- 회계 분개, 세금계산서, 부가세 신고 자료.
-- 자동 cron reconciliation. 1차는 웹훅과 관리자 단건 재확인만 제공한다.
-- 카드 외 결제수단과 복수 PG.
-- 주문 제작·배송·디자이너 배정 같은 결제 이후 fulfillment 상태.
-- 원본 provider payload event store. 1차는 검증된 최종 필드만 보관한다.
-
-## Reference Documents
-
-- NICEPAY Server 승인: `https://start.nicepay.co.kr/manual/quickguide/overview.do`
-- NICEPAY 취소·부분취소·망취소: `https://github.com/nicepayments/nicepay-manual/blob/main/api/cancel.md`
-- Supabase Data API security: `https://supabase.com/docs/guides/api/securing-your-api`
-- Supabase 2026 explicit GRANT change: `https://supabase.com/changelog/45329-breaking-change-tables-not-exposed-to-data-and-graphql-api-automatically`
-- Flow diagram: `docs/superpowers/plans/2026-08-09-unified-payments-sales-refunds.workflow.html`
+- 같은 LinkPay URL에서 서로 다른 고객의 결제가 연속 성공한다.
+- LinkPay는 결제·실패·unknown·부분환불·전액환불로 상태가 바뀌지 않는다.
+- LinkPay 중단은 새 checkout만 막고 공개 안내 페이지는 유지한다.
+- 사이트와 LinkPay가 같은 payments/refunds 원장과 callback/webhook을 사용한다.
+- 결제 결과 페이지는 DB 상태만 표시하고 다른 구매자 정보를 노출하지 않는다.
+- 부분환불 여러 건과 잔액 전액환불이 provider balance와 일치한다.
+- unknown은 해당 Order 또는 Payment만 잠그고 다른 LinkPay 고객을 막지 않는다.
+- 매출은 승인액과 성공 환불액으로 계산되며 sales table/view가 없다.
+- 자동 테스트, 타입 검사, lint, build, DB test와 sandbox 수동 시나리오가 모두 통과한다.

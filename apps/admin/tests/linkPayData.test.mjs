@@ -20,7 +20,7 @@ const paymentLink = {
   payment_name: '브로슈어 제작비',
   public_token: '11111111-1111-4111-8111-111111111111',
   service: '디자인',
-  status: 'pending',
+  disabled_at: null,
   updated_at: '2026-07-21T16:00:00.000Z',
 }
 
@@ -102,19 +102,27 @@ test('database rows map to editable form and formatted list values', () => {
     id: 'payment-link-id',
     paymentName: '브로슈어 제작비',
     publicToken: '11111111-1111-4111-8111-111111111111',
-    status: 'pending',
+    status: 'active',
   })
+
+  assert.equal(
+    toLinkPayListRow({
+      ...paymentLink,
+      disabled_at: '2026-08-09T00:00:00.000Z',
+    }).status,
+    'disabled',
+  )
 })
 
-test('list filtering combines client, payment status, and name query', () => {
+test('list filtering combines client, effective state, and name query', () => {
   const rows = [
     toLinkPayListRow(paymentLink),
     {
       ...toLinkPayListRow(paymentLink),
       client: '완료 고객사',
-      id: 'paid-id',
+      id: 'disabled-id',
       paymentName: '명함 제작비',
-      status: 'paid',
+      status: 'disabled',
     },
   ]
 
@@ -122,7 +130,7 @@ test('list filtering combines client, payment status, and name query', () => {
     filterLinkPayRows(rows, {
       client: '테스트 고객사',
       query: '브로',
-      status: '결제전',
+      status: '활성',
     }),
     [rows[0]],
   )
@@ -130,7 +138,7 @@ test('list filtering combines client, payment status, and name query', () => {
     filterLinkPayRows(rows, {
       client: '전체',
       query: '',
-      status: '결제완료',
+      status: '중단',
     }),
     [rows[1]],
   )
