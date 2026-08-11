@@ -1,6 +1,6 @@
 import { getAdminSalesDashboard } from '@repo/supabase'
-import { useCallback, useEffect, useRef, useState } from 'react'
-import type { SalesDashboardData, SalesEvent } from '@repo/supabase'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import type { SalesDashboardData, SalesTransaction } from '@repo/supabase'
 import { RefundDialog } from '../components/admin-sales/RefundDialog'
 import { SalesSummaryCards } from '../components/admin-sales/SalesSummaryCards'
 import { SalesTransactionsTable } from '../components/admin-sales/SalesTransactionsTable'
@@ -14,7 +14,7 @@ import './SalesPage.css'
 type RefundFlow = {
   readonly requestId: string
   readonly state: 'complete' | 'confirm'
-  readonly transaction: SalesEvent
+  readonly transaction: SalesTransaction
 } | null
 
 function getKstDate(value: Date) {
@@ -32,11 +32,20 @@ function getKstDate(value: Date) {
 }
 
 function getInitialFilters(): SalesFilters {
-  const today = new Date()
-  const from = new Date(today)
-  from.setDate(from.getDate() - 29)
+  const today = getKstDate(new Date())
 
-  return { channel: 'all', from: getKstDate(from), to: getKstDate(today) }
+  return { channel: 'all', from: addKstDays(today, -29), to: today }
+}
+
+function addKstDays(date: string, days: number) {
+  const [year, month, day] = date.split('-').map(Number)
+  const next = new Date(Date.UTC(year, month - 1, day + days))
+
+  return [
+    next.getUTCFullYear(),
+    String(next.getUTCMonth() + 1).padStart(2, '0'),
+    String(next.getUTCDate()).padStart(2, '0'),
+  ].join('-')
 }
 
 function getExclusiveEnd(date: string) {
@@ -56,6 +65,7 @@ export function SalesPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [loadError, setLoadError] = useState('')
   const dashboardRequest = useRef(0)
+  const today = getKstDate(new Date())
 
   const loadDashboard = useCallback(async () => {
     const request = dashboardRequest.current + 1
@@ -68,6 +78,7 @@ export function SalesPage() {
         channel: filters.channel,
         from: getStart(filters.from),
         to: getExclusiveEnd(filters.to),
+        today,
       })
       if (dashboardRequest.current === request) setDashboard(nextDashboard)
     } catch {
@@ -79,7 +90,7 @@ export function SalesPage() {
     } finally {
       if (dashboardRequest.current === request) setIsLoading(false)
     }
-  }, [filters])
+  }, [filters, today])
 
   useEffect(() => {
     void Promise.resolve().then(loadDashboard)
@@ -111,16 +122,20 @@ export function SalesPage() {
   }
 
   const emptyDashboard: SalesDashboardData = {
-    events: [],
     summary: {
-      grossSalesAmount: 0,
-      netSalesAmount: 0,
-      paymentCount: 0,
-      refundedAmount: 0,
+      monthlyPaymentAmount: 0,
+      monthlyPaymentCount: 0,
+      monthlyVisitorCount: null,
+      scheduledSettlementAmount: 0,
+      settlementDate: today,
     },
+    transactions: [],
   }
   const currentDashboard = dashboard ?? emptyDashboard
-  const trendSeries = buildSalesTrendSeries(currentDashboard.events, filters)
+  const trendSeries = useMemo(
+    () => buildSalesTrendSeries(currentDashboard.transactions, filters),
+    [currentDashboard.transactions, filters],
+  )
 
   return (
     <main className="admin-sales-page" aria-label="매출 관리">
@@ -158,7 +173,7 @@ export function SalesPage() {
               transaction,
             })
           }
-          rows={currentDashboard.events}
+          rows={currentDashboard.transactions}
         />
 
         {isLoading ? (

@@ -1,6 +1,10 @@
 import type { SalesSummary } from '@repo/supabase'
 import { AdminIcon } from '../AdminIcon'
-import { formatSalesDateLabel, formatSalesNumber } from '../../pages/salesData'
+import {
+  formatSalesDateLabel,
+  formatSalesNumber,
+  formatSettlementLabel,
+} from '../../pages/salesData'
 import type { SalesFilters } from '../../pages/salesData'
 
 type SalesSummaryCardsProps = {
@@ -11,30 +15,18 @@ type SalesSummaryCardsProps = {
 
 const secondaryCards = [
   {
-    field: 'grossSalesAmount',
+    field: 'monthlyPaymentAmount',
     icon: 'card-check',
-    label: '총 승인액',
+    label: '이번 달 결제 금액',
     unit: '원',
   },
   {
-    field: 'paymentCount',
+    field: 'monthlyPaymentCount',
     icon: 'pen-tool',
-    label: '결제 건 수',
+    label: '이번 달 결제 건 수',
     unit: '건',
   },
-  {
-    field: 'refundedAmount',
-    icon: 'user-profile',
-    label: '환불 금액',
-    unit: '원',
-  },
 ] as const
-
-function getChannelLabel(channel: SalesFilters['channel']) {
-  if (channel === 'site') return '사이트 채널'
-  if (channel === 'linkpay') return 'LinkPay 채널'
-  return '전체 채널'
-}
 
 export function SalesSummaryCards({
   filters,
@@ -78,12 +70,12 @@ export function SalesSummaryCards({
       <div className="admin-sales-summary__cards">
         <article className="admin-sales-summary-card admin-sales-summary-card--primary">
           <span className="admin-sales-summary-card__settlement pretendard-bold-12">
-            {getChannelLabel(filters.channel)}
+            {formatSettlementLabel(summary.settlementDate)}
           </span>
           <div className="admin-sales-summary-card__value-group">
-            <span className="pretendard-medium-16">조회 기간 순매출</span>
+            <span className="pretendard-medium-16">예정 정산 금액</span>
             <strong className="admin-sales-summary-card__value pretendard-bold-32">
-              {formatSalesNumber(summary.netSalesAmount)}
+              {formatSalesNumber(summary.scheduledSettlementAmount)}
               <small className="pretendard-medium-16">원</small>
             </strong>
           </div>
@@ -103,6 +95,32 @@ export function SalesSummaryCards({
             </strong>
           </article>
         ))}
+
+        <article className="admin-sales-summary-card">
+          <div className="admin-sales-summary-card__label-group">
+            <span className="admin-sales-summary-card__icon">
+              <AdminIcon name="user-profile" />
+            </span>
+            <span className="pretendard-medium-16">이번 달 방문자 수</span>
+          </div>
+          <strong
+            aria-label={
+              summary.monthlyVisitorCount === null
+                ? '방문자 집계 연동 전'
+                : undefined
+            }
+            className="admin-sales-summary-card__value pretendard-bold-32"
+          >
+            {summary.monthlyVisitorCount === null ? (
+              '—'
+            ) : (
+              <>
+                {formatSalesNumber(summary.monthlyVisitorCount)}
+                <small className="pretendard-medium-16">명</small>
+              </>
+            )}
+          </strong>
+        </article>
       </div>
     </section>
   )

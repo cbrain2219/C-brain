@@ -1,9 +1,16 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import type { ChangeEvent } from 'react'
 import { AdminIcon } from '../AdminIcon'
-import { formatSalesNumber, getChartPoints } from '../../pages/salesData'
+import {
+  formatSalesNumber,
+  getChartPoints,
+  getSalesChartProductColor,
+  orderSelectedProductSeries,
+  reconcileSelectedProductIds,
+} from '../../pages/salesData'
 import type {
   ChartPoint,
+  SalesChartProductColor,
   SalesFilters,
   SalesTrendPoint,
   SalesTrendSeries,
@@ -27,7 +34,10 @@ type RenderedPoint = {
   readonly point: SalesTrendPoint
   readonly pointIndex: number
   readonly series: SalesTrendSeries
+  readonly visualColor: SalesChartVisualColor
 }
+
+type SalesChartVisualColor = 'brand' | SalesChartProductColor
 
 function getPointKey(seriesId: SalesTrendSeries['id'], pointIndex: number) {
   return `${seriesId}:${pointIndex}`
@@ -52,7 +62,7 @@ function getDefaultPointKey(visibleSeries: readonly SalesTrendSeries[]) {
   const preferredSeries =
     visibleSeries.find(
       (item) =>
-        item.id === 'refunds' && item.points.some((point) => point.value > 0),
+        item.productId !== null && item.points.some((point) => point.value > 0),
     ) ?? visibleSeries.find((item) => item.points.length > 0)
 
   if (!preferredSeries) return null
@@ -74,36 +84,78 @@ export function SalesTrendChart({
   onFilterChange,
   series,
 }: SalesTrendChartProps) {
-  const [selectedProductIds, setSelectedProductIds] = useState<
-    readonly SalesTrendSeries['id'][]
-  >(['refunds'])
-  const [activePointKey, setActivePointKey] = useState<string | null>(null)
-
-  const productSeries = series.filter((item) => item.id !== 'payments')
-  const visibleSeries = series.filter(
-    (item) => item.id === 'payments' || selectedProductIds.includes(item.id),
+  const productSeries = useMemo(
+    () => series.filter((item) => item.productId !== null),
+    [series],
   )
+  const productSeriesKey = JSON.stringify(productSeries.map((item) => item.id))
+  const [productSelection, setProductSelection] = useState<{
+    readonly ids: readonly SalesTrendSeries['id'][]
+    readonly productSeriesKey: string
+    readonly selectionWasCleared: boolean
+  }>(() => ({
+    ids: productSeries[0] ? [productSeries[0].id] : [],
+    productSeriesKey,
+    selectionWasCleared: false,
+  }))
+  const [activePointKey, setActivePointKey] = useState<string | null>(null)
+  const productSeriesChanged =
+    productSelection.productSeriesKey !== productSeriesKey
+  const selectedProductIds = productSeriesChanged
+    ? reconcileSelectedProductIds(
+        productSeries,
+        productSelection.ids,
+        productSelection.selectionWasCleared,
+      )
+    : productSelection.ids
+
+  if (productSeriesChanged) {
+    setProductSelection({
+      ...productSelection,
+      ids: selectedProductIds,
+      productSeriesKey,
+    })
+  }
+
+  const selectedProductSeries = orderSelectedProductSeries(
+    productSeries,
+    selectedProductIds,
+  )
+  const aggregateSeries = series.find((item) => item.productId === null)
+  const visibleSeries = [
+    ...(aggregateSeries ? [aggregateSeries] : []),
+    ...selectedProductSeries,
+  ]
   const hasData = visibleSeries.some((item) => item.points.length > 0)
   const commonMaximum = Math.max(
     ...visibleSeries.flatMap((item) => item.points.map((point) => point.value)),
     1,
   )
-  const renderedSeries = visibleSeries.map((item) => ({
-    chartPoints: getChartPoints(
-      item.points.map((point) => point.value),
-      CHART_WIDTH,
-      PLOT_HEIGHT,
-      commonMaximum,
-    ),
-    series: item,
-  }))
+  const renderedSeries = visibleSeries.map((item) => {
+    const selectionIndex = selectedProductIds.indexOf(item.id)
+
+    return {
+      chartPoints: getChartPoints(
+        item.points.map((point) => point.value),
+        CHART_WIDTH,
+        PLOT_HEIGHT,
+        commonMaximum,
+      ),
+      series: item,
+      visualColor:
+        item.productId === null
+          ? ('brand' as const)
+          : getSalesChartProductColor(selectionIndex),
+    }
+  })
   const renderedPoints = renderedSeries.flatMap(
-    ({ chartPoints, series: renderedItem }) =>
+    ({ chartPoints, series: renderedItem, visualColor }) =>
       chartPoints.map((chartPoint, pointIndex) => ({
         chartPoint,
         point: renderedItem.points[pointIndex],
         pointIndex,
         series: renderedItem,
+        visualColor,
       })),
   )
   const defaultPointKey = getDefaultPointKey(visibleSeries)
@@ -114,7 +166,8 @@ export function SalesTrendChart({
     (item) => getPointKey(item.series.id, item.pointIndex) === defaultPointKey,
   )
   const tooltipPoint = activePoint ?? fallbackPoint
-  const axisPoints = series.find((item) => item.id === 'payments')?.points ?? []
+  const axisPoints =
+    series.find((item) => item.productId === null)?.points ?? []
   const axisLabels =
     axisPoints.length > 0
       ? axisPoints.map((point) => point.axisLabel)
@@ -124,7 +177,11 @@ export function SalesTrendChart({
     const productId = event.currentTarget.value as SalesTrendSeries['id']
 
     if (productId && !selectedProductIds.includes(productId)) {
-      setSelectedProductIds((current) => [...current, productId])
+      setProductSelection({
+        ids: [...selectedProductIds, productId],
+        productSeriesKey,
+        selectionWasCleared: false,
+      })
       setActivePointKey(null)
     }
 
@@ -132,7 +189,13 @@ export function SalesTrendChart({
   }
 
   function removeProduct(productId: SalesTrendSeries['id']) {
-    setSelectedProductIds((current) => current.filter((id) => id !== productId))
+    const nextIds = selectedProductIds.filter((id) => id !== productId)
+
+    setProductSelection({
+      ids: nextIds,
+      productSeriesKey,
+      selectionWasCleared: nextIds.length === 0,
+    })
     setActivePointKey(null)
   }
 
@@ -157,7 +220,7 @@ export function SalesTrendChart({
           .join(' ')}
       >
         <div className="admin-sales-chart-toolbar">
-          <div className="admin-sales-chart-legend" aria-label="표시 중인 거래">
+          <div className="admin-sales-chart-legend" aria-label="표시 중인 상품">
             <label className="admin-sales-chart-chip admin-sales-chart-chip--brand admin-sales-chart-chip--channel pretendard-medium-14">
               <select
                 aria-label="매출 조회 채널"
@@ -178,15 +241,18 @@ export function SalesTrendChart({
               <span className="admin-sales-chart-chip__dot" />
               {getChannelLabel(filters.channel)}
             </label>
-            {productSeries
-              .filter((item) => selectedProductIds.includes(item.id))
-              .map((item) => (
+            {selectedProductSeries.map((item, selectionIndex) => {
+              const visualColor = getSalesChartProductColor(selectionIndex)
+
+              return (
                 <span
-                  className="admin-sales-chart-chip admin-sales-chart-chip--info pretendard-medium-14"
+                  className={`admin-sales-chart-chip admin-sales-chart-chip--product admin-sales-chart-color--${visualColor} pretendard-medium-14`}
                   key={item.id}
                 >
-                  <span className="admin-sales-chart-chip__dot" />
-                  {item.label}
+                  <span className="admin-sales-chart-chip__label">
+                    <span className="admin-sales-chart-chip__dot" />
+                    {item.label}
+                  </span>
                   <button
                     aria-label={`${item.label} 차트에서 제거`}
                     className="admin-sales-chart-chip__remove"
@@ -196,22 +262,25 @@ export function SalesTrendChart({
                     <AdminIcon name="x-close" size={16} />
                   </button>
                 </span>
-              ))}
+              )
+            })}
           </div>
 
           <label className="admin-sales-chart-select">
-            <span className="admin-sr-only">차트에 표시할 거래</span>
+            <span className="admin-sr-only">차트에 표시할 상품</span>
             <select
               className="admin-sales-chart-select__control pretendard-medium-14"
               defaultValue=""
               onChange={addProduct}
             >
-              <option value="">항목을 선택해주세요.</option>
-              {productSeries.map((item) => (
-                <option key={item.id} value={item.id}>
-                  {item.label}
-                </option>
-              ))}
+              <option value="">상품을 선택해주세요.</option>
+              {productSeries
+                .filter((item) => !selectedProductIds.includes(item.id))
+                .map((item) => (
+                  <option key={item.id} value={item.id}>
+                    {item.label}
+                  </option>
+                ))}
             </select>
             <span className="admin-sales-chart-select__icon">
               <AdminIcon name="chevron-down" />
@@ -226,7 +295,7 @@ export function SalesTrendChart({
           <svg
             aria-label={
               hasData
-                ? '조회 기간 결제 및 환불 금액 추이'
+                ? '조회 기간 상품별 거래 금액 추이'
                 : '조회 기간 거래 금액 데이터 없음'
             }
             className="admin-sales-chart__svg"
@@ -273,38 +342,46 @@ export function SalesTrendChart({
             />
 
             {hasData
-              ? renderedSeries.map(({ chartPoints, series: renderedItem }) => (
-                  <g key={renderedItem.id}>
-                    {renderedItem.id === 'payments' ? (
-                      <path
-                        className="admin-sales-chart__area"
-                        d={getAreaPath(chartPoints)}
-                      />
-                    ) : null}
-                    <polyline
-                      className={`admin-sales-chart__line admin-sales-chart__line--${renderedItem.color}`}
-                      points={getPolylinePoints(chartPoints)}
-                    />
-                    {chartPoints.map((chartPoint, pointIndex) => {
-                      const point = renderedItem.points[pointIndex]
-                      const pointKey = getPointKey(renderedItem.id, pointIndex)
-
-                      return (
-                        <circle
-                          aria-label={`${renderedItem.label}, ${point.tooltipLabel}, ${formatSalesNumber(point.value)}원`}
-                          className={`admin-sales-chart__point admin-sales-chart__point--${renderedItem.color}`}
-                          cx={chartPoint.x}
-                          cy={chartPoint.y + PLOT_TOP}
-                          key={pointKey}
-                          onFocus={() => setActivePointKey(pointKey)}
-                          onPointerEnter={() => setActivePointKey(pointKey)}
-                          r="4"
-                          tabIndex={0}
+              ? renderedSeries.map(
+                  ({ chartPoints, series: renderedItem, visualColor }) => (
+                    <g
+                      className={`admin-sales-chart-color--${visualColor}`}
+                      key={renderedItem.id}
+                    >
+                      {renderedItem.productId === null ? (
+                        <path
+                          className="admin-sales-chart__area"
+                          d={getAreaPath(chartPoints)}
                         />
-                      )
-                    })}
-                  </g>
-                ))
+                      ) : null}
+                      <polyline
+                        className={`admin-sales-chart__line admin-sales-chart__line--${renderedItem.productId === null ? 'brand' : 'product'}`}
+                        points={getPolylinePoints(chartPoints)}
+                      />
+                      {chartPoints.map((chartPoint, pointIndex) => {
+                        const point = renderedItem.points[pointIndex]
+                        const pointKey = getPointKey(
+                          renderedItem.id,
+                          pointIndex,
+                        )
+
+                        return (
+                          <circle
+                            aria-label={`${renderedItem.label}, ${point.tooltipLabel}, ${formatSalesNumber(point.value)}원`}
+                            className={`admin-sales-chart__point admin-sales-chart__point--${renderedItem.productId === null ? 'brand' : 'product'}`}
+                            cx={chartPoint.x}
+                            cy={chartPoint.y + PLOT_TOP}
+                            key={pointKey}
+                            onFocus={() => setActivePointKey(pointKey)}
+                            onPointerEnter={() => setActivePointKey(pointKey)}
+                            r="4"
+                            tabIndex={0}
+                          />
+                        )
+                      })}
+                    </g>
+                  ),
+                )
               : null}
 
             {axisLabels.map((label, index) => (
@@ -358,7 +435,10 @@ function ChartTooltip({ point }: { readonly point: RenderedPoint }) {
   const y = Math.max(point.chartPoint.y + PLOT_TOP - height - 12, 0)
 
   return (
-    <g className="admin-sales-chart-tooltip" transform={`translate(${x} ${y})`}>
+    <g
+      className={`admin-sales-chart-tooltip admin-sales-chart-tooltip--${point.series.productId === null ? 'brand' : 'product'} admin-sales-chart-color--${point.visualColor}`}
+      transform={`translate(${x} ${y})`}
+    >
       <rect height={height} rx="12" width={width} />
       <text className="admin-sales-chart-tooltip__label" x="12" y="20">
         {point.point.tooltipLabel}

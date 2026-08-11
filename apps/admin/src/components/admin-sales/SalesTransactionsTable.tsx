@@ -1,10 +1,10 @@
 import type { ReactNode } from 'react'
-import type { SalesEvent } from '@repo/supabase'
+import type { SalesTransaction } from '@repo/supabase'
 import { formatSalesNumber } from '../../pages/salesData'
 
 type SalesTransactionsTableProps = {
-  readonly onRefund: (event: SalesEvent) => void
-  readonly rows: readonly SalesEvent[]
+  readonly onRefund: (transaction: SalesTransaction) => void
+  readonly rows: readonly SalesTransaction[]
 }
 
 const headers = [
@@ -12,37 +12,22 @@ const headers = [
   '상품명',
   '거래일자',
   '거래금액',
-  '고객',
-  '환불가능액',
+  '카드수수료',
+  '정산금',
   '거래영수증',
   '환불',
 ] as const
 
-function getStatusContent(event: SalesEvent) {
-  if (event.kind === 'refund') {
-    return {
-      className: 'admin-sales-status--error',
-      label: event.status === 'succeeded' ? '환불완료' : '환불실패',
-    }
-  }
-
-  if (event.status === 'cancelled') {
-    return {
-      className: 'admin-sales-status--error',
-      label: '전액환불',
-    }
-  }
-
-  if (event.status === 'partial_cancelled') {
-    return {
-      className: 'admin-sales-status--muted',
-      label: '부분환불',
-    }
-  }
-
-  return {
-    className: 'admin-sales-status--brand',
-    label: '결제완료',
+function getStatusContent(status: SalesTransaction['status']) {
+  switch (status) {
+    case 'refund-complete':
+      return { className: 'admin-sales-status--error', label: '환불완료' }
+    case 'partial-refund':
+      return { className: 'admin-sales-status--muted', label: '부분환불' }
+    case 'settled':
+      return { className: 'admin-sales-status--brand', label: '정산완료' }
+    case 'scheduled':
+      return { className: 'admin-sales-status--muted', label: '정산예정' }
   }
 }
 
@@ -83,8 +68,8 @@ export function SalesTransactionsTable({
           <div className="admin-sales-table__body" role="rowgroup">
             {rows.length > 0 ? (
               rows.map((row) => {
-                const status = getStatusContent(row)
-                const channel = row.channel === 'site' ? '사이트' : 'LinkPay'
+                const status = getStatusContent(row.status)
+                const isFullRefund = row.status === 'refund-complete'
 
                 return (
                   <div
@@ -101,22 +86,14 @@ export function SalesTransactionsTable({
                       </span>
                     </Cell>
                     <Cell strong>
-                      [{channel}] {row.orderName}
+                      [{row.customerLabel}] {row.productLabel}
                     </Cell>
                     <Cell>{formatOccurredAt(row.occurredAt)}</Cell>
+                    <Cell>{formatSalesNumber(row.transactionAmount)}</Cell>
+                    <Cell>{formatSalesNumber(row.cardFee)}</Cell>
+                    <Cell>{formatSalesNumber(row.settlementAmount)}</Cell>
                     <Cell>
-                      {formatSalesNumber(
-                        row.kind === 'refund' ? -row.amount : row.amount,
-                      )}
-                    </Cell>
-                    <Cell>{row.customerLabel}</Cell>
-                    <Cell>
-                      {row.kind === 'payment' && row.refundableAmount !== null
-                        ? formatSalesNumber(row.refundableAmount)
-                        : '-'}
-                    </Cell>
-                    <Cell>
-                      {row.receiptUrl ? (
+                      {!isFullRefund && row.receiptUrl ? (
                         <a
                           className="admin-sales-table__receipt"
                           href={row.receiptUrl}
@@ -130,7 +107,7 @@ export function SalesTransactionsTable({
                       )}
                     </Cell>
                     <Cell>
-                      {canRefund(row) ? (
+                      {!isFullRefund && canRefund(row) ? (
                         <button
                           className="admin-sales-table__refund pretendard-medium-14"
                           onClick={() => onRefund(row)}
@@ -180,12 +157,8 @@ function Cell({
   )
 }
 
-function canRefund(event: SalesEvent) {
-  return (
-    event.kind === 'payment' &&
-    event.refundableAmount !== null &&
-    event.refundableAmount > 0
-  )
+function canRefund(transaction: SalesTransaction) {
+  return transaction.refundableAmount > 0
 }
 
 function formatOccurredAt(value: string | null) {

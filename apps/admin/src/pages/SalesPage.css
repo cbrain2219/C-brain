@@ -90,6 +90,7 @@
 }
 
 .admin-sales-summary-card--primary {
+  border: 1px solid rgb(248 250 252 / 10%);
   background: linear-gradient(
     100deg,
     var(--admin-brand-800),
@@ -177,15 +178,19 @@
 
 .admin-sales-chart-legend {
   min-width: 0;
+  flex: 1 1 auto;
   display: flex;
   align-items: center;
   gap: 8px;
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+  scrollbar-width: thin;
 }
 
 .admin-sales-chart-chip {
-  min-height: 32px;
-  padding: 5px 16px;
-  border: 1px solid var(--admin-gray-100);
+  height: 32px;
+  padding: 0 16px;
+  border: 1px solid #f1f5f9;
   border-radius: 16px;
   background: var(--admin-surface);
   display: inline-flex;
@@ -198,9 +203,15 @@
   color: var(--admin-brand-500);
 }
 
-.admin-sales-chart-chip--info {
+.admin-sales-chart-chip--product {
   gap: 4px;
-  color: var(--admin-info-500);
+  color: var(--admin-sales-series-color);
+}
+
+.admin-sales-chart-chip__label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .admin-sales-chart-chip--channel {
@@ -251,7 +262,7 @@
   width: 100%;
   height: 100%;
   padding: 0 48px 0 16px;
-  border: 0;
+  border: 1px solid #f1f5f9;
   border-radius: 16px;
   background: var(--admin-surface);
   color: var(--admin-gray-400);
@@ -283,7 +294,7 @@
 }
 
 .admin-sales-chart__grid-line {
-  stroke: var(--admin-gray-100);
+  stroke: #f1f5f9;
   stroke-width: 1;
   stroke-dasharray: 3 3;
 }
@@ -309,8 +320,8 @@
   stroke: var(--admin-brand-500);
 }
 
-.admin-sales-chart__line--info {
-  stroke: var(--admin-info-500);
+.admin-sales-chart__line--product {
+  stroke: var(--admin-sales-series-color);
 }
 
 .admin-sales-chart__point {
@@ -323,8 +334,8 @@
   fill: var(--admin-brand-500);
 }
 
-.admin-sales-chart__point--info {
-  fill: var(--admin-info-500);
+.admin-sales-chart__point--product {
+  fill: var(--admin-sales-series-color);
 }
 
 .admin-sales-chart__axis-label {
@@ -333,8 +344,43 @@
 }
 
 .admin-sales-chart-tooltip rect {
-  fill: var(--admin-info-500);
   filter: drop-shadow(0 8px 8px rgb(30 41 59 / 10%));
+}
+
+.admin-sales-chart-tooltip--brand rect {
+  fill: var(--admin-brand-500);
+}
+
+.admin-sales-chart-tooltip--product rect {
+  fill: var(--admin-sales-series-color);
+}
+
+.admin-sales-chart-color--red {
+  --admin-sales-series-color: #f53333;
+}
+
+.admin-sales-chart-color--orange {
+  --admin-sales-series-color: #f97316;
+}
+
+.admin-sales-chart-color--yellow {
+  --admin-sales-series-color: #d4a600;
+}
+
+.admin-sales-chart-color--green {
+  --admin-sales-series-color: #22a66f;
+}
+
+.admin-sales-chart-color--blue {
+  --admin-sales-series-color: #43a0f5;
+}
+
+.admin-sales-chart-color--indigo {
+  --admin-sales-series-color: #4f46e5;
+}
+
+.admin-sales-chart-color--violet {
+  --admin-sales-series-color: #9333ea;
 }
 
 .admin-sales-chart-tooltip__label,
@@ -512,21 +558,20 @@
 
 .admin-refund-dialog {
   width: min(600px, calc(100vw - 32px));
-  min-height: 430px;
-  height: auto;
+  height: 344px;
   max-width: none;
   max-height: calc(100dvh - 32px);
   margin: auto;
-  padding: 32px;
-  border: 1px solid var(--admin-gray-100);
+  padding: 31px;
+  border: 1px solid #f1f5f9;
   border-radius: 24px;
   background: var(--admin-gray-50);
   color: var(--admin-gray-800);
-  overflow: visible;
+  overflow: hidden;
 }
 
 .admin-refund-dialog--complete {
-  width: min(608.5px, calc(100vw - 32px));
+  width: min(609px, calc(100vw - 32px));
   height: 207px;
 }
 
@@ -539,6 +584,7 @@
 }
 
 .admin-refund-dialog__layout {
+  position: relative;
   width: 100%;
   height: 100%;
   display: flex;
@@ -562,6 +608,13 @@
 
 .admin-refund-dialog__description {
   gap: 4px;
+}
+
+.admin-refund-dialog__description p {
+  width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .admin-refund-dialog__header {
@@ -596,14 +649,19 @@
   gap: 8px;
 }
 
+.admin-refund-dialog__field > span {
+  line-height: 20px;
+}
+
 .admin-refund-dialog__input {
   width: 100%;
   height: 52px;
   padding: 0 16px;
-  border: 1px solid var(--admin-gray-100);
+  border: 1px solid #f1f5f9;
   border-radius: 16px;
   background: var(--admin-surface);
   color: var(--admin-gray-800);
+  line-height: 20px;
 }
 
 .admin-refund-dialog__input::placeholder {
@@ -621,6 +679,7 @@
   background: var(--admin-brand-500);
   color: var(--admin-text-inverse);
   cursor: pointer;
+  line-height: 20px;
   white-space: nowrap;
 }
 
@@ -629,6 +688,10 @@
 }
 
 .admin-refund-dialog__error {
+  position: absolute;
+  right: 0;
+  bottom: 60px;
+  left: 0;
   width: 100%;
   color: var(--admin-error-500);
 }

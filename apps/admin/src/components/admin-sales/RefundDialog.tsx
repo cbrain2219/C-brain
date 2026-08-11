@@ -1,12 +1,15 @@
 import { useEffect, useId, useRef, useState } from 'react'
 import type { ChangeEvent, FormEvent } from 'react'
-import type { SalesEvent } from '@repo/supabase'
+import type { SalesTransaction } from '@repo/supabase'
 import { AdminIcon } from '../AdminIcon'
 import {
+  formatRefundAmountInput,
   formatSalesNumber,
   getRefundAmountError,
-  getRefundReasonError,
+  getRefundCapabilityError,
 } from '../../pages/salesData'
+
+const ADMIN_REFUND_REASON = '관리자 환불 요청'
 
 type RefundDialogProps = {
   readonly onClose: () => void
@@ -15,7 +18,7 @@ type RefundDialogProps = {
     reason: string
   }) => Promise<void>
   readonly state: 'complete' | 'confirm'
-  readonly transaction: SalesEvent
+  readonly transaction: SalesTransaction
 }
 
 export function RefundDialog({
@@ -25,12 +28,11 @@ export function RefundDialog({
   transaction,
 }: RefundDialogProps) {
   const [amount, setAmount] = useState('')
-  const [reason, setReason] = useState('')
+  const [amountInputError, setAmountInputError] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState('')
   const dialogRef = useRef<HTMLDialogElement>(null)
   const amountInputRef = useRef<HTMLInputElement>(null)
-  const reasonInputRef = useRef<HTMLInputElement>(null)
   const titleId = useId()
   const descriptionId = useId()
 
@@ -55,38 +57,60 @@ export function RefundDialog({
   function updateAmount(event: ChangeEvent<HTMLInputElement>) {
     event.currentTarget.setCustomValidity('')
     setSubmitError('')
-    setAmount(event.currentTarget.value)
-  }
+    const nextAmount = formatRefundAmountInput(
+      event.currentTarget.value,
+      transaction.refundableAmount,
+    )
 
-  function updateReason(event: ChangeEvent<HTMLInputElement>) {
-    event.currentTarget.setCustomValidity('')
-    setSubmitError('')
-    setReason(event.currentTarget.value)
+    if (nextAmount === null) {
+      setAmountInputError(
+        /[^\d,]/.test(event.currentTarget.value)
+          ? '환불 금액은 숫자만 입력할 수 있습니다.'
+          : `환불 가능 금액 ${formatSalesNumber(transaction.refundableAmount)}원을 초과할 수 없습니다.`,
+      )
+      return
+    }
+
+    setAmountInputError('')
+    setAmount(nextAmount)
   }
 
   async function submitRefund(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
 
     const amountInput = amountInputRef.current
-    const reasonInput = reasonInputRef.current
     const amountError = getRefundAmountError(
       amount,
-      transaction.refundableAmount ?? 0,
+      transaction.refundableAmount,
     )
-    const reasonError = getRefundReasonError(reason)
+    const partialRefundCapabilityError =
+      amountError === null
+        ? getRefundCapabilityError(
+            amount,
+            transaction.refundableAmount,
+            transaction.canPartCancel,
+          )
+        : null
 
-    if (!amountInput || !reasonInput) return
+    if (!amountInput) return
 
-    amountInput.setCustomValidity(amountError ?? '')
-    reasonInput.setCustomValidity(reasonError ?? '')
+    const validationError =
+      amountInputError || amountError || partialRefundCapabilityError || ''
+
+    amountInput.setCustomValidity(validationError)
+
+    if (amountInputError) {
+      amountInput.reportValidity()
+      return
+    }
 
     if (amountError) {
       amountInput.reportValidity()
       return
     }
 
-    if (reasonError) {
-      reasonInput.reportValidity()
+    if (partialRefundCapabilityError) {
+      amountInput.reportValidity()
       return
     }
 
@@ -96,7 +120,7 @@ export function RefundDialog({
     try {
       await onRefund({
         amount: Number(amount.replaceAll(',', '').trim()),
-        reason: reason.trim(),
+        reason: ADMIN_REFUND_REASON,
       })
     } catch (error) {
       setSubmitError(
@@ -113,6 +137,15 @@ export function RefundDialog({
   ]
     .filter(Boolean)
     .join(' ')
+  const amountDescription = [
+    `거래금액 : ${formatSalesNumber(transaction.transactionAmount)}원`,
+    transaction.refundableAmount < transaction.transactionAmount
+      ? `환불 가능 : ${formatSalesNumber(transaction.refundableAmount)}원`
+      : '',
+    transaction.canPartCancel === false ? '전액만 환불 가능' : '',
+  ]
+    .filter(Boolean)
+    .join(' · ')
 
   return (
     <dialog
@@ -140,13 +173,12 @@ export function RefundDialog({
               className="admin-refund-dialog__description pretendard-medium-14"
               id={descriptionId}
             >
-              <p>
-                {transaction.customerLabel} 고객의 {transaction.orderName}{' '}
-                결제를 환불합니다.
+              <p title={`${transaction.customerLabel}의 ${transaction.orderName}`}>
+                {transaction.customerLabel}의 {transaction.orderName} 환불을
+                진행하시겠습니까?
               </p>
-              <p>
-                환불 가능 금액 :{' '}
-                {formatSalesNumber(transaction.refundableAmount ?? 0)}원
+              <p title={amountDescription}>
+                {amountDescription}
               </p>
             </div>
           </div>
@@ -158,6 +190,7 @@ export function RefundDialog({
               disabled={isSubmitting}
               inputMode="numeric"
               onChange={updateAmount}
+              pattern="[0-9,]*"
               placeholder="환불하실 금액을 입력해주세요."
               ref={amountInputRef}
               required
@@ -166,27 +199,12 @@ export function RefundDialog({
             />
           </label>
 
-          <label className="admin-refund-dialog__field">
-            <span className="pretendard-medium-14">환불 사유</span>
-            <input
-              className="admin-refund-dialog__input pretendard-medium-14"
-              disabled={isSubmitting}
-              maxLength={100}
-              onChange={updateReason}
-              placeholder="환불 사유를 입력해주세요."
-              ref={reasonInputRef}
-              required
-              type="text"
-              value={reason}
-            />
-          </label>
-
-          {submitError ? (
+          {amountInputError || submitError ? (
             <p
               className="admin-refund-dialog__error pretendard-medium-14"
               role="alert"
             >
-              {submitError}
+              {amountInputError || submitError}
             </p>
           ) : null}
 
@@ -208,7 +226,8 @@ export function RefundDialog({
               className="admin-refund-dialog__description pretendard-medium-14"
               id={descriptionId}
             >
-              환불 금액은 이후 결제사 정산 금액에서 차감됩니다.
+              환불 금액은 이후 나이스페이먼츠(PG사)에서 정산 될 금액에서
+              차감됩니다.
             </p>
           </div>
 
