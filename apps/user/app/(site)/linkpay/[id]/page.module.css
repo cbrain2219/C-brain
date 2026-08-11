@@ -1,4 +1,5 @@
 .linkPaySection {
+  --landing-gray-400: #a0aab8;
   width: 100%;
   padding: var(--site-page-top-offset, 124px) 20px 80px;
   display: flex;
@@ -129,8 +130,9 @@
 
 .customerLabelRow {
   display: flex;
-  align-items: center;
-  gap: 8px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0;
 }
 
 .customerLabelRow label {
@@ -139,7 +141,7 @@
   font-size: 14px;
   font-weight: 500;
   line-height: 20px;
-  letter-spacing: 0;
+  letter-spacing: -0.21px;
 }
 
 .customerLabelRow span {
@@ -148,7 +150,7 @@
   font-size: 12px;
   font-weight: 500;
   line-height: 16px;
-  letter-spacing: 0;
+  letter-spacing: -0.18px;
 }
 
 .customerInput {
@@ -163,7 +165,7 @@
   font-size: 14px;
   font-weight: 500;
   line-height: 20px;
-  letter-spacing: 0;
+  letter-spacing: -0.21px;
 }
 
 .customerInput::placeholder {
@@ -183,7 +185,7 @@
 .agreementList {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 8px;
 }
 
 .agreementRow {
@@ -196,8 +198,12 @@
   font-size: 14px;
   font-weight: 500;
   line-height: 20px;
-  letter-spacing: 0;
+  letter-spacing: -0.21px;
   cursor: pointer;
+}
+
+.agreementList > .agreementRow {
+  padding: 8px 0;
 }
 
 .agreementRow strong {
@@ -216,48 +222,48 @@
 }
 
 .agreementCheckboxMark {
-  width: 20px;
-  height: 20px;
-  border: 1px solid var(--landing-gray-200);
+  width: 24px;
+  height: 24px;
+  border: 0;
   border-radius: 8px;
-  background: #ffffff;
+  background: var(--landing-gray-400);
+  color: #ffffff;
   position: relative;
-  flex: 0 0 20px;
+  flex: 0 0 24px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
 }
 
 .agreementCheckboxInput:checked + .agreementCheckboxMark {
-  border-color: var(--landing-brand-500);
   background: var(--landing-brand-500);
 }
 
 .agreementCheckboxIcon {
-  opacity: 0;
-}
-
-.agreementCheckboxInput:checked
-  + .agreementCheckboxMark
-  .agreementCheckboxIcon {
-  opacity: 1;
+  display: block;
 }
 
 .agreementRow[data-invalid="true"] .agreementCheckboxMark {
-  border-color: #ef4444;
-  background: #ffffff;
-}
-
-.agreementRow[data-invalid="true"]
-  .agreementCheckboxInput:focus-visible
-  + .agreementCheckboxMark {
-  border-color: #ef4444;
-  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.14);
+  outline: 2px solid #ef4444;
+  outline-offset: 2px;
 }
 
 .agreementDivider {
+  height: 0;
+  position: relative;
+}
+
+.agreementDivider::before {
+  content: "";
   height: 1px;
+  position: absolute;
+  inset: 0 0 auto;
   background: var(--landing-gray-100);
+}
+
+.agreementDetailList {
+  display: flex;
+  flex-direction: column;
 }
 
 .agreementDetailRow {
@@ -265,6 +271,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 16px;
+  padding: 8px 0;
 }
 
 .agreementDetailRow .agreementRow {
@@ -274,10 +281,10 @@
 .agreementViewButton {
   color: #64748b;
   font-family: var(--font-sans);
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 500;
-  line-height: 20px;
-  letter-spacing: 0;
+  line-height: 16px;
+  letter-spacing: -0.18px;
   text-decoration: underline;
   text-underline-offset: 2px;
   white-space: nowrap;
@@ -289,7 +296,7 @@
   border: 0;
   border-radius: 16px;
   background: var(--landing-brand-500);
-  color: #ffffff;
+  color: var(--landing-gray-50);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -298,16 +305,13 @@
   font-size: 14px;
   font-weight: 700;
   line-height: 20px;
-  letter-spacing: 0;
   cursor: pointer;
 }
 
-.customerInput:focus,
 .paymentButton:focus-visible,
-.agreementCheckboxInput:focus-visible + .agreementCheckboxMark,
 .agreementViewButton:focus-visible {
-  outline: 2px solid rgba(48, 186, 195, 0.42);
-  outline-offset: 2px;
+  outline: 2px solid var(--landing-brand-500);
+  outline-offset: 3px;
 }
 
 @media (min-width: 768px) {

@@ -56,6 +56,24 @@ test("public LinkPay is a reusable payment-link template", () => {
   assert.match(formSource, /이메일\*/);
   assert.match(formSource, /koreanMobilePhonePattern/);
   assert.match(formSource, /emailPattern/);
+  assert.match(formSource, /function formatCustomerPhoneNumber/);
+  assert.match(
+    formSource,
+    /normalizeCustomerPhoneNumber\(value\)\.slice\(0, 11\)/,
+  );
+  assert.match(formSource, /function sanitizeCustomerEmail/);
+  assert.match(formSource, /function formatCustomerFieldValue/);
+  assert.match(formSource, /inputMode:\s*"numeric"/);
+  assert.match(formSource, /maxLength:\s*13/);
+  assert.match(formSource, /placeholder:\s*"010-1234-1234"/);
+  assert.match(
+    formSource,
+    /inputMode=\{"inputMode" in field \? field\.inputMode : undefined\}/,
+  );
+  assert.match(
+    formSource,
+    /maxLength=\{"maxLength" in field \? field\.maxLength : undefined\}/,
+  );
   assert.match(formSource, /payment\.publicToken/);
   assert.match(formSource, /privacyCollection:\s*false/);
   assert.match(formSource, /privacyPolicy:\s*false/);
@@ -74,12 +92,20 @@ test("public LinkPay is a reusable payment-link template", () => {
   assert.match(formSource, /\/api\/linkpay/);
   assert.match(formSource, /현재 결제가 중단된 링크입니다/);
   assert.match(formSource, /target="_blank"/);
+  assert.match(formSource, /agreementCheckboxIcon/);
+  assert.match(formSource, /name="check-01"/);
+  assert.match(formSource, /size=\{20\}/);
+  assert.match(formSource, /agreementDetailList/);
 
   assert.match(stylesSource, /\.linkPaySection/);
+  assert.match(stylesSource, /--landing-gray-400:\s*#a0aab8/);
   assert.match(stylesSource, /max-width:\s*640px/);
   assert.match(stylesSource, /\.paymentCard/);
   assert.match(stylesSource, /background:\s*var\(--landing-gray-50\)/);
   assert.match(stylesSource, /repeating-linear-gradient/);
   assert.match(stylesSource, /\.agreementCheckboxMark/);
   assert.match(stylesSource, /border-radius:\s*8px/);
+  assert.match(stylesSource, /width:\s*24px/);
+  assert.match(stylesSource, /background:\s*var\(--landing-gray-400\)/);
+  assert.match(stylesSource, /\.agreementDetailList/);
 });

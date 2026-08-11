@@ -91,9 +91,11 @@ const customerFields = [
     autoComplete: "tel",
     helper: "카카오톡 상담 연락처",
     id: "linkpay-customer-phone",
+    inputMode: "numeric",
     label: "연락처*",
+    maxLength: 13,
     name: "customerPhone",
-    placeholder: "연락처를 입력해주세요.",
+    placeholder: "010-1234-1234",
     required: true,
     type: "tel",
   },
@@ -101,6 +103,7 @@ const customerFields = [
     autoComplete: "email",
     helper: "영수증·파일 전달",
     id: "linkpay-customer-email",
+    inputMode: "email",
     label: "이메일*",
     name: "customerEmail",
     placeholder: "이메일을 입력해주세요.",
@@ -118,6 +121,33 @@ const customerFieldDefaultValues = {
 
 function normalizeCustomerPhoneNumber(value: string) {
   return value.replace(/\D/g, "");
+}
+
+function formatCustomerPhoneNumber(value: string) {
+  const digits = normalizeCustomerPhoneNumber(value).slice(0, 11);
+
+  if (digits.length <= 3) return digits;
+  if (digits.length <= 7) {
+    return `${digits.slice(0, 3)}-${digits.slice(3)}`;
+  }
+
+  return `${digits.slice(0, 3)}-${digits.slice(3, 7)}-${digits.slice(7)}`;
+}
+
+function sanitizeCustomerEmail(value: string) {
+  return value.replace(/[^A-Za-z0-9.!#$%&'*+/=?^_\x60{|}~@-]/g, "");
+}
+
+function formatCustomerFieldValue(fieldName: CustomerFieldId, value: string) {
+  if (fieldName === "customerPhone") {
+    return formatCustomerPhoneNumber(value);
+  }
+
+  if (fieldName === "customerEmail") {
+    return sanitizeCustomerEmail(value);
+  }
+
+  return value;
 }
 
 function isRequiredCustomerFieldId(
@@ -200,7 +230,10 @@ export function LinkPayPaymentForm({
 
   const handleCustomerFieldChange =
     (fieldName: CustomerFieldId) => (event: ChangeEvent<HTMLInputElement>) => {
-      const value = event.currentTarget.value;
+      const value = formatCustomerFieldValue(
+        fieldName,
+        event.currentTarget.value,
+      );
 
       setFieldValues((current) => ({
         ...current,
@@ -398,6 +431,8 @@ export function LinkPayPaymentForm({
                 autoComplete={field.autoComplete}
                 className={styles.customerInput}
                 id={field.id}
+                inputMode={"inputMode" in field ? field.inputMode : undefined}
+                maxLength={"maxLength" in field ? field.maxLength : undefined}
                 name={field.name}
                 onChange={handleCustomerFieldChange(field.name)}
                 placeholder={field.placeholder}
@@ -417,46 +452,56 @@ export function LinkPayPaymentForm({
                 type="checkbox"
               />
               <span className={styles.agreementCheckboxMark} aria-hidden="true">
-                <Icon name="check-01" size={12} />
+                <Icon
+                  className={styles.agreementCheckboxIcon}
+                  name="check-01"
+                  size={20}
+                />
               </span>
               <strong>전체 동의</strong>
             </label>
 
             <div className={styles.agreementDivider} />
 
-            {agreementItems.map((item) => (
-              <div className={styles.agreementDetailRow} key={item.id}>
-                <label
-                  className={styles.agreementRow}
-                  data-invalid={isTargetInvalid(item.id)}
-                  ref={setValidationTargetRef(item.id)}
-                >
-                  <input
-                    aria-invalid={isTargetInvalid(item.id)}
-                    checked={agreements[item.id]}
-                    className={styles.agreementCheckboxInput}
-                    onChange={() => toggleAgreement(item.id)}
-                    required
-                    type="checkbox"
-                  />
-                  <span
-                    className={styles.agreementCheckboxMark}
-                    aria-hidden="true"
+            <div className={styles.agreementDetailList}>
+              {agreementItems.map((item) => (
+                <div className={styles.agreementDetailRow} key={item.id}>
+                  <label
+                    className={styles.agreementRow}
+                    data-invalid={isTargetInvalid(item.id)}
+                    ref={setValidationTargetRef(item.id)}
                   >
-                    <Icon name="check-01" size={12} />
-                  </span>
-                  <span>{item.label}</span>
-                </label>
-                <a
-                  className={styles.agreementViewButton}
-                  href={item.href}
-                  rel="noreferrer"
-                  target="_blank"
-                >
-                  보기
-                </a>
-              </div>
-            ))}
+                    <input
+                      aria-invalid={isTargetInvalid(item.id)}
+                      checked={agreements[item.id]}
+                      className={styles.agreementCheckboxInput}
+                      onChange={() => toggleAgreement(item.id)}
+                      required
+                      type="checkbox"
+                    />
+                    <span
+                      className={styles.agreementCheckboxMark}
+                      aria-hidden="true"
+                    >
+                      <Icon
+                        className={styles.agreementCheckboxIcon}
+                        name="check-01"
+                        size={20}
+                      />
+                    </span>
+                    <span>{item.label}</span>
+                  </label>
+                  <a
+                    className={styles.agreementViewButton}
+                    href={item.href}
+                    rel="noreferrer"
+                    target="_blank"
+                  >
+                    보기
+                  </a>
+                </div>
+              ))}
+            </div>
           </section>
 
           <button
