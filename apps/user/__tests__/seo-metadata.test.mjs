@@ -66,7 +66,11 @@ test("static page metadata is configured from one SEO content module", async () 
       assert.equal(metadata.openGraph.siteName, siteSeo.name);
       assert.equal(metadata.openGraph.locale, "ko_KR");
       assert.equal(metadata.openGraph.url.pathname, entry.path);
-      assert.equal(metadata.twitter.card, "summary");
+      assert.equal(metadata.openGraph.images[0].url.pathname, "/opengraph-image.png");
+      assert.equal(metadata.openGraph.images[0].width, 4800);
+      assert.equal(metadata.openGraph.images[0].height, 3200);
+      assert.equal(metadata.twitter.card, "summary_large_image");
+      assert.equal(metadata.twitter.images[0].url.pathname, "/opengraph-image.png");
     }
   `;
 
@@ -76,6 +80,57 @@ test("static page metadata is configured from one SEO content module", async () 
     {
       env: { ...process.env, NODE_NO_WARNINGS: "1" },
     },
+  );
+});
+
+test("social images use the matching Vercel deployment URL", async () => {
+  const check = `
+    import assert from "node:assert/strict";
+    const { createRootMetadata } = await import(${JSON.stringify(seoModuleUrl)});
+    const metadata = createRootMetadata();
+
+    assert.equal(metadata.openGraph.url.origin, "https://cbrain.kr");
+    assert.equal(metadata.openGraph.images[0].url.origin, process.env.EXPECTED_IMAGE_ORIGIN);
+    assert.equal(metadata.twitter.images[0].url.origin, process.env.EXPECTED_IMAGE_ORIGIN);
+  `;
+  const scenarios = [
+    {
+      expectedOrigin: "https://user-ten-ochre.vercel.app",
+      vercelEnv: "production",
+      vercelProjectProductionUrl: "user-ten-ochre.vercel.app",
+      vercelUrl: "user-production-hash.vercel.app",
+    },
+    {
+      expectedOrigin: "https://user-feature-hash.vercel.app",
+      vercelEnv: "preview",
+      vercelProjectProductionUrl: "user-ten-ochre.vercel.app",
+      vercelUrl: "user-feature-hash.vercel.app",
+    },
+  ];
+
+  await Promise.all(
+    scenarios.map(
+      ({
+        expectedOrigin,
+        vercelEnv,
+        vercelProjectProductionUrl,
+        vercelUrl,
+      }) =>
+        execFileAsync(
+          process.execPath,
+          ["--experimental-strip-types", "--input-type=module", "--eval", check],
+          {
+            env: {
+              ...process.env,
+              EXPECTED_IMAGE_ORIGIN: expectedOrigin,
+              NEXT_PUBLIC_SITE_URL: "https://cbrain.kr",
+              VERCEL_ENV: vercelEnv,
+              VERCEL_PROJECT_PRODUCTION_URL: vercelProjectProductionUrl,
+              VERCEL_URL: vercelUrl,
+            },
+          },
+        ),
+    ),
   );
 });
 

@@ -23,6 +23,13 @@ export const siteSeo = {
   url: "https://cbrain.kr",
 } as const;
 
+const defaultSocialImage = {
+  alt: "씨브레인 홍보물 제작·디자인·인쇄 원스톱 전문",
+  height: 3200,
+  url: "/opengraph-image.png",
+  width: 4800,
+} as const;
+
 export const homeSeo = {
   description: siteSeo.defaultDescription,
   keywords: siteSeo.defaultKeywords,
@@ -186,12 +193,46 @@ export function getSiteUrl() {
   }
 }
 
+function parseVercelUrl(value: string | undefined) {
+  const host = value?.trim();
+
+  if (!host) {
+    return undefined;
+  }
+
+  try {
+    return new URL(host.includes("://") ? host : `https://${host}`);
+  } catch {
+    return undefined;
+  }
+}
+
+function getSocialImageUrl() {
+  const deploymentUrl = parseVercelUrl(
+    process.env.VERCEL_URL ?? process.env.NEXT_PUBLIC_VERCEL_URL,
+  );
+  const productionUrl = parseVercelUrl(
+    process.env.VERCEL_PROJECT_PRODUCTION_URL ??
+      process.env.NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL,
+  );
+  const assetBaseUrl =
+    process.env.VERCEL_ENV === "production"
+      ? (productionUrl ?? deploymentUrl ?? getSiteUrl())
+      : (deploymentUrl ?? getSiteUrl());
+
+  return new URL(defaultSocialImage.url, assetBaseUrl);
+}
+
 export function getPageUrl(path: StaticPageSeoEntry["path"] | `/${string}`) {
   return new URL(path, getSiteUrl());
 }
 
 export function createRootMetadata(): Metadata {
   const url = getSiteUrl();
+  const socialImage = {
+    ...defaultSocialImage,
+    url: getSocialImageUrl(),
+  };
 
   return {
     description: siteSeo.defaultDescription,
@@ -199,6 +240,7 @@ export function createRootMetadata(): Metadata {
     metadataBase: url,
     openGraph: {
       description: siteSeo.defaultDescription,
+      images: [socialImage],
       locale: "ko_KR",
       siteName: siteSeo.name,
       title: siteSeo.defaultTitle,
@@ -210,8 +252,9 @@ export function createRootMetadata(): Metadata {
       template: `%s | ${siteSeo.name}`,
     },
     twitter: {
-      card: "summary",
+      card: "summary_large_image",
       description: siteSeo.defaultDescription,
+      images: [socialImage],
       title: siteSeo.defaultTitle,
     },
   };
@@ -220,6 +263,10 @@ export function createRootMetadata(): Metadata {
 export function createPageMetadata(pageKey: StaticPageSeoKey): Metadata {
   const entry = pageSeo[pageKey];
   const url = getPageUrl(entry.path);
+  const socialImage = {
+    ...defaultSocialImage,
+    url: getSocialImageUrl(),
+  };
 
   return {
     alternates: {
@@ -229,6 +276,7 @@ export function createPageMetadata(pageKey: StaticPageSeoKey): Metadata {
     keywords: [...entry.keywords],
     openGraph: {
       description: entry.description,
+      images: [socialImage],
       locale: "ko_KR",
       siteName: siteSeo.name,
       title: entry.title,
@@ -239,8 +287,9 @@ export function createPageMetadata(pageKey: StaticPageSeoKey): Metadata {
       absolute: entry.title,
     },
     twitter: {
-      card: "summary",
+      card: "summary_large_image",
       description: entry.description,
+      images: [socialImage],
       title: entry.title,
     },
   };
