@@ -8,7 +8,6 @@ import {
   resolveBlogCategory,
 } from "../_constants/blogCategories";
 import {
-  blogPosts,
   getBlogDetailSeo,
   getBlogPostBySlug,
   getRelatedBlogPosts,
@@ -17,6 +16,7 @@ import type { BlogContentBlock, BlogPost } from "../_types/blog";
 import { LightHeroBadge } from "../../../../components/LightHeroBadge";
 import { JsonLdScript } from "../../../_components/JsonLdScript";
 import { createBlogPostingStructuredData } from "../../../_content/structured-data";
+import { getPublishedBlogPosts } from "../../../../lib/publicContent";
 import { BlogDetailBackLink } from "./BlogDetailBackLink";
 import styles from "./page.module.css";
 
@@ -28,6 +28,8 @@ type BlogDetailPageProps = {
     category?: string | string[];
   }>;
 };
+
+export const revalidate = 0;
 
 function getSearchParamValue(value: string | string[] | undefined) {
   return Array.isArray(value) ? value[0] : value;
@@ -108,17 +110,14 @@ function renderBlogContentBlock(block: BlogContentBlock) {
   }
 }
 
-export function generateStaticParams() {
-  return blogPosts.map((post) => ({
-    slug: post.slug,
-  }));
-}
-
 export async function generateMetadata({
   params,
 }: BlogDetailPageProps): Promise<Metadata> {
-  const { slug } = await params;
-  const post = getBlogPostBySlug(slug);
+  const [{ slug }, posts] = await Promise.all([
+    params,
+    getPublishedBlogPosts(),
+  ]);
+  const post = getBlogPostBySlug(slug, posts);
 
   if (!post) {
     return {
@@ -133,7 +132,7 @@ export async function generateMetadata({
     : undefined;
   const socialImage = siteUrl
     ? {
-        alt: post.title,
+        alt: post.imageAlt,
         url: new URL(post.image, siteUrl),
       }
     : undefined;
@@ -165,19 +164,22 @@ export default async function BlogDetailPage({
   params,
   searchParams,
 }: BlogDetailPageProps) {
-  const { slug } = await params;
-  const post = getBlogPostBySlug(slug);
+  const [{ slug }, resolvedSearchParams, posts] = await Promise.all([
+    params,
+    searchParams,
+    getPublishedBlogPosts(),
+  ]);
+  const post = getBlogPostBySlug(slug, posts);
 
   if (!post) {
     notFound();
   }
 
-  const resolvedSearchParams = await searchParams;
   const activeCategory = resolveBlogCategory(
     getSearchParamValue(resolvedSearchParams?.category),
   );
   const listHref = getBlogListHref(activeCategory);
-  const relatedPosts = getRelatedBlogPosts(post.slug);
+  const relatedPosts = getRelatedBlogPosts(post.slug, posts);
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
   const imageUrl = getAbsoluteUrl(post.image, siteUrl);
 
@@ -278,7 +280,7 @@ export default async function BlogDetailPage({
                       <figure className={styles.moreBlogFigure}>
                         <div className={styles.moreBlogImageFrame}>
                           <Image
-                            alt={relatedPost.title}
+                            alt={relatedPost.imageAlt}
                             className={styles.moreBlogImage}
                             fill
                             sizes="(min-width: 481px) 200px, calc(100vw - 40px)"

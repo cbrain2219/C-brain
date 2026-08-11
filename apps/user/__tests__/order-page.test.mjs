@@ -163,8 +163,8 @@ test("order page route, content, responsive styles, and navigation are wired", (
   assert.match(routeSource, /setOrderStep\("option"\)/);
   assert.match(routeSource, /OrderPaymentSubmitPayload/);
   assert.match(routeSource, /handlePaymentSubmit/);
-  assert.match(routeSource, /submitOrderPayment\(payload\)/);
-  assert.match(routeSource, /router\.push/);
+  assert.match(routeSource, /submitOrderPayment\(payload, checkoutRequestId\)/);
+  assert.match(routeSource, /requestNicepayPayment/);
   assert.match(routeSource, /setOrderStep\("category"\)/);
   assert.match(routeSource, /setOrderStep\("option"\)/);
   assert.match(routeSource, /setOrderStep\("customer"\)/);
@@ -348,7 +348,7 @@ test("order page route, content, responsive styles, and navigation are wired", (
   assert.match(customerInfoSource, /export type OrderPaymentSubmitPayload/);
   assert.match(
     customerInfoSource,
-    /onPaymentSubmit\?:\s*\(payload:\s*OrderPaymentSubmitPayload\) => Promise<void> \| void/,
+    /onPaymentSubmit\?:\s*\(\s*payload:\s*OrderPaymentSubmitPayload,?\s*\)\s*=>\s*Promise<void>\s*\|\s*void/,
   );
   assert.match(customerInfoSource, /type RequiredCustomerFieldId/);
   assert.match(customerInfoSource, /type OrderCustomerValidationTarget/);
@@ -1052,23 +1052,14 @@ test("order page route, content, responsive styles, and navigation are wired", (
   );
 });
 
-test("order payment success and failure result routes are wired", () => {
-  const successRoutePath = "apps/user/app/(site)/order/success/page.tsx";
-  const successPreviewRoutePath =
-    "apps/user/app/(site)/order/success/preview/page.tsx";
-  const failRoutePath = "apps/user/app/(site)/order/fail/page.tsx";
+test("shared payment result presentation is wired", () => {
   const resultComponentPath =
     "apps/user/app/(site)/order/OrderPaymentResult.tsx";
   const stylesPath = "apps/user/app/(site)/order/page.module.css";
   const appStylesPath = "apps/user/app/page.module.css";
 
-  assert.equal(existsSync(path.join(repoRoot, successRoutePath)), true);
-  assert.equal(existsSync(path.join(repoRoot, successPreviewRoutePath)), false);
-  assert.equal(existsSync(path.join(repoRoot, failRoutePath)), true);
   assert.equal(existsSync(path.join(repoRoot, resultComponentPath)), true);
 
-  const successRouteSource = read(successRoutePath);
-  const failRouteSource = read(failRoutePath);
   const resultSource = read(resultComponentPath);
   const stylesSource = read(stylesPath);
   const appStylesSource = read(appStylesPath);
@@ -1078,10 +1069,6 @@ test("order payment success and failure result routes are wired", () => {
     "] as const;",
   );
 
-  assert.match(successRouteSource, /redirect\("\/order"\)/);
-  assert.doesNotMatch(successRouteSource, /variant="success"/);
-  assert.match(failRouteSource, /variant="failure"/);
-  assert.match(failRouteSource, /결제 실패/);
   assert.match(resultSource, /"use client"/);
   assert.match(resultSource, /useEffect/);
   assert.match(resultSource, /type OrderSelectionSummary/);
@@ -1264,4 +1251,35 @@ test("order payment success and failure result routes are wired", () => {
     appStylesSource,
     /@media \(max-width:\s*399px\)[\s\S]*?:global\(body\[data-order-result-active="true"\]\) \.header\s*\{[\s\S]*?display:\s*none/,
   );
+});
+
+test("site orders use the common checkout and result flow", () => {
+  const successRoutePath = "apps/user/app/(site)/order/success/page.tsx";
+  const failRoutePath = "apps/user/app/(site)/order/fail/page.tsx";
+  const checkoutRoutePath = "apps/user/app/api/orders/checkout/route.ts";
+  const paymentPath = "apps/user/app/(site)/order/payment.ts";
+  const pagePath = "apps/user/app/(site)/order/page.tsx";
+
+  assert.equal(existsSync(path.join(repoRoot, successRoutePath)), false);
+  assert.equal(existsSync(path.join(repoRoot, failRoutePath)), false);
+
+  const checkoutRouteSource = read(checkoutRoutePath);
+  const paymentSource = read(paymentPath);
+  const pageSource = read(pagePath);
+
+  assert.match(checkoutRouteSource, /getOrderOptionConfig/);
+  assert.match(checkoutRouteSource, /getOrderQuantityOptions/);
+  assert.match(checkoutRouteSource, /createSiteCheckout/);
+  assert.match(checkoutRouteSource, /createNicepayCheckoutRequest/);
+  assert.doesNotMatch(checkoutRouteSource, /payload\.amount/);
+  assert.doesNotMatch(checkoutRouteSource, /payload\.totalPrice/);
+  assert.match(paymentSource, /fetch\("\/api\/orders\/checkout"/);
+  assert.match(paymentSource, /checkoutRequestId/);
+  assert.match(paymentSource, /selection:/);
+  assert.doesNotMatch(paymentSource, /totalPrice/);
+  assert.match(pageSource, /crypto\.randomUUID/);
+  assert.match(pageSource, /checkoutRequestRef/);
+  assert.match(pageSource, /requestNicepayPayment/);
+  assert.doesNotMatch(pageSource, /router\.push/);
+  assert.doesNotMatch(pageSource, /pay\.nicepay\.co\.kr\/v1\/js/);
 });

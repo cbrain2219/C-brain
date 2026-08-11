@@ -78,7 +78,7 @@ export function createComplaintSubmissionPayload(
 }
 
 export function getComplaintUploadPrefix(submissionId: string) {
-  return `inquiry-submissions/${submissionId}`;
+  return `complaints/${submissionId}`;
 }
 
 export function isComplaintSubmissionId(value: unknown): value is string {
@@ -105,7 +105,7 @@ export function validateComplaintAttachments(
         !file.name.trim() ||
         file.name.length > 255 ||
         !Number.isSafeInteger(file.size) ||
-        file.size < 0 ||
+        file.size <= 0 ||
         file.size > MAX_COMPLAINT_ATTACHMENT_SIZE_BYTES,
     )
   ) {
@@ -250,7 +250,7 @@ export function parseComplaintCleanupRequest(input: unknown) {
   } as const;
 }
 
-export function toComplaintInquiryInput(
+export function toComplaintInput(
   values: ComplaintSubmissionValues,
   privacyAgreedAt: string,
 ) {
@@ -264,8 +264,6 @@ export function toComplaintInquiryInput(
     privacy_agreed_at: privacyAgreedAt,
     service: values.service.trim(),
     status: "received" as const,
-    title: `${values.complaintType.trim()} - ${values.service.trim()}`,
-    user_id: null,
   };
 }
 

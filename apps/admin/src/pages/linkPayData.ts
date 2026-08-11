@@ -1,5 +1,4 @@
 import type {
-  PaymentLinkStatus,
   TableInsert,
   TableRow,
 } from '@repo/supabase/types'
@@ -22,8 +21,10 @@ export type LinkPayListRow = {
   id: string
   paymentName: string
   publicToken: string
-  status: PaymentLinkStatus
+  status: LinkPayEffectiveState
 }
+
+export type LinkPayEffectiveState = 'active' | 'disabled'
 
 export type PaymentLinkInput = Pick<
   TableInsert<'payment_links'>,
@@ -39,7 +40,7 @@ export type PaymentLinkInput = Pick<
 export type LinkPayFilters = {
   client: string
   query: string
-  status: '전체' | '결제전' | '결제완료'
+  status: '전체' | '활성' | '중단'
 }
 
 export function createInitialLinkPayForm(): LinkPayFormState {
@@ -112,7 +113,7 @@ export function toLinkPayListRow(
     id: paymentLink.id,
     paymentName: paymentLink.payment_name,
     publicToken: paymentLink.public_token,
-    status: paymentLink.status,
+    status: paymentLink.disabled_at ? 'disabled' : 'active',
   }
 }
 
@@ -122,10 +123,10 @@ export function filterLinkPayRows(
 ) {
   const query = filters.query.trim().toLocaleLowerCase('ko-KR')
   const status =
-    filters.status === '결제전'
-      ? 'pending'
-      : filters.status === '결제완료'
-        ? 'paid'
+    filters.status === '활성'
+      ? 'active'
+      : filters.status === '중단'
+        ? 'disabled'
         : '전체'
 
   return rows.filter(

@@ -29,7 +29,7 @@ import {
 import { getPortfolioImageError, isValidPortfolioSlug } from './portfolioFormState'
 import './PortfolioFormPage.css'
 
-type PortfolioContentMode = 'html' | 'text'
+type PortfolioContentMode = 'html' | 'markdown'
 
 type PortfolioImageSlot = {
   readonly alt: string
@@ -422,7 +422,7 @@ export function PortfolioFormPage() {
     }
 
     if (!isValidPortfolioSlug(form.slug)) {
-      setSlugError('Slug는 영문과 하이픈만 입력할 수 있습니다.')
+      setSlugError('Slug는 영문 소문자, 숫자, 하이픈만 입력할 수 있습니다.')
       window.requestAnimationFrame(() => {
         document.getElementById(formId + '-slug')?.focus()
       })
@@ -546,14 +546,18 @@ export function PortfolioFormPage() {
           name="slug"
           onChange={(event) => {
             const value = event.currentTarget.value
-            const slug = value.replace(/[^A-Za-z-]/g, '')
+            const slug = value.toLowerCase().replace(/[^a-z0-9-]/g, '')
 
             updateForm('slug', slug)
-            setSlugError(value === slug ? '' : '영어로 입력해주세요.')
+            setSlugError(
+              value === slug ? '' : '영문 소문자, 숫자, 하이픈만 입력해주세요.',
+            )
           }}
-          onInvalid={() => setSlugError('Slug는 영문과 하이픈만 입력할 수 있습니다.')}
-          pattern="[A-Za-z-]+"
-          placeholder="포트폴리오 Slug를 입력해주세요. (영문만 작성)"
+          onInvalid={() =>
+            setSlugError('Slug는 영문 소문자, 숫자, 하이픈만 입력할 수 있습니다.')
+          }
+          pattern="[a-z0-9]+(?:-[a-z0-9]+)*"
+          placeholder="포트폴리오 Slug를 입력해주세요. (영문 소문자, 숫자, 하이픈)"
           required
           type="text"
           value={form.slug}
@@ -721,13 +725,13 @@ export function PortfolioFormPage() {
             HTML 작성
           </button>
           <button
-            aria-pressed={form.contentMode === 'text'}
+            aria-pressed={form.contentMode === 'markdown'}
             className={
-              form.contentMode === 'text'
+              form.contentMode === 'markdown'
                 ? 'portfolio-form__mode-tab portfolio-form__mode-tab--active'
                 : 'portfolio-form__mode-tab'
             }
-            onClick={() => updateForm('contentMode', 'text')}
+            onClick={() => updateForm('contentMode', 'markdown')}
             type="button"
           >
             TEXT Editor 작성

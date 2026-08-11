@@ -290,6 +290,7 @@ export function ComplaintForm() {
   });
   const verificationCodeInputRegistration = register("verificationCode", {
     validate: (value) =>
+      !isPhoneVerificationRequested ||
       isComplaintRequiredFieldValid("verificationCode", value),
   });
 

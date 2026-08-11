@@ -457,6 +457,10 @@ test("complaint verification code appears only after a successful request", asyn
     formSource,
     /isPhoneVerificationRequested\s*\? "발송완료"\s*: "인증요청"/,
   );
+  assert.match(
+    formSource,
+    /!isPhoneVerificationRequested\s*\|\|\s*isComplaintRequiredFieldValid\("verificationCode", value\)/,
+  );
   assert.match(formSource, /resetField\("verificationCode"\)/);
   assert.match(
     stylesSource,

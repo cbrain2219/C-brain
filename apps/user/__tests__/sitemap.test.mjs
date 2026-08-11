@@ -92,11 +92,15 @@ test("sitemap helper lists public pages and excludes private payment routes", as
 test("Next sitemap route assembles public dynamic detail groups", async () => {
   const source = await readFile(appSitemapPath, "utf8");
 
-  assert.match(source, /export default function sitemap/);
+  assert.match(source, /export default async function sitemap/);
+  assert.match(source, /export const revalidate = 0/);
   assert.match(source, /createSitemapEntries/);
-  assert.match(source, /blogPosts\.map/);
+  assert.match(source, /getPublishedBlogPosts/);
+  assert.match(source, /getPublishedPortfolioItems/);
+  assert.match(source, /Promise\.all/);
+  assert.match(source, /posts\.map/);
   assert.match(source, /path: `\/blog\/\$\{post\.slug\}`/);
-  assert.match(source, /portfolioItems\.map/);
+  assert.match(source, /items\.map/);
   assert.match(source, /path: `\/portfolio\/\$\{item\.slug\}`/);
   assert.match(source, /customerInterviews\.map/);
   assert.match(source, /path: `\/reviews\/\$\{interview\.detailSlug\}`/);
@@ -105,6 +109,8 @@ test("Next sitemap route assembles public dynamic detail groups", async () => {
   assert.doesNotMatch(source, /@repo\/supabase/);
   assert.doesNotMatch(source, /createUserSupabaseClient/);
   assert.doesNotMatch(source, /listPublishedPortfolioItems/);
+  assert.doesNotMatch(source, /import \{ blogPosts \}/);
+  assert.doesNotMatch(source, /import \{ portfolioItems \}/);
   assert.doesNotMatch(source, /\/order\/success/);
   assert.doesNotMatch(source, /\/order\/fail/);
   assert.doesNotMatch(source, /\/linkpay/);

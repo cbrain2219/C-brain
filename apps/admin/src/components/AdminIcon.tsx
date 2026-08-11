@@ -8,6 +8,7 @@ type AdminIconName =
   | 'chevron-down'
   | 'folder-up'
   | 'pen-tool'
+  | 'plus'
   | 'user-profile'
   | 'x-close'
 
@@ -80,6 +81,13 @@ const iconDefinitions: Record<AdminIconName, AdminIconDefinition> = {
     strokeWidth: 0,
     viewBox: '0 0 21.2 21.2',
     width: 21.2,
+  },
+  plus: {
+    glyph: <path d="M8 3.2V12.8M3.2 8H12.8" />,
+    height: 16,
+    strokeWidth: 1.5,
+    viewBox: '0 0 16 16',
+    width: 16,
   },
   'user-profile': {
     glyph: (

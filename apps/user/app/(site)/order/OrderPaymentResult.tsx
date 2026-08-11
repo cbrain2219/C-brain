@@ -62,6 +62,9 @@ type OrderPaymentResultProps = OrderPaymentResultCommonProps &
         data?: OrderPaymentFailureData;
         variant: "failure";
       }
+    | {
+        variant: "pending";
+      }
   );
 
 const resultStepIndex = 3;
@@ -130,10 +133,20 @@ const successGuideLines = [
 function OrderResultDescription({
   failureReason,
   isSuccess,
+  isPending,
 }: {
   failureReason: string;
   isSuccess: boolean;
+  isPending: boolean;
 }) {
+  if (isPending) {
+    return (
+      <div className={styles.resultDescription}>
+        <p>결제 결과를 확인하고 있습니다. 잠시 후 다시 확인해주세요.</p>
+      </div>
+    );
+  }
+
   if (!isSuccess) {
     return (
       <div className={styles.resultDescription}>
@@ -278,12 +291,17 @@ export function OrderPaymentResult(props: OrderPaymentResultProps) {
     successPrimaryLabel = "다른 제품 주문하기",
   } = props;
   const isSuccess = props.variant === "success";
+  const isPending = props.variant === "pending";
   const failureData =
     props.variant === "failure"
       ? (props.data ?? defaultFailureResultData)
       : defaultFailureResultData;
   const successData = props.variant === "success" ? props.data : undefined;
-  const title = isSuccess ? "결제가 완료되었습니다" : "결제에 실패했습니다";
+  const title = isSuccess
+    ? "결제가 완료되었습니다"
+    : isPending
+      ? "결제 확인 중입니다"
+      : "결제에 실패했습니다";
 
   useEffect(() => {
     if (!showProgress) return;
@@ -303,9 +321,7 @@ export function OrderPaymentResult(props: OrderPaymentResultProps) {
     <div
       className={`${styles.orderPage} ${styles.resultPage} ${
         showProgress ? styles.resultPageWithProgress : ""
-      } ${
-        contentHeight ? styles.resultPageContentHeight : ""
-      }`}
+      } ${contentHeight ? styles.resultPageContentHeight : ""}`}
       data-order-result-active="true"
     >
       {showProgress ? (
@@ -356,6 +372,7 @@ export function OrderPaymentResult(props: OrderPaymentResultProps) {
                 <OrderResultDescription
                   failureReason={failureData.failureReason}
                   isSuccess={isSuccess}
+                  isPending={isPending}
                 />
               </div>
             </div>

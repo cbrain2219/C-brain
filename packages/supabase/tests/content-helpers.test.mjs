@@ -27,21 +27,31 @@ register(`data:text/javascript,${encodeURIComponent(loader)}`, import.meta.url);
 
 const { createPost, listPublishedPosts, reorderPosts } =
   await import("../src/content.ts");
+const { requireAdmin } = await import("../src/auth.ts");
 const { createSignedFileUpload, createStoragePath, getFileInfo } =
   await import("../src/files.ts");
-const { createInquiryAttachment } = await import("../src/inquiries.ts");
 const {
-  completePaymentOrder,
+  createComplaint,
+  createComplaintAttachments,
+  createInquiryAttachment,
+  getAdminComplaint,
+  listAdminComplaints,
+  updateComplaintStatus,
+} = await import("../src/inquiries.ts");
+const {
   createPaymentLink,
   deletePaymentLink,
-  getOrCreatePaymentOrder,
-  getPaymentOrderByOrderId,
-  getPublicPaymentLink,
   listAdminPaymentLinks,
-  updatePaymentOrder,
 } = await import("../src/paymentLinks.ts");
-const { getLowestProductUnitPrice, listPublishedProducts } =
-  await import("../src/products.ts");
+const {
+  createProduct,
+  deleteProduct,
+  getAdminProduct,
+  getLowestProductPrice,
+  getLowestProductUnitPrice,
+  listPublishedProducts,
+  updateProduct,
+} = await import("../src/products.ts");
 const { listPublishedPortfolioItems, reorderPortfolioItems } =
   await import("../src/portfolio.ts");
 const { listPublishedReviews, reorderReviews } =
@@ -52,7 +62,12 @@ function createFakeClient(dataByTable = {}) {
   const client = {
     auth: {
       async getUser() {
-        return { data: { user: { id: "admin-id" } }, error: null };
+        return {
+          data: {
+            user: { app_metadata: { role: "admin" }, id: "admin-id" },
+          },
+          error: null,
+        };
       },
     },
     from(table) {
@@ -112,10 +127,7 @@ function createFakeClient(dataByTable = {}) {
     rpc(name, args) {
       calls.push({ args, method: "rpc", name });
       const result = {
-        data:
-          name === "get_or_create_payment_order"
-            ? (dataByTable.payment_orders ?? { id: "payment-order-id" })
-            : null,
+        data: null,
         error: null,
       };
 
@@ -133,6 +145,14 @@ function createFakeClient(dataByTable = {}) {
 
   return { calls, client };
 }
+
+test("admin authorization uses app metadata without a profiles query", async () => {
+  const { calls, client } = createFakeClient();
+
+  await requireAdmin(client);
+
+  assert.equal(calls.some((call) => call.table === "profiles"), false);
+});
 
 function orderCalls(calls, table) {
   return calls
@@ -159,7 +179,7 @@ test("published content queries use stable display ordering", async () => {
       (call) =>
         call.method === "select" &&
         call.table === "products" &&
-        call.columns === "id, name, sort_order, type, unit_prices",
+        call.columns === "id, configuration, product_type, sort_order",
     ),
   );
   assert.ok(
@@ -182,18 +202,91 @@ test("published content queries use stable display ordering", async () => {
   );
 });
 
-test("product pricing uses the lowest valid unit price", () => {
+test("product pricing uses the lowest valid unit price across variants", () => {
+  const poster = {
+    priceRowsBySelection: {
+      "0:0:0": [
+        { quantity: 100, unitPrice: 160000 },
+        { quantity: 200, unitPrice: 120000 },
+        { quantity: 300, unitPrice: null },
+      ],
+      invalid: [{ quantity: 1, unitPrice: "100000" }],
+    },
+    serviceEstimatesBySelection: {
+      "": { designPrintEstimate: 50000, planningEstimate: 20000 },
+    },
+  };
+
+  assert.equal(getLowestProductUnitPrice(poster), 120000);
   assert.equal(
-    getLowestProductUnitPrice({
-      "0:0:0": 160000,
-      "0:0:1": 120000,
-      invalid: "100000",
-      negative: -1,
+    getLowestProductPrice({
+      variants: {
+        포스터: poster,
+        전단지: {
+          priceRowsBySelection: {
+            flyer: [{ quantity: 100, unitPrice: 130000 }],
+          },
+          serviceEstimatesBySelection: {
+            "": { designPrintEstimate: 10000 },
+          },
+        },
+      },
     }),
     120000,
   );
+  assert.equal(
+    getLowestProductPrice({
+      variants: {
+        포스터: {
+          priceRowsBySelection: {},
+          serviceEstimatesBySelection: {
+            "0": { designPrintEstimate: 60000 },
+          },
+        },
+        전단지: {
+          priceRowsBySelection: {},
+          serviceEstimatesBySelection: {
+            "1": { designPrintEstimate: 50000 },
+          },
+        },
+      },
+    }),
+    50000,
+  );
   assert.equal(getLowestProductUnitPrice({}), null);
   assert.equal(getLowestProductUnitPrice([]), null);
+});
+
+test("product helpers use the JSONB product contract", async () => {
+  const product = {
+    configuration: { variants: { "브로슈어 · 카탈로그": {} } },
+    created_at: "2026-08-07T00:00:00.000Z",
+    id: "product-id",
+    product_type: "브로슈어 · 카탈로그",
+    sort_order: 1,
+    status: "draft",
+  };
+  const { calls, client } = createFakeClient({ products: product });
+  const input = {
+    configuration: product.configuration,
+    product_type: product.product_type,
+    status: "draft",
+  };
+
+  assert.deepEqual(await getAdminProduct(client, product.id), product);
+  assert.deepEqual(await createProduct(client, input), product);
+  assert.deepEqual(
+    await updateProduct(client, product.id, {
+      configuration: product.configuration,
+      status: "published",
+    }),
+    product,
+  );
+  await deleteProduct(client, product.id);
+
+  assert.ok(calls.some((call) => call.method === "insert"));
+  assert.ok(calls.some((call) => call.method === "update"));
+  assert.ok(calls.some((call) => call.method === "delete"));
 });
 
 test("post and attachment mutations pass payloads unchanged", async () => {
@@ -228,6 +321,95 @@ test("post and attachment mutations pass payloads unchanged", async () => {
         call.method === "insert" && call.table === "inquiry_attachments",
     )?.value,
     attachment,
+  );
+});
+
+test("complaint admin helpers use only the current complaint tables", async () => {
+  const complaint = {
+    complaint_attachments: [],
+    complaint_type: "기타",
+    content: "내용",
+    created_at: "2026-08-07T00:00:00.000Z",
+    email: null,
+    id: "complaint-id",
+    name: "고객",
+    phone: "01012345678",
+    phone_verified: true,
+    privacy_agreed_at: "2026-08-07T00:00:00.000Z",
+    service: "브로슈어",
+    status: "received",
+  };
+  const { calls, client } = createFakeClient({ complaints: complaint });
+
+  await listAdminComplaints(client);
+  assert.deepEqual(await getAdminComplaint(client, complaint.id), complaint);
+  await updateComplaintStatus(client, complaint.id, "resolved");
+
+  assert.ok(calls.some((call) => call.table === "complaints"));
+  assert.ok(
+    calls.some(
+      (call) =>
+        call.method === "select" &&
+        call.table === "complaints" &&
+        call.columns === "*, complaint_attachments(*)",
+    ),
+  );
+  assert.ok(
+    calls.some(
+      (call) =>
+        call.method === "update" &&
+        call.table === "complaints" &&
+        call.value.status === "resolved",
+    ),
+  );
+  assert.equal(calls.some((call) => call.table === "inquiries"), false);
+});
+
+test("complaint submission helpers write only the current complaint tables", async () => {
+  const complaint = {
+    complaint_type: "불친절한 서비스",
+    content: "상담 과정에서 불편했습니다.",
+    email: "customer@example.com",
+    name: "고객",
+    phone: "01012345678",
+    phone_verified: false,
+    privacy_agreed_at: "2026-08-08T00:00:00.000Z",
+    service: "로고",
+    status: "received",
+  };
+  const attachment = {
+    bucket_id: "private-attachments",
+    complaint_id: "complaint-id",
+    content_type: "image/png",
+    file_size: 123,
+    object_path: "complaints/complaint-id/proof.png",
+    original_file_name: "proof.png",
+  };
+  const { calls, client } = createFakeClient();
+
+  await createComplaint(client, complaint);
+  await createComplaintAttachments(client, [attachment]);
+  assert.deepEqual(await createComplaintAttachments(client, []), []);
+
+  assert.deepEqual(
+    calls.find(
+      (call) => call.method === "insert" && call.table === "complaints",
+    )?.value,
+    complaint,
+  );
+  assert.deepEqual(
+    calls.find(
+      (call) =>
+        call.method === "insert" && call.table === "complaint_attachments",
+    )?.value,
+    [attachment],
+  );
+  assert.equal(
+    calls.filter(
+      (call) =>
+        call.method === "insert" && call.table === "complaint_attachments",
+    ).length,
+    1,
   );
 });
 
@@ -363,82 +545,5 @@ test("payment link helpers use admin-scoped newest-first access", async () => {
         call.column === "id" &&
         call.value === "payment-link-id",
     ),
-  );
-});
-
-test("payment order helpers use server-only lookup and atomic RPC contracts", async () => {
-  const paymentLink = { id: "payment-link-id", public_token: "public-token" };
-  const paymentOrder = {
-    id: "payment-order-id",
-    order_id: "LPORDER",
-    payment_link_id: paymentLink.id,
-  };
-  const { calls, client } = createFakeClient({
-    payment_links: paymentLink,
-    payment_orders: paymentOrder,
-  });
-
-  await getPublicPaymentLink(client, paymentLink.public_token);
-  await getPaymentOrderByOrderId(client, paymentOrder.order_id);
-  await getOrCreatePaymentOrder(client, paymentLink.public_token);
-  await completePaymentOrder(client, {
-    amount: 120000,
-    nicepayTid: "nicepay-tid",
-    orderId: paymentOrder.order_id,
-    paidAt: "2026-07-23T00:00:00.000Z",
-    payMethod: "card",
-    receiptUrl: "https://example.com/receipt",
-    resultCode: "0000",
-    resultMessage: "정상 처리되었습니다.",
-  });
-  await updatePaymentOrder(client, paymentOrder.order_id, {
-    provider_status: "failed",
-    result_code: "9999",
-  });
-
-  assert.ok(
-    calls.some(
-      (call) =>
-        call.method === "eq" &&
-        call.table === "payment_links" &&
-        call.column === "public_token" &&
-        call.value === paymentLink.public_token,
-    ),
-  );
-  assert.ok(
-    calls.some(
-      (call) =>
-        call.method === "eq" &&
-        call.table === "payment_orders" &&
-        call.column === "order_id" &&
-        call.value === paymentOrder.order_id,
-    ),
-  );
-  assert.deepEqual(
-    calls
-      .filter((call) => call.method === "rpc")
-      .map(({ args, name }) => ({
-        args,
-        name,
-      })),
-    [
-      {
-        args: { p_public_token: paymentLink.public_token },
-        name: "get_or_create_payment_order",
-      },
-      {
-        args: {
-          p_amount: 120000,
-          p_nicepay_tid: "nicepay-tid",
-          p_order_id: paymentOrder.order_id,
-          p_paid_at: "2026-07-23T00:00:00.000Z",
-          p_pay_method: "card",
-          p_receipt_url: "https://example.com/receipt",
-          p_result_code: "0000",
-          p_result_message: "정상 처리되었습니다.",
-        },
-        name: "complete_payment_order",
-      },
-    ],
   );
 });

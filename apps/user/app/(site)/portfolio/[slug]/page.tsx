@@ -13,9 +13,9 @@ import {
   getPortfolioDetailSourceFromValue,
   getPortfolioDetailSeo,
   getPortfolioListHref,
-  portfolioItems,
 } from "../../../_content/portfolio";
 import { createCreativeWorkStructuredData } from "../../../_content/structured-data";
+import { getPublishedPortfolioItems } from "../../../../lib/publicContent";
 import styles from "./page.module.css";
 
 type PortfolioDetailPageProps = {
@@ -28,17 +28,16 @@ type PortfolioDetailPageProps = {
   }>;
 };
 
-export function generateStaticParams() {
-  return portfolioItems.map((item) => ({
-    slug: item.slug,
-  }));
-}
+export const revalidate = 0;
 
 export async function generateMetadata({
   params,
 }: PortfolioDetailPageProps): Promise<Metadata> {
-  const { slug } = await params;
-  const detail = getPortfolioDetailBySlug(slug);
+  const [{ slug }, items] = await Promise.all([
+    params,
+    getPublishedPortfolioItems(),
+  ]);
+  const detail = getPortfolioDetailBySlug(slug, items);
 
   if (!detail) {
     return {
@@ -85,11 +84,12 @@ export default async function PortfolioDetailPage({
   params,
   searchParams,
 }: PortfolioDetailPageProps) {
-  const [{ slug }, resolvedSearchParams] = await Promise.all([
+  const [{ slug }, resolvedSearchParams, items] = await Promise.all([
     params,
     searchParams,
+    getPublishedPortfolioItems(),
   ]);
-  const detail = getPortfolioDetailBySlug(slug);
+  const detail = getPortfolioDetailBySlug(slug, items);
 
   if (!detail) {
     notFound();

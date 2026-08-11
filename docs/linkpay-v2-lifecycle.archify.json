@@ -1,0 +1,159 @@
+{
+  "schema_version": 1,
+  "diagram_type": "lifecycle",
+  "meta": {
+    "title": "LinkPay V2 Payment Attempt Lifecycle",
+    "subtitle": "한 결제 시도의 승인, 불확실한 결과 복구와 전액환불 상태 전이",
+    "output": "docs/linkpay-v2-lifecycle.html",
+    "visual_preset": "signal-flow",
+    "quality_profile": "showcase",
+    "viewBox": [1080, 720]
+  },
+  "lanes": [
+    { "id": "main", "label": "정상 결제 흐름" },
+    { "id": "recovery", "label": "결과 확인" },
+    { "id": "terminal", "label": "확정된 예외" }
+  ],
+  "states": [
+    {
+      "id": "created",
+      "type": "start",
+      "label": "CREATED",
+      "sublabel": "주문번호·금액 스냅샷",
+      "lane": "main",
+      "col": 0,
+      "step": "01",
+      "tag": "준비"
+    },
+    {
+      "id": "approval_pending",
+      "type": "active",
+      "label": "APPROVAL_PENDING",
+      "sublabel": "NICEPAY 승인 요청 중",
+      "lane": "main",
+      "col": 1,
+      "step": "02",
+      "tag": "잠금"
+    },
+    {
+      "id": "verified",
+      "type": "decision",
+      "label": "승인 결과 검증",
+      "sublabel": "서명·금액·주문·거래 확인",
+      "lane": "main",
+      "col": 2,
+      "step": "03",
+      "tag": "검증"
+    },
+    {
+      "id": "paid",
+      "type": "success",
+      "label": "PAID",
+      "sublabel": "승인과 장부 기록 완료",
+      "lane": "main",
+      "col": 3,
+      "step": "04",
+      "tag": "확정"
+    },
+    {
+      "id": "refunded",
+      "type": "success",
+      "label": "REFUNDED",
+      "sublabel": "전액취소 검증·기록 완료",
+      "lane": "main",
+      "col": 4,
+      "step": "05",
+      "tag": "종료"
+    },
+    {
+      "id": "reconciliation",
+      "type": "waiting",
+      "label": "RECONCILIATION",
+      "sublabel": "REQUIRED · 결제 여부 불확실",
+      "lane": "recovery",
+      "col": 0,
+      "width": 158,
+      "tag": "재결제 차단"
+    },
+    {
+      "id": "failed",
+      "type": "failure",
+      "label": "FAILED",
+      "sublabel": "미결제가 명확히 확인됨",
+      "lane": "terminal",
+      "col": 0,
+      "tag": "시도 종료"
+    },
+    {
+      "id": "manual_review",
+      "type": "waiting",
+      "label": "MANUAL_REVIEW",
+      "sublabel": "자동 확인 기한을 넘김",
+      "lane": "recovery",
+      "col": 2,
+      "width": 150,
+      "tag": "사람 확인"
+    }
+  ],
+  "transitions": [
+    {
+      "id": "approval_uncertain",
+      "from": "approval_pending",
+      "to": "reconciliation",
+      "variant": "security",
+      "route": "drop"
+    },
+    {
+      "id": "reconciliation_paid",
+      "from": "reconciliation",
+      "to": "paid",
+      "variant": "emphasis",
+      "route": "drop"
+    },
+    {
+      "id": "reconciliation_failed",
+      "from": "reconciliation",
+      "to": "failed",
+      "label": "미결제 확인",
+      "variant": "default",
+      "route": "auto"
+    },
+    {
+      "id": "reconciliation_manual",
+      "from": "reconciliation",
+      "to": "manual_review",
+      "variant": "security",
+      "route": "straight"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "emerald",
+      "title": "결제 완료의 기준",
+      "items": [
+        "브라우저 성공 표시는 결제 완료의 근거가 아니다",
+        "NICEPAY 승인 결과를 재검증하고 DB에 기록한 뒤에만 PAID다",
+        "링크당 성공 결제는 DB 제약과 원자적 잠금으로 한 건만 허용한다"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "결과가 불확실할 때",
+      "items": [
+        "승인 요청 뒤 타임아웃을 FAILED로 단정하지 않는다",
+        "RECONCILIATION_REQUIRED에서는 새 결제를 차단한다",
+        "망취소·거래 조회·서명된 웹훅으로 확인된 사실만 반영한다"
+      ]
+    },
+    {
+      "dot": "violet",
+      "title": "재시도와 환불",
+      "items": [
+        "FAILED와 EXPIRED는 해당 결제 시도의 최종 상태다",
+        "재시도할 때는 같은 시도를 되살리지 않고 새 주문번호를 만든다",
+        "PAID와 REFUNDED는 같은 링크에서 다시 결제할 수 없다",
+        "REFUNDED는 성공 결제 이력을 지우지 않는다"
+      ]
+    }
+  ]
+}

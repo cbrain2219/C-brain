@@ -1,0 +1,183 @@
+{
+  "schema_version": 1,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "LinkPay 결제 · 매출 · 환불 흐름",
+    "subtitle": "고정금액 카드 결제부터 거래 원장, 매출 집계, 환불 반영까지",
+    "output": "docs/superpowers/plans/2026-08-08-linkpay-sales-refunds.workflow.html",
+    "animation": "none",
+    "visual_preset": "signal-flow",
+    "quality_profile": "showcase",
+    "views": [
+      {
+        "id": "payment-path",
+        "label": "결제와 매출 반영",
+        "focus": ["link-issued", "checkout", "server-verify", "provider-approve", "payment-paid", "sales-visible"],
+        "note": "서버 검증을 통과한 승인만 원장과 매출에 반영합니다."
+      },
+      {
+        "id": "unknown-path",
+        "label": "결과 불명 복구",
+        "focus": ["provider-approve", "payment-unknown", "payment-paid"],
+        "note": "타임아웃은 실패가 아니며, 조회·웹훅으로 확정될 때까지 재결제를 막습니다."
+      },
+      {
+        "id": "refund-path",
+        "label": "환불과 순매출 조정",
+        "focus": ["sales-visible", "refund-request", "provider-cancel", "refund-succeeded"],
+        "note": "검증된 취소 성공액만 환불과 기간 순매출에 반영합니다."
+      }
+    ]
+  },
+  "lanes": [
+    { "id": "entry", "label": "관리자 · 고객" },
+    { "id": "server", "label": "C-Brain 서버" },
+    { "id": "provider", "label": "NICEPAY" },
+    { "id": "exceptions", "label": "결과 불명 처리", "variant": "exception" },
+    { "id": "ledger", "label": "Supabase 거래 원장" },
+    { "id": "operations", "label": "매출 · 환불 운영" },
+    { "id": "refunds", "label": "환불 처리" }
+  ],
+  "phases": [
+    { "id": "prepare", "label": "링크 · 주문", "fromCol": 0, "toCol": 1 },
+    { "id": "charge", "label": "검증 · 승인 · 확정", "fromCol": 2, "toCol": 4, "variant": "emphasis" },
+    { "id": "operate", "label": "매출 운영", "fromCol": 5, "toCol": 5, "variant": "dashed" }
+  ],
+  "mainPath": [
+    "link-issued",
+    "checkout",
+    "server-verify",
+    "provider-approve",
+    "payment-paid",
+    "sales-visible"
+  ],
+  "nodes": [
+    {
+      "id": "link-issued",
+      "lane": "entry",
+      "col": 0,
+      "type": "frontend",
+      "label": "LinkPay 발급",
+      "sublabel": "금액 · 공개 토큰 고정"
+    },
+    {
+      "id": "checkout",
+      "lane": "entry",
+      "col": 1,
+      "type": "frontend",
+      "label": "결제 요청",
+      "sublabel": "서버 주문 생성",
+      "width": 64
+    },
+    {
+      "id": "server-verify",
+      "lane": "server",
+      "col": 2,
+      "type": "security",
+      "label": "서버 검증",
+      "sublabel": "금액·주문·서명",
+      "width": 64
+    },
+    {
+      "id": "provider-approve",
+      "lane": "provider",
+      "col": 3,
+      "type": "external",
+      "label": "인증 · 승인",
+      "sublabel": "Server 승인 API"
+    },
+    {
+      "id": "payment-paid",
+      "lane": "ledger",
+      "col": 4,
+      "type": "database",
+      "label": "결제 확정",
+      "sublabel": "PAID · 승인액 기록"
+    },
+    {
+      "id": "sales-visible",
+      "lane": "operations",
+      "col": 5,
+      "type": "frontend",
+      "label": "매출 반영",
+      "sublabel": "승인 · 환불 · 순매출"
+    },
+    {
+      "id": "refund-request",
+      "lane": "operations",
+      "col": 2,
+      "type": "frontend",
+      "label": "환불 요청",
+      "sublabel": "금액 · 사유 · 관리자"
+    },
+    {
+      "id": "provider-cancel",
+      "lane": "refunds",
+      "col": 2,
+      "type": "external",
+      "label": "취소 요청",
+      "sublabel": "원거래 TID",
+      "width": 64
+    },
+    {
+      "id": "refund-succeeded",
+      "lane": "refunds",
+      "col": 4,
+      "type": "database",
+      "label": "환불 확정",
+      "sublabel": "성공액 기록",
+      "width": 64
+    },
+    {
+      "id": "payment-unknown",
+      "lane": "exceptions",
+      "col": 5,
+      "type": "backend",
+      "label": "결과 불명",
+      "sublabel": "조회 · 웹훅 · 차단",
+      "width": 78
+    }
+  ],
+  "edges": [
+    { "from": "link-issued", "to": "checkout", "role": "main", "variant": "emphasis" },
+    { "from": "checkout", "to": "server-verify", "role": "main", "variant": "emphasis" },
+    { "from": "server-verify", "to": "provider-approve", "role": "main", "variant": "emphasis" },
+    { "from": "provider-approve", "to": "payment-paid", "role": "main", "variant": "emphasis" },
+    { "from": "payment-paid", "to": "sales-visible", "role": "main", "variant": "emphasis" },
+    { "from": "provider-approve", "to": "payment-unknown", "role": "error", "variant": "security" },
+    { "from": "payment-unknown", "to": "payment-paid", "role": "return", "variant": "security" },
+    { "from": "sales-visible", "to": "refund-request", "label": "환불 선택", "role": "branch", "variant": "dashed", "route": "return-left" },
+    { "from": "refund-request", "to": "provider-cancel", "role": "branch", "variant": "security" },
+    { "from": "provider-cancel", "to": "refund-succeeded", "role": "branch", "variant": "security" },
+    { "from": "refund-succeeded", "to": "sales-visible", "label": "재집계", "role": "return", "variant": "emphasis" }
+  ],
+  "cards": [
+    {
+      "dot": "emerald",
+      "title": "원장은 하나",
+      "items": [
+        "매출 테이블을 별도로 복제하지 않습니다",
+        "승인 거래와 성공 환불이 매출의 근거입니다",
+        "링크는 환불 후에도 재사용하지 않습니다"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "실패와 불명은 다름",
+      "items": [
+        "서명된 실패만 FAILED로 확정합니다",
+        "타임아웃은 UNKNOWN으로 잠급니다",
+        "조회·웹훅 전에는 새 결제를 허용하지 않습니다"
+      ]
+    },
+    {
+      "dot": "cyan",
+      "title": "매출 지표",
+      "items": [
+        "총 승인액과 성공 환불액을 따로 표시합니다",
+        "기간 순매출은 승인액에서 환불액을 뺍니다",
+        "PG 정산예정액은 정산 데이터 연동 전 표시하지 않습니다"
+      ]
+    }
+  ]
+}

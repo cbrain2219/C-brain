@@ -1,19 +1,16 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { type ChangeEvent, type FormEvent, useRef, useState } from "react";
 
-import type { LinkPayPayment } from "../../../_content/linkPay";
 import { formatOrderCurrency } from "../../../_content/order";
 import { Icon } from "../../../../components/Icon";
 import {
-  type LinkPayAgreementId,
-  type LinkPayPaymentSubmitPayload,
-  submitLinkPayPayment,
-} from "./payment";
+  parseNicepayCheckoutRequest,
+  requestNicepayPayment,
+} from "../../../../lib/paymentCheckout";
 import styles from "./page.module.css";
 
-type AgreementId = LinkPayAgreementId;
+type AgreementId = "privacyCollection" | "privacyPolicy";
 type CustomerFieldId =
   | "customerName"
   | "customerCompany"
@@ -24,6 +21,18 @@ type LinkPayValidationTarget = CustomerFieldId | AgreementId;
 
 type LinkPayPaymentFormProps = {
   payment: LinkPayPayment;
+};
+
+export type LinkPayPayment = {
+  amount: number;
+  category: string;
+  clientName: string;
+  isDisabled: boolean;
+  pageQuantity: string;
+  paper: string;
+  paymentName: string;
+  publicToken: string;
+  service: string;
 };
 
 const agreementItems = [
@@ -82,9 +91,11 @@ const customerFields = [
     autoComplete: "tel",
     helper: "카카오톡 상담 연락처",
     id: "linkpay-customer-phone",
+    inputMode: "numeric",
     label: "연락처*",
+    maxLength: 13,
     name: "customerPhone",
-    placeholder: "연락처를 입력해주세요.",
+    placeholder: "010-1234-1234",
     required: true,
     type: "tel",
   },
@@ -92,6 +103,7 @@ const customerFields = [
     autoComplete: "email",
     helper: "영수증·파일 전달",
     id: "linkpay-customer-email",
+    inputMode: "email",
     label: "이메일*",
     name: "customerEmail",
     placeholder: "이메일을 입력해주세요.",
@@ -109,6 +121,33 @@ const customerFieldDefaultValues = {
 
 function normalizeCustomerPhoneNumber(value: string) {
   return value.replace(/\D/g, "");
+}
+
+function formatCustomerPhoneNumber(value: string) {
+  const digits = normalizeCustomerPhoneNumber(value).slice(0, 11);
+
+  if (digits.length <= 3) return digits;
+  if (digits.length <= 7) {
+    return `${digits.slice(0, 3)}-${digits.slice(3)}`;
+  }
+
+  return `${digits.slice(0, 3)}-${digits.slice(3, 7)}-${digits.slice(7)}`;
+}
+
+function sanitizeCustomerEmail(value: string) {
+  return value.replace(/[^A-Za-z0-9.!#$%&'*+/=?^_\x60{|}~@-]/g, "");
+}
+
+function formatCustomerFieldValue(fieldName: CustomerFieldId, value: string) {
+  if (fieldName === "customerPhone") {
+    return formatCustomerPhoneNumber(value);
+  }
+
+  if (fieldName === "customerEmail") {
+    return sanitizeCustomerEmail(value);
+  }
+
+  return value;
 }
 
 function isRequiredCustomerFieldId(
@@ -131,35 +170,19 @@ function isCustomerFieldValid(fieldName: RequiredCustomerFieldId, value: string)
   return value.trim().length > 0;
 }
 
-function AgreementCheckIcon() {
-  return (
-    <svg
-      className={styles.agreementCheckboxIcon}
-      fill="none"
-      height="10"
-      viewBox="0 0 12 10"
-      width="12"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <path
-        d="M10.6 1L3.44048 8.2L1 5.74572"
-        stroke="#F8FAFC"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth="2"
-      />
-    </svg>
-  );
-}
-
 export function LinkPayPaymentForm({
   payment,
 }: LinkPayPaymentFormProps) {
-  const router = useRouter();
+  const checkoutAttemptRef = useRef<{
+    payloadKey: string;
+    requestId: string;
+  } | null>(null);
+  const isSubmittingRef = useRef(false);
   const validationTargetRefs = useRef<
     Partial<Record<LinkPayValidationTarget, HTMLElement>>
   >({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState("");
   const [fieldValues, setFieldValues] = useState(customerFieldDefaultValues);
   const [invalidTargets, setInvalidTargets] = useState<
     Partial<Record<LinkPayValidationTarget, boolean>>
@@ -207,7 +230,10 @@ export function LinkPayPaymentForm({
 
   const handleCustomerFieldChange =
     (fieldName: CustomerFieldId) => (event: ChangeEvent<HTMLInputElement>) => {
-      const value = event.currentTarget.value;
+      const value = formatCustomerFieldValue(
+        fieldName,
+        event.currentTarget.value,
+      );
 
       setFieldValues((current) => ({
         ...current,
@@ -277,24 +303,68 @@ export function LinkPayPaymentForm({
       return;
     }
 
-    const payload: LinkPayPaymentSubmitPayload = {
-      agreements,
-      customer: fieldValues,
-      linkPayId: payment.id,
-    };
+    if (payment.isDisabled || isSubmittingRef.current) return;
 
+    isSubmittingRef.current = true;
     setIsSubmitting(true);
+    setSubmitError("");
+
+    const releaseSubmission = () => {
+      isSubmittingRef.current = false;
+      setIsSubmitting(false);
+    };
+    const checkoutPayload = {
+      agreements,
+      customer: {
+        company: fieldValues.customerCompany,
+        email: fieldValues.customerEmail,
+        name: fieldValues.customerName,
+        phone: normalizeCustomerPhoneNumber(fieldValues.customerPhone),
+      },
+    };
+    const payloadKey = JSON.stringify(checkoutPayload);
+    const previousAttempt = checkoutAttemptRef.current;
+    const checkoutRequestId =
+      previousAttempt?.payloadKey === payloadKey
+        ? previousAttempt.requestId
+        : crypto.randomUUID();
+
+    checkoutAttemptRef.current = { payloadKey, requestId: checkoutRequestId };
 
     try {
-      const result = await submitLinkPayPayment(payload);
-      const fallbackHref =
-        result.status === "success"
-          ? `/linkpay/${payment.id}/success`
-          : `/linkpay/${payment.id}/fail`;
+      const response = await fetch(
+        `/api/linkpay/${encodeURIComponent(payment.publicToken)}/order`,
+        {
+          body: JSON.stringify({ ...checkoutPayload, checkoutRequestId }),
+          headers: { "Content-Type": "application/json" },
+          method: "POST",
+        },
+      );
+      const result: unknown = await response.json();
+      const checkout = parseNicepayCheckoutRequest(result);
+      const errorMessage =
+        result &&
+        typeof result === "object" &&
+        "error" in result &&
+        typeof result.error === "string"
+          ? result.error
+          : "결제 요청을 준비하지 못했습니다.";
 
-      router.push(result.redirectHref ?? fallbackHref);
-    } finally {
-      setIsSubmitting(false);
+      if (!response.ok || !checkout) {
+        throw new Error(errorMessage);
+      }
+
+      await requestNicepayPayment(checkout, (message) => {
+        setSubmitError(message);
+        releaseSubmission();
+      });
+    } catch (error) {
+      setSubmitError(
+        error instanceof Error
+          ? error.message
+          : "결제 요청을 준비하지 못했습니다. 잠시 후 다시 시도해주세요.",
+      );
+      releaseSubmission();
     }
   };
 
@@ -317,7 +387,12 @@ export function LinkPayPaymentForm({
         >
           <h2 id="linkpay-payment-title">결제 내역</h2>
           <dl className={styles.paymentDetailList}>
-            {payment.detailRows.map((row) => (
+            {[
+              { label: "카테고리", value: payment.category },
+              { label: "서비스", value: payment.service },
+              { label: "용지", value: payment.paper },
+              { label: "페이지 수 / 수량", value: payment.pageQuantity },
+            ].map((row) => (
               <div key={`${row.label}-${row.value}`}>
                 <dt>{row.label}</dt>
                 <dd>{row.value}</dd>
@@ -336,6 +411,10 @@ export function LinkPayPaymentForm({
           noValidate
           onSubmit={handlePaymentSubmit}
         >
+          {payment.isDisabled ? (
+            <p role="status">현재 결제가 중단된 링크입니다.</p>
+          ) : null}
+          {submitError ? <p role="alert">{submitError}</p> : null}
           {customerFields.map((field) => (
             <div
               className={styles.customerField}
@@ -352,6 +431,8 @@ export function LinkPayPaymentForm({
                 autoComplete={field.autoComplete}
                 className={styles.customerInput}
                 id={field.id}
+                inputMode={"inputMode" in field ? field.inputMode : undefined}
+                maxLength={"maxLength" in field ? field.maxLength : undefined}
                 name={field.name}
                 onChange={handleCustomerFieldChange(field.name)}
                 placeholder={field.placeholder}
@@ -371,55 +452,65 @@ export function LinkPayPaymentForm({
                 type="checkbox"
               />
               <span className={styles.agreementCheckboxMark} aria-hidden="true">
-                <AgreementCheckIcon />
+                <Icon
+                  className={styles.agreementCheckboxIcon}
+                  name="check-01"
+                  size={20}
+                />
               </span>
               <strong>전체 동의</strong>
             </label>
 
             <div className={styles.agreementDivider} />
 
-            {agreementItems.map((item) => (
-              <div className={styles.agreementDetailRow} key={item.id}>
-                <label
-                  className={styles.agreementRow}
-                  data-invalid={isTargetInvalid(item.id)}
-                  ref={setValidationTargetRef(item.id)}
-                >
-                  <input
-                    aria-invalid={isTargetInvalid(item.id)}
-                    checked={agreements[item.id]}
-                    className={styles.agreementCheckboxInput}
-                    onChange={() => toggleAgreement(item.id)}
-                    required
-                    type="checkbox"
-                  />
-                  <span
-                    className={styles.agreementCheckboxMark}
-                    aria-hidden="true"
+            <div className={styles.agreementDetailList}>
+              {agreementItems.map((item) => (
+                <div className={styles.agreementDetailRow} key={item.id}>
+                  <label
+                    className={styles.agreementRow}
+                    data-invalid={isTargetInvalid(item.id)}
+                    ref={setValidationTargetRef(item.id)}
                   >
-                    <AgreementCheckIcon />
-                  </span>
-                  <span>{item.label}</span>
-                </label>
-                <a
-                  className={styles.agreementViewButton}
-                  href={item.href}
-                  rel="noreferrer"
-                  target="_blank"
-                >
-                  보기
-                </a>
-              </div>
-            ))}
+                    <input
+                      aria-invalid={isTargetInvalid(item.id)}
+                      checked={agreements[item.id]}
+                      className={styles.agreementCheckboxInput}
+                      onChange={() => toggleAgreement(item.id)}
+                      required
+                      type="checkbox"
+                    />
+                    <span
+                      className={styles.agreementCheckboxMark}
+                      aria-hidden="true"
+                    >
+                      <Icon
+                        className={styles.agreementCheckboxIcon}
+                        name="check-01"
+                        size={20}
+                      />
+                    </span>
+                    <span>{item.label}</span>
+                  </label>
+                  <a
+                    className={styles.agreementViewButton}
+                    href={item.href}
+                    rel="noreferrer"
+                    target="_blank"
+                  >
+                    보기
+                  </a>
+                </div>
+              ))}
+            </div>
           </section>
 
           <button
             aria-busy={isSubmitting}
             className={styles.paymentButton}
-            disabled={isSubmitting}
+            disabled={isSubmitting || payment.isDisabled}
             type="submit"
           >
-            <span>결제하기</span>
+            <span>{payment.isDisabled ? "결제가 중단되었습니다" : "결제하기"}</span>
             <Icon name="arrow-right" size={16} />
           </button>
         </form>

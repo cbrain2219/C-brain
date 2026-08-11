@@ -1,153 +1,121 @@
-import assert from "node:assert/strict";
-import { readFile } from "node:fs/promises";
-import test from "node:test";
-import { URL } from "node:url";
+import assert from 'node:assert/strict'
+import { readFile } from 'node:fs/promises'
+import test from 'node:test'
+import { URL } from 'node:url'
 
-const migrationUrl = new URL(
-  "../../../supabase/migrations/20260721000003_create_admin_content.sql",
-  import.meta.url,
-);
-const typesUrl = new URL("../src/types.ts", import.meta.url);
+const baselineUrl = new URL('../../../supabase/initial_admin_content.sql', import.meta.url)
+const typesUrl = new URL('../src/types.ts', import.meta.url)
 
-const [migration, types] = await Promise.all([
-  readFile(migrationUrl, "utf8"),
-  readFile(typesUrl, "utf8"),
-]);
+const [baseline, types] = await Promise.all([
+  readFile(baselineUrl, 'utf8'),
+  readFile(typesUrl, 'utf8'),
+])
+const legacySubtypeColumn = ['product', 'subtype'].join('_')
 
 function assertContains(source, values) {
   values.forEach((value) => {
-    assert.match(source, new RegExp(`\\b${value}\\b`), `missing ${value}`);
-  });
+    assert.match(source, new RegExp(`\\b${value}\\b`), `missing ${value}`)
+  })
 }
 
-test("migration declares the content and complaint contracts", () => {
-  assertContains(migration, [
-    "posts",
-    "portfolio_items",
-    "reviews",
-    "inquiries",
-    "inquiry_attachments",
-    "post_kind",
-    "review_kind",
-    "content_mode",
-    "inquiry_status",
-  ]);
-
-  assertContains(migration, [
-    "kind",
-    "type",
-    "content_mode",
-    "thumbnail_alt",
-    "seo_description",
-    "images",
-    "video_path",
-    "complaint_type",
-    "phone_verified",
-    "privacy_agreed_at",
-    "file_size",
-    "content_type",
-    "sort_order",
-  ]);
-});
-
-test("migration restricts public reads and admin mutations with RLS", () => {
+test('fresh baseline declares the current admin content contracts', () => {
+  assertContains(baseline, [
+    'products',
+    'posts',
+    'portfolio_items',
+    'reviews',
+    'complaints',
+    'complaint_attachments',
+    'show_on_landing',
+    'show_as_banner',
+    'featured',
+    'pinned',
+    'company_name',
+    'manager_name',
+    'complaint_type',
+    'phone_verified',
+    'privacy_agreed_at',
+    'object_path',
+    'original_file_name',
+  ])
+  assert.match(baseline, /content_mode in \('html', 'markdown'\)/)
   assert.match(
-    migration,
-    /create policy "public select published products"[\s\S]*to anon[\s\S]*using \(status = 'published'\)/,
-  );
+    baseline,
+    /constraint posts_thumbnail_alt_requires_path\s+check \(thumbnail_path is not null or thumbnail_alt is null\)/,
+  )
+  assert.doesNotMatch(baseline, /create table public\.inquiries/)
+})
+
+test('baseline restricts public reads and admin mutations with RLS', () => {
+  for (const table of ['products', 'posts', 'portfolio_items', 'reviews']) {
+    assert.match(baseline, new RegExp(`alter table public\\.${table} enable row level security`))
+    assert.match(
+      baseline,
+      new RegExp(`create policy ${table}[^\\n]*public_read_published[\\s\\S]*?using \\(status = 'published'\\)`),
+    )
+  }
+
+  assert.match(baseline, /auth\.jwt\(\) -> 'app_metadata' ->> 'role'/)
+  assert.match(baseline, /create policy complaints_admin_read/)
+  assert.match(baseline, /create policy complaints_admin_update_status/)
+  assert.match(baseline, /grant update \(status\) on public\.complaints/)
+  assert.doesNotMatch(baseline, /grant insert[^;]*public\.complaints/)
+  assert.doesNotMatch(baseline, /grant delete[^;]*public\.complaints/)
+})
+
+test('baseline provisions public and private storage policies', () => {
+  assert.match(baseline, /'public-assets'[\s\S]*?true/)
+  assert.match(baseline, /'private-attachments'[\s\S]*?false/)
+  assert.match(baseline, /create policy public_assets_admin_insert/)
+  assert.match(baseline, /create policy public_assets_admin_update/)
+  assert.match(baseline, /create policy public_assets_admin_delete/)
+  assert.match(baseline, /create policy private_attachments_admin_read/)
+  assert.equal((baseline.match(/'video\/quicktime'/g) ?? []).length, 1)
+})
+
+test('reorder RPCs validate complete duplicate-free ID lists', () => {
+  assertContains(baseline, [
+    'reorder_products',
+    'reorder_posts',
+    'reorder_portfolio_items',
+    'reorder_reviews',
+    'cardinality',
+  ])
+  assert.equal((baseline.match(/count\(distinct /g) ?? []).length, 4)
+})
+
+test('TypeScript mirrors the current content tables', () => {
   assert.match(
-    migration,
-    /grant select \(id, name, status, type, unit_prices, sort_order\)[\s\S]*on public\.products to anon/,
-  );
-  assert.doesNotMatch(
-    migration,
-    /grant select on public\.products[^;]*to anon/,
-  );
-  assert.match(migration, /alter table public\.posts enable row level security/);
+    types,
+    /posts:\s*\{[\s\S]*?Row:\s*\{[\s\S]*?featured: boolean;[\s\S]*?pinned: boolean;[\s\S]*?show_as_banner: boolean;[\s\S]*?show_on_landing: boolean;/,
+  )
   assert.match(
-    migration,
-    /create policy "public select published posts"[\s\S]*using \(status = 'published'\)/,
-  );
+    types,
+    /portfolio_items:\s*\{[\s\S]*?Row:\s*\{[\s\S]*?pinned: boolean;[\s\S]*?show_on_landing: boolean;/,
+  )
   assert.match(
-    migration,
-    /create policy "public select published portfolio items"[\s\S]*using \(status = 'published'\)/,
-  );
+    types,
+    /reviews:\s*\{[\s\S]*?Row:\s*\{[\s\S]*?company_name: string;[\s\S]*?manager_name: string \| null;[\s\S]*?show_on_landing: boolean;/,
+  )
   assert.match(
-    migration,
-    /create policy "public select published reviews"[\s\S]*using \(status = 'published'\)/,
-  );
-  assertContains(migration, [
-    "admins manage posts",
-    "admins manage portfolio items",
-    "admins manage reviews",
-    "admins select inquiries",
-    "admins update inquiries",
-    "admins select inquiry attachments",
-  ]);
-  assert.doesNotMatch(migration, /create policy "admins manage inquiries"/);
-  assert.doesNotMatch(
-    migration,
-    /create policy "admins manage inquiry attachments"/,
-  );
-});
+    types,
+    /complaints:\s*\{[\s\S]*?Row:\s*\{[\s\S]*?complaint_type: string;[\s\S]*?privacy_agreed_at: string;/,
+  )
+  assert.match(
+    types,
+    /complaint_attachments:\s*\{[\s\S]*?Row:\s*\{[\s\S]*?object_path: string;[\s\S]*?original_file_name: string;/,
+  )
+  assert.match(types, /content_mode: "html" \| "markdown"/)
+})
 
-test("migration provisions public and private storage policies", () => {
-  assert.match(migration, /'public-assets'[\s\S]*true/);
-  assert.match(migration, /'private-attachments'[\s\S]*false/);
-  assert.doesNotMatch(migration, /create policy "public read public assets"/);
-  assert.match(migration, /create policy "admins read private attachments"/);
-});
-
-test("review drafts may keep partial fields without weakening publish validation", () => {
-  assert.match(migration, /company text not null,/);
-  assert.match(migration, /reviews_published_company_check/);
-  assert.doesNotMatch(
-    migration,
-    /company text not null check \(char_length\(trim\(company\)\) > 0\)/,
-  );
-});
-
-test("rerunning the migration preserves administrator-defined ordering", () => {
-  assert.doesNotMatch(migration, /with ordered_posts as/);
-  assert.doesNotMatch(migration, /with ordered_portfolio_items as/);
-  assert.doesNotMatch(migration, /with ordered_reviews as/);
-});
-
-test("reorder RPCs validate complete, duplicate-free ID lists", () => {
-  assertContains(migration, [
-    "reorder_posts",
-    "reorder_portfolio_items",
-    "reorder_reviews",
-    "cardinality",
-  ]);
-  assert.equal((migration.match(/count\(distinct /g) ?? []).length, 3);
-  assert.match(migration, /where post\.kind = \$1/);
-  assert.equal((migration.match(/lock table public\./g) ?? []).length, 3);
-});
-
-test("TypeScript mirrors enums, tables, fields, and RPC arguments", () => {
-  assertContains(types, [
-    "content_mode",
-    "post_kind",
-    "review_kind",
-    "received",
-    "processing",
-    "resolved",
-    "posts",
-    "portfolio_items",
-    "reviews",
-    "inquiries",
-    "inquiry_attachments",
-    "thumbnail_alt",
-    "images",
-    "video_path",
-    "complaint_type",
-    "file_size",
-    "reorder_posts",
-    "post_ids",
-    "reorder_portfolio_items",
-    "portfolio_item_ids",
-    "reorder_reviews",
-    "review_ids",
-  ]);
-});
+test('TypeScript mirrors the current JSONB product table', () => {
+  assert.match(
+    types,
+    /products:\s*\{[\s\S]*?Row:\s*\{[\s\S]*?configuration: Json;[\s\S]*?product_type: string;[\s\S]*?sort_order: number;/,
+  )
+  assert.match(
+    types,
+    /products:\s*\{[\s\S]*?Insert:\s*\{[\s\S]*?configuration\?: Json;[\s\S]*?product_type: string;[\s\S]*?sort_order\?: number;/,
+  )
+  assert.doesNotMatch(types, new RegExp(legacySubtypeColumn))
+})

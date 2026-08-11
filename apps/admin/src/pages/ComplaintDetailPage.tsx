@@ -1,8 +1,8 @@
 import {
   createSignedFileUrl,
-  getAdminInquiry,
+  getAdminComplaint,
   STORAGE_BUCKETS,
-  updateInquiryStatus,
+  updateComplaintStatus,
 } from '@repo/supabase'
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
@@ -69,13 +69,13 @@ export function ComplaintDetailPage() {
       setLoadError('')
 
       try {
-        const inquiry = await getAdminInquiry(supabase, id)
+        const complaintRow = await getAdminComplaint(supabase, id)
         const attachmentResults = await Promise.allSettled(
-          (inquiry.inquiry_attachments ?? []).map(async (attachment) => {
+          (complaintRow.complaint_attachments ?? []).map(async (attachment) => {
             const { signedUrl } = await createSignedFileUrl(
               supabase,
               STORAGE_BUCKETS.privateAttachments,
-              attachment.path,
+              attachment.object_path,
             )
 
             return [attachment.id, signedUrl] as const
@@ -88,7 +88,7 @@ export function ComplaintDetailPage() {
         )
 
         if (isCurrent) {
-          setComplaint(toComplaintRecord(inquiry, attachmentDownloadUrls))
+          setComplaint(toComplaintRecord(complaintRow, attachmentDownloadUrls))
           if (attachmentResults.some((result) => result.status === 'rejected')) {
             toast.error('일부 첨부 파일을 불러오지 못했습니다.')
           }
@@ -115,7 +115,7 @@ export function ComplaintDetailPage() {
     setIsUpdatingStatus(true)
 
     try {
-      await updateInquiryStatus(supabase, complaint.id, value)
+      await updateComplaintStatus(supabase, complaint.id, value)
       setComplaint((current) => (current ? { ...current, status: value } : current))
       toast.success('처리상태를 변경했습니다.')
     } catch {

@@ -20,12 +20,6 @@ const productColumns = [
     track: '120px',
   },
   {
-    header: '유형',
-    id: 'type',
-    renderCell: (row) => row.type,
-    track: '120px',
-  },
-  {
     header: '상품명',
     id: 'name',
     renderCell: (row) => <span className="admin-data-table__title-cell">{row.name}</span>,

@@ -1,0 +1,138 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "통합 결제 원장 ERD",
+    "subtitle": "재사용형 LinkPay 1개가 독립 주문 N개를 만드는 최소 관계 모델",
+    "output": "docs/superpowers/plans/2026-08-09-unified-payments-sales-refunds.erd.html",
+    "animation": "none",
+    "visual_preset": "blueprint",
+    "quality_profile": "showcase",
+    "views": [
+      {
+        "id": "link-orders",
+        "label": "링크 1개 · 주문 N개",
+        "focus": ["payment_links", "orders"],
+        "note": "관리자는 결제 템플릿을 만들고 고객 제출마다 새 주문이 생깁니다."
+      },
+      {
+        "id": "order-payments",
+        "label": "주문별 결제 시도",
+        "focus": ["orders", "payments"],
+        "note": "일반 주문과 LinkPay 주문은 같은 Payment 원장을 사용합니다."
+      },
+      {
+        "id": "refund-sales",
+        "label": "환불과 순매출",
+        "focus": ["payments", "refunds", "sales_view"],
+        "note": "원 결제별 환불을 합산하고 검증된 금액으로 순매출을 계산합니다."
+      }
+    ]
+  },
+  "components": [
+    {
+      "id": "payment_links",
+      "type": "database",
+      "label": "payment_links",
+      "sublabel": "id · public_token · amount · snapshot · status",
+      "tag": "재사용 템플릿",
+      "pos": [60, 300],
+      "size": [250, 96]
+    },
+    {
+      "id": "orders",
+      "type": "database",
+      "label": "orders",
+      "sublabel": "id · payment_link_id? · channel · amount · snapshot · status",
+      "tag": "결제 제출마다 생성",
+      "pos": [430, 300],
+      "size": [280, 100]
+    },
+    {
+      "id": "payments",
+      "type": "database",
+      "label": "payments",
+      "sublabel": "id · order_id · provider_order_id · tid · amount · balance · status",
+      "tag": "승인 시도 원장",
+      "pos": [830, 300],
+      "size": [310, 100]
+    },
+    {
+      "id": "refunds",
+      "type": "database",
+      "label": "refunds",
+      "sublabel": "id · payment_id · request_id · amount · status · cancelled_tid",
+      "tag": "부분 · 전액",
+      "pos": [1260, 300],
+      "size": [300, 100]
+    },
+    {
+      "id": "sales_view",
+      "type": "database",
+      "label": "sales_report_view",
+      "sublabel": "gross · refunded · net · channel · occurred_at",
+      "tag": "검증 원장에서 파생",
+      "pos": [1010, 550],
+      "size": [270, 96]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "PostgreSQL · 통합 거래 원장",
+      "wraps": ["payment_links", "orders", "payments", "refunds", "sales_view"],
+      "pad": 24
+    },
+    {
+      "kind": "security-group",
+      "label": "승인 · 환불 정합성 경계",
+      "wraps": ["orders", "payments", "refunds"],
+      "pad": 16
+    }
+  ],
+  "connections": [
+    { "from": "payment_links", "to": "orders", "label": "1 : N", "variant": "emphasis" },
+    { "from": "orders", "to": "payments", "label": "1 : N attempts", "variant": "emphasis" },
+    { "from": "payments", "to": "refunds", "label": "1 : N refunds", "variant": "security" },
+    { "from": "payments", "to": "sales_view", "label": "PAID", "variant": "emphasis", "fromSide": "bottom", "toSide": "top", "route": "orthogonal-v" },
+    { "from": "refunds", "to": "sales_view", "label": "SUCCEEDED", "variant": "security", "fromSide": "bottom", "toSide": "top", "route": "orthogonal-v" }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "LinkPay 관계",
+      "items": [
+        "payment_links 1개는 orders 여러 개와 연결됩니다",
+        "사이트 주문은 payment_link_id가 NULL입니다",
+        "결제 후에도 payment_links.status는 ACTIVE를 유지합니다"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "거래 격리와 제약",
+      "items": [
+        "provider_order_id와 tid는 UNIQUE로 둡니다",
+        "Order당 확정된 PAID Payment는 최대 한 건입니다",
+        "refund request_id와 cancelled_tid도 UNIQUE로 중복 취소를 막습니다"
+      ]
+    },
+    {
+      "dot": "violet",
+      "title": "환불 · 매출",
+      "items": [
+        "Payment 1건에 부분 환불 여러 건이 연결될 수 있습니다",
+        "성공 환불 누계는 Payment balance를 넘을 수 없습니다",
+        "별도 sales 원본 테이블 없이 조회로 시작합니다"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "공개 접근",
+      "items": [
+        "payment_links.public_token으로 로그인 없이 조회합니다",
+        "anon이 테이블을 직접 읽지 않고 서버 route가 필요한 정보만 반환합니다",
+        "다른 Order와 Payment 정보는 공개 응답에 포함하지 않습니다"
+      ]
+    }
+  ]
+}

@@ -10,21 +10,20 @@ import {
 
 function review(overrides = {}) {
   return {
-    company: '오르카',
+    company_name: '오르카',
     content: '좋은 결과물을 받았습니다.',
-    content_mode: 'text',
+    content_mode: 'markdown',
     created_at: '2026-07-21T00:00:00.000Z',
     id: 'review-1',
-    is_landing_enabled: true,
     kind: 'testimonial',
-    manager: '김담당',
+    manager_name: '김담당',
     published_at: '2026-07-21T00:00:00.000Z',
     seo_description: null,
+    show_on_landing: true,
     slug: null,
     sort_order: 0,
     status: 'published',
     title: null,
-    updated_at: '2026-07-21T00:00:00.000Z',
     video_alt: null,
     video_path: null,
     view_count: 12,
@@ -44,7 +43,7 @@ test('interview rows hydrate the conditional form and existing video', () => {
   const form = toReviewFormState(
     review({
       kind: 'interview',
-      manager: null,
+      manager_name: null,
       seo_description: '인터뷰 설명',
       slug: 'orca-story',
       title: '오르카 인터뷰',
@@ -80,14 +79,14 @@ test('testimonial mutations clear interview-only fields', () => {
   )
 
   assert.deepEqual(input, {
-    company: '오르카',
+    company_name: '오르카',
     content: '만족합니다.',
     content_mode: 'html',
-    is_landing_enabled: true,
     kind: 'testimonial',
-    manager: '김담당',
+    manager_name: '김담당',
     published_at: '2026-07-20T15:00:00.000Z',
     seo_description: null,
+    show_on_landing: true,
     slug: null,
     status: 'published',
     title: null,

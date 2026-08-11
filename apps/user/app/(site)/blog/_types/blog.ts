@@ -37,13 +37,14 @@ export type BlogPostDetail = {
 export type BlogPost = {
   id: string;
   slug: string;
-  category: BlogCategory;
+  category: string;
   title: string;
   summary: string;
   publishedAt: string;
   publishedAtIso: string;
   author: string;
   image: string;
+  imageAlt: string;
   landingRank?: number;
   bannerRank?: number;
   popularRank?: number;

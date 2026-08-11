@@ -38,7 +38,7 @@ import type { ReviewType } from './reviewFormState'
 import './BlogFormPage.css'
 import './ReviewFormPage.css'
 
-const contentModes = ['html', 'text'] as const
+const contentModes = ['html', 'markdown'] as const
 
 type UpdateReviewForm = <Key extends keyof ReviewFormState>(
   key: Key,
@@ -375,18 +375,22 @@ function InterviewFields({
           name="slug"
           onChange={(event) => {
             const rawValue = event.currentTarget.value
-            const slug = rawValue.replace(/[^A-Za-z-]/g, '')
+            const slug = rawValue.toLowerCase().replace(/[^a-z0-9-]/g, '')
 
             onUpdate('slug', slug)
             onSlugErrorChange(
-              rawValue === slug ? '' : '영어와 하이픈만 입력해주세요.',
+              rawValue === slug
+                ? ''
+                : '영문 소문자, 숫자, 하이픈만 입력해주세요.',
             )
           }}
           onInvalid={() =>
-            onSlugErrorChange('Slug는 영문과 하이픈만 입력할 수 있습니다.')
+            onSlugErrorChange(
+              'Slug는 영문 소문자, 숫자, 하이픈만 입력할 수 있습니다.',
+            )
           }
-          pattern="[A-Za-z-]+"
-          placeholder="인터뷰 Slug를 입력해주세요. (영문만 작성)"
+          pattern="[a-z0-9]+(?:-[a-z0-9]+)*"
+          placeholder="인터뷰 Slug를 입력해주세요. (영문 소문자, 숫자, 하이픈)"
           required
           type="text"
           value={form.slug}
@@ -715,7 +719,7 @@ export function ReviewFormPage() {
       form.type === '인터뷰' &&
       !isValidInterviewSlug(form.slug)
     ) {
-      setSlugError('Slug는 영문과 하이픈만 입력할 수 있습니다.')
+      setSlugError('Slug는 영문 소문자, 숫자, 하이픈만 입력할 수 있습니다.')
       window.requestAnimationFrame(() => {
         document.getElementById(`${formId}-slug`)?.focus()
       })

@@ -38,8 +38,8 @@ test('complaint list exposes intake-backed columns without an admin create actio
     pageSource,
     /placeholder: '접수자 또는 접수 내용으로 검색해주세요\.'/,
   )
-  assert.match(pageSource, /listAdminInquiries\(supabase\)/)
-  assert.match(pageSource, /inquiries\.map\(toComplaintRow\)/)
+  assert.match(pageSource, /listAdminComplaints\(supabase\)/)
+  assert.match(pageSource, /complaints\.map\(toComplaintRow\)/)
   assert.match(pageSource, /filterValues=\{\{ status: filters\.status, type: filters\.type \}\}/)
   assert.match(pageSource, /onFilterValueChange=\{handleFilterValueChange\}/)
   assert.match(pageSource, /searchValue=\{filters\.query\}/)
@@ -89,7 +89,7 @@ test('complaint detail exposes admin-only intake information', async () => {
   assert.match(detailSource, /copyable label="휴대폰 번호"/)
   assert.match(detailSource, /download=\{attachment\.name\}/)
   assert.match(detailSource, /href=\{attachment\.downloadUrl\}/)
-  assert.match(detailSource, /getAdminInquiry\(supabase, id\)/)
+  assert.match(detailSource, /getAdminComplaint\(supabase, id\)/)
   assert.match(detailSource, /createSignedFileUrl\(/)
   assert.match(detailSource, /STORAGE_BUCKETS\.privateAttachments/)
   assert.match(detailSource, /Promise\.allSettled\(/)
@@ -97,7 +97,7 @@ test('complaint detail exposes admin-only intake information', async () => {
   assert.match(detailSource, /attachment\.downloadUrl \?/)
   assert.match(detailSource, /일부 첨부 파일을 불러오지 못했습니다\./)
   assert.match(detailSource, /다운로드 불가/)
-  assert.match(detailSource, /updateInquiryStatus\(supabase, complaint\.id, value\)/)
+  assert.match(detailSource, /updateComplaintStatus\(supabase, complaint\.id, value\)/)
   assert.match(detailSource, /toast\.success\('처리상태를 변경했습니다\.'\)/)
   assert.match(detailSource, /toast\.error\('처리상태를 변경하지 못했습니다\.'\)/)
   assert.match(detailSource, /window\.alert\('처리상태를 변경하지 못했습니다\. 다시 시도해주세요\.'\)/)

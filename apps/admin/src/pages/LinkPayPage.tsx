@@ -17,22 +17,22 @@ import type { LinkPayFilters, LinkPayListRow } from './linkPayData'
 import './PortfolioPage.css'
 import './LinkPayPage.css'
 
-const statusFilterOptions = ['전체', '결제전', '결제완료'] as const
+const statusFilterOptions = ['전체', '활성', '중단'] as const
 const userAppUrl = import.meta.env.VITE_USER_APP_URL || 'http://localhost:3000'
 
 function renderPaymentStatus(status: LinkPayListRow['status']) {
-  const isPaid = status === 'paid'
+  const isDisabled = status === 'disabled'
 
   return (
     <span
       className={
-        isPaid
-          ? 'admin-data-table__status'
-          : 'admin-data-table__status admin-data-table__status--draft'
+        isDisabled
+          ? 'admin-data-table__status admin-data-table__status--draft'
+          : 'admin-data-table__status'
       }
     >
       <span className="admin-data-table__status-dot" />
-      <span>{isPaid ? '결제완료' : '결제전'}</span>
+      <span>{isDisabled ? '중단' : '활성'}</span>
     </span>
   )
 }

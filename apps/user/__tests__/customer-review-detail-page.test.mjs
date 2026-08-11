@@ -36,7 +36,7 @@ test("customer review detail page follows portfolio detail route conventions", a
   assert.match(source, /import Image from "next\/image"/);
   assert.match(source, /import Link from "next\/link"/);
   assert.match(source, /import \{ notFound \} from "next\/navigation"/);
-  assert.match(source, /export function generateStaticParams\(\)/);
+  assert.doesNotMatch(source, /generateStaticParams/);
   assert.match(source, /export async function generateMetadata/);
   assert.match(source, /process\.env\.NEXT_PUBLIC_SITE_URL/);
   assert.match(
@@ -55,9 +55,14 @@ test("customer review detail page follows portfolio detail route conventions", a
   assert.match(source, /contentUrl: absoluteVideoUrl/);
   assert.match(source, /thumbnailUrl: imageUrl/);
   assert.match(source, /type: "article"/);
-  assert.match(source, /getCustomerInterviewDetailBySlug/);
+  assert.match(source, /getPublishedCustomerInterviewDetailBySlug/);
+  assert.equal(
+    source.match(/await getPublishedCustomerInterviewDetailBySlug\(slug\)/g)
+      ?.length,
+    2,
+  );
   assert.match(source, /getCustomerInterviewDetailSeo/);
-  assert.match(source, /customerInterviewDetails\.map/);
+  assert.doesNotMatch(source, /customerInterviewDetails\.map/);
   assert.doesNotMatch(source, /type="application\/ld\+json"/);
   assert.doesNotMatch(source, /getReviewDetailStructuredData/);
   assert.doesNotMatch(source, /stringifyJsonLd/);
@@ -139,7 +144,7 @@ test("customer review detail page uses stable admin ids for dynamic keys", async
     content,
     /export type CustomerInterviewProjectInfo = \{\s*id: CustomerInterviewProjectInfoId;/,
   );
-  assert.match(content, /id: "intro"/);
+  assert.match(content, /`\$\{row\.id\}-\$\{type\}-\$\{blocks\.length\}`/);
   assert.match(content, /id: "client"/);
   assert.match(source, /key=\{block\.id\}/);
   assert.match(source, /key=\{item\.id\}/);
@@ -147,7 +152,7 @@ test("customer review detail page uses stable admin ids for dynamic keys", async
   assert.doesNotMatch(source, /key=\{item\.label\}/);
 });
 
-test("customer review detail content captures the Figma interview detail copy", async () => {
+test("customer review detail content preserves local presentation metadata", async () => {
   const content = await readFile(contentPath, "utf8");
 
   await stat(thumbnailPath);
@@ -157,21 +162,15 @@ test("customer review detail content captures the Figma interview detail copy", 
   assert.match(content, /export type CustomerInterviewDetail/);
   assert.match(content, /publishedAt: string/);
   assert.match(content, /videoUrl\?: string/);
-  assert.match(content, /export const customerInterviewDetails/);
-  assert.match(content, /export function getCustomerInterviewDetailBySlug/);
+  assert.doesNotMatch(content, /export const customerInterviewDetails/);
+  assert.match(content, /export const getPublishedCustomerInterviewDetailBySlug/);
   assert.match(content, /export function getCustomerInterviewDetailSeo/);
   assert.match(content, /slug: "seojin-instech"/);
   assert.match(content, /slug: "ninebell-healthcare"/);
   assert.match(content, /slug: "chungkang-college"/);
-  assert.match(content, /publishedAt: "2026-07-01T00:00:00\+09:00"/);
-  assert.match(
-    content,
-    /게임 졸업작품 완료보고서\] 청강문화산업대학교가 씨브레인을 선택한 이유/,
-  );
-  assert.match(content, /videoAlt:/);
-  assert.match(content, /어떤 상황이었나요\?/);
-  assert.match(content, /씨브레인은 어떻게 해결했나요\?/);
-  assert.match(content, /고객이 직접 말하는 결과/);
+  assert.match(content, /videoAlt: row\.video_alt/);
+  assert.match(content, /const content = toCustomerInterviewContentBlocks\(row\)/);
+  assert.match(content, /\n {4}content,/);
   assert.match(content, /프로젝트 정보/);
   assert.match(content, /의뢰처/);
   assert.match(content, /제작물/);

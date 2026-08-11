@@ -32,7 +32,10 @@ export type OrderPaymentSubmitPayload = {
 };
 
 type OrderCustomerInfoStepProps = {
-  onPaymentSubmit?: (payload: OrderPaymentSubmitPayload) => Promise<void> | void;
+  isPaymentSubmitting: boolean;
+  onPaymentSubmit?: (
+    payload: OrderPaymentSubmitPayload,
+  ) => Promise<void> | void;
   summary: OrderSelectionSummary;
 };
 
@@ -175,6 +178,7 @@ function isCustomerInfoFieldValid(
 }
 
 export function OrderCustomerInfoStep({
+  isPaymentSubmitting,
   onPaymentSubmit,
   summary,
 }: OrderCustomerInfoStepProps) {
@@ -444,7 +448,12 @@ export function OrderCustomerInfoStep({
           </div>
         </section>
 
-        <button className={styles.paymentButton} type="submit">
+        <button
+          aria-busy={isPaymentSubmitting}
+          className={styles.paymentButton}
+          disabled={isPaymentSubmitting}
+          type="submit"
+        >
           <span>결제하기</span>
           <Icon name="arrow-right" size={16} />
         </button>

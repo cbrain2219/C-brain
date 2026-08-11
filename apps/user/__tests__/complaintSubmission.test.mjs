@@ -134,6 +134,7 @@ test("complaint payload keeps file bytes out of the server request", async () =>
     false,
   );
   assert.equal(uploadRequest.attachments[0].name, "증빙.png");
+  assert.equal(getComplaintUploadPrefix(submissionId), `complaints/${submissionId}`);
   assert.equal("arrayBuffer" in uploadRequest.attachments[0], false);
   assert.equal(parsed.ok, true);
   assert.equal("verificationCode" in payload.values, false);
@@ -174,6 +175,12 @@ test("complaint validation rejects invalid fields and attachment limits", async 
   );
   assert.match(
     validateComplaintSubmission(validValues(), [
+      { name: "empty.png", size: 0, type: "image/png" },
+    ]),
+    /최대 50MB/,
+  );
+  assert.match(
+    validateComplaintSubmission(validValues(), [
       { name: "notes.pdf", size: 1, type: "application/pdf" },
     ]),
     /PNG, JPEG, WEBP/,
@@ -204,7 +211,7 @@ test("complaint payload rejects paths outside its signed upload scope", async ()
   const submissionId = crypto.randomUUID();
   const attachment = {
     name: "증빙.png",
-    path: `inquiry-submissions/${crypto.randomUUID()}/${crypto.randomUUID()}.png`,
+    path: `complaints/${crypto.randomUUID()}/${crypto.randomUUID()}.png`,
     size: 1,
     type: "image/png",
   };
@@ -239,15 +246,23 @@ test("complaint form uploads directly with a signed token before JSON submission
   assert.doesNotMatch(formSource, /new FormData\(/);
   assert.match(routeSource, /request\.json\(\)/);
   assert.match(routeSource, /getFileInfo/);
+  assert.match(routeSource, /createComplaint/);
+  assert.match(routeSource, /createComplaintAttachments/);
+  assert.doesNotMatch(routeSource, /createInquiry/);
   assert.match(routeSource, /id: submission\.submissionId/);
   assert.match(routeSource, /\.remove\(uploadedPaths\)/);
   assert.match(uploadRouteSource, /createSignedFileUpload/);
   assert.match(uploadRouteSource, /parseComplaintCleanupRequest/);
+  assert.match(uploadRouteSource, /\.from\("complaints"\)/);
+  assert.match(uploadRouteSource, /\.from\("complaint_attachments"\)/);
+  assert.match(uploadRouteSource, /\.select\("object_path"\)/);
+  assert.doesNotMatch(uploadRouteSource, /\.from\("inquiries"\)/);
+  assert.doesNotMatch(uploadRouteSource, /\.from\("inquiry_attachments"\)/);
 });
 
 test("complaint mapping remains unverified", async () => {
-  const { toComplaintInquiryInput } = await importSubmissionModule();
-  const input = toComplaintInquiryInput(
+  const { toComplaintInput } = await importSubmissionModule();
+  const input = toComplaintInput(
     validValues(),
     "2026-07-21T00:00:00.000Z",
   );
@@ -255,14 +270,16 @@ test("complaint mapping remains unverified", async () => {
   assert.equal(input.status, "received");
   assert.equal(input.phone_verified, false);
   assert.equal(input.privacy_agreed_at, "2026-07-21T00:00:00.000Z");
+  assert.equal("title" in input, false);
+  assert.equal("user_id" in input, false);
 });
 
 test("complaint attachment paths discard unsafe scope and extension characters", () => {
   const path = createStoragePath(
-    "inquiries/../inquiry-id",
+    "complaints/../complaint-id",
     "../../증빙 파일.P N G",
   );
 
-  assert.match(path, /^inquiries\/inquiry-id\/[0-9a-f-]{36}\.png$/);
+  assert.match(path, /^complaints\/complaint-id\/[0-9a-f-]{36}\.png$/);
   assert.doesNotMatch(path, /\.\.|\s|\\/);
 });

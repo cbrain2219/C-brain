@@ -8,6 +8,14 @@ export function hasPublicSupabaseEnv() {
   )
 }
 
+export function createPublicUserSupabaseClient() {
+  if (!hasPublicSupabaseEnv()) return null
+
+  return createServerSupabaseClient({
+    getAll: () => [],
+  })
+}
+
 export async function createUserSupabaseClient() {
   if (!hasPublicSupabaseEnv()) return null
 

@@ -11,17 +11,17 @@ import {
 
 const notice = {
   content: '공지 본문',
-  content_mode: 'text',
+  content_mode: 'markdown',
   created_at: '2026-07-21T12:00:00.000Z',
   excerpt: '공지 요약',
   id: 'notice-1',
-  is_banner_enabled: false,
-  is_featured: false,
-  is_landing_enabled: false,
-  is_pinned: true,
+  featured: false,
   kind: 'notice',
+  pinned: true,
   published_at: '2026-07-22T00:00:00.000Z',
-  seo: null,
+  seo_description: null,
+  show_as_banner: false,
+  show_on_landing: false,
   slug: 'summer-event',
   sort_order: 3,
   status: 'published',
@@ -29,7 +29,6 @@ const notice = {
   thumbnail_path: null,
   title: '여름 이벤트',
   type: '  이벤트   소식 ',
-  updated_at: '2026-07-21T12:00:00.000Z',
   view_count: 10,
 }
 
@@ -52,7 +51,7 @@ test('post rows map to the notice list and edit form', () => {
 
   assert.deepEqual(toNoticeFormState(notice), {
     content: '공지 본문',
-    contentMode: 'text',
+    contentMode: 'markdown',
     excerpt: '공지 요약',
     isPinned: true,
     publishedAt: '2026-07-22',
@@ -82,7 +81,7 @@ test('notice form maps to a notice post mutation', () => {
       content: '본문',
       content_mode: 'html',
       excerpt: '요약',
-      is_pinned: true,
+      pinned: true,
       kind: 'notice',
       published_at: '2026-07-21T15:00:00.000Z',
       slug: 'notice-slug',

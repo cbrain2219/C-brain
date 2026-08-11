@@ -7,7 +7,10 @@ import {
 } from '../src/pages/portfolioFormState.ts'
 
 test('slug accepts English letters and hyphens only', () => {
-  assert.equal(isValidPortfolioSlug('cbrain-portfolio'), true)
+  assert.equal(isValidPortfolioSlug('cbrain-portfolio-01'), true)
+  assert.equal(isValidPortfolioSlug('CBrain-portfolio'), false)
+  assert.equal(isValidPortfolioSlug('-cbrain'), false)
+  assert.equal(isValidPortfolioSlug('cbrain--portfolio'), false)
   assert.equal(isValidPortfolioSlug('포트폴리오-01'), false)
 })
 

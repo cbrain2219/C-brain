@@ -6,7 +6,7 @@ import {
   toPublishedAt,
 } from './contentListState.ts'
 
-export type BlogContentMode = 'html' | 'text'
+export type BlogContentMode = 'html' | 'markdown'
 export type BlogStatus = Extract<PublishStatus, 'draft' | 'published'>
 export type BlogStatusLabel = '임시저장' | '게시됨'
 
@@ -52,13 +52,13 @@ export type BlogMutationInput = Pick<
   | 'content'
   | 'content_mode'
   | 'excerpt'
-  | 'is_banner_enabled'
-  | 'is_featured_enabled'
-  | 'is_landing_enabled'
-  | 'is_pinned'
+  | 'featured'
   | 'kind'
+  | 'pinned'
   | 'published_at'
   | 'seo_description'
+  | 'show_as_banner'
+  | 'show_on_landing'
   | 'slug'
   | 'status'
   | 'thumbnail_alt'
@@ -93,9 +93,9 @@ export function toBlogFormState(
   return {
     content: post.content,
     contentMode: post.content_mode,
-    isBannerEnabled: post.is_banner_enabled,
-    isFeaturedEnabled: post.is_featured_enabled,
-    isLandingEnabled: post.is_landing_enabled,
+    isBannerEnabled: post.show_as_banner,
+    isFeaturedEnabled: post.featured,
+    isLandingEnabled: post.show_on_landing,
     publishedAt: toDateInputValue(post.published_at),
     seoDescription: post.seo_description ?? '',
     slug: post.slug,
@@ -129,16 +129,16 @@ export function toBlogMutationInput(
     content,
     content_mode: form.contentMode,
     excerpt: null,
-    is_banner_enabled: form.isBannerEnabled,
-    is_featured_enabled: form.isFeaturedEnabled,
-    is_landing_enabled: form.isLandingEnabled,
-    is_pinned: false,
+    featured: form.isFeaturedEnabled,
     kind: 'blog',
+    pinned: false,
     published_at: publishedAt,
     seo_description: seoDescription || null,
+    show_as_banner: form.isBannerEnabled,
+    show_on_landing: form.isLandingEnabled,
     slug,
     status,
-    thumbnail_alt: form.thumbnailAlt.trim() || null,
+    thumbnail_alt: thumbnailPath ? form.thumbnailAlt.trim() || null : null,
     thumbnail_path: thumbnailPath,
     title,
     type,
@@ -149,12 +149,12 @@ export function toBlogListRow(post: TableRow<'posts'>): BlogListRow {
   const publicationStatus: BlogStatus = post.status === 'published' ? 'published' : 'draft'
 
   return {
-    bannerStatus: post.is_banner_enabled ? 'published' : 'none',
+    bannerStatus: post.show_as_banner ? 'published' : 'none',
     createdAt: formatAdminDate(post.created_at),
     detailHref: '/blog/' + post.id,
     id: post.id,
-    landingStatus: post.is_landing_enabled ? 'published' : 'none',
-    popularStatus: post.is_featured_enabled ? 'published' : 'none',
+    landingStatus: post.show_on_landing ? 'published' : 'none',
+    popularStatus: post.featured ? 'published' : 'none',
     publicationStatus,
     status: publicationStatus === 'draft' ? '임시저장' : '게시됨',
     title: post.title,
@@ -173,9 +173,9 @@ export function filterBlogRows(
 export function getBlogSettingCounts(posts: readonly TableRow<'posts'>[]): BlogSettingCounts {
   return posts.reduce<BlogSettingCounts>(
     (counts, post) => ({
-      banner: counts.banner + Number(post.is_banner_enabled),
-      featured: counts.featured + Number(post.is_featured_enabled),
-      landing: counts.landing + Number(post.is_landing_enabled),
+      banner: counts.banner + Number(post.show_as_banner),
+      featured: counts.featured + Number(post.featured),
+      landing: counts.landing + Number(post.show_on_landing),
     }),
     { banner: 0, featured: 0, landing: 0 },
   )

@@ -37,6 +37,9 @@ function LinkPayForm({ linkPayId }: LinkPayFormProps) {
   const [isLoading, setIsLoading] = useState(isEditing)
   const [isDeleting, setIsDeleting] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
+  const [isTogglingStatus, setIsTogglingStatus] = useState(false)
+  const [isDisabled, setIsDisabled] = useState(false)
+  const [hasOrders, setHasOrders] = useState(false)
   const [loadError, setLoadError] = useState('')
   const [saveError, setSaveError] = useState('')
 
@@ -56,7 +59,10 @@ function LinkPayForm({ linkPayId }: LinkPayFormProps) {
 
     void getAdminPaymentLink(supabase, id)
       .then((paymentLink) => {
-        if (isCurrent) setForm(toLinkPayFormState(paymentLink))
+        if (!isCurrent) return
+        setForm(toLinkPayFormState(paymentLink))
+        setIsDisabled(paymentLink.disabled_at !== null)
+        setHasOrders(paymentLink.hasOrders)
       })
       .catch(() => {
         if (!isCurrent) return
@@ -78,7 +84,7 @@ function LinkPayForm({ linkPayId }: LinkPayFormProps) {
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    if (isSaving || isDeleting) return
+    if (isSaving || isDeleting || isTogglingStatus) return
 
     setIsSaving(true)
     setSaveError('')
@@ -108,7 +114,7 @@ function LinkPayForm({ linkPayId }: LinkPayFormProps) {
   }
 
   async function handleDelete() {
-    if (!linkPayId || isSaving || isDeleting) return
+    if (!linkPayId || isSaving || isDeleting || isTogglingStatus) return
 
     setIsDeleting(true)
     setSaveError('')
@@ -123,6 +129,30 @@ function LinkPayForm({ linkPayId }: LinkPayFormProps) {
       window.alert('링크페이를 삭제하지 못했습니다. 결제가 시작된 링크인지 확인해주세요.')
     } finally {
       setIsDeleting(false)
+    }
+  }
+
+  async function handleToggleStatus() {
+    if (!linkPayId || isSaving || isDeleting || isTogglingStatus) return
+
+    setIsTogglingStatus(true)
+    setSaveError('')
+
+    try {
+      await updatePaymentLink(supabase, linkPayId, {
+        disabled_at: isDisabled ? null : new Date().toISOString(),
+      })
+      if (!isMounted.current) return
+
+      setIsDisabled((current) => !current)
+      toast.success(isDisabled ? '링크페이를 다시 활성화했습니다.' : '링크페이를 중단했습니다.')
+    } catch {
+      if (!isMounted.current) return
+
+      setSaveError('링크페이 상태를 변경하지 못했습니다.')
+      toast.error('링크페이 상태를 변경하지 못했습니다.')
+    } finally {
+      if (isMounted.current) setIsTogglingStatus(false)
     }
   }
 
@@ -153,16 +183,27 @@ function LinkPayForm({ linkPayId }: LinkPayFormProps) {
           </Link>
           <div className="admin-form__actions-group">
             {isEditing ? (
-              <AdminDeleteDialog
-                disabled={isSaving}
-                isDeleting={isDeleting}
-                itemLabel="링크페이"
-                onConfirm={handleDelete}
-              />
+              hasOrders || isDisabled ? (
+                <button
+                  className="admin-form__button admin-form__button--outline"
+                  disabled={isSaving || isDeleting || isTogglingStatus}
+                  onClick={() => void handleToggleStatus()}
+                  type="button"
+                >
+                  {isTogglingStatus ? '처리 중...' : isDisabled ? '다시 활성화' : '중단하기'}
+                </button>
+              ) : (
+                <AdminDeleteDialog
+                  disabled={isSaving || isTogglingStatus}
+                  isDeleting={isDeleting}
+                  itemLabel="링크페이"
+                  onConfirm={handleDelete}
+                />
+              )
             ) : null}
             <button
               className="admin-form__button admin-form__button--solid"
-              disabled={isSaving || isDeleting}
+              disabled={isSaving || isDeleting || isTogglingStatus}
               type="submit"
             >
               <span>{isSaving ? '저장 중...' : isEditing ? '수정하기' : '등록하기'}</span>

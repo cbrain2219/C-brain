@@ -6,10 +6,10 @@ import { JsonLdScript } from "../../_components/JsonLdScript";
 import {
   getPortfolioCategoryIdFromValue,
   portfolioCategories,
-  portfolioItems,
 } from "../../_content/portfolio";
 import { createPageMetadata } from "../../_content/seo";
 import { createStaticPageStructuredData } from "../../_content/structured-data";
+import { getPublishedPortfolioItems } from "../../../lib/publicContent";
 import { PortfolioGallery } from "./PortfolioGallery";
 import styles from "./page.module.css";
 
@@ -24,7 +24,10 @@ export const metadata = createPageMetadata("portfolio");
 export default async function PortfolioPage({
   searchParams,
 }: PortfolioPageProps) {
-  const resolvedSearchParams = await searchParams;
+  const [resolvedSearchParams, items] = await Promise.all([
+    searchParams,
+    getPublishedPortfolioItems(),
+  ]);
   const initialCategoryId = getPortfolioCategoryIdFromValue(
     resolvedSearchParams?.category,
   );
@@ -73,7 +76,7 @@ export default async function PortfolioPage({
           <PortfolioGallery
             categories={portfolioCategories}
             initialCategoryId={initialCategoryId}
-            items={portfolioItems}
+            items={items}
           />
         </div>
       </section>

@@ -24,13 +24,7 @@ export function AdminLoginPage() {
         return
       }
 
-      const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', data.user.id)
-        .maybeSingle()
-
-      if (profileError || profile?.role !== 'admin') {
+      if (data.user.app_metadata?.role !== 'admin') {
         await supabase.auth.signOut()
         setErrorMessage('관리자 계정만 접근할 수 있습니다.')
         return

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
+import { createAdminSupabaseClient, getPublicPaymentLink } from "@repo/supabase";
 
-import { getLinkPayPayment } from "../../../_content/linkPay";
 import { createNoIndexMetadata } from "../../../_content/seo";
 import { LinkPayPaymentForm } from "./LinkPayPaymentForm";
 
@@ -13,7 +13,7 @@ export async function generateMetadata({
   params,
 }: LinkPayPageProps): Promise<Metadata> {
   const { id } = await params;
-  const payment = getLinkPayPayment(id);
+  const payment = await getPaymentLink(id);
 
   if (!payment) {
     return createNoIndexMetadata({
@@ -22,18 +22,35 @@ export async function generateMetadata({
   }
 
   return createNoIndexMetadata({
-    description: `${payment.clientName}의 ${payment.paymentName} 카드 결제 페이지입니다.`,
-    path: `/linkpay/${payment.id}`,
-    title: `${payment.clientName} 개인 결제 | C-Brain`,
+    description: `${payment.client_name}의 ${payment.payment_name} 카드 결제 페이지입니다.`,
+    path: `/linkpay/${payment.public_token}`,
+    title: `${payment.client_name} 개인 결제 | C-Brain`,
   });
 }
 
 export default async function LinkPayPage({ params }: LinkPayPageProps) {
   const { id } = await params;
-  const payment = getLinkPayPayment(id);
+  const payment = await getPaymentLink(id);
 
   if (!payment) notFound();
-  if (payment.status !== "pending") redirect(`/linkpay/${payment.id}/success`);
 
-  return <LinkPayPaymentForm payment={payment} />;
+  return (
+    <LinkPayPaymentForm
+      payment={{
+        amount: payment.amount,
+        category: payment.category,
+        clientName: payment.client_name,
+        isDisabled: payment.disabled_at !== null,
+        pageQuantity: payment.page_quantity,
+        paper: payment.paper,
+        paymentName: payment.payment_name,
+        publicToken: payment.public_token,
+        service: payment.service,
+      }}
+    />
+  );
+}
+
+async function getPaymentLink(publicToken: string) {
+  return getPublicPaymentLink(createAdminSupabaseClient(), publicToken);
 }

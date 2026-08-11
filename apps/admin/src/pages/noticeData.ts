@@ -5,7 +5,7 @@ import type {
 } from '../components/admin-table/AdminContentTableCells'
 import { formatAdminDate, toDateInputValue, toPublishedAt } from './contentListState.ts'
 
-export type NoticeContentMode = 'html' | 'text'
+export type NoticeContentMode = 'html' | 'markdown'
 
 export type NoticeFormState = {
   content: string
@@ -33,8 +33,8 @@ export type NoticeMutationInput = Pick<
   | 'content'
   | 'content_mode'
   | 'excerpt'
-  | 'is_pinned'
   | 'kind'
+  | 'pinned'
   | 'published_at'
   | 'slug'
   | 'status'
@@ -84,7 +84,7 @@ export function toNoticeListRow(post: TableRow<'posts'>): NoticeListRow {
     createdAt: formatAdminDate(post.created_at),
     detailHref: `/notices/${post.id}`,
     id: post.id,
-    pinnedStatus: post.is_pinned ? 'pinned' : 'none',
+    pinnedStatus: post.pinned ? 'pinned' : 'none',
     status: post.status === 'published' ? 'published' : 'draft',
     title: post.title,
     type: normalizeNoticeType(post.type),
@@ -96,7 +96,7 @@ export function toNoticeFormState(post: TableRow<'posts'>): NoticeFormState {
     content: post.content,
     contentMode: post.content_mode,
     excerpt: post.excerpt ?? '',
-    isPinned: post.is_pinned,
+    isPinned: post.pinned,
     publishedAt: toDateInputValue(post.published_at),
     slug: post.slug,
     title: post.title,
@@ -109,18 +109,19 @@ export function toNoticeMutationInput(
   status: PublishStatus,
 ): NoticeMutationInput {
   const type = normalizeNoticeType(form.type)
+  const excerpt = form.excerpt.trim()
 
-  if (!type || !form.title.trim() || !form.slug.trim() || !form.content.trim()) {
+  if (!type || !form.title.trim() || !form.slug.trim() || !form.content.trim() || !excerpt) {
     throw new Error('공지사항 정보를 확인해주세요.')
   }
 
   return {
     content: form.content,
     content_mode: form.contentMode,
-    excerpt: form.excerpt.trim() || null,
-    is_pinned: form.isPinned,
+    excerpt,
     kind: 'notice',
-    published_at: toPublishedAt(form.publishedAt),
+    pinned: form.isPinned,
+    published_at: toPublishedAt(form.publishedAt) ?? new Date().toISOString(),
     slug: form.slug.trim(),
     status,
     title: form.title.trim(),

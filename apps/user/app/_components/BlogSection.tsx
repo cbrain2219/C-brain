@@ -4,21 +4,26 @@ import Link from "next/link";
 import { HorizontalDragScroll } from "../../components/HorizontalDragScroll";
 import { Icon } from "../../components/Icon";
 import { SectionLayout } from "../../components/SectionLayout";
-import { blogPosts } from "../(site)/blog/_data/blogPosts";
+import type { BlogPost } from "../(site)/blog/_types/blog";
 import styles from "../page.module.css";
 import { createGradientBorderButtonStyle } from "./buttonStyles";
 
 const buttonStyle = createGradientBorderButtonStyle();
-const landingPosts = blogPosts
-  .filter((post) => post.landingRank !== undefined)
-  .sort(
-    (firstPost, secondPost) =>
-      (firstPost.landingRank ?? Infinity) -
-      (secondPost.landingRank ?? Infinity),
-  )
-  .slice(0, 3);
 
-export function BlogSection() {
+type BlogSectionProps = {
+  posts: readonly BlogPost[];
+};
+
+export function BlogSection({ posts }: BlogSectionProps) {
+  const landingPosts = posts
+    .filter((post) => post.landingRank !== undefined)
+    .sort(
+      (firstPost, secondPost) =>
+        (firstPost.landingRank ?? Infinity) -
+        (secondPost.landingRank ?? Infinity),
+    )
+    .slice(0, 3);
+
   return (
     <SectionLayout
       badge="블로그"
@@ -48,7 +53,7 @@ export function BlogSection() {
           >
             <div className={styles.blogImage}>
               <Image
-                alt={post.title}
+                alt={post.imageAlt}
                 className={styles.coverImage}
                 fill
                 sizes="(min-width: 1440px) 440px, (min-width: 1080px) 33vw, (min-width: 640px) 400px, 350px"

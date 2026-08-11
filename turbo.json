@@ -1,6 +1,7 @@
 {
   "$schema": "https://turborepo.dev/schema.json",
   "globalEnv": [
+    "ADMIN_APP_URL",
     "NICEPAY_MODE",
     "NICEPAY_SECRET_KEY",
     "NEXT_PUBLIC_NICEPAY_CLIENT_KEY",

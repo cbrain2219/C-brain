@@ -12,9 +12,10 @@ import { LinkPayFormPage } from './pages/LinkPayFormPage'
 import { LinkPayPage } from './pages/LinkPayPage'
 import { NoticeFormPage } from './pages/NoticeFormPage'
 import { NoticePage } from './pages/NoticePage'
+import { NotFoundPage } from './pages/NotFoundPage'
 import { PortfolioFormPage } from './pages/PortfolioFormPage'
 import { PortfolioPage } from './pages/PortfolioPage'
-import { ProductFormPage } from './pages/ProductFormPage'
+import { ProductFormUiPage } from './pages/ProductFormUiPage'
 import { ProductPage } from './pages/ProductPage'
 import { ReviewFormPage } from './pages/ReviewFormPage'
 import { ReviewPage } from './pages/ReviewPage'
@@ -45,6 +46,7 @@ function scrollToFirstInvalidControl(event: FormEvent<HTMLElement>) {
       : control
 
   window.requestAnimationFrame(() => {
+    control.focus({ preventScroll: true })
     scrollTarget.scrollIntoView({
       behavior: 'smooth',
       block: 'center',
@@ -67,15 +69,23 @@ export function App() {
   return (
     <Routes>
       <Route element={<AdminLoginPage />} path="/login" />
+      {import.meta.env.DEV ? (
+        <Route element={<AuthenticatedAdminShell />}>
+          <Route element={<ProductFormUiPage />} path="/products/ui-preview" />
+        </Route>
+      ) : null}
       <Route element={<AdminSessionGate />}>
         <Route element={<AuthenticatedAdminShell />}>
           <Route element={<Navigate replace to="/products" />} index />
           <Route element={<ProductPage />} path="/products" />
-          <Route element={<ProductFormPage />} path="/products/new" />
-          <Route element={<ProductFormPage />} path="/products/:productId" />
+          <Route element={<ProductFormUiPage />} path="/products/new" />
+          <Route element={<ProductFormUiPage />} path="/products/:productId" />
           <Route element={<PortfolioPage />} path="/portfolio" />
           <Route element={<PortfolioFormPage />} path="/portfolio/new" />
-          <Route element={<PortfolioFormPage />} path="/portfolio/:portfolioId" />
+          <Route
+            element={<PortfolioFormPage />}
+            path="/portfolio/:portfolioId"
+          />
           <Route element={<BlogPage />} path="/blog" />
           <Route element={<BlogFormPage />} path="/blog/new" />
           <Route element={<BlogFormPage />} path="/blog/:blogId" />
@@ -86,12 +96,15 @@ export function App() {
           <Route element={<NoticeFormPage />} path="/notices/new" />
           <Route element={<NoticeFormPage />} path="/notices/:noticeId" />
           <Route element={<ComplaintPage />} path="/complaints" />
-          <Route element={<ComplaintDetailPage />} path="/complaints/:complaintId" />
+          <Route
+            element={<ComplaintDetailPage />}
+            path="/complaints/:complaintId"
+          />
           <Route element={<LinkPayPage />} path="/linkpay" />
           <Route element={<LinkPayFormPage />} path="/linkpay/new" />
           <Route element={<LinkPayFormPage />} path="/linkpay/:linkPayId" />
           <Route element={<SalesPage />} path="/sales" />
-          <Route element={<Navigate replace to="/products" />} path="*" />
+          <Route element={<NotFoundPage />} path="*" />
         </Route>
       </Route>
     </Routes>

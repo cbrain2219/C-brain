@@ -1,0 +1,207 @@
+{
+  "schema_version": 1,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "사이트 결제 + 재사용형 LinkPay 통합 흐름",
+    "subtitle": "같은 공개 링크가 여러 독립 주문을 만들고 하나의 NICEPAY 매출 · 환불 원장을 공유합니다",
+    "output": "docs/superpowers/plans/2026-08-09-unified-payments-sales-refunds.workflow.html",
+    "animation": "none",
+    "visual_preset": "signal-flow",
+    "quality_profile": "showcase",
+    "views": [
+      {
+        "id": "entry-channels",
+        "label": "일반 결제와 LinkPay",
+        "focus": ["site_checkout", "public_link", "new_order"],
+        "note": "LinkPay는 같은 URL을 재사용하며 결제 제출마다 독립 주문을 생성합니다."
+      },
+      {
+        "id": "verified-payment",
+        "label": "승인 검증과 매출",
+        "focus": ["new_order", "nicepay_approve", "verify_result", "paid_sale", "sales_dashboard"],
+        "note": "서버 검증에 성공한 주문별 결제만 매출에 반영합니다."
+      },
+      {
+        "id": "recovery",
+        "label": "결과 불명 복구",
+        "focus": ["nicepay_approve", "verify_result", "reconcile", "paid_sale"],
+        "note": "결과가 불확실한 개별 결제만 잠그고 LinkPay 자체는 계속 사용할 수 있습니다."
+      },
+      {
+        "id": "refunds",
+        "label": "부분 · 전액 환불",
+        "focus": ["sales_dashboard", "refund_request", "nicepay_cancel", "refund_ledger"],
+        "note": "환불은 링크가 아니라 선택한 원 결제 건에 귀속되고 순매출을 다시 계산합니다."
+      }
+    ]
+  },
+  "lanes": [
+    { "id": "linkpay", "label": "공개 · 재사용 LinkPay" },
+    { "id": "site", "label": "사이트 일반 주문" },
+    { "id": "application", "label": "주문 · 결제 서버" },
+    { "id": "provider", "label": "NICEPAY" },
+    { "id": "exception", "label": "결과 불명 처리", "variant": "exception" },
+    { "id": "ledger", "label": "Supabase 통합 원장" },
+    { "id": "admin", "label": "매출 · 환불 운영" }
+  ],
+  "phases": [
+    { "id": "channel_entry", "label": "두 주문 채널", "fromCol": 0, "toCol": 1 },
+    { "id": "checkout", "label": "주문 준비", "fromCol": 2, "toCol": 2 },
+    { "id": "confirmation", "label": "승인 · 검증", "fromCol": 3, "toCol": 4, "variant": "security" },
+    { "id": "operations", "label": "원장 · 운영", "fromCol": 5, "toCol": 5, "variant": "emphasis" }
+  ],
+  "mainPath": [
+    "site_checkout",
+    "new_order",
+    "nicepay_approve",
+    "verify_result",
+    "paid_sale",
+    "sales_dashboard"
+  ],
+  "nodes": [
+    {
+      "id": "public_link",
+      "lane": "linkpay",
+      "col": 1,
+      "type": "frontend",
+      "label": "공개 LinkPay",
+      "sublabel": "항상 접속 · 반복 결제",
+      "tag": "결제 후에도 재사용"
+    },
+    {
+      "id": "site_checkout",
+      "lane": "site",
+      "col": 0,
+      "type": "frontend",
+      "label": "사이트 주문",
+      "sublabel": "회원 또는 비회원"
+    },
+    {
+      "id": "new_order",
+      "lane": "application",
+      "col": 2,
+      "type": "security",
+      "label": "주문 · 결제 준비",
+      "sublabel": "제출마다 Order + Payment",
+      "tag": "독립 거래",
+      "width": 116
+    },
+    {
+      "id": "nicepay_approve",
+      "lane": "provider",
+      "col": 3,
+      "type": "external",
+      "label": "인증 · 승인",
+      "sublabel": "NICEPAY Server 승인"
+    },
+    {
+      "id": "verify_result",
+      "lane": "application",
+      "col": 4,
+      "type": "security",
+      "label": "승인 결과 검증",
+      "sublabel": "금액 · TID · 서명"
+    },
+    {
+      "id": "reconcile",
+      "lane": "exception",
+      "col": 4,
+      "type": "backend",
+      "label": "UNKNOWN 잠금",
+      "sublabel": "Payment 조회 · 복구"
+    },
+    {
+      "id": "paid_sale",
+      "lane": "ledger",
+      "col": 5,
+      "type": "database",
+      "label": "결제 확정",
+      "sublabel": "주문별 PAID 원장",
+      "tag": "링크 상태 불변"
+    },
+    {
+      "id": "sales_dashboard",
+      "lane": "admin",
+      "col": 5,
+      "type": "frontend",
+      "label": "통합 매출",
+      "sublabel": "채널별 승인 · 환불"
+    },
+    {
+      "id": "refund_request",
+      "lane": "admin",
+      "col": 1,
+      "type": "frontend",
+      "label": "환불 요청",
+      "sublabel": "부분 · 전액 · 사유"
+    },
+    {
+      "id": "nicepay_cancel",
+      "lane": "provider",
+      "col": 1,
+      "type": "external",
+      "label": "취소 실행",
+      "sublabel": "선택한 원거래 TID"
+    },
+    {
+      "id": "refund_ledger",
+      "lane": "ledger",
+      "col": 3,
+      "type": "database",
+      "label": "환불 확정",
+      "sublabel": "refunds · 잔액"
+    }
+  ],
+  "edges": [
+    { "from": "site_checkout", "to": "new_order", "role": "main", "variant": "emphasis" },
+    { "from": "public_link", "to": "new_order", "role": "branch", "variant": "emphasis" },
+    { "from": "new_order", "to": "nicepay_approve", "role": "main", "variant": "emphasis" },
+    { "from": "nicepay_approve", "to": "verify_result", "role": "main", "variant": "security" },
+    { "from": "verify_result", "to": "paid_sale", "role": "main", "variant": "emphasis" },
+    { "from": "paid_sale", "to": "sales_dashboard", "role": "main", "variant": "emphasis" },
+    { "from": "verify_result", "to": "reconcile", "role": "error", "variant": "security" },
+    { "from": "reconcile", "to": "paid_sale", "role": "return", "variant": "security" },
+    { "from": "sales_dashboard", "to": "refund_request", "label": "결제 선택", "role": "branch", "variant": "dashed", "route": "return-left" },
+    { "from": "refund_request", "to": "nicepay_cancel", "role": "branch", "variant": "security" },
+    { "from": "nicepay_cancel", "to": "refund_ledger", "role": "branch", "variant": "security" },
+    { "from": "refund_ledger", "to": "sales_dashboard", "label": "재집계", "role": "return", "variant": "emphasis" }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "같은 링크 · 여러 결제",
+      "items": [
+        "공개 LinkPay URL은 여러 고객이 반복해서 사용합니다",
+        "링크에는 PAID 상태가 없고 관리자가 중단할 때만 disabled_at을 기록합니다",
+        "한 결제의 성공 · 실패 · 환불은 다음 고객의 진입을 막지 않습니다"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "결제 제출마다 새 거래",
+      "items": [
+        "Form 제출 시 새 Order와 첫 Payment를 원자적으로 만듭니다",
+        "LinkPay 가격과 설명을 Order snapshot으로 복사합니다",
+        "재시도와 중복 callback은 Order · Payment 단위로 격리합니다"
+      ]
+    },
+    {
+      "dot": "violet",
+      "title": "통합 매출 · 환불",
+      "items": [
+        "서버가 검증한 PAID만 매출에 포함합니다",
+        "부분 · 전액 환불은 원 Payment에 귀속합니다",
+        "성공 환불액을 승인액에서 차감해 순매출을 계산합니다"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "공개 링크 보호",
+      "items": [
+        "누구나 페이지를 보되 중단되지 않은 링크에서만 결제를 제출합니다",
+        "추측하기 어려운 token · noindex · 서버 입력 검증을 적용합니다",
+        "공개 화면에는 다른 구매자의 결제 여부나 개인정보를 표시하지 않습니다"
+      ]
+    }
+  ]
+}

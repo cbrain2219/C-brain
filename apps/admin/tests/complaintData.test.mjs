@@ -11,19 +11,19 @@ import {
   toComplaintRow,
 } from '../src/pages/complaintData.ts'
 
-const inquiry = {
+const complaint = {
   complaint_type: '결과물의 결함',
   content: '인쇄 번짐을 확인해주세요.',
   created_at: '2026-07-21T05:30:00.000Z',
   email: 'customer@example.com',
-  id: 'inquiry-1',
-  inquiry_attachments: [
+  id: 'complaint-1',
+  complaint_attachments: [
     {
-      bucket: 'private-attachments',
-      file_name: 'proof.png',
+      bucket_id: 'private-attachments',
       file_size: 12 * 1024 * 1024,
       id: 'attachment-1',
-      path: 'inquiries/inquiry-1/proof.png',
+      object_path: 'complaints/complaint-1/proof.png',
+      original_file_name: 'proof.png',
     },
   ],
   name: '김고객',
@@ -34,9 +34,9 @@ const inquiry = {
   status: 'received',
 }
 
-test('inquiry data maps to list and detail models', () => {
-  const row = toComplaintRow(inquiry)
-  const record = toComplaintRecord(inquiry, {
+test('complaint data maps to list and detail models', () => {
+  const row = toComplaintRow(complaint)
+  const record = toComplaintRecord(complaint, {
     'attachment-1': 'https://storage.example/signed',
   })
 
@@ -45,8 +45,8 @@ test('inquiry data maps to list and detail models', () => {
     complaintType: '결과물의 결함',
     createdAt: '26. 07. 21 14:30',
     detail: '인쇄 번짐을 확인해주세요.',
-    detailHref: '/complaints/inquiry-1',
-    id: 'inquiry-1',
+    detailHref: '/complaints/complaint-1',
+    id: 'complaint-1',
     name: '김고객',
     service: '브로슈어 · 카탈로그',
     status: 'received',
@@ -60,13 +60,13 @@ test('inquiry data maps to list and detail models', () => {
 
 test('complaint filters combine status label, type, and text query', () => {
   const rows = [
-    toComplaintRow(inquiry),
+    toComplaintRow(complaint),
     toComplaintRow({
-      ...inquiry,
+      ...complaint,
       complaint_type: '기타',
       content: '배송 문의입니다.',
-      id: 'inquiry-2',
-      inquiry_attachments: [],
+      id: 'complaint-2',
+      complaint_attachments: [],
       name: '이고객',
       status: 'resolved',
     }),
