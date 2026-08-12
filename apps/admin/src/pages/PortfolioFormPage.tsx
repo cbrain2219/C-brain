@@ -5,6 +5,7 @@ import {
   listAdminPortfolioItems,
   updatePortfolioItem,
 } from '@repo/supabase'
+import { isProductType, productTypes } from '@repo/supabase/categories'
 import { useEffect, useId, useRef, useState } from 'react'
 import type { ChangeEvent, DragEvent, FormEvent } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
@@ -50,14 +51,6 @@ type PortfolioFormState = {
   readonly title: string
   readonly type: string
 }
-
-const defaultPortfolioTypes = [
-  '브로슈어 · 카탈로그',
-  '리플렛 · 팜플렛',
-  '명함 · 봉투',
-  '배너 · 족자 · 현수막',
-  '촬영',
-]
 
 const initialPortfolioForm: PortfolioFormState = {
   clientName: '',
@@ -114,7 +107,6 @@ export function PortfolioFormPage() {
   const { portfolioId } = useParams<{ portfolioId: string }>()
   const isEditing = portfolioId !== undefined
   const [form, setForm] = useState<PortfolioFormState>(initialPortfolioForm)
-  const [portfolioTypes, setPortfolioTypes] = useState<string[]>([...defaultPortfolioTypes])
   const [imageErrors, setImageErrors] = useState<Record<string, string>>({})
   const [slugError, setSlugError] = useState('')
   const [typeError, setTypeError] = useState('')
@@ -182,13 +174,6 @@ export function PortfolioFormPage() {
         })
         setStoredImagePaths(images.map((image) => image.path))
         setPublishedAt(item.published_at)
-        setPortfolioTypes((current) =>
-          current.some(
-            (type) => type.toLocaleLowerCase('ko-KR') === item.type.toLocaleLowerCase('ko-KR'),
-          )
-            ? current
-            : [...current, item.type],
-        )
         setImageErrors({})
         setSlugError('')
         setTypeError('')
@@ -215,22 +200,12 @@ export function PortfolioFormPage() {
   }
 
   function commitPortfolioType(nextPortfolioType: string) {
-    const normalizedPortfolioType = nextPortfolioType.trim().replace(/\s+/g, ' ')
-
-    if (!normalizedPortfolioType) return
-
-    const existingPortfolioType = portfolioTypes.find(
-      (portfolioType) =>
-        portfolioType.trim().replace(/\s+/g, ' ').toLocaleLowerCase('ko-KR') ===
-        normalizedPortfolioType.toLocaleLowerCase('ko-KR'),
-    )
-    const portfolioType = existingPortfolioType ?? normalizedPortfolioType
-
-    if (!existingPortfolioType) {
-      setPortfolioTypes((current) => [...current, portfolioType])
+    if (!isProductType(nextPortfolioType)) {
+      setTypeError('고정된 상품 유형 중 하나를 선택해주세요.')
+      return
     }
 
-    updateForm('type', portfolioType)
+    updateForm('type', nextPortfolioType)
     setTypeError('')
   }
 
@@ -413,7 +388,7 @@ export function PortfolioFormPage() {
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
 
-    if (!form.type) {
+    if (!isProductType(form.type)) {
       setTypeError('포트폴리오 유형을 선택해주세요.')
       window.requestAnimationFrame(() => {
         document.getElementById(formId + '-type')?.focus()
@@ -500,7 +475,6 @@ export function PortfolioFormPage() {
       <label className="portfolio-form__field" htmlFor={formId + '-type'}>
         <span className="portfolio-form__label">포트폴리오 유형</span>
         <AdminTypeCombobox
-          allowCustomValue
           errorMessage={typeError}
           inputId={formId + '-type'}
           name="type"
@@ -509,7 +483,7 @@ export function PortfolioFormPage() {
             setTypeError('')
           }}
           onCommit={commitPortfolioType}
-          options={portfolioTypes}
+          options={productTypes}
           placeholder="포트폴리오 유형을 선택해주세요."
           value={form.type}
         />

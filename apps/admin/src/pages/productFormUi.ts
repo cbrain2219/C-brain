@@ -1,13 +1,8 @@
-export const productTypes = [
-  '브로슈어 · 카탈로그',
-  '리플렛 · 팜플렛',
-  '포스터 · 전단지',
-  '배너 · 족자 · 현수막',
-  '명함 · 봉투',
-  '로고',
-] as const
+import { productTypes } from '@repo/supabase/categories'
+import type { ProductType } from '@repo/supabase/categories'
 
-export type ProductType = (typeof productTypes)[number]
+export { productTypes }
+export type { ProductType }
 
 export const productSubtypeOptions = {
   '브로슈어 · 카탈로그': [],

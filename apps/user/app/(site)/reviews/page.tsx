@@ -114,6 +114,9 @@ export default async function CustomerReviewsPage() {
     customerTestimonials,
     featuredCustomerInterview,
   } = await getCustomerReviewPageData();
+  const additionalCustomerInterviews = customerInterviews.filter(
+    (interview) => interview.id !== featuredCustomerInterview?.id,
+  );
 
   return (
     <>
@@ -173,9 +176,9 @@ export default async function CustomerReviewsPage() {
               ) : null}
             </div>
 
-            {customerInterviews.length > 0 ? (
+            {additionalCustomerInterviews.length > 0 ? (
               <ul className={styles.reviewsInterviewGrid}>
-                {customerInterviews.map((interview) => {
+                {additionalCustomerInterviews.map((interview) => {
                   const titleId = `customer-interview-${interview.id}-title`;
 
                   return (
@@ -228,7 +231,7 @@ export default async function CustomerReviewsPage() {
                   );
                 })}
               </ul>
-            ) : (
+            ) : featuredCustomerInterview ? null : (
               <p className={styles.contentEmptyState} role="status">
                 등록된 고객 인터뷰가 없습니다.
               </p>

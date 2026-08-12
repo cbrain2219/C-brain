@@ -157,6 +157,22 @@ test("customer review content is shared by the reviews page", async () => {
   assert.match(pageSource, /featuredCustomerInterview/);
 });
 
+test("featured customer interview is not repeated in the interview grid", async () => {
+  const pageSource = await readFile(pagePath, "utf8");
+
+  assert.match(
+    pageSource,
+    /const additionalCustomerInterviews = customerInterviews\.filter\(/,
+  );
+  assert.match(
+    pageSource,
+    /interview\.id !== featuredCustomerInterview\?\.id/,
+  );
+  assert.match(pageSource, /additionalCustomerInterviews\.map/);
+  assert.doesNotMatch(pageSource, /customerInterviews\.map/);
+  assert.match(pageSource, /: featuredCustomerInterview \? null : \(/);
+});
+
 test("landing and reviews pages share the testimonial card component", async () => {
   const [landingSource, testimonialListSource] = await Promise.all([
     readFile(landingSectionPath, "utf8"),
@@ -323,7 +339,7 @@ test("review list and landing render clear empty states", async () => {
     readFile(stylesPath, "utf8"),
   ]);
 
-  assert.match(pageSource, /customerInterviews\.length > 0/);
+  assert.match(pageSource, /additionalCustomerInterviews\.length > 0/);
   assert.match(pageSource, /customerTestimonials\.length > 0/);
   assert.match(pageSource, /등록된 고객 인터뷰가 없습니다\./);
   assert.match(pageSource, /등록된 고객 후기가 없습니다\./);
@@ -719,10 +735,9 @@ test("customer reviews page reveals testimonials in responsive batches", async (
   ]);
   const stylesSource = await readFile(stylesPath, "utf8");
 
-  assert.match(pageSource, /customerInterviews\.map/);
+  assert.match(pageSource, /additionalCustomerInterviews\.map/);
   assert.match(pageSource, /<CustomerTestimonialList testimonials=\{customerTestimonials\}/);
-  assert.doesNotMatch(pageSource, /customerInterviews\.slice/);
-  assert.doesNotMatch(pageSource, /customerInterviews\.filter/);
+  assert.doesNotMatch(pageSource, /additionalCustomerInterviews\.slice/);
   assert.match(
     testimonialListSource,
     /const MOBILE_TESTIMONIALS_PER_PAGE = 4/,
@@ -788,6 +803,7 @@ test("customer reviews keep compact spacing through the 1080px breakpoint", asyn
 
   assert.match(baseContent, /padding: 72px 20px;/);
   assert.match(baseSection, /gap: 32px;/);
+  assert.match(baseTestimonialGrid, /width: 100%;/);
   assert.match(baseTestimonialGrid, /gap: 8px;/);
   assert.doesNotMatch(baseTestimonialGrid, /gap: 20px;/);
   assert.doesNotMatch(

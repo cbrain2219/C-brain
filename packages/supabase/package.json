@@ -8,6 +8,7 @@
     "./admin": "./src/admin.ts",
     "./auth": "./src/auth.ts",
     "./client": "./src/client.ts",
+    "./categories": "./src/categories.ts",
     "./content": "./src/content.ts",
     "./faqs": "./src/faqs.ts",
     "./files": "./src/files.ts",

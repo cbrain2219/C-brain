@@ -15,6 +15,7 @@ test("portfolio DB rows preserve content, database order, and valid images", asy
     const portfolio = await import(${JSON.stringify(portfolioModuleUrl)});
     const {
       getPortfolioDetailBySlug,
+      getPortfolioCategoryIdFromValue,
       getPortfolioItemBySlug,
       getRelatedPortfolioItems,
       mapPortfolioRows,
@@ -69,6 +70,7 @@ test("portfolio DB rows preserve content, database order, and valid images", asy
     assert.equal(items[0].showOnLanding, false);
     assert.equal(items[1].showOnLanding, true);
     assert.equal(items[0].categoryId, "leaflet-pamphlet");
+    assert.equal(getPortfolioCategoryIdFromValue("banner-book"), "banner-display");
     assert.equal(items[0].description, "안전한 & 본문");
     assert.doesNotMatch(items[0].description, /<|alert/);
     assert.deepEqual(items[0].detailImages.map((image) => image.src), [
@@ -117,6 +119,20 @@ test("portfolio DB rows preserve content, database order, and valid images", asy
     ], (path) => path);
 
     assert.deepEqual(malformed, []);
+
+    const unsupportedCategory = mapPortfolioRows([{
+      client_name: "지원 외 기업",
+      content: "본문",
+      content_mode: "markdown",
+      images: [{ alt: "", path: "portfolio/unsupported.webp" }],
+      pinned: false,
+      show_on_landing: false,
+      slug: "unsupported-category",
+      title: "지원 외 유형",
+      type: "촬영",
+    }], (path) => path);
+
+    assert.deepEqual(unsupportedCategory, []);
 
     const remoteOnly = mapPortfolioRows([{
       client_name: "외부 이미지 기업",

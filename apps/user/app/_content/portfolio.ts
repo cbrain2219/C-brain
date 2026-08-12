@@ -1,20 +1,16 @@
+import {
+  getProductCategory,
+  getProductCategoryLabel as getSharedProductCategoryLabel,
+  productCategories,
+} from "@repo/supabase/categories";
+import type {
+  ProductCategory,
+  ProductCategoryId,
+} from "@repo/supabase/categories";
 import type { TableRow } from "@repo/supabase/types";
 
-export type PortfolioCategoryId =
-  | "brochure-catalog"
-  | "leaflet-pamphlet"
-  | "poster-flyer"
-  | "banner-book"
-  | "business-card-envelope"
-  | "logo"
-  | "package-shopping-bag"
-  | "photo"
-  | "etc";
-
-export type PortfolioCategory = {
-  id: PortfolioCategoryId;
-  label: string;
-};
+export type PortfolioCategoryId = ProductCategoryId;
+export type PortfolioCategory = ProductCategory;
 
 export type PortfolioDetailImage = {
   alt: string;
@@ -47,17 +43,7 @@ export type PortfolioSeo = {
   title: string;
 };
 
-export const portfolioCategories = [
-  { id: "brochure-catalog", label: "브로슈어 · 카탈로그" },
-  { id: "leaflet-pamphlet", label: "리플렛 · 팜플렛" },
-  { id: "poster-flyer", label: "포스터 · 전단지" },
-  { id: "banner-book", label: "배너 · 족자 · 현수막" },
-  { id: "business-card-envelope", label: "명함 · 봉투" },
-  { id: "logo", label: "로고" },
-  { id: "package-shopping-bag", label: "패키지 · 쇼핑백" },
-  { id: "photo", label: "촬영" },
-  { id: "etc", label: "기타" },
-] as const satisfies readonly PortfolioCategory[];
+export const portfolioCategories = productCategories;
 
 export const landingPortfolioCategorySearchParam = "portfolioCategory";
 
@@ -103,17 +89,18 @@ export function parsePortfolioImages(value: unknown): StoredPortfolioImage[] {
     const normalizedPath = typeof path === "string" ? path.trim() : "";
 
     return normalizedPath && isPortfolioImagePath(normalizedPath)
-      ? [{ alt: typeof alt === "string" ? alt.trim() : "", path: normalizedPath }]
+      ? [
+          {
+            alt: typeof alt === "string" ? alt.trim() : "",
+            path: normalizedPath,
+          },
+        ]
       : [];
   });
 }
 
-function getPortfolioCategoryId(type: string): PortfolioCategoryId {
-  return (
-    portfolioCategories.find(
-      (category) => category.id === type || category.label === type,
-    )?.id ?? portfolioCategories[0].id
-  );
+function getPortfolioCategoryId(type: string): PortfolioCategoryId | undefined {
+  return getProductCategory(type)?.id;
 }
 
 function getPortfolioAssetUrl(
@@ -160,10 +147,11 @@ export function mapPortfolioRows(
   resolveAssetUrl: PortfolioAssetUrlResolver,
 ): PortfolioItem[] {
   return rows.flatMap((row) => {
+    const categoryId = getPortfolioCategoryId(row.type);
     const client = row.client_name?.trim() || "씨브레인";
     const storedImages = parsePortfolioImages(row.images);
 
-    if (!storedImages.length) return [];
+    if (!categoryId || !storedImages.length) return [];
 
     const detailImages = storedImages.map(({ alt, path }) => ({
       alt: alt || `${client} ${row.title} 제작 사례`,
@@ -177,7 +165,7 @@ export function mapPortfolioRows(
     return [
       {
         author: "씨브레인",
-        categoryId: getPortfolioCategoryId(row.type.trim()),
+        categoryId,
         client,
         description: description || defaultPortfolioDescription,
         detailImages,
@@ -192,30 +180,18 @@ export function mapPortfolioRows(
   });
 }
 
-const portfolioCategoryIds = new Set<PortfolioCategoryId>(
-  portfolioCategories.map((category) => category.id),
-);
-
-const portfolioCategoryLabelById = new Map(
-  portfolioCategories.map((category) => [category.id, category.label]),
-);
-
 export function getPortfolioCategoryIdFromValue(
   value: string | string[] | undefined,
 ): PortfolioCategoryId | undefined {
-  const categoryId = Array.isArray(value) ? value[0] : value;
+  const categoryValue = Array.isArray(value) ? value[0] : value;
 
-  if (!categoryId || !portfolioCategoryIds.has(categoryId as PortfolioCategoryId)) {
-    return undefined;
-  }
-
-  return categoryId as PortfolioCategoryId;
+  return categoryValue ? getProductCategory(categoryValue)?.id : undefined;
 }
 
 export function getPortfolioCategoryLabel(
   categoryId: PortfolioCategoryId,
 ): string {
-  return portfolioCategoryLabelById.get(categoryId) ?? "포트폴리오";
+  return getSharedProductCategoryLabel(categoryId);
 }
 
 export function getPortfolioDetailSourceFromValue(
@@ -269,7 +245,8 @@ export function getRelatedPortfolioItems(
   const sameCategoryItems = currentItem
     ? items.filter(
         (item) =>
-          item.slug !== currentSlug && item.categoryId === currentItem.categoryId,
+          item.slug !== currentSlug &&
+          item.categoryId === currentItem.categoryId,
       )
     : [];
   const fallbackItems = items.filter(
