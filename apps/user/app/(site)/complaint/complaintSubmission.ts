@@ -1,3 +1,5 @@
+import { productTypes } from "@repo/supabase/categories";
+
 import {
   COMPLAINT_ATTACHMENT_MIME_TYPES,
   MAX_COMPLAINT_ATTACHMENT_COUNT,
@@ -6,17 +8,7 @@ import {
 import { isEmailValid, isPhoneValid } from "./validation";
 import { complaintTypeOptions } from "./complaintTypes";
 
-export const serviceOptions = [
-  "브로슈어 · 카탈로그",
-  "리플렛 · 팜플렛",
-  "포스터 · 전단지",
-  "배너 · 족자 · 현수막",
-  "명함 · 봉투",
-  "로고",
-  "패키지 · 쇼핑백",
-  "촬영",
-  "기타",
-] as const;
+export const serviceOptions = productTypes;
 
 export type ComplaintSubmissionValues = {
   complaintType: string;

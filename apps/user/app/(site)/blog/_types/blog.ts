@@ -1,11 +1,8 @@
-export const BLOG_CATEGORY_VALUES = [
-  "브로슈어·카탈로그",
-  "리플렛·팜플렛",
-  "디자인 실무팁",
-  "인쇄 실무팁",
-] as const;
+import type { ProductType } from "@repo/supabase/categories";
 
-export type BlogCategory = (typeof BLOG_CATEGORY_VALUES)[number];
+export { productTypes as BLOG_CATEGORY_VALUES } from "@repo/supabase/categories";
+
+export type BlogCategory = ProductType;
 
 export type BlogContentBlock =
   | {

@@ -47,6 +47,10 @@ const complaintTypesPath = new URL(
   import.meta.url,
 );
 const constantsPath = new URL("../constants/complaint.ts", import.meta.url);
+const categoriesPath = new URL(
+  "../../../packages/supabase/src/categories.ts",
+  import.meta.url,
+);
 const formPath = new URL(
   "../app/(site)/complaint/ComplaintForm.tsx",
   import.meta.url,
@@ -61,15 +65,21 @@ const uploadRoutePath = new URL(
 );
 
 async function importSubmissionModule() {
-  const [constantsSource, submissionSource, validationSource, typesSource] =
-    await Promise.all([
-      readFile(constantsPath, "utf8"),
-      readFile(submissionPath, "utf8"),
-      readFile(validationPath, "utf8"),
-      readFile(complaintTypesPath, "utf8"),
-    ]);
-  const source = `${constantsSource}\n${validationSource}\n${typesSource}\n${submissionSource.replace(
-    /import \{[\s\S]*?\} from "(?:\.\.\/\.\.\/\.\.\/constants\/complaint|\.\/validation|\.\/complaintTypes)";\n/g,
+  const [
+    categoriesSource,
+    constantsSource,
+    submissionSource,
+    validationSource,
+    typesSource,
+  ] = await Promise.all([
+    readFile(categoriesPath, "utf8"),
+    readFile(constantsPath, "utf8"),
+    readFile(submissionPath, "utf8"),
+    readFile(validationPath, "utf8"),
+    readFile(complaintTypesPath, "utf8"),
+  ]);
+  const source = `${categoriesSource}\n${constantsSource}\n${validationSource}\n${typesSource}\n${submissionSource.replace(
+    /import \{[\s\S]*?\} from "(?:@repo\/supabase\/categories|\.\.\/\.\.\/\.\.\/constants\/complaint|\.\/validation|\.\/complaintTypes)";\n/g,
     "",
   )}`;
   const ts = await import("typescript");
@@ -134,7 +144,10 @@ test("complaint payload keeps file bytes out of the server request", async () =>
     false,
   );
   assert.equal(uploadRequest.attachments[0].name, "증빙.png");
-  assert.equal(getComplaintUploadPrefix(submissionId), `complaints/${submissionId}`);
+  assert.equal(
+    getComplaintUploadPrefix(submissionId),
+    `complaints/${submissionId}`,
+  );
   assert.equal("arrayBuffer" in uploadRequest.attachments[0], false);
   assert.equal(parsed.ok, true);
   assert.equal("verificationCode" in payload.values, false);
@@ -262,10 +275,7 @@ test("complaint form uploads directly with a signed token before JSON submission
 
 test("complaint mapping remains unverified", async () => {
   const { toComplaintInput } = await importSubmissionModule();
-  const input = toComplaintInput(
-    validValues(),
-    "2026-07-21T00:00:00.000Z",
-  );
+  const input = toComplaintInput(validValues(), "2026-07-21T00:00:00.000Z");
 
   assert.equal(input.status, "received");
   assert.equal(input.phone_verified, false);

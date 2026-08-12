@@ -1,6 +1,7 @@
 export * from "./admin.ts";
 export * from "./auth.ts";
 export * from "./client.ts";
+export * from "./categories.ts";
 export * from "./content.ts";
 export * from "./env.ts";
 export * from "./faqs.ts";

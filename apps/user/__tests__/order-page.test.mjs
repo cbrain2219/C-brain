@@ -105,7 +105,7 @@ test("order page route, content, responsive styles, and navigation are wired", (
   const servicesArraySource = extractBetween(
     servicesSource,
     "export const services",
-    "] as const satisfies ReadonlyArray<ServiceItem>;",
+    ") satisfies ReadonlyArray<ServiceItem>;",
   );
   const serviceCardsSource = read("apps/user/app/_components/ServiceCards.tsx");
   const orderFlowRule = extractBlock(stylesSource, ".orderFlow");
@@ -1012,7 +1012,7 @@ test("order page route, content, responsive styles, and navigation are wired", (
   );
   assert.match(contentSource, /"brochure-catalog"/);
   assert.match(contentSource, /"leaflet-pamphlet"/);
-  assert.match(contentSource, /"package-shopping-bag"/);
+  assert.doesNotMatch(contentSource, /"package-shopping-bag"/);
   assert.match(contentSource, /디자인 \+ 인쇄/);
   assert.match(contentSource, /formatOrderQuantity/);
   assert.match(
@@ -1021,17 +1021,20 @@ test("order page route, content, responsive styles, and navigation are wired", (
   );
   assert.match(
     servicesSource,
-    /const directServices = directOrderServiceIds\.map/,
+    /export const services = productCategories\.map/,
   );
   assert.match(servicesSource, /export function getDirectServiceItemById/);
   assert.match(
     servicesSource,
     /service\.id === serviceId && !service\.isQuote/,
   );
-  assert.match(servicesArraySource, /\.\.\.directServices/);
-  assert.equal(countMatches(servicesArraySource, /title:/g), 2);
-  assert.equal(countMatches(servicesArraySource, /id:/g), 2);
-  assert.match(contentSource, /name:\s*"브로슈어 · 카탈로그"/);
+  assert.match(servicesArraySource, /title:\s*category\.label/);
+  assert.match(servicesArraySource, /id:\s*category\.id/);
+  assert.doesNotMatch(servicesArraySource, /photo-shoot|id:\s*"etc"/);
+  assert.match(
+    contentSource,
+    /name:\s*getProductCategoryLabel\("brochure-catalog"\)/,
+  );
   assert.match(serviceCardsSource, /serviceGrid/);
   assert.match(serviceCardsSource, /serviceCard/);
   assert.match(serviceCardsSource, /견적 후 주문\(카카오톡\)/);

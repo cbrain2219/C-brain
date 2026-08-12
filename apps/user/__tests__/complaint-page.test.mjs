@@ -137,7 +137,10 @@ test("complaint page exposes the required intake form content", async () => {
 test("complaint container fills the one-column layout width", async () => {
   const stylesSource = await readFile(stylesPath, "utf8");
   const baseComplaintInner = extractCssBlock(stylesSource, ".complaintInner");
-  const tabletMedia = extractCssBlock(stylesSource, "@media (min-width: 640px)");
+  const tabletMedia = extractCssBlock(
+    stylesSource,
+    "@media (min-width: 640px)",
+  );
   const desktopMedia = extractCssBlock(
     stylesSource,
     "@media (min-width: 1080px)",
@@ -154,10 +157,7 @@ test("complaint container fills the one-column layout width", async () => {
     desktopMedia,
     /\.complaintInner\s*\{[\s\S]*?width:\s*min\(100%,\s*640px\)/,
   );
-  assert.match(
-    pcMedia,
-    /\.complaintInner\s*\{[\s\S]*?max-width:\s*1360px;/,
-  );
+  assert.match(pcMedia, /\.complaintInner\s*\{[\s\S]*?max-width:\s*1360px;/);
 });
 
 test("complaint page includes the fixed mobile header in compact top padding", async () => {
@@ -166,7 +166,10 @@ test("complaint page includes the fixed mobile header in compact top padding", a
     stylesSource,
     ".complaintSection",
   );
-  const tabletMedia = extractCssBlock(stylesSource, "@media (min-width: 640px)");
+  const tabletMedia = extractCssBlock(
+    stylesSource,
+    "@media (min-width: 640px)",
+  );
   const desktopMedia = extractCssBlock(
     stylesSource,
     "@media (min-width: 1080px)",
@@ -208,28 +211,11 @@ test("complaint text inputs use baseline-aligned compact placeholders", async ()
 
 test("complaint service options match the service cards in visual order", async () => {
   const submissionSource = await readFile(complaintSubmissionPath, "utf8");
-  const serviceOptionsSource = submissionSource.match(
-    /const serviceOptions = \[([\s\S]*?)\] as const;/,
+  assert.match(
+    submissionSource,
+    /import \{ productTypes \} from "@repo\/supabase\/categories"/,
   );
-
-  assert.ok(serviceOptionsSource);
-  assert.deepEqual(
-    Array.from(
-      serviceOptionsSource[1].matchAll(/"([^"]+)"/g),
-      (match) => match[1],
-    ),
-    [
-      "브로슈어 · 카탈로그",
-      "리플렛 · 팜플렛",
-      "포스터 · 전단지",
-      "배너 · 족자 · 현수막",
-      "명함 · 봉투",
-      "로고",
-      "패키지 · 쇼핑백",
-      "촬영",
-      "기타",
-    ],
-  );
+  assert.match(submissionSource, /export const serviceOptions = productTypes/);
 });
 
 test("complaint privacy consent starts unchecked and links to its notice page", async () => {
@@ -618,7 +604,8 @@ test("footer contains current C-Brain business information", async () => {
 
 test("footer social links point to C-Brain channels", async () => {
   const footerSource = await readFile(footerPath, "utf8");
-  const { companySocialLinks } = await importTypescriptModule(companyContentPath);
+  const { companySocialLinks } =
+    await importTypescriptModule(companyContentPath);
 
   assert.deepEqual(
     companySocialLinks.map((link) => link.href),
@@ -631,9 +618,18 @@ test("footer social links point to C-Brain channels", async () => {
 
   assert.match(footerSource, /companySocialLinks/);
   assert.match(footerSource, /href=\{social\.href\}/);
-  assert.doesNotMatch(footerSource, /https:\/\/instagram\.com\/cbrain_design_group/);
-  assert.doesNotMatch(footerSource, /https:\/\/blog\.naver\.com\/cbrain_design_group/);
-  assert.doesNotMatch(footerSource, /https:\/\/www\.youtube\.com\/@CreateDesigngroup/);
+  assert.doesNotMatch(
+    footerSource,
+    /https:\/\/instagram\.com\/cbrain_design_group/,
+  );
+  assert.doesNotMatch(
+    footerSource,
+    /https:\/\/blog\.naver\.com\/cbrain_design_group/,
+  );
+  assert.doesNotMatch(
+    footerSource,
+    /https:\/\/www\.youtube\.com\/@CreateDesigngroup/,
+  );
   assert.match(footerSource, /target="_blank"/);
   assert.match(footerSource, /rel="noopener noreferrer"/);
 });

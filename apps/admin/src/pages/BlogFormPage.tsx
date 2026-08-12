@@ -1,4 +1,5 @@
 import { createPost, deletePost, getAdminPost, listAdminPosts, updatePost } from '@repo/supabase'
+import { isProductType, productTypes } from '@repo/supabase/categories'
 import { useEffect, useId, useRef, useState } from 'react'
 import type { ChangeEvent, DragEvent, FormEvent } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
@@ -68,7 +69,6 @@ export function BlogFormPage() {
   const { blogId } = useParams<{ blogId: string }>()
   const isEditing = blogId !== undefined
   const [form, setForm] = useState<BlogFormState>(createInitialBlogForm)
-  const [blogTypes, setBlogTypes] = useState<string[]>([])
   const [blogSettingCounts, setBlogSettingCounts] =
     useState<BlogSettingCounts>(emptyBlogSettingCounts)
   const [slugError, setSlugError] = useState('')
@@ -99,15 +99,11 @@ export function BlogFormPage() {
 
         if (!isCurrent) return
 
-        setBlogTypes([...new Set(posts.map((item) => item.type))])
         setBlogSettingCounts(getBlogSettingCounts(posts))
 
         if (post) {
           setForm(toBlogFormState(post, getPublicAssetUrl(post.thumbnail_path)))
           setPersistedThumbnailPath(post.thumbnail_path)
-          setBlogTypes((current) =>
-            current.includes(post.type) ? current : [...current, post.type],
-          )
         } else {
           setForm(createInitialBlogForm())
           setPersistedThumbnailPath(null)
@@ -119,7 +115,6 @@ export function BlogFormPage() {
           setLoadError('블로그 정보를 불러오지 못했습니다.')
           toast.error('블로그 정보를 불러오지 못했습니다.')
         } else {
-          setBlogTypes([])
           setBlogSettingCounts(emptyBlogSettingCounts)
           toast.error('기존 블로그 설정 현황을 불러오지 못했습니다.')
         }
@@ -149,8 +144,10 @@ export function BlogFormPage() {
   function commitBlogType(nextType: string) {
     const type = nextType.trim()
 
-    if (!type) return
-    if (!blogTypes.includes(type)) setBlogTypes((current) => [...current, type])
+    if (!isProductType(type)) {
+      setTypeError('고정된 상품 유형 중 하나를 선택해주세요.')
+      return
+    }
 
     updateForm('type', type)
     setTypeError('')
@@ -281,7 +278,7 @@ export function BlogFormPage() {
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
 
-    if (!form.type) {
+    if (!isProductType(form.type)) {
       setTypeError('블로그 유형을 선택해주세요.')
       window.requestAnimationFrame(() => {
         document.getElementById(formId + '-type')?.focus()
@@ -367,7 +364,6 @@ export function BlogFormPage() {
       <label className="blog-form__field" htmlFor={formId + '-type'}>
         <span className="blog-form__label">블로그 유형</span>
         <AdminTypeCombobox
-          allowCustomValue
           errorMessage={typeError}
           inputId={formId + '-type'}
           name="type"
@@ -376,7 +372,7 @@ export function BlogFormPage() {
             setTypeError('')
           }}
           onCommit={commitBlogType}
-          options={blogTypes}
+          options={productTypes}
           placeholder="블로그유형을 선택해주세요."
           value={form.type}
         />

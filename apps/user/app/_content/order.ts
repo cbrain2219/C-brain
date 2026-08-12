@@ -1,3 +1,6 @@
+import { getProductCategoryLabel } from "@repo/supabase/categories";
+import type { ProductCategoryId } from "@repo/supabase/categories";
+
 type OrderStepState = "active" | "inactive";
 type OrderMethodTone = "brand" | "quote";
 
@@ -368,7 +371,7 @@ export const orderProductRegistrations = {
   "brochure-catalog": createAdminOrderProduct({
     design_print_estimate: 850000,
     id: "brochure-catalog",
-    name: "브로슈어 · 카탈로그",
+    name: getProductCategoryLabel("brochure-catalog"),
     order_quantities: standardOrderQuantities,
     page_counts: standardPageCounts,
     paper_types: standardPaperTypes,
@@ -379,7 +382,7 @@ export const orderProductRegistrations = {
   "leaflet-pamphlet": createAdminOrderProduct({
     design_print_estimate: 370000,
     id: "leaflet-pamphlet",
-    name: "리플렛 · 팜플렛",
+    name: getProductCategoryLabel("leaflet-pamphlet"),
     order_quantities: standardOrderQuantities,
     page_counts: [2, 4, 6],
     paper_types: ["아트지 150g", "스노우지 180g"],
@@ -390,7 +393,7 @@ export const orderProductRegistrations = {
   "poster-flyer": createAdminOrderProduct({
     design_print_estimate: 130000,
     id: "poster-flyer",
-    name: "포스터 · 전단지",
+    name: getProductCategoryLabel("poster-flyer"),
     order_quantities: [100, 300, 500, 1000],
     page_counts: [1, 2, 3],
     paper_types: ["일반지 (스노우지 유광)", "고급지 250g"],
@@ -401,7 +404,7 @@ export const orderProductRegistrations = {
   "banner-display": createAdminOrderProduct({
     design_print_estimate: 80000,
     id: "banner-display",
-    name: "배너 · 족자 · 현수막",
+    name: getProductCategoryLabel("banner-display"),
     order_quantities: [1, 3, 5, 10],
     page_counts: [1, 2, 3],
     paper_types: ["PET 배너", "패브릭 현수막"],
@@ -412,7 +415,7 @@ export const orderProductRegistrations = {
   "business-card-envelope": createAdminOrderProduct({
     design_print_estimate: 50000,
     id: "business-card-envelope",
-    name: "명함 · 봉투",
+    name: getProductCategoryLabel("business-card-envelope"),
     order_quantities: [200, 500, 1000, 2000],
     page_counts: [1, 2, 3],
     paper_types: ["일반지", "고급지"],
@@ -423,7 +426,7 @@ export const orderProductRegistrations = {
   logo: createAdminOrderProduct({
     design_print_estimate: 50000,
     id: "logo",
-    name: "로고",
+    name: getProductCategoryLabel("logo"),
     order_quantities: [1, 2, 3, 4],
     page_counts: [1, 2, 3],
     paper_types: ["디지털 파일", "가이드 포함"],
@@ -431,18 +434,7 @@ export const orderProductRegistrations = {
     type: "브랜드의 첫인상을 결정하는 로고. 전략적 기획 + 감각적 디자인.",
     unitPricesByQuantity: [360000, 260000, 226667, 210000],
   }),
-  "package-shopping-bag": createAdminOrderProduct({
-    design_print_estimate: 160000,
-    id: "package-shopping-bag",
-    name: "패키지 · 쇼핑백",
-    order_quantities: standardOrderQuantities,
-    page_counts: [1, 2, 3],
-    paper_types: ["일반 패키지지", "고급 패키지지"],
-    planning_estimate: 100000,
-    type: "브랜드 아이덴티티를 담은 패키지 디자인 및 쇼핑백 제작.",
-    unitPricesByQuantity: [1240, 940, 740, 663],
-  }),
-} as const satisfies Record<string, AdminOrderProduct>;
+} as const satisfies Record<ProductCategoryId, AdminOrderProduct>;
 
 export type DirectOrderServiceId = keyof typeof orderProductRegistrations;
 
