@@ -6,7 +6,7 @@ import { Icon } from "../../components/Icon";
 import { SectionLayout } from "../../components/SectionLayout";
 import { KAKAO_CHANNEL_URL } from "../_content/contact";
 import { getOrderDirectServiceHref } from "../_content/order";
-import { services } from "../_content/services";
+import type { ServiceItem } from "../_content/services";
 import styles from "../page.module.css";
 
 const textButtonStyle: CSSProperties = {
@@ -37,7 +37,11 @@ const consultButtonStyle: CSSProperties = {
   letterSpacing: "-0.21px",
 };
 
-export function ServicesSection() {
+type ServicesSectionProps = {
+  services: readonly ServiceItem[];
+};
+
+export function ServicesSection({ services }: ServicesSectionProps) {
   return (
     <SectionLayout
       badge="서비스"

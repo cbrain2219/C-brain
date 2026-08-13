@@ -1,4 +1,5 @@
 import type { PublishStatus, TableInsert, TableRow } from '@repo/supabase/types'
+import { blogAllCategory, normalizeBlogCategory } from '@repo/supabase/categories'
 import {
   filterContentRows,
   formatAdminDate,
@@ -104,7 +105,7 @@ export function toBlogFormState(
     thumbnailPath: post.thumbnail_path,
     thumbnailPreviewUrl,
     title: post.title,
-    type: post.type,
+    type: normalizeBlogCategory(post.type),
   }
 }
 
@@ -117,9 +118,9 @@ export function toBlogMutationInput(
   const publishedAt = toPublishedAt(form.publishedAt)
   const slug = form.slug.trim()
   const title = form.title.trim()
-  const type = form.type.trim()
+  const type = normalizeBlogCategory(form.type)
 
-  if (!content || !publishedAt || !slug || !title || !type) {
+  if (!content || !publishedAt || !slug || !title || !type || type === blogAllCategory) {
     throw new Error('블로그 정보를 확인해주세요.')
   }
 
@@ -158,7 +159,7 @@ export function toBlogListRow(post: TableRow<'posts'>): BlogListRow {
     publicationStatus,
     status: publicationStatus === 'draft' ? '임시저장' : '게시됨',
     title: post.title,
-    type: post.type,
+    type: normalizeBlogCategory(post.type),
     views: new Intl.NumberFormat('ko-KR').format(post.view_count),
   }
 }

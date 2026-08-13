@@ -65,7 +65,7 @@ test("public LinkPay is a reusable payment-link template", () => {
   assert.match(formSource, /function formatCustomerFieldValue/);
   assert.match(formSource, /inputMode:\s*"numeric"/);
   assert.match(formSource, /maxLength:\s*13/);
-  assert.match(formSource, /placeholder:\s*"010-1234-1234"/);
+  assert.match(formSource, /placeholder:\s*"전화번호를 입력해주세요\."/);
   assert.match(
     formSource,
     /inputMode=\{"inputMode" in field \? field\.inputMode : undefined\}/,

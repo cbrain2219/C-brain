@@ -7,26 +7,43 @@ const portfolioFormPath = new URL(
   import.meta.url,
 )
 const blogFormPath = new URL('../src/pages/BlogFormPage.tsx', import.meta.url)
+const blogListPath = new URL('../src/pages/BlogPage.tsx', import.meta.url)
 
-test('portfolio and blog forms use the fixed product category registry', async () => {
+test('portfolio form remains limited to the fixed product category registry', async () => {
   const [portfolioSource, blogSource] = await Promise.all([
     readFile(portfolioFormPath, 'utf8'),
     readFile(blogFormPath, 'utf8'),
   ])
 
-  for (const source of [portfolioSource, blogSource]) {
-    assert.match(
-      source,
-      /import \{ isProductType, productTypes \} from '@repo\/supabase\/categories'/,
-    )
-    assert.match(source, /options=\{productTypes\}/)
-    assert.match(source, /if \(!isProductType\(form\.type\)\)/)
-    assert.doesNotMatch(source, /allowCustomValue/)
-  }
+  assert.match(
+    portfolioSource,
+    /import \{ isProductType, productTypes \} from '@repo\/supabase\/categories'/,
+  )
+  assert.match(portfolioSource, /options=\{productTypes\}/)
+  assert.match(portfolioSource, /if \(!isProductType\(form\.type\)\)/)
+  assert.doesNotMatch(portfolioSource, /allowCustomValue/)
 
   assert.doesNotMatch(
     portfolioSource,
     /defaultPortfolioTypes|portfolioTypes|setPortfolioTypes/,
   )
-  assert.doesNotMatch(blogSource, /blogTypes|setBlogTypes/)
+  assert.doesNotMatch(blogSource, /if \(!isProductType\(form\.type\)\)/)
+})
+
+test('blog form combines the fixed categories with reusable custom categories', async () => {
+  const [formSource, listSource] = await Promise.all([
+    readFile(blogFormPath, 'utf8'),
+    readFile(blogListPath, 'utf8'),
+  ])
+
+  assert.match(formSource, /getBlogCategoryOptions/)
+  assert.match(formSource, /setBlogTypes\(getBlogCategoryOptions\(posts\.map/)
+  assert.match(formSource, /allowCustomValue/)
+  assert.match(formSource, /options=\{blogTypes\}/)
+  assert.match(formSource, /normalizeBlogCategory\(nextType\)/)
+  assert.doesNotMatch(formSource, /isProductType/)
+  assert.match(
+    listSource,
+    /options: \[blogAllCategory, \.\.\.getBlogCategoryOptions\(rows\.map/,
+  )
 })

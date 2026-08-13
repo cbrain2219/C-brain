@@ -15,6 +15,8 @@ export const productTypes = productCategories.map(
   ({ label }) => label,
 ) as readonly ProductType[];
 
+export const blogAllCategory = "전체" as const;
+
 const productCategoryById = new Map(
   productCategories.map((category) => [category.id, category] as const),
 );
@@ -43,6 +45,37 @@ export function getProductCategory(value: string): ProductCategory | undefined {
     productCategoryById.get(categoryId as ProductCategoryId) ??
     productCategoryByLabel.get(normalizeProductType(trimmedValue))
   );
+}
+
+export function normalizeBlogCategory(value: string) {
+  const normalizedValue = normalizeProductType(value);
+
+  return getProductCategory(normalizedValue)?.label ?? normalizedValue;
+}
+
+export function getBlogCategoryOptions(values: readonly string[]) {
+  const categories: string[] = [...productTypes];
+  const seenCategories = new Set(
+    categories.map((category) => category.toLocaleLowerCase("ko-KR")),
+  );
+
+  for (const value of values) {
+    const category = normalizeBlogCategory(value);
+    const categoryKey = category.toLocaleLowerCase("ko-KR");
+
+    if (
+      !category ||
+      category === blogAllCategory ||
+      seenCategories.has(categoryKey)
+    ) {
+      continue;
+    }
+
+    categories.push(category);
+    seenCategories.add(categoryKey);
+  }
+
+  return categories;
 }
 
 export function getProductCategoryLabel(

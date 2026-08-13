@@ -14,6 +14,8 @@
     "./files": "./src/files.ts",
     "./inquiries": "./src/inquiries.ts",
     "./portfolio": "./src/portfolio.ts",
+    "./product-configuration": "./src/productConfiguration.ts",
+    "./product-catalog": "./src/productCatalog.ts",
     "./reviews": "./src/reviews.ts",
     "./server": "./src/server.ts",
     "./services": "./src/services.ts",

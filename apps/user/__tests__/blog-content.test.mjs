@@ -8,16 +8,25 @@ const blogModuleUrl = new URL(
   "../app/(site)/blog/_data/blogPosts.ts",
   import.meta.url,
 ).href;
+const blogCategoriesModuleUrl = new URL(
+  "../app/(site)/blog/_constants/blogCategories.ts",
+  import.meta.url,
+).href;
 
 test("blog DB rows map to the existing public content model", async () => {
   const check = `
     import assert from "node:assert/strict";
     const blog = await import(${JSON.stringify(blogModuleUrl)});
+    const blogCategories = await import(${JSON.stringify(blogCategoriesModuleUrl)});
     const {
       getBlogPostBySlug,
       getRelatedBlogPosts,
       mapBlogRows,
     } = blog;
+    const {
+      getBlogCategories,
+      resolveBlogCategory,
+    } = blogCategories;
 
     const posts = mapBlogRows([
       {
@@ -87,6 +96,19 @@ test("blog DB rows map to the existing public content model", async () => {
       getRelatedBlogPosts("first-post", posts, 1),
       [posts[1]],
     );
+    const categories = getBlogCategories(posts);
+    assert.deepEqual(categories, [
+      "전체",
+      "브로슈어 · 카탈로그",
+      "리플렛 · 팜플렛",
+      "포스터 · 전단지",
+      "배너 · 족자 · 현수막",
+      "명함 · 봉투",
+      "로고",
+      "인쇄 실무팁",
+    ]);
+    assert.equal(resolveBlogCategory("인쇄 실무팁", categories), "인쇄 실무팁");
+    assert.equal(resolveBlogCategory("없는 카테고리", categories), "전체");
   `;
 
   await execFileAsync(

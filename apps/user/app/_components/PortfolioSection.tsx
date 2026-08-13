@@ -150,7 +150,7 @@ export function PortfolioSection({
               />
               <div className={styles.portfolioOverlay}>
                 <h3>{item.client}</h3>
-                <p>{item.title}</p>
+                <p>{item.description}</p>
               </div>
             </Link>
           ))}

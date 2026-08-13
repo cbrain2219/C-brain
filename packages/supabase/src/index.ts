@@ -10,6 +10,8 @@ export * from "./inquiries.ts";
 export * from "./paymentLinks.ts";
 export * from "./payments.ts";
 export * from "./portfolio.ts";
+export * from "./productConfiguration.ts";
+export * from "./productCatalog.ts";
 export * from "./products.ts";
 export * from "./reviews.ts";
 export * from "./refunds.ts";

@@ -37,13 +37,17 @@ import {
   getComplaintTypeDescription,
 } from "./complaintTypes";
 import {
+  COMPLAINT_PHONE_INPUT_MAX_LENGTH,
+  COMPLAINT_PHONE_INPUT_PATTERN,
   COMPLAINT_VERIFICATION_CODE_INPUT_PATTERN,
   COMPLAINT_VERIFICATION_CODE_LENGTH,
+  formatComplaintPhoneNumber,
   isComplaintRequiredFieldValid,
   requiredComplaintFieldNames,
   type RequiredComplaintFieldName,
 } from "./validation";
 import {
+  normalizePhoneNumber,
   requestPhoneVerification,
   type PhoneVerificationResult,
 } from "./phoneVerification";
@@ -76,13 +80,13 @@ const complaintInputPlaceholders = {
   default: {
     email: "답변 받으실 이메일 주소를 입력해주세요.",
     name: "성함을 입력해주세요.",
-    phone: "휴대폰 번호를 입력해주세요.(‘-’ 제외)",
+    phone: "전화번호를 입력해주세요.",
     verificationCode: `인증번호 ${COMPLAINT_VERIFICATION_CODE_LENGTH}자리를 입력해주세요.`,
   },
   compact: {
     email: "이메일 주소를 입력...",
     name: "성함을 입력...",
-    phone: "휴대폰 번...",
+    phone: "전화번호를 입력해주세요.",
     verificationCode: `인증번호 ${COMPLAINT_VERIFICATION_CODE_LENGTH}자리...`,
   },
 } as const;
@@ -111,7 +115,8 @@ function getComplaintPlaceholderFitsInput(
   ].join(" ");
 
   const horizontalPadding =
-    Number.parseFloat(style.paddingLeft) + Number.parseFloat(style.paddingRight);
+    Number.parseFloat(style.paddingLeft) +
+    Number.parseFloat(style.paddingRight);
   const availableWidth = input.clientWidth - horizontalPadding;
 
   return context.measureText(placeholder).width <= availableWidth;
@@ -262,12 +267,24 @@ export function ComplaintForm() {
     });
   };
 
+  const nameInputRegistration = register("name", {
+    validate: (value) => isComplaintRequiredFieldValid("name", value),
+  });
+  const emailInputRegistration = register("email", {
+    validate: (value) => isComplaintRequiredFieldValid("email", value),
+  });
+  const phoneInputRegistration = register("phone", {
+    validate: (value) => isComplaintRequiredFieldValid("phone", value),
+  });
+
   const handlePhoneChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const phone = event.currentTarget.value;
+    const phone = formatComplaintPhoneNumber(event.currentTarget.value);
+    event.currentTarget.value = phone;
+    void phoneInputRegistration.onChange(event);
 
     if (
       phoneVerificationResult &&
-      phone !== phoneVerificationResult.normalizedPhone
+      normalizePhoneNumber(phone) !== phoneVerificationResult.normalizedPhone
     ) {
       setPhoneVerificationResult(null);
       resetField("verificationCode");
@@ -278,16 +295,6 @@ export function ComplaintForm() {
     }
   };
 
-  const nameInputRegistration = register("name", {
-    validate: (value) => isComplaintRequiredFieldValid("name", value),
-  });
-  const emailInputRegistration = register("email", {
-    validate: (value) => isComplaintRequiredFieldValid("email", value),
-  });
-  const phoneInputRegistration = register("phone", {
-    onChange: handlePhoneChange,
-    validate: (value) => isComplaintRequiredFieldValid("phone", value),
-  });
   const verificationCodeInputRegistration = register("verificationCode", {
     validate: (value) =>
       !isPhoneVerificationRequested ||
@@ -453,7 +460,7 @@ export function ComplaintForm() {
     try {
       const result = await requestPhoneVerification({ phone });
 
-      if (getValues("phone") === result.normalizedPhone) {
+      if (normalizePhoneNumber(getValues("phone")) === result.normalizedPhone) {
         setPhoneVerificationResult(result);
       }
     } finally {
@@ -611,6 +618,9 @@ export function ComplaintForm() {
                   aria-invalid={isFieldInvalid("phone")}
                   autoComplete="tel"
                   inputMode="numeric"
+                  maxLength={COMPLAINT_PHONE_INPUT_MAX_LENGTH}
+                  onChange={handlePhoneChange}
+                  pattern={COMPLAINT_PHONE_INPUT_PATTERN}
                   placeholder={getComplaintInputPlaceholder("phone")}
                   ref={(node) => {
                     phoneInputRegistration.ref(node);

@@ -10,15 +10,18 @@ import { Metrics } from "../_components/Metrics";
 import { PortfolioSection } from "../_components/PortfolioSection";
 import { ServicesSection } from "../_components/ServicesSection";
 import { landingFaqs } from "../_content/faqs";
+import { getLandingCustomerTestimonials } from "../_content/customerReviews";
 import {
   getPortfolioCategoryIdFromValue,
   landingPortfolioCategorySearchParam,
 } from "../_content/portfolio";
 import { createPageMetadata } from "../_content/seo";
 import { createHomeStructuredData } from "../_content/structured-data";
+import { createServiceItems } from "../_content/services";
 import {
   getPublishedBlogPosts,
   getPublishedPortfolioItems,
+  getPublishedOrderProducts,
 } from "../../lib/publicContent";
 
 export const metadata = createPageMetadata("home");
@@ -32,10 +35,14 @@ export default async function Home({ searchParams }: HomeProps) {
     resolvedSearchParams,
     publishedBlogPosts,
     publishedPortfolioItems,
+    landingCustomerTestimonials,
+    publishedOrderProducts,
   ] = await Promise.all([
     searchParams,
     getPublishedBlogPosts(),
     getPublishedPortfolioItems(),
+    getLandingCustomerTestimonials(),
+    getPublishedOrderProducts(),
   ]);
   const initialPortfolioCategoryId = getPortfolioCategoryIdFromValue(
     resolvedSearchParams?.[landingPortfolioCategorySearchParam],
@@ -50,9 +57,9 @@ export default async function Home({ searchParams }: HomeProps) {
         initialCategoryId={initialPortfolioCategoryId}
         items={publishedPortfolioItems}
       />
-      <ServicesSection />
+      <ServicesSection services={createServiceItems(publishedOrderProducts)} />
       <AboutSection />
-      <CustomerReviewSection />
+      <CustomerReviewSection reviews={landingCustomerTestimonials} />
       <BlogSection posts={publishedBlogPosts} />
       <CtaSection
         badge="지금 바로 시작하세요"

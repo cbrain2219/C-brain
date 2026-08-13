@@ -34,7 +34,10 @@ const paths = {
   portfolio: new URL("../app/(site)/portfolio/page.tsx", import.meta.url),
   about: new URL("../app/(site)/about/page.tsx", import.meta.url),
   reviews: new URL("../app/(site)/reviews/page.tsx", import.meta.url),
-  order: new URL("../app/(site)/order/page.tsx", import.meta.url),
+  order: new URL(
+    "../app/(site)/order/OrderPageClient.tsx",
+    import.meta.url,
+  ),
 };
 
 test("shared PageHero requires descriptive background alternative text", async () => {

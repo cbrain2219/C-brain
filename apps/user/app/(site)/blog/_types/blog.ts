@@ -1,8 +1,4 @@
-import type { ProductType } from "@repo/supabase/categories";
-
-export { productTypes as BLOG_CATEGORY_VALUES } from "@repo/supabase/categories";
-
-export type BlogCategory = ProductType;
+export type BlogCategory = string;
 
 export type BlogContentBlock =
   | {
@@ -34,7 +30,7 @@ export type BlogPostDetail = {
 export type BlogPost = {
   id: string;
   slug: string;
-  category: string;
+  category: BlogCategory;
   title: string;
   summary: string;
   publishedAt: string;

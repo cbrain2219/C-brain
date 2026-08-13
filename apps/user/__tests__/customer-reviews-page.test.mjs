@@ -4,6 +4,7 @@ import { stat, readFile } from "node:fs/promises";
 import test from "node:test";
 
 const pagePath = new URL("../app/(site)/reviews/page.tsx", import.meta.url);
+const homePagePath = new URL("../app/(site)/page.tsx", import.meta.url);
 const testimonialListPath = new URL(
   "../app/(site)/reviews/CustomerTestimonialList.tsx",
   import.meta.url,
@@ -207,6 +208,7 @@ test("shared testimonial cards use compact 20px padding", async () => {
 test("review list, detail, and landing load published Supabase rows", async () => {
   const contentSource = await readFile(contentPath, "utf8");
   const pageSource = await readFile(pagePath, "utf8");
+  const homePageSource = await readFile(homePagePath, "utf8");
   const landingSource = await readFile(landingSectionPath, "utf8");
   const detailSource = await readFile(
     new URL("../app/(site)/reviews/[slug]/page.tsx", import.meta.url),
@@ -224,7 +226,16 @@ test("review list, detail, and landing load published Supabase rows", async () =
   assert.doesNotMatch(contentSource, /export const customerTestimonials\s*=\s*\[/);
   assert.doesNotMatch(contentSource, /export const customerInterviewRecords\s*=\s*\[/);
   assert.match(pageSource, /await getCustomerReviewPageData\(\)/);
-  assert.match(landingSource, /await getLandingCustomerTestimonials\(\)/);
+  assert.match(
+    homePageSource,
+    /Promise\.all\(\[\s*searchParams,\s*getPublishedBlogPosts\(\),\s*getPublishedPortfolioItems\(\),\s*getLandingCustomerTestimonials\(\),\s*getPublishedOrderProducts\(\),\s*\]\)/,
+  );
+  assert.match(
+    homePageSource,
+    /<CustomerReviewSection reviews=\{landingCustomerTestimonials\} \/>/,
+  );
+  assert.match(landingSource, /reviews: readonly CustomerTestimonial\[\]/);
+  assert.doesNotMatch(landingSource, /getLandingCustomerTestimonials\(\)/);
   assert.match(detailSource, /getPublishedCustomerInterviewDetailBySlug/);
   assert.match(detailSource, /await getPublishedCustomerInterviewDetailBySlug\(slug\)/);
   assert.doesNotMatch(detailSource, /getCustomerInterviewDetailBySlug/);

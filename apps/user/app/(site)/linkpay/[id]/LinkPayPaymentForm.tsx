@@ -95,7 +95,7 @@ const customerFields = [
     label: "연락처*",
     maxLength: 13,
     name: "customerPhone",
-    placeholder: "010-1234-1234",
+    placeholder: "전화번호를 입력해주세요.",
     required: true,
     type: "tel",
   },

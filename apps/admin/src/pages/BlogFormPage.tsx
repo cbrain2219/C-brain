@@ -1,5 +1,9 @@
 import { createPost, deletePost, getAdminPost, listAdminPosts, updatePost } from '@repo/supabase'
-import { isProductType, productTypes } from '@repo/supabase/categories'
+import {
+  blogAllCategory,
+  getBlogCategoryOptions,
+  normalizeBlogCategory,
+} from '@repo/supabase/categories'
 import { useEffect, useId, useRef, useState } from 'react'
 import type { ChangeEvent, DragEvent, FormEvent } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
@@ -69,6 +73,7 @@ export function BlogFormPage() {
   const { blogId } = useParams<{ blogId: string }>()
   const isEditing = blogId !== undefined
   const [form, setForm] = useState<BlogFormState>(createInitialBlogForm)
+  const [blogTypes, setBlogTypes] = useState<string[]>(() => getBlogCategoryOptions([]))
   const [blogSettingCounts, setBlogSettingCounts] =
     useState<BlogSettingCounts>(emptyBlogSettingCounts)
   const [slugError, setSlugError] = useState('')
@@ -100,6 +105,7 @@ export function BlogFormPage() {
         if (!isCurrent) return
 
         setBlogSettingCounts(getBlogSettingCounts(posts))
+        setBlogTypes(getBlogCategoryOptions(posts.map((item) => item.type)))
 
         if (post) {
           setForm(toBlogFormState(post, getPublicAssetUrl(post.thumbnail_path)))
@@ -142,14 +148,24 @@ export function BlogFormPage() {
   }
 
   function commitBlogType(nextType: string) {
-    const type = nextType.trim()
+    const type = normalizeBlogCategory(nextType)
 
-    if (!isProductType(type)) {
-      setTypeError('고정된 상품 유형 중 하나를 선택해주세요.')
+    if (!type || type === blogAllCategory) {
+      setTypeError(
+        type === blogAllCategory
+          ? '전체는 필터 전용이므로 카테고리로 사용할 수 없습니다.'
+          : '블로그 카테고리를 입력해주세요.',
+      )
       return
     }
 
-    updateForm('type', type)
+    const existingType = blogTypes.find(
+      (blogType) => blogType.toLocaleLowerCase('ko-KR') === type.toLocaleLowerCase('ko-KR'),
+    )
+    const committedType = existingType ?? type
+
+    setBlogTypes((current) => getBlogCategoryOptions([...current, committedType]))
+    updateForm('type', committedType)
     setTypeError('')
   }
 
@@ -278,7 +294,9 @@ export function BlogFormPage() {
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
 
-    if (!isProductType(form.type)) {
+    const type = normalizeBlogCategory(form.type)
+
+    if (!type || type === blogAllCategory) {
       setTypeError('블로그 유형을 선택해주세요.')
       window.requestAnimationFrame(() => {
         document.getElementById(formId + '-type')?.focus()
@@ -364,6 +382,7 @@ export function BlogFormPage() {
       <label className="blog-form__field" htmlFor={formId + '-type'}>
         <span className="blog-form__label">블로그 유형</span>
         <AdminTypeCombobox
+          allowCustomValue
           errorMessage={typeError}
           inputId={formId + '-type'}
           name="type"
@@ -372,7 +391,7 @@ export function BlogFormPage() {
             setTypeError('')
           }}
           onCommit={commitBlogType}
-          options={productTypes}
+          options={blogTypes}
           placeholder="블로그유형을 선택해주세요."
           value={form.type}
         />

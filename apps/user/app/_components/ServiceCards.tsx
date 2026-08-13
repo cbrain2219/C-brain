@@ -5,7 +5,7 @@ import { type CSSProperties } from "react";
 
 import { Icon } from "../../components/Icon";
 import { KAKAO_CHANNEL_URL } from "../_content/contact";
-import { type ServiceItem, services } from "../_content/services";
+import type { ServiceItem } from "../_content/services";
 import styles from "../page.module.css";
 
 const textButtonStyle: CSSProperties = {
@@ -40,11 +40,13 @@ type ServiceCardsProps = {
   onDirectServiceSelect?: (service: ServiceItem) => void;
   onQuoteServiceSelect?: (service: ServiceItem) => void;
   showConsultAction?: boolean;
+  services: readonly ServiceItem[];
 };
 
 export function ServiceCards({
   onDirectServiceSelect,
   onQuoteServiceSelect,
+  services,
   showConsultAction = false,
 }: ServiceCardsProps) {
   return (

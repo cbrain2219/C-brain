@@ -54,6 +54,7 @@ const countMatches = (source, pattern) => source.match(pattern)?.length ?? 0;
 
 test("order page route, content, responsive styles, and navigation are wired", () => {
   const routePath = "apps/user/app/(site)/order/page.tsx";
+  const clientPath = "apps/user/app/(site)/order/OrderPageClient.tsx";
   const flowSectionPath = "apps/user/app/(site)/order/OrderFlowSection.tsx";
   const progressPath = "apps/user/app/(site)/order/OrderProgress.tsx";
   const methodSelectorPath =
@@ -68,6 +69,7 @@ test("order page route, content, responsive styles, and navigation are wired", (
   const contactPath = "apps/user/app/_content/contact.ts";
 
   assert.equal(existsSync(path.join(repoRoot, routePath)), true);
+  assert.equal(existsSync(path.join(repoRoot, clientPath)), true);
   assert.equal(existsSync(path.join(repoRoot, flowSectionPath)), true);
   assert.equal(existsSync(path.join(repoRoot, progressPath)), true);
   assert.equal(existsSync(path.join(repoRoot, methodSelectorPath)), true);
@@ -78,7 +80,8 @@ test("order page route, content, responsive styles, and navigation are wired", (
   assert.equal(existsSync(path.join(repoRoot, contentPath)), true);
   assert.equal(existsSync(path.join(repoRoot, contactPath)), true);
 
-  const routeSource = read(routePath);
+  const serverRouteSource = read(routePath);
+  const routeSource = read(clientPath);
   const flowSectionSource = read(flowSectionPath);
   const progressSource = read(progressPath);
   const methodSelectorSource = read(methodSelectorPath);
@@ -102,11 +105,6 @@ test("order page route, content, responsive styles, and navigation are wired", (
     "] as const satisfies ReadonlyArray<OrderMethod>;",
   );
   const servicesSource = read("apps/user/app/_content/services.ts");
-  const servicesArraySource = extractBetween(
-    servicesSource,
-    "export const services",
-    ") satisfies ReadonlyArray<ServiceItem>;",
-  );
   const serviceCardsSource = read("apps/user/app/_components/ServiceCards.tsx");
   const orderFlowRule = extractBlock(stylesSource, ".orderFlow");
   const orderInnerRule = extractBlock(stylesSource, ".orderInner");
@@ -147,7 +145,10 @@ test("order page route, content, responsive styles, and navigation are wired", (
   assert.match(chevronRightIconSource, /strokeWidth="1\.5"/);
   assert.match(iconSource, /"chevron-right": ChevronRightIcon/);
 
-  assert.match(routeSource, /export default function OrderPage/);
+  assert.match(serverRouteSource, /export default async function OrderPage/);
+  assert.match(serverRouteSource, /await getPublishedOrderProducts\(\)/);
+  assert.match(serverRouteSource, /services=\{createServiceItems\(products\)\}/);
+  assert.match(routeSource, /export function OrderPageClient/);
   assert.match(routeSource, /"use client"/);
   assert.match(routeSource, /useEffect/);
   assert.match(routeSource, /useState<OrderStepId>\("category"\)/);
@@ -303,18 +304,16 @@ test("order page route, content, responsive styles, and navigation are wired", (
   );
   assert.match(methodSelectorSource, /methodCardActiveQuote/);
   assert.match(optionSelectionSource, /"use client"/);
-  assert.match(
-    optionSelectionSource,
-    /requireOrderOptionConfig\(service\.id\)/,
-  );
-  assert.match(optionSelectionSource, /getOrderOptionConfig\(serviceId\)/);
-  assert.match(optionSelectionSource, /getOrderQuantityOptions/);
-  assert.match(optionSelectionSource, /selectedPageId/);
-  assert.match(optionSelectionSource, /selectedPaperId/);
+  assert.match(optionSelectionSource, /calculateProductSelection/);
+  assert.match(optionSelectionSource, /createDefaultProductSelection/);
+  assert.match(optionSelectionSource, /getProductPriceRows/);
+  assert.match(optionSelectionSource, /product\.variants/);
+  assert.match(optionSelectionSource, /selectedVariantId/);
+  assert.match(optionSelectionSource, /selectedVariant\.optionSections\.map/);
+  assert.match(optionSelectionSource, /disabled=\{!isAvailable \|\| !nextSelection\}/);
   assert.match(optionSelectionSource, /II\. 서비스 선택/);
-  assert.match(optionSelectionSource, /optionConfig\.pageSectionTitle/);
-  assert.match(optionSelectionSource, /optionConfig\.paperSectionTitle/);
-  assert.match(optionSelectionSource, /V\. 수량 선택/);
+  assert.match(optionSelectionSource, /selectedVariant\.quantitySection/);
+  assert.match(optionSelectionSource, /quantityRows\.map/);
   assert.match(optionSelectionSource, /quantityTableScroll/);
   assert.match(optionSelectionSource, /주문 요약/);
   assert.match(optionSelectionSource, /mobilePaymentBar/);
@@ -322,22 +321,22 @@ test("order page route, content, responsive styles, and navigation are wired", (
   assert.match(optionSelectionSource, /onPaymentStart/);
   assert.match(optionSelectionSource, /OrderSelectionSummary/);
   assert.match(optionSelectionSource, /ids:\s*\{/);
-  assert.match(optionSelectionSource, /serviceId:\s*optionConfig\.serviceId/);
-  assert.match(optionSelectionSource, /pageId:\s*selectedPage\.id/);
-  assert.match(optionSelectionSource, /paperId:\s*selectedPaper\.id/);
-  assert.match(optionSelectionSource, /quantityId:\s*selectedQuantity\.id/);
-  assert.match(
-    optionSelectionSource,
-    /unitPrice:\s*selectedQuantity\.unitPriceAmount/,
-  );
+  assert.match(optionSelectionSource, /productId:\s*product\.id/);
+  assert.match(optionSelectionSource, /optionValues:\s*selection\.optionValues/);
+  assert.match(optionSelectionSource, /quantity:\s*selection\.quantity/);
+  assert.match(optionSelectionSource, /quotedTotal:\s*calculation\.totalPrice/);
+  assert.match(optionSelectionSource, /serviceId:\s*service\.id/);
+  assert.match(optionSelectionSource, /variant:\s*selectedVariant\.id/);
   assert.match(optionSelectionSource, /categoryLabel:\s*service\.title/);
   assert.match(
     optionSelectionSource,
     /<dt>카테고리<\/dt>\s*<dd>\{service\.title\}<\/dd>/s,
   );
   assert.match(optionSelectionSource, /hasPlanning,/);
-  assert.match(optionSelectionSource, /handlePaymentStart/);
-  assert.match(optionSelectionSource, /onClick=\{handlePaymentStart\}/);
+  assert.match(
+    optionSelectionSource,
+    /onClick=\{\(\) => onPaymentStart\(selectedSummary\)\}/,
+  );
   assert.match(optionSelectionSource, /카카오톡 1:1 상담/);
   assert.match(optionSelectionSource, /summaryConsultLead/);
   assert.match(customerInfoSource, /"use client"/);
@@ -372,7 +371,10 @@ test("order page route, content, responsive styles, and navigation are wired", (
   assert.match(customerInfoSource, /function formatCustomerFieldValue/);
   assert.match(customerInfoSource, /inputMode:\s*"numeric"/);
   assert.match(customerInfoSource, /maxLength:\s*13/);
-  assert.match(customerInfoSource, /placeholder:\s*"010-1234-1234"/);
+  assert.match(
+    customerInfoSource,
+    /placeholder:\s*"전화번호를 입력해주세요\."/,
+  );
   assert.match(
     customerInfoSource,
     /inputMode=\{"inputMode" in field \? field\.inputMode : undefined\}/,
@@ -412,7 +414,7 @@ test("order page route, content, responsive styles, and navigation are wired", (
     customerInfoSource,
     /<dt>카테고리<\/dt>\s*<dd>\{summary\.categoryLabel\}<\/dd>/s,
   );
-  assert.match(customerInfoSource, /페이지 수 \/ 수량/);
+  assert.match(customerInfoSource, /summary\.optionRows\.map/);
   assert.match(customerInfoSource, /이름\(담당자명\)\*/);
   assert.match(customerInfoSource, /회사명/);
   assert.match(customerInfoSource, /연락처\*/);
@@ -466,7 +468,7 @@ test("order page route, content, responsive styles, and navigation are wired", (
   assert.match(customerInfoSource, /type="submit"/);
   assert.match(customerInfoSource, /결제하기/);
   assert.match(serviceCardsSource, /"use client"/);
-  assert.match(serviceCardsSource, /type ServiceItem/);
+  assert.match(serviceCardsSource, /import type \{ ServiceItem \}/);
   assert.match(serviceCardsSource, /onDirectServiceSelect\?:/);
   assert.match(serviceCardsSource, /onQuoteServiceSelect\?:/);
   assert.match(serviceCardsSource, /serviceCardClickable/);
@@ -956,15 +958,17 @@ test("order page route, content, responsive styles, and navigation are wired", (
   assert.match(contentSource, /규격 협의 필요하거나 대량 주문/);
   assert.match(contentSource, /정보 선택/);
   assert.match(contentSource, /export type OrderStepId/);
-  assert.match(contentSource, /export type AdminOrderProduct/);
-  assert.match(contentSource, /export type OrderUnitPriceQuote/);
   assert.match(contentSource, /export type OrderSelectedOptionIds/);
   assert.match(contentSource, /export type OrderSelectionSummary/);
   assert.match(contentSource, /categoryLabel:\s*string/);
+  assert.match(contentSource, /optionRows:\s*ReadonlyArray/);
+  assert.match(contentSource, /priceRows:\s*ReadonlyArray/);
+  assert.match(contentSource, /productId:\s*string/);
+  assert.match(contentSource, /optionValues:\s*Partial<Record/);
+  assert.match(contentSource, /quantity:\s*number \| null/);
+  assert.match(contentSource, /quotedTotal:\s*number/);
+  assert.match(contentSource, /variant:\s*ProductVariant/);
   assert.match(contentSource, /export const formatOrderCurrency/);
-  assert.match(contentSource, /export const orderProductRegistrations/);
-  assert.match(contentSource, /note:\s*"페이지당 N만원"/);
-  assert.doesNotMatch(contentSource, /note:\s*"규모에 따라 별도 상담"/);
   assert.match(
     contentSource,
     /export const orderServiceSearchParam = "service"/,
@@ -976,65 +980,17 @@ test("order page route, content, responsive styles, and navigation are wired", (
   );
   assert.match(contentSource, /export const getOrderDirectServiceHref/);
   assert.doesNotMatch(contentSource, /export const getOrderQuoteConsultHref/);
-  assert.match(contentSource, /export const orderOptionCatalog/);
-  assert.match(contentSource, /export const getOrderOptionConfig/);
-  assert.match(contentSource, /export const getOrderQuantityOptions/);
-  assert.match(contentSource, /page_counts/);
-  assert.match(contentSource, /paper_types/);
-  assert.match(contentSource, /order_quantities/);
-  assert.match(contentSource, /unit_prices/);
-  assert.match(contentSource, /fromAdminProductToOrderRegistration/);
-  assert.match(
-    contentSource,
-    /const createAdditionalPriceLabel = \(fee: number\) =>\s*`\+\$\{formatOrderCurrency\(fee\)\} ~`;/,
-  );
-  assert.match(
-    contentSource,
-    /priceLabel:\s*createAdditionalPriceLabel\(product\.planning_estimate\)/,
-  );
-  assert.match(contentSource, /function createOrderOptionConfig/);
-  assert.match(contentSource, /function createQuantityOption/);
-  assert.match(contentSource, /unitPriceQuotes/);
-  assert.match(contentSource, /paperId:\s*string/);
-  assert.match(contentSource, /quantityId: string/);
-  assert.match(contentSource, /unitPrice: number/);
-  assert.doesNotMatch(
-    contentSource,
-    /orderOptionCatalog\["brochure-catalog"\]/,
-  );
-  assert.match(
-    contentSource,
-    /const defaultPageSectionTitle = "III\. 페이지 수 선택"/,
-  );
-  assert.match(
-    contentSource,
-    /const defaultPaperSectionTitle = "IV\. 용지 선택"/,
-  );
-  assert.match(contentSource, /"brochure-catalog"/);
-  assert.match(contentSource, /"leaflet-pamphlet"/);
-  assert.doesNotMatch(contentSource, /"package-shopping-bag"/);
-  assert.match(contentSource, /디자인 \+ 인쇄/);
-  assert.match(contentSource, /formatOrderQuantity/);
-  assert.match(
-    contentSource,
-    /standardOrderQuantities = \[500, 1000, 2000, 3000\]/,
-  );
-  assert.match(
-    servicesSource,
-    /export const services = productCategories\.map/,
-  );
+  assert.doesNotMatch(contentSource, /orderOptionCatalog|unit_prices/);
+  assert.match(servicesSource, /export function createServiceItems/);
+  assert.match(servicesSource, /products\.map\(\(product\) =>/);
+  assert.match(servicesSource, /product\.startingPrice/);
+  assert.match(servicesSource, /productId:\s*product\.id/);
   assert.match(servicesSource, /export function getDirectServiceItemById/);
   assert.match(
     servicesSource,
     /service\.id === serviceId && !service\.isQuote/,
   );
-  assert.match(servicesArraySource, /title:\s*category\.label/);
-  assert.match(servicesArraySource, /id:\s*category\.id/);
-  assert.doesNotMatch(servicesArraySource, /photo-shoot|id:\s*"etc"/);
-  assert.match(
-    contentSource,
-    /name:\s*getProductCategoryLabel\("brochure-catalog"\)/,
-  );
+  assert.doesNotMatch(servicesSource, /photo-shoot|id:\s*"etc"/);
   assert.match(serviceCardsSource, /serviceGrid/);
   assert.match(serviceCardsSource, /serviceCard/);
   assert.match(serviceCardsSource, /견적 후 주문\(카카오톡\)/);
@@ -1137,9 +1093,11 @@ test("shared payment result presentation is wired", () => {
   );
   assert.match(resultSource, /summary\.categoryLabel/);
   assert.match(resultSource, /summary\.serviceLabel/);
-  assert.match(resultSource, /summary\.paperLabel/);
-  assert.match(resultSource, /summary\.pageLabel/);
-  assert.match(resultSource, /summary\.quantityLabel/);
+  assert.match(resultSource, /\.\.\.summary\.optionRows/);
+  assert.doesNotMatch(
+    resultSource,
+    /summary\.(paperLabel|pageLabel|quantityLabel)/,
+  );
   assert.match(resultSource, /data\.companyName/);
   assert.match(resultSource, /data\.paymentMethod/);
   assert.match(resultSource, /formatOrderCurrency\(totalPrice\)/);
@@ -1261,7 +1219,7 @@ test("site orders use the common checkout and result flow", () => {
   const failRoutePath = "apps/user/app/(site)/order/fail/page.tsx";
   const checkoutRoutePath = "apps/user/app/api/orders/checkout/route.ts";
   const paymentPath = "apps/user/app/(site)/order/payment.ts";
-  const pagePath = "apps/user/app/(site)/order/page.tsx";
+  const pagePath = "apps/user/app/(site)/order/OrderPageClient.tsx";
 
   assert.equal(existsSync(path.join(repoRoot, successRoutePath)), false);
   assert.equal(existsSync(path.join(repoRoot, failRoutePath)), false);
@@ -1270,8 +1228,13 @@ test("site orders use the common checkout and result flow", () => {
   const paymentSource = read(paymentPath);
   const pageSource = read(pagePath);
 
-  assert.match(checkoutRouteSource, /getOrderOptionConfig/);
-  assert.match(checkoutRouteSource, /getOrderQuantityOptions/);
+  assert.match(checkoutRouteSource, /getPublishedProduct/);
+  assert.match(checkoutRouteSource, /createOrderProductCatalogItem/);
+  assert.match(checkoutRouteSource, /calculateProductSelection/);
+  assert.match(
+    checkoutRouteSource,
+    /calculation\.totalPrice !== selection\.quotedTotal/,
+  );
   assert.match(checkoutRouteSource, /createSiteCheckout/);
   assert.match(checkoutRouteSource, /createNicepayCheckoutRequest/);
   assert.doesNotMatch(checkoutRouteSource, /payload\.amount/);

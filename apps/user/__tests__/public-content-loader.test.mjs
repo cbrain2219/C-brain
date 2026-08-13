@@ -16,11 +16,16 @@ test("public content loader uses the published Supabase boundary", async () => {
   assert.doesNotMatch(source, /createUserSupabaseClient/);
   assert.match(source, /listPublishedPosts\(client, "blog"\)/);
   assert.match(source, /listPublishedPortfolioItems\(client\)/);
+  assert.match(source, /listPublishedProducts\(client\)/);
+  assert.match(source, /createOrderProductCatalog/);
+  assert.match(source, /async function loadPublishedOrderProducts/);
+  assert.match(source, /await connection\(\)/);
   assert.match(source, /getPublicAssetUrl\(client, path\)/);
   assert.match(source, /mapBlogRows/);
   assert.match(source, /mapPortfolioRows/);
   assert.match(source, /export const getPublishedBlogPosts = cache/);
   assert.match(source, /export const getPublishedPortfolioItems = cache/);
+  assert.match(source, /export const getPublishedOrderProducts = cache/);
   assert.match(source, /if \(!client\) return \[\]/);
   assert.match(source, /catch \(error\)/);
   assert.match(source, /return \[\]/);

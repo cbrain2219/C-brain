@@ -1,11 +1,18 @@
-import { createAdminSupabaseClient, createSiteCheckout } from "@repo/supabase";
+import {
+  calculateProductSelection,
+  createAdminSupabaseClient,
+  createOrderProductCatalogItem,
+  createSiteCheckout,
+  getProductCategory,
+  getPublishedProduct,
+} from "@repo/supabase";
+import type { ProductCategoryId } from "@repo/supabase/categories";
+import {
+  productOptionSectionKeys,
+  type ProductOptionSectionKey,
+} from "@repo/supabase/product-configuration";
 import { NextResponse } from "next/server";
 
-import {
-  getOrderOptionConfig,
-  getOrderQuantityOptions,
-} from "../../../_content/order";
-import { getDirectServiceItemById } from "../../../_content/services";
 import { createNicepayCheckoutRequest } from "../../../../lib/paymentCheckout";
 import { getNicepayConfig, isUuid } from "../../../../lib/nicepay";
 
@@ -13,10 +20,12 @@ export const runtime = "nodejs";
 
 type CheckoutSelection = {
   hasPlanning: boolean;
-  pageId: string;
-  paperId: string;
-  quantityId: string;
-  serviceId: string;
+  optionValues: Partial<Record<ProductOptionSectionKey, string>>;
+  productId: string;
+  quantity: number | null;
+  quotedTotal: number;
+  serviceId: ProductCategoryId;
+  variant: string;
 };
 
 type CheckoutCustomer = {
@@ -28,6 +37,7 @@ type CheckoutCustomer = {
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const koreanMobilePhonePattern = /^01[016789]\d{7,8}$/;
+const validOptionKeys = new Set<string>(productOptionSectionKeys);
 
 function asRecord(value: unknown): Record<string, unknown> | null {
   return value !== null && typeof value === "object" && !Array.isArray(value)
@@ -39,25 +49,74 @@ function asString(value: unknown) {
   return typeof value === "string" ? value.trim() : null;
 }
 
+function parseOptionValues(
+  value: unknown,
+): CheckoutSelection["optionValues"] | null {
+  const optionValues = asRecord(value);
+
+  if (!optionValues) return null;
+
+  const entries = Object.entries(optionValues);
+  if (entries.length > productOptionSectionKeys.length) return null;
+
+  const parsed: Partial<Record<ProductOptionSectionKey, string>> = {};
+
+  for (const [key, rawValue] of entries) {
+    const optionValue = asString(rawValue);
+
+    if (!validOptionKeys.has(key) || !optionValue || optionValue.length > 200) {
+      return null;
+    }
+
+    parsed[key as ProductOptionSectionKey] = optionValue;
+  }
+
+  return parsed;
+}
+
 function parseSelection(value: unknown): CheckoutSelection | null {
   const selection = asRecord(value);
 
   if (!selection || typeof selection.hasPlanning !== "boolean") return null;
 
+  const productId = asString(selection.productId);
   const serviceId = asString(selection.serviceId);
-  const pageId = asString(selection.pageId);
-  const paperId = asString(selection.paperId);
-  const quantityId = asString(selection.quantityId);
+  const variant = asString(selection.variant);
+  const optionValues = parseOptionValues(selection.optionValues);
+  const quantity = selection.quantity;
+  const quotedTotal = selection.quotedTotal;
+  const category = serviceId ? getProductCategory(serviceId) : undefined;
 
-  return serviceId && pageId && paperId && quantityId
-    ? {
-        hasPlanning: selection.hasPlanning,
-        pageId,
-        paperId,
-        quantityId,
-        serviceId,
-      }
-    : null;
+  if (
+    !productId ||
+    !isUuid(productId) ||
+    !category ||
+    category.id !== serviceId ||
+    !variant ||
+    variant.length > 100 ||
+    !optionValues ||
+    !(
+      quantity === null ||
+      (typeof quantity === "number" &&
+        Number.isSafeInteger(quantity) &&
+        quantity > 0)
+    ) ||
+    typeof quotedTotal !== "number" ||
+    !Number.isSafeInteger(quotedTotal) ||
+    quotedTotal < 0
+  ) {
+    return null;
+  }
+
+  return {
+    hasPlanning: selection.hasPlanning,
+    optionValues,
+    productId,
+    quantity,
+    quotedTotal,
+    serviceId: category.id,
+    variant,
+  };
 }
 
 function parseCustomer(value: unknown): CheckoutCustomer | null {
@@ -97,6 +156,12 @@ function hasRequiredAgreements(value: unknown) {
 const invalidRequest = (error: string) =>
   NextResponse.json({ error }, { status: 400 });
 
+const staleSelection = () =>
+  NextResponse.json(
+    { error: "상품 옵션 또는 가격이 변경되었습니다. 옵션을 다시 선택해주세요." },
+    { status: 409 },
+  );
+
 export async function POST(request: Request) {
   let payload: Record<string, unknown> | null;
 
@@ -122,52 +187,6 @@ export async function POST(request: Request) {
 
   if (!selection) return invalidRequest("선택한 상품 정보를 찾을 수 없습니다.");
 
-  const optionConfig = getOrderOptionConfig(selection.serviceId);
-  const service = getDirectServiceItemById(selection.serviceId);
-  const page = optionConfig?.pageOptions.find(
-    (option) => option.id === selection.pageId,
-  );
-  const paper = optionConfig?.paperOptions.find(
-    (option) => option.id === selection.paperId,
-  );
-  const quantity = optionConfig
-    ? getOrderQuantityOptions(
-        optionConfig,
-        selection.pageId,
-        selection.paperId,
-      ).find((option) => option.id === selection.quantityId)
-    : undefined;
-
-  if (!optionConfig || !service || !page || !paper || !quantity) {
-    return invalidRequest("선택한 상품 정보를 찾을 수 없습니다.");
-  }
-
-  const planningFee = selection.hasPlanning
-    ? optionConfig.planningService.fee
-    : 0;
-  const amount = quantity.total + planningFee;
-  const orderName = [service.title, page.label, paper.label, quantity.quantity]
-    .join(" · ")
-    .slice(0, 100);
-  const itemSnapshot = {
-    channel: "site",
-    page: { id: page.id, label: page.label },
-    paper: { id: paper.id, label: paper.label },
-    planning: {
-      amount: planningFee,
-      included: selection.hasPlanning,
-      label: optionConfig.planningService.title,
-    },
-    quantity: {
-      id: quantity.id,
-      label: quantity.quantity,
-      total: quantity.total,
-      unitPrice: quantity.unitPriceAmount,
-    },
-    service: { id: service.id, label: service.title },
-    total: amount,
-  };
-
   let config: ReturnType<typeof getNicepayConfig>;
 
   try {
@@ -181,8 +200,82 @@ export async function POST(request: Request) {
     );
   }
 
+  let client: ReturnType<typeof createAdminSupabaseClient>;
+  let productRow: Awaited<ReturnType<typeof getPublishedProduct>>;
+
   try {
-    const checkout = await createSiteCheckout(createAdminSupabaseClient(), {
+    client = createAdminSupabaseClient();
+    productRow = await getPublishedProduct(client, selection.productId);
+  } catch (error) {
+    console.error("[Site checkout] Failed to load published product", error);
+
+    return NextResponse.json(
+      { error: "상품 정보를 확인하지 못했습니다. 잠시 후 다시 시도해주세요." },
+      { status: 500 },
+    );
+  }
+
+  if (!productRow) return staleSelection();
+
+  const product = createOrderProductCatalogItem(productRow);
+  const variant = product?.variants.find(
+    (candidate) => candidate.id === selection.variant,
+  );
+
+  if (!product || product.categoryId !== selection.serviceId || !variant) {
+    return staleSelection();
+  }
+
+  const calculation = calculateProductSelection(variant, {
+    hasPlanning: selection.hasPlanning,
+    optionValues: selection.optionValues,
+    quantity: selection.quantity,
+  });
+
+  if (!calculation || calculation.totalPrice !== selection.quotedTotal) {
+    return staleSelection();
+  }
+
+  const amount = calculation.totalPrice;
+  const orderName = [
+    product.productType,
+    ...(variant.id === product.productType ? [] : [variant.id]),
+    ...calculation.optionRows.map((row) => row.value),
+    ...(calculation.quantityLabel ? [calculation.quantityLabel] : []),
+  ]
+    .join(" · ")
+    .slice(0, 100);
+  const itemSnapshot = {
+    channel: "site",
+    options: calculation.optionRows.map((row) => ({
+      key: row.key,
+      label: row.label,
+      value: row.value,
+    })),
+    planning: {
+      amount: calculation.planningAmount,
+      included: selection.hasPlanning,
+      label: "기획",
+    },
+    priceRows: calculation.priceRows.map((row) => ({
+      label: row.label,
+      value: row.value,
+    })),
+    product: { id: product.id, label: product.productType },
+    quantity:
+      calculation.quantity === null
+        ? null
+        : {
+            label: calculation.quantityLabel,
+            value: calculation.quantity,
+          },
+    service: { id: product.categoryId, label: product.productType },
+    total: amount,
+    variant: { id: variant.id, label: variant.id },
+  };
+
+  try {
+    const checkout = await createSiteCheckout(client, {
       agreements: { privacyCollection: true, privacyPolicy: true },
       amount,
       checkoutRequestId,

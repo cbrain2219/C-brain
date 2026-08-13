@@ -6,14 +6,19 @@ const sectionPath = new URL(
   "../app/_components/ServicesSection.tsx",
   import.meta.url,
 );
+const homePath = new URL("../app/(site)/page.tsx", import.meta.url);
 const iconPath = new URL("../components/Icon.tsx", import.meta.url);
 
-test("landing services render the shared six-category collection", async () => {
-  const source = await readFile(sectionPath, "utf8");
+test("landing services render the published admin product collection", async () => {
+  const [source, homeSource] = await Promise.all([
+    readFile(sectionPath, "utf8"),
+    readFile(homePath, "utf8"),
+  ]);
 
   assert.doesNotMatch(source, /"use client"/);
   assert.match(source, /import Link from "next\/link"/);
-  assert.match(source, /import \{ services \} from "\.\.\/_content\/services"/);
+  assert.match(source, /import type \{ ServiceItem \}/);
+  assert.match(source, /services: readonly ServiceItem\[\]/);
   assert.match(source, /getOrderDirectServiceHref/);
   assert.doesNotMatch(source, /useState|OrderConsultDialog/);
   assert.doesNotMatch(source, /@repo\/supabase/);
@@ -21,6 +26,11 @@ test("landing services render the shared six-category collection", async () => {
   assert.doesNotMatch(source, /listPublishedProducts/);
   assert.doesNotMatch(source, /loadLandingServices/);
   assert.match(source, /\{services\.map\(\(service\) =>/);
+  assert.match(homeSource, /getPublishedOrderProducts\(\)/);
+  assert.match(
+    homeSource,
+    /<ServicesSection services=\{createServiceItems\(publishedOrderProducts\)\} \/>/,
+  );
   assert.match(source, /href=\{getOrderDirectServiceHref\(service\.id\)\}/);
   assert.match(source, /<Link[\s\S]*?className=\{styles\.serviceCard\}/);
   assert.match(

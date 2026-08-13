@@ -37,7 +37,7 @@ function makePost(overrides = {}) {
 }
 
 test('post row maps to list and edit form state', () => {
-  const post = makePost()
+  const post = makePost({ type: ' 브로슈어·카탈로그 ' })
   const row = toBlogListRow(post)
   const form = toBlogFormState(post, 'https://example.com/post.webp')
 
@@ -60,10 +60,12 @@ test('post row maps to list and edit form state', () => {
     },
   )
   assert.equal(row.detailHref, '/blog/post-1')
+  assert.equal(row.type, '브로슈어 · 카탈로그')
   assert.equal(form.publishedAt, '2026-07-21')
   assert.equal(form.seoDescription, '검색 설명')
   assert.equal(form.thumbnailPath, 'blog-thumbnails/post.webp')
   assert.equal(form.thumbnailPreviewUrl, 'https://example.com/post.webp')
+  assert.equal(form.type, '브로슈어 · 카탈로그')
 })
 
 test('form maps to a blog mutation with trimmed values and publication settings', () => {
@@ -78,7 +80,7 @@ test('form maps to a blog mutation with trimmed values and publication settings'
     thumbnailAlt: '  썸네일  ',
     thumbnailPath: 'blog-thumbnails/post.webp',
     title: '  첫 블로그  ',
-    type: '  디자인  ',
+    type: '  인쇄   실무팁  ',
   }
 
   assert.deepEqual(toBlogMutationInput(form, 'draft'), {
@@ -97,7 +99,7 @@ test('form maps to a blog mutation with trimmed values and publication settings'
     thumbnail_alt: '썸네일',
     thumbnail_path: 'blog-thumbnails/post.webp',
     title: '첫 블로그',
-    type: '디자인',
+    type: '인쇄 실무팁',
   })
 })
 
@@ -142,6 +144,21 @@ test('list filtering and setting counts use loaded post rows', () => {
 
 test('mutation rejects missing required blog data', () => {
   assert.throws(() => toBlogMutationInput(createInitialBlogForm(), 'published'), {
+    message: '블로그 정보를 확인해주세요.',
+  })
+})
+
+test('mutation rejects the all-items filter label as a blog category', () => {
+  const form = {
+    ...createInitialBlogForm(),
+    content: '<p>본문</p>',
+    publishedAt: '2026-07-21',
+    slug: 'first-blog',
+    title: '첫 블로그',
+    type: ' 전체 ',
+  }
+
+  assert.throws(() => toBlogMutationInput(form, 'published'), {
     message: '블로그 정보를 확인해주세요.',
   })
 })

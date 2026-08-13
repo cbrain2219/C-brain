@@ -5,10 +5,7 @@ import { Fragment } from "react";
 
 import { HorizontalDragScroll } from "../../../../components/HorizontalDragScroll";
 
-import {
-  BLOG_CATEGORIES,
-  type BlogCategoryFilter,
-} from "../_constants/blogCategories";
+import type { BlogCategoryFilter } from "../_constants/blogCategories";
 import type { BlogPost } from "../_types/blog";
 import { filterBlogPosts } from "../_utils/filterBlogPosts";
 import { BlogCard } from "./BlogCard";
@@ -20,6 +17,7 @@ import styles from "../page.module.css";
 
 type BlogBoardProps = {
   activeCategory: BlogCategoryFilter;
+  categories: readonly string[];
   posts: readonly BlogPost[];
 };
 
@@ -53,7 +51,7 @@ function getBannerSlides(posts: readonly BlogPost[]) {
   );
 }
 
-export function BlogBoard({ activeCategory, posts }: BlogBoardProps) {
+export function BlogBoard({ activeCategory, categories, posts }: BlogBoardProps) {
   const visiblePosts = filterBlogPosts(posts, activeCategory);
   const featuredSlides = getBannerSlides(visiblePosts);
   const featuredPost = featuredSlides[0];
@@ -81,7 +79,7 @@ export function BlogBoard({ activeCategory, posts }: BlogBoardProps) {
               className={styles.blogCategoryScroll}
             >
               <ul className={styles.blogCategoryList}>
-                {BLOG_CATEGORIES.map((category) => (
+                {categories.map((category) => (
                   <li key={category}>
                     <Link
                       aria-current={activeCategory === category ? "page" : undefined}

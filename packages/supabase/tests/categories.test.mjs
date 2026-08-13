@@ -2,9 +2,12 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import {
+  blogAllCategory,
+  getBlogCategoryOptions,
   getProductCategory,
   getProductCategoryLabel,
   isProductType,
+  normalizeBlogCategory,
   productCategories,
   productTypes,
 } from "../src/categories.ts";
@@ -42,4 +45,25 @@ test("product type guard accepts only the canonical six labels", () => {
   assert.equal(isProductType("명함 · 봉투"), true);
   assert.equal(isProductType("명함·봉투"), false);
   assert.equal(isProductType("촬영"), false);
+});
+
+test("blog categories keep the fixed six first and append normalized custom values", () => {
+  assert.equal(blogAllCategory, "전체");
+  assert.equal(
+    normalizeBlogCategory(" 브로슈어·카탈로그 "),
+    "브로슈어 · 카탈로그",
+  );
+  assert.equal(normalizeBlogCategory(" 인쇄   실무팁 "), "인쇄 실무팁");
+  assert.deepEqual(
+    getBlogCategoryOptions([
+      "인쇄 실무팁",
+      "브로슈어·카탈로그",
+      " 인쇄   실무팁 ",
+      "DESIGN",
+      "design",
+      "전체",
+      "",
+    ]),
+    [...productTypes, "인쇄 실무팁", "DESIGN"],
+  );
 });

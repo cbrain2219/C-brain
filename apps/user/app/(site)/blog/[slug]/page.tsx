@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 
 import {
   type BlogCategoryFilter,
+  getBlogCategories,
   resolveBlogCategory,
 } from "../_constants/blogCategories";
 import {
@@ -175,8 +176,10 @@ export default async function BlogDetailPage({
     notFound();
   }
 
+  const categories = getBlogCategories(posts);
   const activeCategory = resolveBlogCategory(
     getSearchParamValue(resolvedSearchParams?.category),
+    categories,
   );
   const listHref = getBlogListHref(activeCategory);
   const relatedPosts = getRelatedBlogPosts(post.slug, posts);

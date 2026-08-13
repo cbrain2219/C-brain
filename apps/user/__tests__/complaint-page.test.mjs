@@ -197,7 +197,10 @@ test("complaint text inputs use baseline-aligned compact placeholders", async ()
   assert.doesNotMatch(formSource, /matchMedia/);
   assert.match(formSource, /ResizeObserver/);
   assert.match(formSource, /getComplaintPlaceholderFitsInput/);
-  assert.match(formSource, /"휴대폰 번\.\.\."/);
+  assert.equal(
+    (formSource.match(/phone: "전화번호를 입력해주세요\."/g) ?? []).length,
+    2,
+  );
   assert.match(
     formSource,
     /`인증번호 \$\{COMPLAINT_VERIFICATION_CODE_LENGTH\}자리\.\.\.`/,
@@ -341,7 +344,7 @@ test("complaint validation rejects malformed contact details", async () => {
     detail: "상세 내용입니다.",
     email: "user@example.com",
     name: "홍길동",
-    phone: "01012345678",
+    phone: "010-1234-5678",
     privacy: true,
     service: "브로슈어 · 카탈로그",
     verificationCode: "123456",
@@ -364,6 +367,32 @@ test("complaint validation rejects malformed contact details", async () => {
   assert.deepEqual(getInvalidRequiredComplaintFields(validValues), []);
 });
 
+test("complaint phone input keeps digits only and formats an 010 number", async () => {
+  const formSource = await readFile(formPath, "utf8");
+  const {
+    COMPLAINT_PHONE_INPUT_MAX_LENGTH,
+    COMPLAINT_PHONE_INPUT_PATTERN,
+    formatComplaintPhoneNumber,
+    isPhoneValid,
+  } = await importTypescriptModule(validationPath);
+
+  assert.equal(COMPLAINT_PHONE_INPUT_MAX_LENGTH, 13);
+  assert.equal(COMPLAINT_PHONE_INPUT_PATTERN, "010-[0-9]{4}-[0-9]{4}");
+  assert.equal(formatComplaintPhoneNumber("01012345678"), "010-1234-5678");
+  assert.equal(
+    formatComplaintPhoneNumber("010-12ab34-567890"),
+    "010-1234-5678",
+  );
+  assert.equal(formatComplaintPhoneNumber("01012"), "010-12");
+  assert.equal(isPhoneValid("010-1234-5678"), true);
+  assert.equal(isPhoneValid("01012345678"), false);
+  assert.equal(isPhoneValid("011-1234-5678"), false);
+  assert.match(formSource, /inputMode="numeric"/);
+  assert.match(formSource, /maxLength=\{COMPLAINT_PHONE_INPUT_MAX_LENGTH\}/);
+  assert.match(formSource, /pattern=\{COMPLAINT_PHONE_INPUT_PATTERN\}/);
+  assert.match(formSource, /onChange=\{handlePhoneChange\}/);
+});
+
 test("complaint validation requires a six digit verification code", async () => {
   const {
     COMPLAINT_TEMP_VERIFICATION_CODE,
@@ -379,7 +408,7 @@ test("complaint validation requires a six digit verification code", async () => 
     detail: "상세 내용입니다.",
     email: "user@example.com",
     name: "홍길동",
-    phone: "01012345678",
+    phone: "010-1234-5678",
     privacy: true,
     service: "디자인",
   };
@@ -468,7 +497,7 @@ test("complaint validation treats unchecked privacy consent as required", async 
       detail: "상세 내용입니다.",
       email: "user@example.com",
       name: "홍길동",
-      phone: "01012345678",
+      phone: "010-1234-5678",
       privacy: false,
       service: "디자인",
       verificationCode: "123456",
@@ -672,7 +701,7 @@ test("complaint form delegates required field state to react-hook-form", async (
     /handleSubmit\(handleValidSubmit, handleInvalidSubmit\)/,
   );
   assert.match(formSource, /const handlePhoneChange/);
-  assert.match(formSource, /onChange:\s*handlePhoneChange/);
+  assert.match(formSource, /onChange=\{handlePhoneChange\}/);
   assert.match(formSource, /getValues\("phone"\)/);
   assert.match(formSource, /setError\("phone"/);
 

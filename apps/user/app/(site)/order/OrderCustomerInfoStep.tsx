@@ -99,7 +99,7 @@ const customerFields = [
     label: "연락처*",
     maxLength: 13,
     name: "customerPhone",
-    placeholder: "010-1234-1234",
+    placeholder: "전화번호를 입력해주세요.",
     required: true,
     type: "tel",
   },
@@ -336,16 +336,12 @@ export function OrderCustomerInfoStep({
             <dt>서비스</dt>
             <dd>{summary.serviceLabel}</dd>
           </div>
-          <div>
-            <dt>용지</dt>
-            <dd>{summary.paperLabel}</dd>
-          </div>
-          <div>
-            <dt>페이지 수 / 수량</dt>
-            <dd>
-              {summary.pageLabel} / {summary.quantityLabel}
-            </dd>
-          </div>
+          {summary.optionRows.map((row) => (
+            <div key={`${row.label}-${row.value}`}>
+              <dt>{row.label}</dt>
+              <dd>{row.value}</dd>
+            </div>
+          ))}
         </dl>
         <div className={styles.customerSummaryDivider} />
         <div className={styles.customerSummaryTotal}>

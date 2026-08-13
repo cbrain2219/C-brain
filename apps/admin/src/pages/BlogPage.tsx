@@ -1,4 +1,5 @@
 import { listAdminPosts, reorderPosts } from '@repo/supabase'
+import { blogAllCategory, getBlogCategoryOptions } from '@repo/supabase/categories'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { toast } from 'sonner'
@@ -88,7 +89,11 @@ export function BlogPage() {
   const blogFilters = useMemo(
     () =>
       [
-        { id: 'type', label: '유형 필터', options: ['전체', ...new Set(rows.map((row) => row.type))] },
+        {
+          id: 'type',
+          label: '유형 필터',
+          options: [blogAllCategory, ...getBlogCategoryOptions(rows.map((row) => row.type))],
+        },
         { id: 'status', label: '상태 필터', options: statusFilterOptions },
       ] satisfies readonly AdminTableFilter[],
     [rows],

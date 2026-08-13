@@ -101,7 +101,7 @@ function validValues() {
     detail: "상담 과정에서 불편했던 내용을 확인해주세요.",
     email: "customer@example.com",
     name: "고객",
-    phone: "01012345678",
+    phone: "010-1234-5678",
     privacy: true,
     service: "로고",
   };
@@ -150,6 +150,7 @@ test("complaint payload keeps file bytes out of the server request", async () =>
   );
   assert.equal("arrayBuffer" in uploadRequest.attachments[0], false);
   assert.equal(parsed.ok, true);
+  assert.equal(parsed.values.phone, "010-1234-5678");
   assert.equal("verificationCode" in payload.values, false);
   assert.equal(parsed.attachments[0].name, "증빙.png");
   assert.equal(parsed.attachments[0].path, path);
@@ -161,6 +162,17 @@ test("complaint validation rejects invalid fields and attachment limits", async 
   assert.match(
     validateComplaintSubmission(
       { ...validValues(), email: "not-an-email" },
+      [],
+    ),
+    /필수 항목/,
+  );
+  assert.match(
+    validateComplaintSubmission({ ...validValues(), phone: "01012345678" }, []),
+    /필수 항목/,
+  );
+  assert.match(
+    validateComplaintSubmission(
+      { ...validValues(), phone: "011-1234-5678" },
       [],
     ),
     /필수 항목/,
@@ -278,6 +290,7 @@ test("complaint mapping remains unverified", async () => {
   const input = toComplaintInput(validValues(), "2026-07-21T00:00:00.000Z");
 
   assert.equal(input.status, "received");
+  assert.equal(input.phone, "010-1234-5678");
   assert.equal(input.phone_verified, false);
   assert.equal(input.privacy_agreed_at, "2026-07-21T00:00:00.000Z");
   assert.equal("title" in input, false);

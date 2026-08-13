@@ -16,6 +16,7 @@ const landingPortfolioPath = new URL(
   "../app/_components/PortfolioSection.tsx",
   import.meta.url,
 );
+const landingStylesPath = new URL("../app/page.module.css", import.meta.url);
 const detailPagePath = new URL(
   "../app/(site)/portfolio/[slug]/page.tsx",
   import.meta.url,
@@ -126,6 +127,43 @@ test("portfolio landing tabs filter cards on click", async () => {
   assert.match(landingPortfolio, /setActiveCategoryId\(categoryId\)/);
   assert.match(landingPortfolio, /aria-pressed=\{isActive\}/);
   assert.match(landingPortfolio, /activePortfolioItems\.map/);
+});
+
+test("landing portfolio hover shows plain content with responsive line limits", async () => {
+  const [landingPortfolio, landingStyles] = await Promise.all([
+    readFile(landingPortfolioPath, "utf8"),
+    readFile(landingStylesPath, "utf8"),
+  ]);
+  const overlayMarkup =
+    landingPortfolio.match(
+      /<div className=\{styles\.portfolioOverlay\}>[\s\S]*?<\/div>/,
+    )?.[0] ?? "";
+  const descriptionStyle =
+    landingStyles.match(/\.portfolioOverlay p\s*\{[\s\S]*?\}/)?.[0] ?? "";
+  const tabletStart = landingStyles.indexOf("@media (min-width: 640px)");
+  const desktopStart = landingStyles.indexOf("@media (min-width: 1080px)");
+  const pcStart = landingStyles.indexOf(
+    "@media (min-width: 1440px)",
+    desktopStart,
+  );
+  const tabletStyles = landingStyles.slice(tabletStart, desktopStart);
+  const desktopStyles = landingStyles.slice(desktopStart, pcStart);
+
+  assert.match(overlayMarkup, /<h3>\{item\.client\}<\/h3>/);
+  assert.match(overlayMarkup, /<p>\{item\.description\}<\/p>/);
+  assert.doesNotMatch(overlayMarkup, /<p>\{item\.title\}<\/p>/);
+  assert.match(descriptionStyle, /display:\s*-webkit-box;/);
+  assert.match(descriptionStyle, /overflow:\s*hidden;/);
+  assert.match(descriptionStyle, /-webkit-box-orient:\s*vertical;/);
+  assert.match(descriptionStyle, /-webkit-line-clamp:\s*6;/);
+  assert.match(
+    tabletStyles,
+    /\.portfolioOverlay p\s*\{[\s\S]*?-webkit-line-clamp:\s*8;/,
+  );
+  assert.match(
+    desktopStyles,
+    /\.portfolioOverlay p\s*\{[\s\S]*?-webkit-line-clamp:\s*10;/,
+  );
 });
 
 test("portfolio detail returns to the landing section when opened from the landing page", async () => {

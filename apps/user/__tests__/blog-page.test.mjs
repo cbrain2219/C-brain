@@ -85,14 +85,16 @@ test("blog page keeps the shared header, hero, category, and CTA contracts", asy
     /if \(href === "\/blog"\) return pathname\.startsWith\("\/blog"\);/,
   );
   assert.match(page, /searchParams: Promise<\{ category\?: string \}>/);
-  assert.match(page, /resolveBlogCategory\(category\)/);
+  assert.match(page, /resolveBlogCategory\(category, categories\)/);
   assert.match(page, /activeCategory=\{activeCategory\}/);
+  assert.match(page, /categories=\{categories\}/);
   assert.match(board, /const params = new URLSearchParams\(\{ category \}\)/);
+  assert.match(board, /categories\.map\(\(category\) =>/);
   assert.match(board, /href=\{getCategoryHref\(category\)\}/);
   assert.match(board, /scroll=\{false\}/);
   assert.match(
     board,
-    /aria-current=\{activeCategory === category \? "page" : undefined\}/,
+    /aria-current=\{\s*activeCategory === category \? "page" : undefined\s*\}/,
   );
   assert.match(blogSection, /import Link from "next\/link"/);
   assert.match(blogSection, /import Image from "next\/image"/);

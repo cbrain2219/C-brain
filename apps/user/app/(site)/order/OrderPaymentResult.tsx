@@ -16,9 +16,7 @@ import styles from "./page.module.css";
 type OrderPaymentSummary = Pick<
   OrderSelectionSummary,
   | "categoryLabel"
-  | "pageLabel"
-  | "paperLabel"
-  | "quantityLabel"
+  | "optionRows"
   | "serviceLabel"
   | "totalPrice"
 >;
@@ -98,9 +96,7 @@ function createPaymentDetailRows(
       ? [{ label: "카테고리", value: summary.categoryLabel }]
       : []),
     { label: "서비스", value: summary.serviceLabel },
-    { label: "용지", value: summary.paperLabel },
-    { label: "페이지 수", value: summary.pageLabel },
-    { label: "수량", value: summary.quantityLabel },
+    ...summary.optionRows,
   ];
 }
 

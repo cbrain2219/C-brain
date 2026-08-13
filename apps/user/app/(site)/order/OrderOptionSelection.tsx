@@ -1,15 +1,24 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import {
+  calculateProductSelection,
+  createDefaultProductSelection,
+  formatProductOptionValue,
+  getProductPriceRows,
+} from "@repo/supabase/product-catalog";
+import type {
+  OrderProductCatalogItem,
+  OrderProductOptionSection,
+  OrderProductSelection,
+  OrderProductVariant,
+} from "@repo/supabase/product-catalog";
+import type { ProductOptionSectionKey } from "@repo/supabase/product-configuration";
+import { useState } from "react";
 
 import { Icon } from "../../../components/Icon";
 import {
-  type OrderOptionChoice,
-  type OrderQuantityOption,
   type OrderSelectionSummary,
   formatOrderCurrency,
-  getOrderOptionConfig,
-  getOrderQuantityOptions,
 } from "../../_content/order";
 import type { ServiceItem } from "../../_content/services";
 import styles from "./page.module.css";
@@ -17,142 +26,220 @@ import styles from "./page.module.css";
 type OrderOptionSelectionProps = {
   onConsult: () => void;
   onPaymentStart: (summary: OrderSelectionSummary) => void;
+  product: OrderProductCatalogItem;
   service: ServiceItem;
 };
 
-const findSelectedChoice = (
-  choices: ReadonlyArray<OrderOptionChoice>,
-  selectedId: string,
-) => {
-  const fallbackChoice = choices[0];
+const sectionNumbers = ["III", "IV", "V", "VI", "VII", "VIII", "IX"];
 
-  if (!fallbackChoice) {
-    throw new Error("Order option choices need at least one item.");
+function requireFirstVariant(product: OrderProductCatalogItem) {
+  const variant = product.variants[0];
+
+  if (!variant) throw new Error(`Product ${product.id} has no order variant.`);
+
+  return variant;
+}
+
+function requireDefaultSelection(variant: OrderProductVariant) {
+  const selection = createDefaultProductSelection(variant);
+
+  if (!selection) {
+    throw new Error(`Product variant ${variant.id} has no valid selection.`);
   }
 
-  return choices.find((choice) => choice.id === selectedId) ?? fallbackChoice;
-};
+  return selection;
+}
 
-const findSelectedQuantity = (
-  quantities: ReadonlyArray<OrderQuantityOption>,
-  selectedId: string,
-) => {
-  const fallbackQuantity = quantities[0];
+function formatSectionHeading(index: number, label: string) {
+  const number = sectionNumbers[index];
 
-  if (!fallbackQuantity) {
-    throw new Error("Order quantity options need at least one item.");
-  }
+  return number ? `${number}. ${label}` : label;
+}
+
+function createSelectionWithOptions(
+  variant: OrderProductVariant,
+  selection: OrderProductSelection,
+  optionValues: OrderProductSelection["optionValues"],
+) {
+  const priceRows = getProductPriceRows(variant, optionValues);
+  const quantity = variant.quantitySection
+    ? (priceRows.some((row) => row.quantity === selection.quantity)
+        ? selection.quantity
+        : (priceRows[0]?.quantity ?? null))
+    : null;
+  const nextSelection = { ...selection, optionValues, quantity };
+
+  return calculateProductSelection(variant, nextSelection)
+    ? nextSelection
+    : null;
+}
+
+function isOptionAvailable(
+  variant: OrderProductVariant,
+  selection: OrderProductSelection,
+  optionKey: ProductOptionSectionKey,
+  value: string,
+) {
+  return Boolean(
+    createSelectionWithOptions(variant, selection, {
+      ...selection.optionValues,
+      [optionKey]: value,
+    }),
+  );
+}
+
+function OptionSection({
+  index,
+  onSelect,
+  section,
+  selectedValue,
+  selection,
+  variant,
+}: {
+  index: number;
+  onSelect: (selection: OrderProductSelection) => void;
+  section: OrderProductOptionSection;
+  selectedValue: string;
+  selection: OrderProductSelection;
+  variant: OrderProductVariant;
+}) {
+  const titleId = `order-option-${section.key}`;
 
   return (
-    quantities.find((quantity) => quantity.id === selectedId) ??
-    fallbackQuantity
+    <section className={styles.optionSection} aria-labelledby={titleId}>
+      <h3 id={titleId}>{formatSectionHeading(index, section.label)}</h3>
+      <div className={styles.optionChoiceGroup}>
+        {section.values.map((value) => {
+          const nextSelection = createSelectionWithOptions(variant, selection, {
+            ...selection.optionValues,
+            [section.key]: value,
+          });
+          const isAvailable = isOptionAvailable(
+            variant,
+            selection,
+            section.key,
+            value,
+          );
+
+          return (
+            <button
+              aria-pressed={selectedValue === value}
+              className={`${styles.optionChoiceButton} ${
+                selectedValue === value ? styles.optionChoiceButtonActive : ""
+              }`}
+              disabled={!isAvailable || !nextSelection}
+              key={value}
+              onClick={() => nextSelection && onSelect(nextSelection)}
+              type="button"
+            >
+              {formatProductOptionValue(section, value)}
+            </button>
+          );
+        })}
+      </div>
+    </section>
   );
-};
-
-const requireOrderOptionConfig = (serviceId: string) => {
-  const optionConfig = getOrderOptionConfig(serviceId);
-
-  if (!optionConfig) {
-    throw new Error(`Order option config for ${serviceId} not found.`);
-  }
-
-  return optionConfig;
-};
+}
 
 export function OrderOptionSelection({
   onConsult,
   onPaymentStart,
+  product,
   service,
 }: OrderOptionSelectionProps) {
-  const optionConfig = requireOrderOptionConfig(service.id);
-  const [selectedPageId, setSelectedPageId] = useState(
-    optionConfig.defaultPageId,
+  const firstVariant = requireFirstVariant(product);
+  const [selectedVariantId, setSelectedVariantId] = useState(firstVariant.id);
+  const [selection, setSelection] = useState(() =>
+    requireDefaultSelection(firstVariant),
   );
-  const [selectedPaperId, setSelectedPaperId] = useState(
-    optionConfig.defaultPaperId,
-  );
-  const [selectedQuantityId, setSelectedQuantityId] = useState(
-    optionConfig.defaultQuantityId,
-  );
-  const [hasPlanning, setHasPlanning] = useState(false);
+  const selectedVariant =
+    product.variants.find((variant) => variant.id === selectedVariantId) ??
+    firstVariant;
+  const calculation = calculateProductSelection(selectedVariant, selection);
 
-  const selectedPage = findSelectedChoice(
-    optionConfig.pageOptions,
-    selectedPageId,
-  );
-  const selectedPaper = findSelectedChoice(
-    optionConfig.paperOptions,
-    selectedPaperId,
-  );
-  const quantityOptions = useMemo(
-    () =>
-      getOrderQuantityOptions(
-        optionConfig,
-        selectedPage.id,
-        selectedPaper.id,
-      ),
-    [optionConfig, selectedPage.id, selectedPaper.id],
-  );
+  if (!calculation) {
+    throw new Error(`Product variant ${selectedVariant.id} selection is invalid.`);
+  }
 
-  useEffect(() => {
-    const firstQuantity = quantityOptions[0];
-
-    if (
-      firstQuantity &&
-      !quantityOptions.some((quantity) => quantity.id === selectedQuantityId)
-    ) {
-      setSelectedQuantityId(firstQuantity.id);
-    }
-  }, [quantityOptions, selectedQuantityId]);
-
-  const selectedQuantity = findSelectedQuantity(
-    quantityOptions,
-    selectedQuantityId,
+  const quantityRows = getProductPriceRows(
+    selectedVariant,
+    selection.optionValues,
   );
-  const planningFee = hasPlanning ? optionConfig.planningService.fee : 0;
-  const totalPrice = selectedQuantity.total + planningFee;
-  const selectedServiceLabel = hasPlanning
-    ? `${optionConfig.selectedService.title} + ${optionConfig.planningService.title}`
-    : optionConfig.selectedService.title;
-  const priceRows = [
-    { label: "디자인비", value: optionConfig.selectedService.fee },
-    ...(hasPlanning
-      ? [{ label: "기획비", value: optionConfig.planningService.fee }]
+  const selectedServiceLabel = selection.hasPlanning
+    ? "디자인 + 인쇄 + 기획"
+    : "디자인 + 인쇄";
+  const optionRows = [
+    ...(product.variants.length > 1
+      ? [{ label: "상품 종류", value: selectedVariant.id }]
       : []),
-    ...(selectedQuantity.printFee > 0
-      ? [
-          {
-            label: `인쇄비 (${selectedQuantity.quantity})`,
-            value: selectedQuantity.printFee,
-          },
-        ]
+    ...calculation.optionRows,
+    ...(calculation.quantityLabel
+      ? [{ label: "수량", value: calculation.quantityLabel }]
       : []),
   ];
   const selectedSummary: OrderSelectionSummary = {
     categoryLabel: service.title,
     ids: {
-      hasPlanning,
-      pageId: selectedPage.id,
-      paperId: selectedPaper.id,
-      quantityId: selectedQuantity.id,
-      serviceId: optionConfig.serviceId,
-      unitPrice: selectedQuantity.unitPriceAmount,
+      hasPlanning: selection.hasPlanning,
+      optionValues: selection.optionValues,
+      productId: product.id,
+      quantity: selection.quantity,
+      quotedTotal: calculation.totalPrice,
+      serviceId: service.id,
+      variant: selectedVariant.id,
     },
-    pageLabel: selectedPage.label,
-    paperLabel: selectedPaper.label,
-    priceRows,
-    quantityLabel: selectedQuantity.quantity,
+    optionRows,
+    priceRows: calculation.priceRows,
     serviceLabel: selectedServiceLabel,
-    totalPrice,
+    totalPrice: calculation.totalPrice,
   };
-  const handlePaymentStart = () => {
-    onPaymentStart(selectedSummary);
+
+  const selectVariant = (variant: OrderProductVariant) => {
+    setSelectedVariantId(variant.id);
+    setSelection(requireDefaultSelection(variant));
+  };
+
+  const togglePlanning = () => {
+    const nextSelection = {
+      ...selection,
+      hasPlanning: !selection.hasPlanning,
+    };
+
+    if (calculateProductSelection(selectedVariant, nextSelection)) {
+      setSelection(nextSelection);
+    }
   };
 
   return (
     <>
       <div className={styles.optionLayout}>
         <div className={styles.optionMain}>
+          {product.variants.length > 1 ? (
+            <section
+              className={styles.optionSection}
+              aria-labelledby="variant-option-title"
+            >
+              <h3 id="variant-option-title">상품 종류</h3>
+              <div className={styles.optionChoiceGroup}>
+                {product.variants.map((variant) => (
+                  <button
+                    aria-pressed={selectedVariant.id === variant.id}
+                    className={`${styles.optionChoiceButton} ${
+                      selectedVariant.id === variant.id
+                        ? styles.optionChoiceButtonActive
+                        : ""
+                    }`}
+                    key={variant.id}
+                    onClick={() => selectVariant(variant)}
+                    type="button"
+                  >
+                    {variant.id}
+                  </button>
+                ))}
+              </div>
+            </section>
+          ) : null}
+
           <section
             className={styles.optionSection}
             aria-labelledby="service-option-title"
@@ -172,143 +259,141 @@ export function OrderOptionSelection({
                 <span
                   className={`${styles.optionServiceBadge} ${styles.optionServiceBadgeBrand}`}
                 >
-                  {optionConfig.selectedService.badge}
+                  기본 포함
                 </span>
                 <div className={styles.optionServiceCopy}>
-                  <h4>{optionConfig.selectedService.title}</h4>
-                  <p>{optionConfig.selectedService.description}</p>
+                  <h4>디자인 + 인쇄</h4>
+                  <p>편집 디자인·후가공·인쇄 원스톱 진행</p>
                 </div>
                 <div className={styles.optionServiceMeta}>
-                  <strong>{optionConfig.selectedService.priceLabel}</strong>
-                  <span>{optionConfig.selectedService.note}</span>
+                  <strong>
+                    {formatOrderCurrency(calculation.designPrintEstimate)} /{" "}
+                    {selectedVariant.estimateUnit}
+                  </strong>
+                  <span>선택한 옵션 기준 · 합계에 포함</span>
                 </div>
               </article>
 
-              <button
-                aria-pressed={hasPlanning}
-                className={`${styles.optionServiceCard} ${styles.optionServiceCardButton} ${
-                  hasPlanning ? styles.optionServiceCardSelectedExtra : ""
-                }`}
-                onClick={() => setHasPlanning((current) => !current)}
-                type="button"
-              >
-                <span
-                  className={`${styles.optionServiceBadge} ${styles.optionServiceBadgeInfo}`}
-                >
-                  {optionConfig.planningService.badge}
-                </span>
-                <span className={styles.optionServiceCopy}>
-                  <span className={styles.optionServiceTitle}>
-                    {optionConfig.planningService.title}
-                  </span>
-                  <span className={styles.optionServiceDescription}>
-                    {optionConfig.planningService.description}
-                  </span>
-                </span>
-                <span className={styles.optionServiceMeta}>
-                  <strong>{optionConfig.planningService.priceLabel}</strong>
-                  <span>{optionConfig.planningService.note}</span>
-                </span>
-              </button>
-            </div>
-          </section>
-
-          <section
-            className={styles.optionSection}
-            aria-labelledby="page-option-title"
-          >
-            <h3 id="page-option-title">{optionConfig.pageSectionTitle}</h3>
-            <div className={styles.optionChoiceGroup}>
-              {optionConfig.pageOptions.map((pageOption) => (
+              {selectedVariant.showPlanningEstimate &&
+              calculation.planningEstimate !== null ? (
                 <button
-                  className={`${styles.optionChoiceButton} ${
-                    selectedPageId === pageOption.id
-                      ? styles.optionChoiceButtonActive
+                  aria-pressed={selection.hasPlanning}
+                  className={`${styles.optionServiceCard} ${styles.optionServiceCardButton} ${
+                    selection.hasPlanning
+                      ? styles.optionServiceCardSelectedExtra
                       : ""
                   }`}
-                  key={pageOption.id}
-                  onClick={() => setSelectedPageId(pageOption.id)}
+                  onClick={togglePlanning}
                   type="button"
                 >
-                  {pageOption.label}
+                  <span
+                    className={`${styles.optionServiceBadge} ${styles.optionServiceBadgeInfo}`}
+                  >
+                    + 선택 추가
+                  </span>
+                  <span className={styles.optionServiceCopy}>
+                    <span className={styles.optionServiceTitle}>기획</span>
+                    <span className={styles.optionServiceDescription}>
+                      컨셉 방향·구성안·카피라이팅
+                    </span>
+                  </span>
+                  <span className={styles.optionServiceMeta}>
+                    <strong>
+                      +{formatOrderCurrency(calculation.planningEstimate)} /{" "}
+                      {selectedVariant.estimateUnit}
+                    </strong>
+                    <span>선택한 옵션 수에 따라 반영</span>
+                  </span>
                 </button>
-              ))}
+              ) : null}
             </div>
           </section>
 
-          <section
-            className={styles.optionSection}
-            aria-labelledby="paper-option-title"
-          >
-            <h3 id="paper-option-title">{optionConfig.paperSectionTitle}</h3>
-            <div className={styles.optionChoiceGroup}>
-              {optionConfig.paperOptions.map((paperOption) => (
-                <button
-                  className={`${styles.optionChoiceButton} ${styles.optionChoiceButtonWide} ${
-                    selectedPaperId === paperOption.id
-                      ? styles.optionChoiceButtonActive
-                      : ""
-                  }`}
-                  key={paperOption.id}
-                  onClick={() => setSelectedPaperId(paperOption.id)}
-                  type="button"
-                >
-                  {paperOption.label}
-                </button>
-              ))}
-            </div>
-          </section>
+          {selectedVariant.optionSections.map((section, index) => (
+            <OptionSection
+              index={index}
+              key={section.key}
+              onSelect={setSelection}
+              section={section}
+              selectedValue={selection.optionValues[section.key] ?? ""}
+              selection={selection}
+              variant={selectedVariant}
+            />
+          ))}
 
-          <section
-            className={styles.optionSection}
-            aria-labelledby="quantity-option-title"
-          >
-            <h3 id="quantity-option-title">V. 수량 선택</h3>
-            <div className={styles.quantityTableScroll}>
-              <div className={styles.quantityTable} role="table">
-                <div className={styles.quantityTableHeader} role="row">
-                  <span role="columnheader">선택</span>
-                  <span role="columnheader">수량</span>
-                  <span role="columnheader">인쇄 단가</span>
-                  <span role="columnheader">합계</span>
-                </div>
-                <div className={styles.quantityTableBody}>
-                  {quantityOptions.map((quantityOption) => {
-                    const isSelected =
-                      selectedQuantityId === quantityOption.id;
+          {selectedVariant.quantitySection ? (
+            <section
+              className={styles.optionSection}
+              aria-labelledby="quantity-option-title"
+            >
+              <h3 id="quantity-option-title">
+                {formatSectionHeading(
+                  selectedVariant.optionSections.length,
+                  selectedVariant.quantitySection.label,
+                )}
+              </h3>
+              <div className={styles.quantityTableScroll}>
+                <div className={styles.quantityTable} role="table">
+                  <div className={styles.quantityTableHeader} role="row">
+                    <span role="columnheader">선택</span>
+                    <span role="columnheader">수량</span>
+                    <span role="columnheader">인쇄 단가</span>
+                    <span role="columnheader">합계</span>
+                  </div>
+                  <div className={styles.quantityTableBody}>
+                    {quantityRows.map((quantityRow) => {
+                      const rowSelection = {
+                        ...selection,
+                        quantity: quantityRow.quantity,
+                      };
+                      const rowCalculation = calculateProductSelection(
+                        selectedVariant,
+                        rowSelection,
+                      );
+                      const isSelected =
+                        selection.quantity === quantityRow.quantity;
 
-                    return (
-                      <button
-                        className={styles.quantityRow}
-                        key={quantityOption.id}
-                        onClick={() => setSelectedQuantityId(quantityOption.id)}
-                        role="row"
-                        type="button"
-                      >
-                        <span
-                          className={`${styles.quantitySelectBadge} ${
-                            isSelected ? styles.quantitySelectBadgeActive : ""
-                          }`}
-                          role="cell"
+                      if (!rowCalculation) return null;
+
+                      return (
+                        <button
+                          aria-pressed={isSelected}
+                          className={styles.quantityRow}
+                          key={quantityRow.quantity}
+                          onClick={() => setSelection(rowSelection)}
+                          role="row"
+                          type="button"
                         >
-                          {isSelected ? "선택됨" : "선택"}
-                        </span>
-                        <span role="cell">{quantityOption.quantity}</span>
-                        <span className={styles.quantityUnitPrice} role="cell">
-                          {quantityOption.unitPrice}
-                        </span>
-                        <strong role="cell">
-                          {formatOrderCurrency(
-                            quantityOption.total + planningFee,
-                          )}
-                        </strong>
-                      </button>
-                    );
-                  })}
+                          <span
+                            className={`${styles.quantitySelectBadge} ${
+                              isSelected
+                                ? styles.quantitySelectBadgeActive
+                                : ""
+                            }`}
+                            role="cell"
+                          >
+                            {isSelected ? "선택됨" : "선택"}
+                          </span>
+                          <span role="cell">
+                            {rowCalculation.quantityLabel}
+                          </span>
+                          <span
+                            className={styles.quantityUnitPrice}
+                            role="cell"
+                          >
+                            {formatOrderCurrency(quantityRow.unitPrice)}
+                          </span>
+                          <strong role="cell">
+                            {formatOrderCurrency(rowCalculation.totalPrice)}
+                          </strong>
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
               </div>
-            </div>
-          </section>
+            </section>
+          ) : null}
         </div>
 
         <aside
@@ -325,21 +410,15 @@ export function OrderOptionSelection({
               <dt>서비스</dt>
               <dd>{selectedServiceLabel}</dd>
             </div>
-            <div>
-              <dt>용지</dt>
-              <dd>{selectedPaper.label}</dd>
-            </div>
-            <div>
-              <dt>페이지 수</dt>
-              <dd>{selectedPage.label}</dd>
-            </div>
-            <div>
-              <dt>수량</dt>
-              <dd>{selectedQuantity.quantity}</dd>
-            </div>
+            {optionRows.map((row) => (
+              <div key={`${row.label}-${row.value}`}>
+                <dt>{row.label}</dt>
+                <dd>{row.value}</dd>
+              </div>
+            ))}
           </dl>
           <dl className={styles.summaryList}>
-            {priceRows.map((row) => (
+            {calculation.priceRows.map((row) => (
               <div key={row.label}>
                 <dt>{row.label}</dt>
                 <dd>{formatOrderCurrency(row.value)}</dd>
@@ -348,12 +427,12 @@ export function OrderOptionSelection({
           </dl>
           <div className={styles.summaryTotal}>
             <span>합계</span>
-            <strong>{formatOrderCurrency(totalPrice)}</strong>
+            <strong>{formatOrderCurrency(calculation.totalPrice)}</strong>
           </div>
           <div className={styles.summaryActions}>
             <button
               className={styles.paymentButton}
-              onClick={handlePaymentStart}
+              onClick={() => onPaymentStart(selectedSummary)}
               type="button"
             >
               <span>결제하기</span>
@@ -375,10 +454,10 @@ export function OrderOptionSelection({
       <div className={styles.mobilePaymentBar}>
         <button
           className={styles.paymentButton}
-          onClick={handlePaymentStart}
+          onClick={() => onPaymentStart(selectedSummary)}
           type="button"
         >
-          <span>{formatOrderCurrency(totalPrice)} 결제하기</span>
+          <span>{formatOrderCurrency(calculation.totalPrice)} 결제하기</span>
           <Icon name="arrow-right" size={16} />
         </button>
       </div>

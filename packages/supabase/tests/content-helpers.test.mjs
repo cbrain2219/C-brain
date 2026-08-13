@@ -47,6 +47,7 @@ const {
   createProduct,
   deleteProduct,
   getAdminProduct,
+  getPublishedProduct,
   getLowestProductPrice,
   getLowestProductUnitPrice,
   listPublishedProducts,
@@ -274,6 +275,7 @@ test("product helpers use the JSONB product contract", async () => {
   };
 
   assert.deepEqual(await getAdminProduct(client, product.id), product);
+  assert.deepEqual(await getPublishedProduct(client, product.id), product);
   assert.deepEqual(await createProduct(client, input), product);
   assert.deepEqual(
     await updateProduct(client, product.id, {
@@ -287,6 +289,25 @@ test("product helpers use the JSONB product contract", async () => {
   assert.ok(calls.some((call) => call.method === "insert"));
   assert.ok(calls.some((call) => call.method === "update"));
   assert.ok(calls.some((call) => call.method === "delete"));
+  assert.ok(
+    calls.some(
+      (call) =>
+        call.method === "eq" &&
+        call.table === "products" &&
+        call.column === "status" &&
+        call.value === "published",
+    ),
+  );
+  assert.ok(
+    calls.some(
+      (call) =>
+        call.method === "eq" &&
+        call.table === "products" &&
+        call.column === "id" &&
+        call.value === product.id,
+    ),
+  );
+  assert.ok(calls.some((call) => call.method === "maybeSingle"));
 });
 
 test("post and attachment mutations pass payloads unchanged", async () => {

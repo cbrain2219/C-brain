@@ -120,18 +120,36 @@ function decodeHtmlEntities(value: string) {
     .replaceAll("&#39;", "'");
 }
 
+function stripUnsafeHtml(value: string) {
+  return value
+    .replace(/<script\b[^>]*>[\s\S]*?(?:<\/script>|$)/gi, "")
+    .replace(/<style\b[^>]*>[\s\S]*?(?:<\/style>|$)/gi, "");
+}
+
+function markdownToPlainText(value: string) {
+  return stripUnsafeHtml(value)
+    .replace(/^\s*(?:`{3,}|~{3,}).*$/gm, "")
+    .replace(/!\[([^\]]*)\]\([^)]+\)/g, "$1")
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
+    .replace(
+      /^[ \t]{0,3}(?:#{1,6}[ \t]+|>[ \t]?|[-+*][ \t]+|\d+[.)][ \t]+)/gm,
+      "",
+    )
+    .replace(/<[^>]+>/g, "")
+    .replace(/[*_~`]/g, "");
+}
+
 function getPortfolioPlainText(
   content: string,
   contentMode: TableRow<"portfolio_items">["content_mode"],
 ) {
   const text =
     contentMode === "html"
-      ? content
-          .replace(/<(script|style)\b[^>]*>[\s\S]*?<\/\1>/gi, "")
+      ? stripUnsafeHtml(content)
           .replace(/<br\s*\/?>/gi, "\n")
           .replace(/<\/(?:blockquote|div|h[1-6]|li|ol|p|section|ul)>/gi, "\n")
           .replace(/<[^>]+>/g, "")
-      : content;
+      : markdownToPlainText(content);
 
   return decodeHtmlEntities(text)
     .replace(/\r\n?/g, "\n")

@@ -125,6 +125,20 @@ export async function listPublishedProducts(client: CBrainSupabaseClient) {
   return unwrapSupabaseData(data, error);
 }
 
+export async function getPublishedProduct(
+  client: CBrainSupabaseClient,
+  id: string,
+) {
+  const { data, error } = await client
+    .from("products")
+    .select("id, configuration, product_type, sort_order")
+    .eq("status", "published")
+    .eq("id", id)
+    .maybeSingle();
+
+  return unwrapSupabaseData(data, error);
+}
+
 export async function listAdminProducts(client: CBrainSupabaseClient) {
   await requireAdmin(client);
 

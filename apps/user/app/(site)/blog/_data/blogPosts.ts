@@ -1,4 +1,4 @@
-import { getProductCategory } from "@repo/supabase/categories";
+import { normalizeBlogCategory } from "@repo/supabase/categories";
 import type { TableRow } from "@repo/supabase/types";
 
 import type {
@@ -158,7 +158,7 @@ export function mapBlogRows(
     return {
       author: "씨브레인",
       bannerRank: row.show_as_banner ? ++bannerRank : undefined,
-      category: getProductCategory(row.type)?.label ?? row.type.trim(),
+      category: normalizeBlogCategory(row.type),
       detail: createBlogDetail(row, plainText, summary),
       id: row.id,
       image: getBlogImage(row.thumbnail_path, resolveAssetUrl),

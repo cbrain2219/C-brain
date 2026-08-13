@@ -1,5 +1,6 @@
 "use client";
 
+import type { OrderProductCatalogItem } from "@repo/supabase/product-catalog";
 import { useEffect, useRef, useState } from "react";
 
 import { Icon } from "../../../components/Icon";
@@ -29,8 +30,10 @@ type OrderFlowSectionProps = {
     payload: OrderPaymentSubmitPayload,
   ) => Promise<void> | void;
   orderStep: OrderStepId;
+  selectedDirectProduct: OrderProductCatalogItem | null;
   selectedDirectService: ServiceItem | null;
   selectedOrderSummary: OrderSelectionSummary | null;
+  services: readonly ServiceItem[];
 };
 
 export function OrderFlowSection({
@@ -41,8 +44,10 @@ export function OrderFlowSection({
   onOptionBack,
   onPaymentSubmit,
   orderStep,
+  selectedDirectProduct,
   selectedDirectService,
   selectedOrderSummary,
+  services,
 }: OrderFlowSectionProps) {
   const [isConsultDialogOpen, setIsConsultDialogOpen] = useState(false);
   const orderFlowRef = useRef<HTMLElement>(null);
@@ -102,7 +107,7 @@ export function OrderFlowSection({
           상품유형 주문 단계
         </h2>
 
-        {selectedDirectService ? (
+        {selectedDirectService && selectedDirectProduct ? (
           <div className={styles.optionHeader} ref={optionHeaderRef}>
             <button
               className={styles.optionBackButton}
@@ -121,7 +126,7 @@ export function OrderFlowSection({
 
         <OrderProgress activeStepIndex={activeStepIndex} />
 
-        {selectedDirectService ? (
+        {selectedDirectService && selectedDirectProduct ? (
           isCustomerStep ? (
             <OrderCustomerInfoStep
               isPaymentSubmitting={isPaymentSubmitting}
@@ -133,6 +138,7 @@ export function OrderFlowSection({
               key={selectedDirectService.id}
               onConsult={openConsultDialog}
               onPaymentStart={onCustomerInfoStart}
+              product={selectedDirectProduct}
               service={selectedDirectService}
             />
           )
@@ -148,6 +154,7 @@ export function OrderFlowSection({
               <ServiceCards
                 onDirectServiceSelect={onDirectServiceSelect}
                 onQuoteServiceSelect={openConsultDialog}
+                services={services}
               />
             </div>
           </div>

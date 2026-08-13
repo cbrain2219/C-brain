@@ -26,10 +26,12 @@ type OrderCheckoutRequest = {
   };
   selection: {
     hasPlanning: boolean;
-    pageId: string;
-    paperId: string;
-    quantityId: string;
-    serviceId: string;
+    optionValues: OrderPaymentSubmitPayload["summary"]["ids"]["optionValues"];
+    productId: string;
+    quantity: number | null;
+    quotedTotal: number;
+    serviceId: OrderPaymentSubmitPayload["summary"]["ids"]["serviceId"];
+    variant: OrderPaymentSubmitPayload["summary"]["ids"]["variant"];
   };
 };
 
@@ -48,10 +50,12 @@ function createOrderCheckoutRequest(
     },
     selection: {
       hasPlanning: payload.summary.ids.hasPlanning,
-      pageId: payload.summary.ids.pageId,
-      paperId: payload.summary.ids.paperId,
-      quantityId: payload.summary.ids.quantityId,
+      optionValues: payload.summary.ids.optionValues,
+      productId: payload.summary.ids.productId,
+      quantity: payload.summary.ids.quantity,
+      quotedTotal: payload.summary.ids.quotedTotal,
       serviceId: payload.summary.ids.serviceId,
+      variant: payload.summary.ids.variant,
     },
   };
 }

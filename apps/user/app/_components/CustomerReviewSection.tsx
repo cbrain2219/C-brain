@@ -1,12 +1,14 @@
 import { SectionLayout } from "../../components/SectionLayout";
-import { getLandingCustomerTestimonials } from "../_content/customerReviews";
+import type { CustomerTestimonial } from "../_content/customerReviews";
 import styles from "../page.module.css";
 import { CustomerTestimonialCard } from "./CustomerTestimonialCard";
 import { PartnerLogoCloud } from "./PartnerLogoCloud";
 
-export async function CustomerReviewSection() {
-  const reviews = await getLandingCustomerTestimonials();
+type CustomerReviewSectionProps = {
+  reviews: readonly CustomerTestimonial[];
+};
 
+export function CustomerReviewSection({ reviews }: CustomerReviewSectionProps) {
   return (
     <SectionLayout
       badge="고객 후기"

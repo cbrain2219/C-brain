@@ -32,7 +32,7 @@ const complaintSubmissionLimits = {
   detail: 20_000,
   email: 320,
   name: 100,
-  phone: 20,
+  phone: 13,
   service: 100,
 } as const;
 
@@ -251,7 +251,7 @@ export function toComplaintInput(
     content: values.detail.trim(),
     email: values.email.trim(),
     name: values.name.trim(),
-    phone: values.phone,
+    phone: values.phone.trim(),
     phone_verified: false,
     privacy_agreed_at: privacyAgreedAt,
     service: values.service.trim(),
@@ -330,7 +330,7 @@ function parseComplaintValues(
     detail: (value.detail as string).trim(),
     email: (value.email as string).trim(),
     name: (value.name as string).trim(),
-    phone: (value.phone as string).replace(/\D/g, ""),
+    phone: (value.phone as string).trim(),
     privacy: value.privacy,
     service: (value.service as string).trim(),
     website: typeof value.website === "string" ? value.website.trim() : "",

@@ -628,10 +628,14 @@
 }
 
 .portfolioOverlay p {
+  display: -webkit-box;
+  overflow: hidden;
   font-family: var(--font-sans);
   font-size: 12px;
   font-weight: 500;
   line-height: 18px;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 6;
 }
 
 .centerAction {
@@ -2869,6 +2873,10 @@
     aspect-ratio: 296 / 341;
   }
 
+  .portfolioOverlay p {
+    -webkit-line-clamp: 8;
+  }
+
   .serviceGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -3023,6 +3031,10 @@
 
   .portfolioCard {
     aspect-ratio: 1;
+  }
+
+  .portfolioOverlay p {
+    -webkit-line-clamp: 10;
   }
 
   .portfolioCard:nth-child(n + 5):nth-child(-n + 9) {

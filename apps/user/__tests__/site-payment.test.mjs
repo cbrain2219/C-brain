@@ -9,6 +9,10 @@ const checkoutRoutePath = new URL(
 );
 const paymentPath = new URL("../app/(site)/order/payment.ts", import.meta.url);
 const orderPagePath = new URL("../app/(site)/order/page.tsx", import.meta.url);
+const orderPageClientPath = new URL(
+  "../app/(site)/order/OrderPageClient.tsx",
+  import.meta.url,
+);
 const flowSectionPath = new URL(
   "../app/(site)/order/OrderFlowSection.tsx",
   import.meta.url,
@@ -42,15 +46,20 @@ test("site checkout recalculates catalog pricing and keeps provider fields serve
     readFile(paymentPath, "utf8"),
   ]);
 
-  assert.match(routeSource, /getOrderOptionConfig/);
-  assert.match(routeSource, /getOrderQuantityOptions/);
-  assert.match(routeSource, /quantity\.total \+ planningFee/);
+  assert.match(routeSource, /getPublishedProduct/);
+  assert.match(routeSource, /createOrderProductCatalogItem/);
+  assert.match(routeSource, /calculateProductSelection/);
+  assert.match(
+    routeSource,
+    /calculation\.totalPrice !== selection\.quotedTotal/,
+  );
+  assert.match(routeSource, /const amount = calculation\.totalPrice/);
   assert.match(routeSource, /createSiteCheckout/);
   assert.match(routeSource, /createNicepayCheckoutRequest/);
   assert.match(routeSource, /status: 503/);
   assert.ok(
     routeSource.indexOf("config = getNicepayConfig()") <
-      routeSource.indexOf("createSiteCheckout(createAdminSupabaseClient()"),
+      routeSource.indexOf("createSiteCheckout(client"),
     "NICEPAY configuration must be checked before creating a checkout",
   );
   assert.doesNotMatch(routeSource, /payload\.amount/);
@@ -62,27 +71,30 @@ test("site checkout recalculates catalog pricing and keeps provider fields serve
 });
 
 test("site checkout reuses one browser request id and delegates NICEPAY loading", async () => {
-  const [pageSource, flowSectionSource, customerInfoSource] = await Promise.all(
+  const [pageSource, pageClientSource, flowSectionSource, customerInfoSource] = await Promise.all(
     [
       readFile(orderPagePath, "utf8"),
+      readFile(orderPageClientPath, "utf8"),
       readFile(flowSectionPath, "utf8"),
       readFile(customerInfoPath, "utf8"),
     ],
   );
 
-  assert.match(pageSource, /paymentSubmissionInFlightRef/);
+  assert.match(pageSource, /getPublishedOrderProducts/);
+  assert.match(pageSource, /<OrderPageClient/);
+  assert.match(pageClientSource, /paymentSubmissionInFlightRef/);
   assert.match(
-    pageSource,
+    pageClientSource,
     /if \(paymentSubmissionInFlightRef\.current\) return/,
   );
-  assert.match(pageSource, /setIsPaymentSubmitting\(true\)/);
-  assert.match(pageSource, /releasePaymentSubmission/);
-  assert.match(pageSource, /crypto\.randomUUID/);
-  assert.match(pageSource, /checkoutRequest\?\.payloadKey === payloadKey/);
-  assert.match(pageSource, /isPaymentSubmitting=\{isPaymentSubmitting\}/);
-  assert.match(pageSource, /requestNicepayPayment/);
-  assert.doesNotMatch(pageSource, /pay\.nicepay\.co\.kr\/v1\/js/);
-  assert.doesNotMatch(pageSource, /AUTHNICE\.requestPay/);
+  assert.match(pageClientSource, /setIsPaymentSubmitting\(true\)/);
+  assert.match(pageClientSource, /releasePaymentSubmission/);
+  assert.match(pageClientSource, /crypto\.randomUUID/);
+  assert.match(pageClientSource, /checkoutRequest\?\.payloadKey === payloadKey/);
+  assert.match(pageClientSource, /isPaymentSubmitting=\{isPaymentSubmitting\}/);
+  assert.match(pageClientSource, /requestNicepayPayment/);
+  assert.doesNotMatch(pageClientSource, /pay\.nicepay\.co\.kr\/v1\/js/);
+  assert.doesNotMatch(pageClientSource, /AUTHNICE\.requestPay/);
   assert.match(flowSectionSource, /isPaymentSubmitting: boolean/);
   assert.match(
     flowSectionSource,
@@ -105,11 +117,12 @@ test("site checkout request IDs are reused only for identical checkout payloads"
     summary: {
       ids: {
         hasPlanning: false,
-        pageId: "8",
-        paperId: "paper-0",
-        quantityId: "500",
+        optionValues: { pageCount: "8", paper: "스노우지" },
+        productId: "11111111-1111-4111-8111-111111111111",
+        quantity: 500,
+        quotedTotal: 520000,
         serviceId: "brochure-catalog",
-        unitPrice: 1040,
+        variant: "브로슈어 · 카탈로그",
       },
     },
   };
@@ -136,7 +149,7 @@ test("site checkout request IDs are reused only for identical checkout payloads"
       ...payload,
       summary: {
         ...payload.summary,
-        ids: { ...payload.summary.ids, quantityId: "1000" },
+        ids: { ...payload.summary.ids, quantity: 1000 },
       },
     }),
   );

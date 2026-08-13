@@ -1,10 +1,13 @@
 import "server-only";
 
 import {
+  createOrderProductCatalog,
   getPublicAssetUrl,
+  listPublishedProducts,
   listPublishedPortfolioItems,
   listPublishedPosts,
 } from "@repo/supabase";
+import { connection } from "next/server";
 import { cache } from "react";
 
 import { mapBlogRows } from "../app/(site)/blog/_data/blogPosts";
@@ -39,5 +42,20 @@ async function loadPublishedPortfolioItems() {
   }
 }
 
+async function loadPublishedOrderProducts() {
+  await connection();
+
+  try {
+    const client = createPublicUserSupabaseClient();
+    if (!client) return [];
+
+    return createOrderProductCatalog(await listPublishedProducts(client));
+  } catch (error) {
+    console.error("Failed to load published products.", error);
+    return [];
+  }
+}
+
 export const getPublishedBlogPosts = cache(loadPublishedBlogPosts);
 export const getPublishedPortfolioItems = cache(loadPublishedPortfolioItems);
+export const getPublishedOrderProducts = cache(loadPublishedOrderProducts);

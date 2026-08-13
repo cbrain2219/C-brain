@@ -5,7 +5,10 @@ import { createPageMetadata } from "../../_content/seo";
 import { createStaticPageStructuredData } from "../../_content/structured-data";
 import { getPublishedBlogPosts } from "../../../lib/publicContent";
 import { BlogBoard } from "./_components/BlogBoard";
-import { resolveBlogCategory } from "./_constants/blogCategories";
+import {
+  getBlogCategories,
+  resolveBlogCategory,
+} from "./_constants/blogCategories";
 import styles from "./page.module.css";
 
 type BlogPageProps = {
@@ -19,7 +22,8 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
     searchParams,
     getPublishedBlogPosts(),
   ]);
-  const activeCategory = resolveBlogCategory(category);
+  const categories = getBlogCategories(posts);
+  const activeCategory = resolveBlogCategory(category, categories);
 
   return (
     <div className={styles.page}>
@@ -48,7 +52,11 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
         }
         overlayClassName={styles.blogHeroOverlay}
       />
-      <BlogBoard activeCategory={activeCategory} posts={posts} />
+      <BlogBoard
+        activeCategory={activeCategory}
+        categories={categories}
+        posts={posts}
+      />
     </div>
   );
 }

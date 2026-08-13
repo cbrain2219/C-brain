@@ -55,7 +55,7 @@ test("portfolio DB rows preserve content, database order, and valid images", asy
       },
       {
         client_name: "고정 기업",
-        content: "고정 본문",
+        content: "## 고정 본문\\n\\n**강조**와 [링크](https://example.com)\\n\\n- 목록 항목",
         content_mode: "markdown",
         images: [{ alt: "", path: "portfolio/pinned.webp" }],
         pinned: true,
@@ -73,6 +73,7 @@ test("portfolio DB rows preserve content, database order, and valid images", asy
     assert.equal(getPortfolioCategoryIdFromValue("banner-book"), "banner-display");
     assert.equal(items[0].description, "안전한 & 본문");
     assert.doesNotMatch(items[0].description, /<|alert/);
+    assert.equal(items[1].description, "고정 본문\\n\\n강조와 링크\\n\\n목록 항목");
     assert.deepEqual(items[0].detailImages.map((image) => image.src), [
       "https://assets.example/portfolio/first.webp",
       "/figma-assets/portfolio-axis.png",

@@ -41,21 +41,26 @@ test("public category surfaces consume the shared six-category contract", async 
   assert.match(sources.order, /import type \{ ProductCategoryId \}/);
   assert.match(
     sources.order,
-    /satisfies Record<ProductCategoryId, AdminOrderProduct>/,
+    /Partial<Record<ProductOptionSectionKey, string>>/,
   );
-  assert.match(sources.services, /productCategories/);
-  assert.match(sources.blogTypes, /productTypes as BLOG_CATEGORY_VALUES/);
+  assert.match(
+    sources.services,
+    /satisfies Record<[\s\S]*?ProductCategoryId/,
+  );
+  assert.match(sources.services, /createServiceItems/);
+  assert.match(sources.blogTypes, /export type BlogCategory = string/);
   assert.match(
     sources.blogCategories,
-    /\["전체", \.\.\.BLOG_CATEGORY_VALUES\]/,
+    /getBlogCategoryOptions\(posts\.map\(\(post\) => post\.category\)\)/,
   );
+  assert.match(sources.blogCategories, /blogAllCategory/);
   assert.match(
     sources.complaintSubmission,
     /export const serviceOptions = productTypes/,
   );
   assert.match(
     sources.landingServices,
-    /import \{ services \} from "\.\.\/_content\/services"/,
+    /services: readonly ServiceItem\[\]/,
   );
   assert.doesNotMatch(
     [sources.order, sources.services, sources.portfolio].join("\n"),
