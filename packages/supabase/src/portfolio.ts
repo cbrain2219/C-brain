@@ -10,6 +10,7 @@ export async function listPublishedPortfolioItems(
     .from("portfolio_items")
     .select("*")
     .eq("status", "published")
+    .order("pinned", { ascending: false })
     .order("sort_order", { ascending: true })
     .order("id", { ascending: true });
 

@@ -168,7 +168,13 @@ test("published content queries use stable display ordering", async () => {
   await listPublishedReviews(client);
   await listPublishedProducts(client);
 
-  for (const table of ["posts", "portfolio_items", "reviews", "products"]) {
+  assert.deepEqual(orderCalls(calls, "portfolio_items"), [
+    ["pinned", { ascending: false }],
+    ["sort_order", { ascending: true }],
+    ["id", { ascending: true }],
+  ]);
+
+  for (const table of ["posts", "reviews", "products"]) {
     assert.deepEqual(orderCalls(calls, table), [
       ["sort_order", { ascending: true }],
       ["id", { ascending: true }],
