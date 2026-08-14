@@ -68,11 +68,6 @@ export default async function PortfolioPage({
 
       <section aria-labelledby="portfolio-work-title" className={styles.work}>
         <div className={styles.workInner}>
-          <div className={styles.workHeader}>
-            <p className={styles.badge}>4,000건+ 대표 디자인 제작 사례</p>
-            <h2 id="portfolio-work-title">브로슈어 · 카탈로그 제작물</h2>
-          </div>
-
           <PortfolioGallery
             categories={portfolioCategories}
             initialCategoryId={initialCategoryId}

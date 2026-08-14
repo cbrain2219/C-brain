@@ -94,6 +94,10 @@ test("blog page keeps the shared header, hero, category, and CTA contracts", asy
   assert.match(board, /scroll=\{false\}/);
   assert.match(
     board,
+    /\{activeCategory\} 게시글 <strong>\{visiblePosts\.length\}<\/strong>/,
+  );
+  assert.match(
+    board,
     /aria-current=\{\s*activeCategory === category \? "page" : undefined\s*\}/,
   );
   assert.match(blogSection, /import Link from "next\/link"/);

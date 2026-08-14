@@ -112,6 +112,9 @@ export function PortfolioGallery({
   const activeItems = items.filter(
     (item) => item.categoryId === activeCategoryId,
   );
+  const activeCategory = categories.find(
+    (category) => category.id === activeCategoryId,
+  );
 
   const handleCategoryClick = (event: MouseEvent<HTMLButtonElement>) => {
     const categoryId = event.currentTarget.dataset
@@ -133,76 +136,85 @@ export function PortfolioGallery({
   };
 
   return (
-    <div className={styles.gallery}>
-      <HorizontalDragScroll
-        ariaLabel="포트폴리오 카테고리"
-        className={styles.categoryNav}
-      >
-        {categories.map((category) => {
-          const isActive = activeCategoryId === category.id;
+    <>
+      <div className={styles.workHeader}>
+        <p className={styles.badge}>4,000건+ 대표 디자인 제작 사례</p>
+        <h2 id="portfolio-work-title">
+          {`${activeCategory?.label ?? "포트폴리오"} 제작물`}
+        </h2>
+      </div>
 
-          return (
-            <button
-              aria-pressed={isActive}
-              className={`${styles.categoryButton} ${
-                isActive ? styles.categoryButtonActive : ""
-              }`}
-              data-category-id={category.id}
-              key={category.id}
-              onClick={handleCategoryClick}
-              type="button"
-            >
-              {category.label}
-            </button>
-          );
-        })}
-      </HorizontalDragScroll>
+      <div className={styles.gallery}>
+        <HorizontalDragScroll
+          ariaLabel="포트폴리오 카테고리"
+          className={styles.categoryNav}
+        >
+          {categories.map((category) => {
+            const isActive = activeCategoryId === category.id;
 
-      {activeItems.length > 0 ? (
-        <ul className={styles.portfolioGrid}>
-          {activeItems.map((item) => (
-            <li className={styles.portfolioItem} key={item.slug}>
-              <article>
-                <Link
-                  aria-label={`${item.client} ${item.title} 상세 보기`}
-                  className={styles.portfolioCard}
-                  href={getPortfolioDetailHref(item, activeCategoryId)}
-                  onClick={handlePortfolioCardClick}
-                >
-                  <figure className={styles.portfolioFigure}>
-                    <div className={styles.portfolioImageFrame}>
-                      <Image
-                        alt={item.imageAlt}
-                        className={styles.portfolioImage}
-                        fill
-                        sizes="(min-width: 1120px) 347px, (min-width: 960px) calc(33.333vw - 26.667px), (min-width: 640px) calc(50vw - 30px), calc(100vw - 40px)"
-                        src={item.image}
-                      />
-                    </div>
-                    <figcaption className={styles.portfolioCardBody}>
-                      <span className={styles.portfolioTag}>
-                        {
-                          categories.find(
-                            (category) => category.id === item.categoryId,
-                          )?.label
-                        }
-                      </span>
-                      <div className={styles.portfolioCardText}>
-                        <p>{item.client}</p>
-                        <h3>{item.title}</h3>
+            return (
+              <button
+                aria-pressed={isActive}
+                className={`${styles.categoryButton} ${
+                  isActive ? styles.categoryButtonActive : ""
+                }`}
+                data-category-id={category.id}
+                key={category.id}
+                onClick={handleCategoryClick}
+                type="button"
+              >
+                {category.label}
+              </button>
+            );
+          })}
+        </HorizontalDragScroll>
+
+        {activeItems.length > 0 ? (
+          <ul className={styles.portfolioGrid}>
+            {activeItems.map((item) => (
+              <li className={styles.portfolioItem} key={item.slug}>
+                <article>
+                  <Link
+                    aria-label={`${item.client} ${item.title} 상세 보기`}
+                    className={styles.portfolioCard}
+                    href={getPortfolioDetailHref(item, activeCategoryId)}
+                    onClick={handlePortfolioCardClick}
+                  >
+                    <figure className={styles.portfolioFigure}>
+                      <div className={styles.portfolioImageFrame}>
+                        <Image
+                          alt={item.imageAlt}
+                          className={styles.portfolioImage}
+                          fill
+                          sizes="(min-width: 1120px) 347px, (min-width: 960px) calc(33.333vw - 26.667px), (min-width: 640px) calc(50vw - 30px), calc(100vw - 40px)"
+                          src={item.image}
+                        />
                       </div>
-                    </figcaption>
-                  </figure>
-                </Link>
-              </article>
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <p className={styles.emptyState} role="status">
-          등록된 포트폴리오가 없습니다.
-        </p>
-      )}
-    </div>
+                      <figcaption className={styles.portfolioCardBody}>
+                        <span className={styles.portfolioTag}>
+                          {
+                            categories.find(
+                              (category) => category.id === item.categoryId,
+                            )?.label
+                          }
+                        </span>
+                        <div className={styles.portfolioCardText}>
+                          <p>{item.client}</p>
+                          <h3>{item.title}</h3>
+                        </div>
+                      </figcaption>
+                    </figure>
+                  </Link>
+                </article>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className={styles.emptyState} role="status">
+            등록된 포트폴리오가 없습니다.
+          </p>
+        )}
+      </div>
+    </>
   );
 }

@@ -66,7 +66,7 @@ export function BlogBoard({ activeCategory, categories, posts }: BlogBoardProps)
           <header className={styles.blogBoardHeader}>
             <p className={styles.blogBoardKicker}>C · Brain 공식 블로그</p>
             <h2 className={styles.blogBoardTitle} id="blog-board-title">
-              전체 게시글 <strong>{posts.length}</strong>
+              {activeCategory} 게시글 <strong>{visiblePosts.length}</strong>
             </h2>
           </header>
 

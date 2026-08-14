@@ -61,6 +61,24 @@ test("portfolio work content keeps a 32px gap up to its 1080px max width", async
   assert.match(workInnerStyle ?? "", /gap:\s*32px;/);
 });
 
+test("portfolio work title follows the active category", async () => {
+  const [gallery, listPage] = await Promise.all([
+    readFile(galleryPath, "utf8"),
+    readFile(listPagePath, "utf8"),
+  ]);
+
+  assert.doesNotMatch(listPage, /브로슈어 · 카탈로그 제작물/);
+  assert.match(
+    gallery,
+    /const activeCategory = categories\.find\([\s\S]*?category\.id === activeCategoryId/,
+  );
+  assert.match(gallery, /<h2 id="portfolio-work-title">/);
+  assert.match(
+    gallery,
+    /\{`\$\{activeCategory\?\.label \?\? "포트폴리오"\} 제작물`\}/,
+  );
+});
+
 test("portfolio grid keeps three columns from the 960px breakpoint", async () => {
   const [gallery, styles] = await Promise.all([
     readFile(galleryPath, "utf8"),
