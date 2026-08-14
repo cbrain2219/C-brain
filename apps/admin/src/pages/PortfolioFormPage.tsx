@@ -316,7 +316,9 @@ export function PortfolioFormPage() {
         let path = slot.path
 
         if (slot.file) {
-          path = await uploadPublicAsset('portfolio', slot.file)
+          path = await uploadPublicAsset('portfolio', slot.file, {
+            preserveOriginalFileName: true,
+          })
           uploadedPaths.push(path)
         }
 

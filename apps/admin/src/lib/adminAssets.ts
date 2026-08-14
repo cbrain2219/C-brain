@@ -4,6 +4,10 @@ import {
   getPublicFileUrl,
   uploadFile,
 } from '@repo/supabase'
+import {
+  createPublicAssetPath,
+  type PublicAssetPathOptions,
+} from './publicAssetPath'
 import { supabase } from './supabase'
 
 function getFileExtension(file: File) {
@@ -21,12 +25,12 @@ const assetContentTypes: Readonly<Record<string, string>> = {
   webp: 'image/webp',
 }
 
-export function createPublicAssetPath(scope: string, file: File) {
-  return `${scope}/${crypto.randomUUID()}.${getFileExtension(file)}`
-}
-
-export async function uploadPublicAsset(scope: string, file: File) {
-  const path = createPublicAssetPath(scope, file)
+export async function uploadPublicAsset(
+  scope: string,
+  file: File,
+  pathOptions?: PublicAssetPathOptions,
+) {
+  const path = createPublicAssetPath(scope, file.name, pathOptions)
 
   await uploadFile(supabase, STORAGE_BUCKETS.publicAssets, path, file, {
     contentType: file.type || assetContentTypes[getFileExtension(file)],
