@@ -15,12 +15,13 @@ test("landing services render the published admin product collection", async () 
     readFile(homePath, "utf8"),
   ]);
 
-  assert.doesNotMatch(source, /"use client"/);
+  assert.match(source, /"use client"/);
   assert.match(source, /import Link from "next\/link"/);
   assert.match(source, /import type \{ ServiceItem \}/);
   assert.match(source, /services: readonly ServiceItem\[\]/);
   assert.match(source, /getOrderDirectServiceHref/);
-  assert.doesNotMatch(source, /useState|OrderConsultDialog/);
+  assert.match(source, /useState/);
+  assert.match(source, /OrderConsultDialog/);
   assert.doesNotMatch(source, /@repo\/supabase/);
   assert.doesNotMatch(source, /createUserSupabaseClient/);
   assert.doesNotMatch(source, /listPublishedProducts/);
@@ -37,7 +38,18 @@ test("landing services render the published admin product collection", async () 
     source,
     /<span style=\{serviceButtonStyle\}>[\s\S]*?정찰제 즉시결제/,
   );
-  assert.doesNotMatch(source, /quoteButtonStyle|견적 후 주문\(카카오톡\)/);
+  assert.match(
+    source,
+    /const fixedQuoteServices = \[[\s\S]*?title: "패키지 · 쇼핑백"[\s\S]*?title: "촬영"[\s\S]*?title: "기타"/,
+  );
+  assert.match(
+    source,
+    /const quoteButtonStyle[\s\S]*?color: "var\(--landing-info-500\)"/,
+  );
+  assert.match(source, /styles\.serviceQuoteIcon/);
+  assert.match(source, /styles\.serviceMetaQuote/);
+  assert.match(source, /견적 후 주문\(카카오톡\)/);
+  assert.match(source, /setIsConsultDialogOpen\(true\)/);
   assert.match(source, /className=\{styles\.serviceConsultCard\}/);
 });
 
