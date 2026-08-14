@@ -8,11 +8,16 @@ const sectionPath = new URL(
 );
 const homePath = new URL("../app/(site)/page.tsx", import.meta.url);
 const iconPath = new URL("../components/Icon.tsx", import.meta.url);
+const quoteServicesPath = new URL(
+  "../app/_content/quoteServices.ts",
+  import.meta.url,
+);
 
 test("landing services render the published admin product collection", async () => {
-  const [source, homeSource] = await Promise.all([
+  const [source, homeSource, quoteServicesSource] = await Promise.all([
     readFile(sectionPath, "utf8"),
     readFile(homePath, "utf8"),
+    readFile(quoteServicesPath, "utf8"),
   ]);
 
   assert.match(source, /"use client"/);
@@ -38,8 +43,10 @@ test("landing services render the published admin product collection", async () 
     source,
     /<span style=\{serviceButtonStyle\}>[\s\S]*?정찰제 즉시결제/,
   );
+  assert.match(source, /import \{ fixedQuoteServices \}/);
+  assert.match(source, /\{fixedQuoteServices\.map\(\(service\) =>/);
   assert.match(
-    source,
+    quoteServicesSource,
     /const fixedQuoteServices = \[[\s\S]*?title: "패키지 · 쇼핑백"[\s\S]*?title: "촬영"[\s\S]*?title: "기타"/,
   );
   assert.match(

@@ -8,7 +8,7 @@ export type ServiceItem = {
   description: string;
   icon: IconName;
   id: ProductCategoryId;
-  isQuote: boolean;
+  isQuote: false;
   price: string;
   productId: string;
   title: string;

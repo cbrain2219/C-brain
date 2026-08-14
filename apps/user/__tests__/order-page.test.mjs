@@ -105,6 +105,9 @@ test("order page route, content, responsive styles, and navigation are wired", (
     "] as const satisfies ReadonlyArray<OrderMethod>;",
   );
   const servicesSource = read("apps/user/app/_content/services.ts");
+  const quoteServicesSource = read(
+    "apps/user/app/_content/quoteServices.ts",
+  );
   const serviceCardsSource = read("apps/user/app/_components/ServiceCards.tsx");
   const orderFlowRule = extractBlock(stylesSource, ".orderFlow");
   const orderInnerRule = extractBlock(stylesSource, ".orderInner");
@@ -1007,6 +1010,15 @@ test("order page route, content, responsive styles, and navigation are wired", (
     /service\.id === serviceId && !service\.isQuote/,
   );
   assert.doesNotMatch(servicesSource, /photo-shoot|id:\s*"etc"/);
+  assert.match(
+    quoteServicesSource,
+    /export const fixedQuoteServices = \[[\s\S]*?title: "패키지 · 쇼핑백"[\s\S]*?title: "촬영"[\s\S]*?title: "기타"/,
+  );
+  assert.match(serviceCardsSource, /import \{[\s\S]*fixedQuoteServices/);
+  assert.match(
+    serviceCardsSource,
+    /\[\s*\.\.\.services,\s*\.\.\.fixedQuoteServices,?\s*\]/,
+  );
   assert.match(serviceCardsSource, /serviceGrid/);
   assert.match(serviceCardsSource, /serviceCard/);
   assert.match(serviceCardsSource, /견적 후 주문\(카카오톡\)/);

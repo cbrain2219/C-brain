@@ -5,6 +5,10 @@ import { type CSSProperties } from "react";
 
 import { Icon } from "../../components/Icon";
 import { KAKAO_CHANNEL_URL } from "../_content/contact";
+import {
+  fixedQuoteServices,
+  type FixedQuoteService,
+} from "../_content/quoteServices";
 import type { ServiceItem } from "../_content/services";
 import styles from "../page.module.css";
 
@@ -38,7 +42,7 @@ const consultButtonStyle: CSSProperties = {
 
 type ServiceCardsProps = {
   onDirectServiceSelect?: (service: ServiceItem) => void;
-  onQuoteServiceSelect?: (service: ServiceItem) => void;
+  onQuoteServiceSelect?: (service: FixedQuoteService) => void;
   showConsultAction?: boolean;
   services: readonly ServiceItem[];
 };
@@ -49,10 +53,15 @@ export function ServiceCards({
   services,
   showConsultAction = false,
 }: ServiceCardsProps) {
+  const serviceCards: readonly (ServiceItem | FixedQuoteService)[] = [
+    ...services,
+    ...fixedQuoteServices,
+  ];
+
   return (
     <>
       <div className={styles.serviceGrid}>
-        {services.map((service) => {
+        {serviceCards.map((service) => {
           const cardClickHandler = service.isQuote
             ? onQuoteServiceSelect
               ? () => onQuoteServiceSelect(service)
