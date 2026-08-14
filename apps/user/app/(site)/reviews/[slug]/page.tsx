@@ -86,6 +86,23 @@ export default async function CustomerReviewDetailPage({
   const absoluteVideoUrl = videoUrl
     ? getAbsoluteUrl(videoUrl, siteUrl)
     : undefined;
+  const videoStructuredData = detail.youtubeEmbedUrl
+    ? {
+        description: detail.videoAlt,
+        embedUrl: detail.youtubeEmbedUrl,
+        name: detail.title,
+        thumbnailUrl: imageUrl,
+        uploadDate: detail.publishedAt,
+      }
+    : absoluteVideoUrl
+      ? {
+          contentUrl: absoluteVideoUrl,
+          description: detail.videoAlt,
+          name: detail.title,
+          thumbnailUrl: imageUrl,
+          uploadDate: detail.publishedAt,
+        }
+      : undefined;
 
   return (
     <article
@@ -111,15 +128,7 @@ export default async function CustomerReviewDetailPage({
           imagePath: detail.thumbnail,
           section: detail.category,
           urlPath: `/reviews/${detail.slug}`,
-          video: absoluteVideoUrl
-            ? {
-                contentUrl: absoluteVideoUrl,
-                description: detail.videoAlt,
-                name: detail.title,
-                thumbnailUrl: imageUrl,
-                uploadDate: detail.publishedAt,
-              }
-            : undefined,
+          video: videoStructuredData,
         })}
       />
       <div className={styles.reviewDetailInner}>
@@ -158,38 +167,52 @@ export default async function CustomerReviewDetailPage({
           itemProp="articleBody"
         >
           <figure className={styles.reviewDetailVideo}>
-            <Image
-              alt={detail.videoAlt}
-              className={styles.reviewDetailVideoImage}
-              fill
-              priority
-              sizes="(min-width: 640px) 640px, calc(100vw - 40px)"
-              src={detail.thumbnail}
-            />
-            {detail.videoUrl ? (
-              <a
-                aria-label={`${detail.title} 영상 보기`}
-                href={detail.videoUrl}
-                className={styles.reviewDetailVideoLink}
-              >
-                <span
-                  aria-hidden="true"
-                  className={styles.reviewDetailVideoOverlay}
+            {detail.youtubeEmbedUrl ? (
+              <iframe
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                allowFullScreen
+                className={styles.reviewDetailYouTubeEmbed}
+                loading="lazy"
+                referrerPolicy="strict-origin-when-cross-origin"
+                src={detail.youtubeEmbedUrl}
+                title={detail.videoAlt}
+              />
+            ) : (
+              <>
+                <Image
+                  alt={detail.videoAlt}
+                  className={styles.reviewDetailVideoImage}
+                  fill
+                  priority
+                  sizes="(min-width: 640px) 640px, calc(100vw - 40px)"
+                  src={detail.thumbnail}
                 />
-                <span
-                  aria-hidden="true"
-                  className={styles.reviewDetailPlayButton}
-                >
-                  <Image
-                    alt=""
-                    className={styles.reviewDetailPlayIcon}
-                    fill
-                    sizes="48px"
-                    src={reviewPlayLargeIcon}
-                  />
-                </span>
-              </a>
-            ) : null}
+                {detail.videoUrl ? (
+                  <a
+                    aria-label={`${detail.title} 영상 보기`}
+                    href={detail.videoUrl}
+                    className={styles.reviewDetailVideoLink}
+                  >
+                    <span
+                      aria-hidden="true"
+                      className={styles.reviewDetailVideoOverlay}
+                    />
+                    <span
+                      aria-hidden="true"
+                      className={styles.reviewDetailPlayButton}
+                    >
+                      <Image
+                        alt=""
+                        className={styles.reviewDetailPlayIcon}
+                        fill
+                        sizes="48px"
+                        src={reviewPlayLargeIcon}
+                      />
+                    </span>
+                  </a>
+                ) : null}
+              </>
+            )}
             <figcaption className={styles.visuallyHidden}>
               {detail.videoAlt}
             </figcaption>

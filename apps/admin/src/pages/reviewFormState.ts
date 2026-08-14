@@ -1,8 +1,11 @@
+import { getYouTubeVideoId } from '@repo/supabase/review-video'
 import { isValidPortfolioSlug } from './portfolioFormState.ts'
 
 export const reviewTypes = ['인터뷰', '후기'] as const
+export const reviewVideoSources = ['file', 'youtube'] as const
 
 export type ReviewType = (typeof reviewTypes)[number]
+export type ReviewVideoSource = (typeof reviewVideoSources)[number]
 
 export const MAX_REVIEW_VIDEO_BYTES = 500 * 1024 * 1024
 
@@ -30,6 +33,16 @@ export function getReviewVideoError(file: ReviewVideoFile) {
 
   if (file.size > MAX_REVIEW_VIDEO_BYTES) {
     return '영상 파일은 최대 500MB까지 업로드할 수 있습니다.'
+  }
+
+  return null
+}
+
+export function getReviewYouTubeUrlError(value: string) {
+  if (!value.trim()) return 'YouTube 영상 링크를 입력해주세요.'
+
+  if (!getYouTubeVideoId(value)) {
+    return '올바른 YouTube 영상 링크를 입력해주세요.'
   }
 
   return null

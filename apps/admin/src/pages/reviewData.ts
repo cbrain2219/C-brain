@@ -1,6 +1,10 @@
 import type { PublishStatus, TableInsert, TableRow } from '@repo/supabase/types'
+import {
+  getYouTubeVideoId,
+  getYouTubeWatchUrl,
+} from '@repo/supabase/review-video'
 import { formatAdminDate, toDateInputValue, toPublishedAt } from './contentListState.ts'
-import type { ReviewType } from './reviewFormState.ts'
+import type { ReviewType, ReviewVideoSource } from './reviewFormState.ts'
 
 export type ReviewContentMode = 'html' | 'markdown'
 
@@ -19,6 +23,8 @@ export type ReviewFormState = {
   readonly videoAlt: string
   readonly videoPath: string | null
   readonly videoPreviewUrl: string | null
+  readonly videoSource: ReviewVideoSource
+  readonly youtubeUrl: string
 }
 
 export type ReviewListRow = {
@@ -47,6 +53,7 @@ export type ReviewMutationInput = Pick<
   | 'title'
   | 'video_alt'
   | 'video_path'
+  | 'youtube_video_id'
 >
 
 export function createInitialReviewForm(): ReviewFormState {
@@ -65,6 +72,8 @@ export function createInitialReviewForm(): ReviewFormState {
     videoAlt: '',
     videoPath: null,
     videoPreviewUrl: null,
+    videoSource: 'file',
+    youtubeUrl: '',
   }
 }
 
@@ -95,6 +104,8 @@ export function toReviewFormState(
   review: TableRow<'reviews'>,
   videoPreviewUrl: string | null,
 ): ReviewFormState {
+  const youtubeUrl = getYouTubeWatchUrl(review.youtube_video_id ?? '')
+
   return {
     company: review.company_name,
     content: review.content,
@@ -109,7 +120,9 @@ export function toReviewFormState(
     video: null,
     videoAlt: review.video_alt ?? '',
     videoPath: review.video_path,
-    videoPreviewUrl,
+    videoPreviewUrl: youtubeUrl ? null : videoPreviewUrl,
+    videoSource: youtubeUrl ? 'youtube' : 'file',
+    youtubeUrl: youtubeUrl ?? '',
   }
 }
 
@@ -127,10 +140,23 @@ export function toReviewMutationInput(
   const publishedAt = toPublishedAt(form.publishedAt)
   const slug = form.slug.trim()
   const title = form.title.trim()
+  const youtubeVideoId =
+    isInterview && form.videoSource === 'youtube'
+      ? getYouTubeVideoId(form.youtubeUrl)
+      : null
+  const nextVideoPath =
+    isInterview && form.videoSource === 'file' ? videoPath : null
+  const hasInterviewVideo =
+    form.videoSource === 'youtube'
+      ? Boolean(youtubeVideoId)
+      : Boolean(nextVideoPath || form.video)
 
   if (
     status === 'published' &&
-    (!company || !content || !publishedAt || (isInterview ? !title || !slug : !manager))
+    (!company ||
+      !content ||
+      !publishedAt ||
+      (isInterview ? !title || !slug || !hasInterviewVideo : !manager))
   ) {
     throw new Error('필수 정보를 모두 입력해주세요.')
   }
@@ -148,6 +174,7 @@ export function toReviewMutationInput(
     status,
     title: isInterview ? title || null : null,
     video_alt: isInterview ? form.videoAlt.trim() || null : null,
-    video_path: isInterview ? videoPath : null,
+    video_path: nextVideoPath,
+    youtube_video_id: isInterview ? youtubeVideoId : null,
   }
 }

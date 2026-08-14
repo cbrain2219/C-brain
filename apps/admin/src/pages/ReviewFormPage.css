@@ -16,6 +16,26 @@
   display: block;
 }
 
+.review-form__youtube-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.review-form__youtube-preview-wrap {
+  width: 100%;
+  border-radius: 16px;
+  background: var(--admin-gray-50);
+  overflow: hidden;
+}
+
+.review-form__youtube-preview {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border: 0;
+  display: block;
+}
+
 @media (max-width: 520px) {
   .review-form__video-dropzone {
     height: 200px;

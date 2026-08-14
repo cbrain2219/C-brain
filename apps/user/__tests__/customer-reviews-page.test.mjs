@@ -86,6 +86,12 @@ const createPublicUserSupabaseClient = () => null;
 const getPublicAssetUrl = (_client, path) => \`https://assets.test/\${path}\`;
 const getPublishedReview = async () => null;
 const listPublishedReviews = async () => [];
+const getYouTubeEmbedUrl = (videoId) => /^[A-Za-z0-9_-]{11}$/.test(videoId)
+  ? "https://www.youtube-nocookie.com/embed/" + videoId
+  : null;
+const getYouTubeWatchUrl = (videoId) => /^[A-Za-z0-9_-]{11}$/.test(videoId)
+  ? "https://www.youtube.com/watch?v=" + videoId
+  : null;
 ${source.replace(/import[\s\S]*?from "[^"]+";\n/g, "")}
 `;
   const ts = await import("typescript");
@@ -120,6 +126,7 @@ function reviewRow(overrides = {}) {
     video_alt: null,
     video_path: null,
     view_count: 0,
+    youtube_video_id: null,
     ...overrides,
   };
 }
@@ -316,6 +323,31 @@ test("review mappers separate kinds, sanitize content, and keep presentation met
   assert.equal(detail.thumbnail, reviewInterviewImage);
   assert.equal(detail.projectInfo[0].value, "새 고객사");
   assert.equal(detail.videoUrl, "https://assets.test/reviews/new-interview.mp4");
+
+  const youtubeDetail = mapCustomerInterviewDetail(
+    reviewRow({
+      id: "youtube-interview",
+      kind: "interview",
+      manager_name: null,
+      slug: "youtube-interview",
+      title: "YouTube 고객 인터뷰",
+      video_path: "reviews/must-not-resolve.mp4",
+      youtube_video_id: "dQw4w9WgXcQ",
+    }),
+    () => {
+      throw new Error("YouTube videos must not be resolved through Storage");
+    },
+  );
+
+  assert.equal(
+    youtubeDetail.youtubeUrl,
+    "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+  );
+  assert.equal(
+    youtubeDetail.youtubeEmbedUrl,
+    "https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ",
+  );
+  assert.equal(youtubeDetail.videoUrl, undefined);
 
   const legacy = mapCustomerReviewRows([
     reviewRow({

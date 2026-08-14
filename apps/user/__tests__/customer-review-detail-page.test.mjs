@@ -53,6 +53,7 @@ test("customer review detail page follows portfolio detail route conventions", a
   assert.match(source, /datePublished: detail\.publishedAt/);
   assert.match(source, /dateModified: detail\.publishedAt/);
   assert.match(source, /contentUrl: absoluteVideoUrl/);
+  assert.match(source, /embedUrl: detail\.youtubeEmbedUrl/);
   assert.match(source, /thumbnailUrl: imageUrl/);
   assert.match(source, /type: "article"/);
   assert.match(source, /getPublishedCustomerInterviewDetailBySlug/);
@@ -110,6 +111,12 @@ test("customer review detail page keeps semantic article markup and admin video 
     source,
     /detail\.videoUrl \? \([\s\S]*href=\{detail\.videoUrl\}[\s\S]*reviewDetailPlayButton/,
   );
+  assert.match(source, /detail\.youtubeEmbedUrl \? \(/);
+  assert.match(source, /<iframe/);
+  assert.match(source, /src=\{detail\.youtubeEmbedUrl\}/);
+  assert.match(source, /allowFullScreen/);
+  assert.match(source, /loading="lazy"/);
+  assert.match(source, /referrerPolicy="strict-origin-when-cross-origin"/);
   assert.doesNotMatch(source, /itemType="https:\/\/schema\.org\/VideoObject"/);
   assert.match(source, /<figcaption className=\{styles\.visuallyHidden\}>/);
   assert.match(source, /alt=\{detail\.videoAlt\}/);
@@ -162,6 +169,8 @@ test("customer review detail content preserves local presentation metadata", asy
   assert.match(content, /export type CustomerInterviewDetail/);
   assert.match(content, /publishedAt: string/);
   assert.match(content, /videoUrl\?: string/);
+  assert.match(content, /youtubeEmbedUrl\?: string/);
+  assert.match(content, /youtubeUrl\?: string/);
   assert.doesNotMatch(content, /export const customerInterviewDetails/);
   assert.match(content, /export const getPublishedCustomerInterviewDetailBySlug/);
   assert.match(content, /export function getCustomerInterviewDetailSeo/);
@@ -186,6 +195,7 @@ test("customer review detail styles match the P/T/F/M responsive detail frame", 
     ".reviewDetailInner",
     ".reviewDetailVideo",
     ".reviewDetailPlayButton",
+    ".reviewDetailYouTubeEmbed",
     ".reviewDetailBody",
     ".projectInfoList",
     ".reviewDetailNavigation",

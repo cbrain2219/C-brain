@@ -4,10 +4,15 @@ import test from 'node:test'
 import { URL } from 'node:url'
 
 const baselineUrl = new URL('../../../supabase/initial_admin_content.sql', import.meta.url)
+const reviewYouTubeSqlUrl = new URL(
+  '../../../supabase/manual/add_review_youtube_video.sql',
+  import.meta.url,
+)
 const typesUrl = new URL('../src/types.ts', import.meta.url)
 
-const [baseline, types] = await Promise.all([
+const [baseline, reviewYouTubeSql, types] = await Promise.all([
   readFile(baselineUrl, 'utf8'),
+  readFile(reviewYouTubeSqlUrl, 'utf8'),
   readFile(typesUrl, 'utf8'),
 ])
 const legacySubtypeColumn = ['product', 'subtype'].join('_')
@@ -32,6 +37,7 @@ test('fresh baseline declares the current admin content contracts', () => {
     'pinned',
     'company_name',
     'manager_name',
+    'youtube_video_id',
     'complaint_type',
     'phone_verified',
     'privacy_agreed_at',
@@ -95,7 +101,7 @@ test('TypeScript mirrors the current content tables', () => {
   )
   assert.match(
     types,
-    /reviews:\s*\{[\s\S]*?Row:\s*\{[\s\S]*?company_name: string;[\s\S]*?manager_name: string \| null;[\s\S]*?show_on_landing: boolean;/,
+    /reviews:\s*\{[\s\S]*?Row:\s*\{[\s\S]*?company_name: string;[\s\S]*?manager_name: string \| null;[\s\S]*?show_on_landing: boolean;[\s\S]*?youtube_video_id: string \| null;/,
   )
   assert.match(
     types,
@@ -106,6 +112,19 @@ test('TypeScript mirrors the current content tables', () => {
     /complaint_attachments:\s*\{[\s\S]*?Row:\s*\{[\s\S]*?object_path: string;[\s\S]*?original_file_name: string;/,
   )
   assert.match(types, /content_mode: "html" \| "markdown"/)
+})
+
+test('manual review YouTube SQL replaces the known legacy published-video check', () => {
+  assert.match(reviewYouTubeSql, /add column if not exists youtube_video_id text/)
+  assert.match(reviewYouTubeSql, /drop constraint if exists reviews_check/)
+  assert.doesNotMatch(reviewYouTubeSql, /do \$migration\$/)
+  assert.match(reviewYouTubeSql, /constraint reviews_youtube_video_id_format_check/)
+  assert.match(reviewYouTubeSql, /constraint reviews_video_source_check/)
+  assert.match(reviewYouTubeSql, /constraint reviews_published_interview_video_check/)
+  assert.match(
+    reviewYouTubeSql,
+    /nullif\(btrim\(video_path\), ''\) is not null[\s\S]*or[\s\S]*youtube_video_id is not null/,
+  )
 })
 
 test('TypeScript mirrors the current JSONB product table', () => {

@@ -14,6 +14,7 @@ export * from "./productConfiguration.ts";
 export * from "./productCatalog.ts";
 export * from "./products.ts";
 export * from "./reviews.ts";
+export * from "./reviewVideo.ts";
 export * from "./refunds.ts";
 export * from "./sales.ts";
 export * from "./server.ts";

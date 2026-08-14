@@ -200,6 +200,28 @@ test("detail structured data helpers create dynamic article and creative work no
     assert.equal(noticeArticle["@graph"][0].headline, "공지 제목");
     assert.equal(noticeArticle["@graph"][0].mainEntityOfPage, "https://example.com/notice/notice-1");
 
+    const interviewArticle = createArticleStructuredData({
+      authorName: "씨브레인",
+      datePublished: "2026-08-14",
+      description: "인터뷰 영상입니다.",
+      headline: "고객 인터뷰",
+      section: "고객 인터뷰",
+      urlPath: "/reviews/youtube-interview",
+      video: {
+        description: "고객 인터뷰 영상",
+        embedUrl: "https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ",
+        name: "고객 인터뷰",
+        thumbnailUrl: "https://example.com/interview.png",
+        uploadDate: "2026-08-14",
+      },
+    });
+
+    assert.equal(
+      interviewArticle["@graph"][0].video.embedUrl,
+      "https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ",
+    );
+    assert.equal(interviewArticle["@graph"][0].video.contentUrl, undefined);
+
     const creativeWork = createCreativeWorkStructuredData({
       authorName: "씨브레인",
       category: "브로슈어 · 카탈로그",

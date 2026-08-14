@@ -1,6 +1,8 @@
 import {
   createReview,
   deleteReview,
+  getYouTubeEmbedUrl,
+  getYouTubeVideoId,
   getAdminReview,
   updateReview,
 } from '@repo/supabase'
@@ -30,11 +32,16 @@ import type {
 } from './reviewData'
 import {
   getReviewVideoError,
+  getReviewYouTubeUrlError,
   isReviewType,
   isValidInterviewSlug,
+  reviewVideoSources,
   reviewTypes,
 } from './reviewFormState'
-import type { ReviewType } from './reviewFormState'
+import type {
+  ReviewType,
+  ReviewVideoSource,
+} from './reviewFormState'
 import './BlogFormPage.css'
 import './ReviewFormPage.css'
 
@@ -168,9 +175,15 @@ type VideoFieldProps = {
   readonly onClear: () => void
   readonly onDrop: (event: DragEvent<HTMLButtonElement>) => void
   readonly onFileChange: (event: ChangeEvent<HTMLInputElement>) => void
+  readonly onSourceChange: (source: ReviewVideoSource) => void
+  readonly onYouTubeErrorChange: (message: string) => void
+  readonly onYouTubeUrlChange: (value: string) => void
   readonly video: File | null
   readonly videoAlt: string
   readonly videoPreviewUrl: string | null
+  readonly videoSource: ReviewVideoSource
+  readonly youtubeError: string
+  readonly youtubeUrl: string
 }
 
 function VideoField({
@@ -181,21 +194,54 @@ function VideoField({
   onClear,
   onDrop,
   onFileChange,
+  onSourceChange,
+  onYouTubeErrorChange,
+  onYouTubeUrlChange,
   video,
   videoAlt,
   videoPreviewUrl,
+  videoSource,
+  youtubeError,
+  youtubeUrl,
 }: VideoFieldProps) {
-  const errorId = `${inputId}-error`
+  const fileErrorId = `${inputId}-error`
+  const youtubeErrorId = `${inputId}-youtube-error`
+  const youtubeInputId = `${inputId}-youtube-url`
+  const youtubeVideoId = getYouTubeVideoId(youtubeUrl)
+  const youtubeEmbedUrl = youtubeVideoId
+    ? getYouTubeEmbedUrl(youtubeVideoId)
+    : null
 
   return (
     <fieldset className="blog-form__thumbnail-field">
       <legend className="blog-form__label">인터뷰 영상</legend>
+      <div
+        aria-label="인터뷰 영상 등록 방식"
+        className="blog-form__mode-tabs"
+        role="group"
+      >
+        {reviewVideoSources.map((source) => (
+          <button
+            aria-pressed={videoSource === source}
+            className={
+              videoSource === source
+                ? 'blog-form__mode-tab blog-form__mode-tab--active'
+                : 'blog-form__mode-tab'
+            }
+            key={source}
+            onClick={() => onSourceChange(source)}
+            type="button"
+          >
+            {source === 'file' ? '영상 파일' : 'YouTube 링크'}
+          </button>
+        ))}
+      </div>
       <div className="blog-form__thumbnail-header">
         <span className="blog-form__thumbnail-label">
           <span className="blog-form__check">
             <AdminIcon name="check" />
           </span>
-          <span>영상 추가</span>
+          <span>{videoSource === 'file' ? '파일 추가' : '링크 추가'}</span>
         </span>
         <label className="blog-form__thumbnail-alt" htmlFor={`${inputId}-alt`}>
           <span className="blog-form__visually-hidden">영상 대체 텍스트</span>
@@ -211,76 +257,129 @@ function VideoField({
           />
         </label>
       </div>
-      <input
-        accept=".mp4,.mov,video/mp4,video/quicktime"
-        aria-describedby={errorMessage ? errorId : undefined}
-        aria-invalid={errorMessage ? true : undefined}
-        className="blog-form__visually-hidden"
-        id={inputId}
-        name="video"
-        onChange={onFileChange}
-        ref={inputRef}
-        tabIndex={-1}
-        type="file"
-      />
-      <div className="blog-form__thumbnail-preview-wrap">
-        <button
-          aria-describedby={errorMessage ? errorId : undefined}
-          aria-invalid={errorMessage ? true : undefined}
-          aria-label={videoPreviewUrl ? '선택한 인터뷰 영상 변경' : undefined}
-          className={
-            videoPreviewUrl
-              ? 'blog-form__dropzone review-form__video-dropzone review-form__video-dropzone--preview'
-              : 'blog-form__dropzone review-form__video-dropzone'
-          }
-          onClick={() => inputRef.current?.click()}
-          onDragOver={(event) => event.preventDefault()}
-          onDrop={onDrop}
-          type="button"
-        >
-          {videoPreviewUrl ? (
-            <video
-              aria-label={videoAlt || '선택한 인터뷰 영상 미리보기'}
-              className="review-form__video-preview"
-              muted
-              playsInline
-              preload="metadata"
-              src={videoPreviewUrl}
-            />
-          ) : (
-            <>
-              <span className="blog-form__folder-icon">
-                <AdminIcon name="folder-up" size={20} />
-              </span>
-              <span className="blog-form__dropzone-copy">
-                <span>파일을 드래그 또는 클릭 후 파일 업로드 (0/1)</span>
-                <span>MP4, MOV 등 / 최대 500MB 제한</span>
-              </span>
-            </>
-          )}
-        </button>
-        {videoPreviewUrl ? (
-          <button
-            aria-label={`${video?.name ?? '등록된 영상'} 삭제`}
-            className="blog-form__thumbnail-chip"
-            onClick={onClear}
-            type="button"
-          >
-            <span
-              className="blog-form__thumbnail-file-name"
-              title={video?.name ?? '등록된 영상'}
+      {videoSource === 'file' ? (
+        <>
+          <input
+            accept=".mp4,.mov,video/mp4,video/quicktime"
+            aria-describedby={errorMessage ? fileErrorId : undefined}
+            aria-invalid={errorMessage ? true : undefined}
+            className="blog-form__visually-hidden"
+            id={inputId}
+            name="video"
+            onChange={onFileChange}
+            ref={inputRef}
+            tabIndex={-1}
+            type="file"
+          />
+          <div className="blog-form__thumbnail-preview-wrap">
+            <button
+              aria-describedby={errorMessage ? fileErrorId : undefined}
+              aria-invalid={errorMessage ? true : undefined}
+              aria-label={
+                videoPreviewUrl ? '선택한 인터뷰 영상 변경' : undefined
+              }
+              className={
+                videoPreviewUrl
+                  ? 'blog-form__dropzone review-form__video-dropzone review-form__video-dropzone--preview'
+                  : 'blog-form__dropzone review-form__video-dropzone'
+              }
+              id={`${inputId}-trigger`}
+              onClick={() => inputRef.current?.click()}
+              onDragOver={(event) => event.preventDefault()}
+              onDrop={onDrop}
+              type="button"
             >
-              {video?.name ?? '등록된 영상'}
+              {videoPreviewUrl ? (
+                <video
+                  aria-label={videoAlt || '선택한 인터뷰 영상 미리보기'}
+                  className="review-form__video-preview"
+                  muted
+                  playsInline
+                  preload="metadata"
+                  src={videoPreviewUrl}
+                />
+              ) : (
+                <>
+                  <span className="blog-form__folder-icon">
+                    <AdminIcon name="folder-up" size={20} />
+                  </span>
+                  <span className="blog-form__dropzone-copy">
+                    <span>파일을 드래그 또는 클릭 후 파일 업로드 (0/1)</span>
+                    <span>MP4, MOV 등 / 최대 500MB 제한</span>
+                  </span>
+                </>
+              )}
+            </button>
+            {videoPreviewUrl ? (
+              <button
+                aria-label={`${video?.name ?? '등록된 영상'} 삭제`}
+                className="blog-form__thumbnail-chip"
+                onClick={onClear}
+                type="button"
+              >
+                <span
+                  className="blog-form__thumbnail-file-name"
+                  title={video?.name ?? '등록된 영상'}
+                >
+                  {video?.name ?? '등록된 영상'}
+                </span>
+                <AdminIcon name="x-close" size={20} />
+              </button>
+            ) : null}
+          </div>
+          {errorMessage ? (
+            <span className="blog-form__error" id={fileErrorId} role="alert">
+              {errorMessage}
             </span>
-            <AdminIcon name="x-close" size={20} />
-          </button>
-        ) : null}
-      </div>
-      {errorMessage ? (
-        <span className="blog-form__error" id={errorId} role="alert">
-          {errorMessage}
-        </span>
-      ) : null}
+          ) : null}
+        </>
+      ) : (
+        <div className="review-form__youtube-fields">
+          <label className="blog-form__field" htmlFor={youtubeInputId}>
+            <span className="blog-form__label">YouTube 영상 링크</span>
+            <input
+              aria-describedby={youtubeError ? youtubeErrorId : undefined}
+              aria-invalid={youtubeError ? true : undefined}
+              autoComplete="url"
+              className="blog-form__control"
+              id={youtubeInputId}
+              name="youtubeUrl"
+              onChange={(event) => {
+                const value = event.currentTarget.value
+
+                onYouTubeUrlChange(value)
+                onYouTubeErrorChange(
+                  value.trim() ? (getReviewYouTubeUrlError(value) ?? '') : '',
+                )
+              }}
+              onInvalid={() =>
+                onYouTubeErrorChange(getReviewYouTubeUrlError(youtubeUrl) ?? '')
+              }
+              placeholder="https://www.youtube.com/watch?v=..."
+              required
+              type="url"
+              value={youtubeUrl}
+            />
+          </label>
+          {youtubeError ? (
+            <span className="blog-form__error" id={youtubeErrorId} role="alert">
+              {youtubeError}
+            </span>
+          ) : null}
+          {youtubeEmbedUrl ? (
+            <div className="review-form__youtube-preview-wrap">
+              <iframe
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                allowFullScreen
+                className="review-form__youtube-preview"
+                referrerPolicy="strict-origin-when-cross-origin"
+                src={youtubeEmbedUrl}
+                title="YouTube 인터뷰 영상 미리보기"
+              />
+            </div>
+          ) : null}
+        </div>
+      )}
     </fieldset>
   )
 }
@@ -329,9 +428,12 @@ type InterviewFieldsProps = {
   readonly onSlugErrorChange: (message: string) => void
   readonly onUpdate: UpdateReviewForm
   readonly onVideoClear: () => void
+  readonly onVideoSourceChange: (source: ReviewVideoSource) => void
+  readonly onYouTubeErrorChange: (message: string) => void
   readonly slugError: string
   readonly videoError: string
   readonly videoInput: RefObject<HTMLInputElement | null>
+  readonly youtubeError: string
 }
 
 function InterviewFields({
@@ -342,9 +444,12 @@ function InterviewFields({
   onSlugErrorChange,
   onUpdate,
   onVideoClear,
+  onVideoSourceChange,
+  onYouTubeErrorChange,
   slugError,
   videoError,
   videoInput,
+  youtubeError,
 }: InterviewFieldsProps) {
   return (
     <>
@@ -419,9 +524,15 @@ function InterviewFields({
         onClear={onVideoClear}
         onDrop={onFileDrop}
         onFileChange={onFileChange}
+        onSourceChange={onVideoSourceChange}
+        onYouTubeErrorChange={onYouTubeErrorChange}
+        onYouTubeUrlChange={(value) => onUpdate('youtubeUrl', value)}
         video={form.video}
         videoAlt={form.videoAlt}
         videoPreviewUrl={form.videoPreviewUrl}
+        videoSource={form.videoSource}
+        youtubeError={youtubeError}
+        youtubeUrl={form.youtubeUrl}
       />
       <ContentField
         content={form.content}
@@ -508,6 +619,7 @@ export function ReviewFormPage() {
   const [slugError, setSlugError] = useState('')
   const [typeError, setTypeError] = useState('')
   const [videoError, setVideoError] = useState('')
+  const [youtubeError, setYouTubeError] = useState('')
   const [isLoadingReview, setIsLoadingReview] = useState(isEditing)
   const [isSaving, setIsSaving] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
@@ -553,6 +665,7 @@ export function ReviewFormPage() {
         setSlugError('')
         setTypeError('')
         setVideoError('')
+        setYouTubeError('')
         setTypeInputKey((current) => current + 1)
       } catch {
         if (!isCurrent) return
@@ -631,12 +744,14 @@ export function ReviewFormPage() {
     try {
       toReviewMutationInput(form, status, form.videoPath)
 
-      if (form.type === '인터뷰' && form.video) {
+      if (form.type === '인터뷰' && form.videoSource === 'file' && form.video) {
         uploadedPath = await uploadPublicAsset('reviews', form.video)
       }
 
       const nextVideoPath =
-        form.type === '인터뷰' ? uploadedPath ?? form.videoPath : null
+        form.type === '인터뷰' && form.videoSource === 'file'
+          ? (uploadedPath ?? form.videoPath)
+          : null
       const input = toReviewMutationInput(form, status, nextVideoPath)
 
       if (reviewId) await updateReview(supabase, reviewId, input)
@@ -726,7 +841,31 @@ export function ReviewFormPage() {
       return
     }
 
+    if (intent !== 'draft' && form.type === '인터뷰') {
+      if (form.videoSource === 'file' && !form.video && !form.videoPath) {
+        setVideoError('인터뷰 영상 파일을 추가해주세요.')
+        window.requestAnimationFrame(() => {
+          document.getElementById(`${formId}-video-trigger`)?.focus()
+        })
+        return
+      }
+
+      if (form.videoSource === 'youtube') {
+        const errorMessage = getReviewYouTubeUrlError(form.youtubeUrl)
+
+        if (errorMessage) {
+          setYouTubeError(errorMessage)
+          window.requestAnimationFrame(() => {
+            document.getElementById(`${formId}-video-youtube-url`)?.focus()
+          })
+          return
+        }
+      }
+    }
+
     setSlugError('')
+    setVideoError('')
+    setYouTubeError('')
     void persist(intent === 'draft' ? 'draft' : 'published')
   }
 
@@ -846,9 +985,16 @@ export function ReviewFormPage() {
           onSlugErrorChange={setSlugError}
           onUpdate={updateForm}
           onVideoClear={clearVideo}
+          onVideoSourceChange={(source) => {
+            updateForm('videoSource', source)
+            setVideoError('')
+            setYouTubeError('')
+          }}
+          onYouTubeErrorChange={setYouTubeError}
           slugError={slugError}
           videoError={videoError}
           videoInput={videoInput}
+          youtubeError={youtubeError}
         />
       ) : null}
 

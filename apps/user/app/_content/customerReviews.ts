@@ -1,6 +1,8 @@
 import {
+  getYouTubeEmbedUrl,
   getPublicAssetUrl,
   getPublishedReview,
+  getYouTubeWatchUrl,
   listPublishedReviews,
   type TableRow,
 } from "@repo/supabase";
@@ -62,6 +64,8 @@ export type CustomerInterviewDetail = {
   title: string;
   videoAlt: string;
   videoUrl?: string;
+  youtubeEmbedUrl?: string;
+  youtubeUrl?: string;
 };
 
 export type CustomerInterviewDetailSeo = {
@@ -372,6 +376,11 @@ export function mapCustomerInterviewDetail(
     content.find((block) => block.type === "paragraph")?.text ||
     title;
   const videoPath = row.video_path?.trim();
+  const youtubeVideoId = row.youtube_video_id?.trim();
+  const youtubeUrl = youtubeVideoId ? getYouTubeWatchUrl(youtubeVideoId) : null;
+  const youtubeEmbedUrl = youtubeVideoId
+    ? getYouTubeEmbedUrl(youtubeVideoId)
+    : null;
 
   return {
     author: "씨브레인",
@@ -391,7 +400,11 @@ export function mapCustomerInterviewDetail(
     thumbnail: presentation?.thumbnail ?? reviewInterviewImage,
     title,
     videoAlt: row.video_alt?.trim() || `${row.company_name} 고객 인터뷰 영상`,
-    ...(videoPath ? { videoUrl: resolveAssetUrl(videoPath) } : {}),
+    ...(youtubeUrl && youtubeEmbedUrl
+      ? { youtubeEmbedUrl, youtubeUrl }
+      : videoPath
+        ? { videoUrl: resolveAssetUrl(videoPath) }
+        : {}),
   };
 }
 

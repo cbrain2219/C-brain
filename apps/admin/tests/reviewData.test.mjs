@@ -27,6 +27,7 @@ function review(overrides = {}) {
     video_alt: null,
     video_path: null,
     view_count: 12,
+    youtube_video_id: null,
     ...overrides,
   }
 }
@@ -57,6 +58,26 @@ test('interview rows hydrate the conditional form and existing video', () => {
   assert.equal(form.slug, 'orca-story')
   assert.equal(form.videoPath, 'reviews/orca.mp4')
   assert.equal(form.videoPreviewUrl, 'https://example.com/orca.mp4')
+  assert.equal(form.videoSource, 'file')
+  assert.equal(form.youtubeUrl, '')
+})
+
+test('YouTube interview rows hydrate a canonical editable URL without a Storage preview', () => {
+  const form = toReviewFormState(
+    review({
+      kind: 'interview',
+      manager_name: null,
+      slug: 'youtube-story',
+      title: 'YouTube 인터뷰',
+      youtube_video_id: 'dQw4w9WgXcQ',
+    }),
+    null,
+  )
+
+  assert.equal(form.videoSource, 'youtube')
+  assert.equal(form.youtubeUrl, 'https://www.youtube.com/watch?v=dQw4w9WgXcQ')
+  assert.equal(form.videoPath, null)
+  assert.equal(form.videoPreviewUrl, null)
 })
 
 test('testimonial mutations clear interview-only fields', () => {
@@ -92,7 +113,49 @@ test('testimonial mutations clear interview-only fields', () => {
     title: null,
     video_alt: null,
     video_path: null,
+    youtube_video_id: null,
   })
+})
+
+test('published YouTube interview mutations store only the normalized video id', () => {
+  const input = toReviewMutationInput(
+    {
+      ...createInitialReviewForm(),
+      company: '새 고객사',
+      content: '인터뷰 내용입니다.',
+      publishedAt: '2026-08-14',
+      slug: 'youtube-interview',
+      title: 'YouTube 인터뷰',
+      type: '인터뷰',
+      videoSource: 'youtube',
+      youtubeUrl: 'https://youtu.be/dQw4w9WgXcQ?t=42',
+    },
+    'published',
+    null,
+  )
+
+  assert.equal(input.video_path, null)
+  assert.equal(input.youtube_video_id, 'dQw4w9WgXcQ')
+})
+
+test('published uploaded-file interview mutations clear an inactive YouTube link', () => {
+  const input = toReviewMutationInput(
+    {
+      ...createInitialReviewForm(),
+      company: '새 고객사',
+      content: '인터뷰 내용입니다.',
+      publishedAt: '2026-08-14',
+      slug: 'file-interview',
+      title: '파일 인터뷰',
+      type: '인터뷰',
+      youtubeUrl: 'https://youtu.be/dQw4w9WgXcQ',
+    },
+    'published',
+    'reviews/interview.mp4',
+  )
+
+  assert.equal(input.video_path, 'reviews/interview.mp4')
+  assert.equal(input.youtube_video_id, null)
 })
 
 test('drafts retain partial content while published reviews require complete fields', () => {

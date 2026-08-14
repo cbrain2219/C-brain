@@ -38,8 +38,9 @@ type ArticleStructuredDataInput = {
   section?: string;
   urlPath: `/${string}`;
   video?: {
-    contentUrl: string;
+    contentUrl?: string;
     description: string;
+    embedUrl?: string;
     name: string;
     thumbnailUrl?: string;
     uploadDate?: string;
@@ -253,6 +254,7 @@ function createArticleGraph(
           "@type": "VideoObject",
           contentUrl: input.video.contentUrl,
           description: input.video.description,
+          embedUrl: input.video.embedUrl,
           name: input.video.name,
           thumbnailUrl: input.video.thumbnailUrl,
           uploadDate: input.video.uploadDate,

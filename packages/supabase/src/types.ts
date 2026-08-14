@@ -201,6 +201,7 @@ export type Database = {
           video_alt: string | null;
           video_path: string | null;
           view_count: number;
+          youtube_video_id: string | null;
         };
         Insert: {
           company_name: string;
@@ -220,6 +221,7 @@ export type Database = {
           video_alt?: string | null;
           video_path?: string | null;
           view_count?: number;
+          youtube_video_id?: string | null;
         };
         Update: {
           company_name?: string;
@@ -239,6 +241,7 @@ export type Database = {
           video_alt?: string | null;
           video_path?: string | null;
           view_count?: number;
+          youtube_video_id?: string | null;
         };
         Relationships: [];
       };

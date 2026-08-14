@@ -3,8 +3,10 @@ import test from 'node:test'
 import {
   MAX_REVIEW_VIDEO_BYTES,
   getReviewVideoError,
+  getReviewYouTubeUrlError,
   isReviewType,
   isValidInterviewSlug,
+  reviewVideoSources,
   reviewTypes,
 } from '../src/pages/reviewFormState.ts'
 
@@ -14,6 +16,10 @@ test('review types contain only the two fixed Figma choices', () => {
   assert.equal(isReviewType('후기'), true)
   assert.equal(isReviewType('블로그'), false)
   assert.equal(isReviewType(''), false)
+})
+
+test('review video sources contain the uploaded-file and YouTube choices', () => {
+  assert.deepEqual(reviewVideoSources, ['file', 'youtube'])
 })
 
 test('interview slug follows the database lowercase slug rule', () => {
@@ -59,5 +65,17 @@ test('review video rejects unsupported formats and files over 500MB', () => {
       type: 'video/mp4',
     }) ?? '',
     /500MB/,
+  )
+})
+
+test('review YouTube links accept supported video URLs and reject missing or unrelated URLs', () => {
+  assert.equal(
+    getReviewYouTubeUrlError('https://youtu.be/dQw4w9WgXcQ?t=10'),
+    null,
+  )
+  assert.match(getReviewYouTubeUrlError('') ?? '', /입력/)
+  assert.match(
+    getReviewYouTubeUrlError('https://example.com/video') ?? '',
+    /YouTube/,
   )
 })
