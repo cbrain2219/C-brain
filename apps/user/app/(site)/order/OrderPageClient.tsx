@@ -2,7 +2,7 @@
 
 import type { OrderProductCatalogItem } from "@repo/supabase/product-catalog";
 import Image from "next/image";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { CtaSection } from "../../_components/CtaSection";
 import {
@@ -22,6 +22,91 @@ import styles from "./page.module.css";
 type OrderPageClientProps = {
   products: readonly OrderProductCatalogItem[];
   services: readonly ServiceItem[];
+};
+
+const ORDER_HISTORY_STATE_KEY = "__cbrainOrderStep";
+
+type OrderHistoryEntry =
+  | { step: "category" }
+  | { serviceId: string; step: "option" }
+  | {
+      serviceId: string;
+      step: "customer";
+      summary: OrderSelectionSummary;
+    };
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === "object" && value !== null && !Array.isArray(value);
+
+const isOrderSelectionSummary = (
+  value: unknown,
+): value is OrderSelectionSummary =>
+  isRecord(value) &&
+  typeof value.categoryLabel === "string" &&
+  isRecord(value.ids) &&
+  Array.isArray(value.optionRows) &&
+  Array.isArray(value.priceRows) &&
+  typeof value.serviceLabel === "string" &&
+  typeof value.totalPrice === "number";
+
+const getOrderHistoryEntry = (state: unknown): OrderHistoryEntry | null => {
+  if (!isRecord(state)) return null;
+
+  const entry = state[ORDER_HISTORY_STATE_KEY];
+
+  if (!isRecord(entry) || typeof entry.step !== "string") return null;
+  if (entry.step === "category") return { step: "category" };
+  if (typeof entry.serviceId !== "string") return null;
+
+  if (entry.step === "option") {
+    return { serviceId: entry.serviceId, step: "option" };
+  }
+
+  if (entry.step === "customer" && isOrderSelectionSummary(entry.summary)) {
+    return {
+      serviceId: entry.serviceId,
+      step: "customer",
+      summary: entry.summary,
+    };
+  }
+
+  return null;
+};
+
+const createOrderHistoryState = (entry: OrderHistoryEntry) => ({
+  ...(isRecord(window.history.state) ? window.history.state : {}),
+  [ORDER_HISTORY_STATE_KEY]: entry,
+});
+
+const getOrderHistoryUrl = (serviceId?: string) => {
+  const url = new URL(window.location.href);
+
+  if (serviceId) {
+    url.searchParams.set(orderServiceSearchParam, serviceId);
+  } else {
+    url.searchParams.delete(orderServiceSearchParam);
+  }
+
+  return `${url.pathname}${url.search}${url.hash}`;
+};
+
+const pushOrderHistoryEntry = (entry: OrderHistoryEntry, serviceId?: string) => {
+  window.history.pushState(
+    createOrderHistoryState(entry),
+    "",
+    getOrderHistoryUrl(serviceId),
+  );
+};
+
+const replaceOrderHistoryEntry = (
+  entry: OrderHistoryEntry,
+  serviceId?: string,
+) => {
+  window.history.replaceState(
+    createOrderHistoryState(entry),
+    "",
+    getOrderHistoryUrl(serviceId),
+  );
 };
 
 export function OrderPageClient({
@@ -45,25 +130,92 @@ export function OrderPageClient({
       ) ?? null)
     : null;
 
+  const restoreOrderHistoryEntry = useCallback(
+    (entry: OrderHistoryEntry) => {
+      if (entry.step === "category") {
+        setOrderStep("category");
+        setSelectedDirectService(null);
+        setSelectedOrderSummary(null);
+        return;
+      }
+
+      const service = getDirectServiceItemById(services, entry.serviceId);
+
+      if (!service) {
+        setOrderStep("category");
+        setSelectedDirectService(null);
+        setSelectedOrderSummary(null);
+        return;
+      }
+
+      setSelectedDirectService(service);
+
+      if (entry.step === "customer") {
+        setSelectedOrderSummary(entry.summary);
+        setOrderStep("customer");
+        return;
+      }
+
+      setSelectedOrderSummary(null);
+      setOrderStep("option");
+    },
+    [services],
+  );
+
   const handleCategoryReset = () => {
-    setOrderStep("category");
-    setSelectedDirectService(null);
-    setSelectedOrderSummary(null);
+    const currentEntry = getOrderHistoryEntry(window.history.state);
+
+    if (currentEntry?.step === "option") {
+      window.history.back();
+      return;
+    }
+
+    const categoryEntry = { step: "category" } as const;
+
+    replaceOrderHistoryEntry(categoryEntry);
+    restoreOrderHistoryEntry(categoryEntry);
   };
 
   const handleDirectServiceSelect = (service: ServiceItem) => {
-    setSelectedDirectService(service);
-    setSelectedOrderSummary(null);
-    setOrderStep("option");
+    const optionEntry = {
+      serviceId: service.id,
+      step: "option",
+    } as const;
+
+    pushOrderHistoryEntry(optionEntry, service.id);
+    restoreOrderHistoryEntry(optionEntry);
   };
 
   const handleCustomerInfoStart = (summary: OrderSelectionSummary) => {
-    setSelectedOrderSummary(summary);
-    setOrderStep("customer");
+    if (!selectedDirectService) return;
+
+    const customerEntry = {
+      serviceId: selectedDirectService.id,
+      step: "customer",
+      summary,
+    } as const;
+
+    pushOrderHistoryEntry(customerEntry, selectedDirectService.id);
+    restoreOrderHistoryEntry(customerEntry);
   };
 
   const handleOptionBack = () => {
-    setOrderStep("option");
+    const currentEntry = getOrderHistoryEntry(window.history.state);
+
+    if (currentEntry?.step === "customer") {
+      window.history.back();
+      return;
+    }
+
+    if (!selectedDirectService) return;
+
+    const optionEntry = {
+      serviceId: selectedDirectService.id,
+      step: "option",
+    } as const;
+
+    replaceOrderHistoryEntry(optionEntry, selectedDirectService.id);
+    restoreOrderHistoryEntry(optionEntry);
   };
 
   const handlePaymentSubmit = async (payload: OrderPaymentSubmitPayload) => {
@@ -110,18 +262,45 @@ export function OrderPageClient({
   };
 
   useEffect(() => {
-    const searchParams = new URLSearchParams(window.location.search);
-    const initialService = getDirectServiceItemById(
-      services,
-      searchParams.get(orderServiceSearchParam),
-    );
+    const handlePopState = (event: PopStateEvent) => {
+      const entry = getOrderHistoryEntry(event.state);
 
-    if (!initialService) return;
+      if (entry) restoreOrderHistoryEntry(entry);
+    };
 
-    setSelectedDirectService(initialService);
-    setSelectedOrderSummary(null);
-    setOrderStep("option");
-  }, [services]);
+    window.addEventListener("popstate", handlePopState);
+
+    const existingEntry = getOrderHistoryEntry(window.history.state);
+
+    if (existingEntry) {
+      restoreOrderHistoryEntry(existingEntry);
+    } else {
+      const searchParams = new URLSearchParams(window.location.search);
+      const initialService = getDirectServiceItemById(
+        services,
+        searchParams.get(orderServiceSearchParam),
+      );
+      const categoryEntry = { step: "category" } as const;
+
+      replaceOrderHistoryEntry(categoryEntry);
+
+      if (initialService) {
+        const optionEntry = {
+          serviceId: initialService.id,
+          step: "option",
+        } as const;
+
+        pushOrderHistoryEntry(optionEntry, initialService.id);
+        restoreOrderHistoryEntry(optionEntry);
+      } else {
+        restoreOrderHistoryEntry(categoryEntry);
+      }
+    }
+
+    return () => {
+      window.removeEventListener("popstate", handlePopState);
+    };
+  }, [restoreOrderHistoryEntry, services]);
 
   useEffect(() => {
     if (!selectedDirectService) return;
