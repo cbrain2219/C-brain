@@ -463,11 +463,27 @@ function InterviewFields({
       />
       <TextField
         id={`${formId}-company`}
-        label="인터뷰 고객사"
+        label="인터뷰 고객사(의뢰처)"
         name="company"
         onChange={(value) => onUpdate('company', value)}
         placeholder="인터뷰 고객사를 입력해주세요."
         value={form.company}
+      />
+      <TextField
+        id={`${formId}-project-deliverable`}
+        label="진행 프로젝트(제작물)"
+        name="projectDeliverable"
+        onChange={(value) => onUpdate('projectDeliverable', value)}
+        placeholder="진행 프로젝트를 입력해주세요."
+        value={form.projectDeliverable}
+      />
+      <TextField
+        id={`${formId}-project-usage`}
+        label="프로젝트 결과(활용)"
+        name="projectUsage"
+        onChange={(value) => onUpdate('projectUsage', value)}
+        placeholder="프로젝트 결과를 입력해주세요."
+        value={form.projectUsage}
       />
       <label className="blog-form__field" htmlFor={`${formId}-slug`}>
         <span className="blog-form__label">인터뷰 Slug</span>

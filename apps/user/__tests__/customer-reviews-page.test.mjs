@@ -120,6 +120,8 @@ function reviewRow(overrides = {}) {
     id: "review-id",
     kind: "testimonial",
     manager_name: "김담당님",
+    project_deliverable: null,
+    project_usage: null,
     published_at: "2026-08-02T00:00:00.000Z",
     seo_description: null,
     show_on_landing: false,
@@ -276,6 +278,8 @@ test("review mappers separate kinds, sanitize content, and keep presentation met
       id: "interview-1",
       kind: "interview",
       manager_name: null,
+      project_deliverable: "브랜드 소개 브로슈어",
+      project_usage: "전시회 배포 · 영업 자료 활용",
       seo_description: "새 인터뷰 설명",
       show_on_landing: false,
       slug: "new-interview",
@@ -326,6 +330,22 @@ test("review mappers separate kinds, sanitize content, and keep presentation met
   );
   assert.equal(detail.thumbnail, reviewInterviewImage);
   assert.equal(detail.projectInfo[0].value, "새 고객사");
+  assert.deepEqual(
+    detail.projectInfo.map(({ value }) => value),
+    [
+      "새 고객사",
+      "브랜드 소개 브로슈어",
+      "전시회 배포 · 영업 자료 활용",
+    ],
+  );
+  assert.equal(
+    mapped.customerInterviews[0].meta,
+    "브랜드 소개 브로슈어",
+  );
+  assert.equal(
+    mapped.featuredCustomerInterview.projectName,
+    "브랜드 소개 브로슈어",
+  );
   assert.equal(detail.videoUrl, "https://assets.test/reviews/new-interview.mp4");
   assert.equal(
     mapped.customerInterviews[0].videoUrl,
@@ -367,6 +387,8 @@ test("review mappers separate kinds, sanitize content, and keep presentation met
       id: "legacy-interview",
       kind: "interview",
       manager_name: null,
+      project_deliverable: "새 졸업 프로젝트 완료보고서",
+      project_usage: "성과 공유",
       slug: "chungkang-college",
       title: "청강 인터뷰",
       video_path: "reviews/chungkang.mp4",
@@ -379,6 +401,10 @@ test("review mappers separate kinds, sanitize content, and keep presentation met
     "처음 맡겼는데",
     "결과물이 기대 이상이였어요.",
   ]);
+  assert.equal(
+    legacy.featuredCustomerInterview.projectName,
+    "새 졸업 프로젝트 완료보고서",
+  );
   assert.equal((await getCustomerReviewPageData()).customerInterviews.length, 0);
   assert.deepEqual(await getLandingCustomerTestimonials(), []);
   assert.equal(
@@ -763,6 +789,14 @@ test("customer interview markup stays semantic and uses admin video alt text", a
     /<li[\s\S]*className=\{styles\.reviewsInterviewCard\}/,
   );
   assert.match(pageSource, /<blockquote>/);
+  assert.match(
+    pageSource,
+    /<h3 id=\{titleId\}>\{interview\.title\}<\/h3>/,
+  );
+  assert.doesNotMatch(
+    pageSource,
+    /\{interview\.company\} — 씨브레인 고객 인터뷰/,
+  );
   assert.match(pageSource, /<footer className=\{styles\.reviewsCardMeta\}>/);
   assert.match(stylesSource, /list-style: none;/);
   assert.match(stylesSource, /\.reviewsFeaturedDivider::before/);

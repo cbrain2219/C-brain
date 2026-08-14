@@ -350,11 +350,24 @@ function getPlainReviewContent(row: ReviewRow) {
     .trim();
 }
 
-function getDefaultProjectInfo(row: ReviewRow): CustomerInterviewProjectInfo[] {
+function getProjectInfo(
+  row: ReviewRow,
+  presentation: CustomerInterviewPresentation | undefined,
+): CustomerInterviewProjectInfo[] {
+  const fallbackProjectInfo = presentation?.projectInfo ?? [];
+  const deliverable =
+    row.project_deliverable?.trim() ||
+    getProjectValue(fallbackProjectInfo, "deliverable") ||
+    "고객 인터뷰";
+  const usage =
+    row.project_usage?.trim() ||
+    getProjectValue(fallbackProjectInfo, "usage") ||
+    "고객 사례";
+
   return [
     { id: "client", label: "의뢰처", value: row.company_name },
-    { id: "deliverable", label: "제작물", value: "고객 인터뷰" },
-    { id: "usage", label: "활용", value: "고객 사례" },
+    { id: "deliverable", label: "제작물", value: deliverable },
+    { id: "usage", label: "활용", value: usage },
   ];
 }
 
@@ -397,7 +410,7 @@ export function mapCustomerInterviewDetail(
       "고객 인터뷰",
       row.company_name,
     ],
-    projectInfo: presentation?.projectInfo ?? getDefaultProjectInfo(row),
+    projectInfo: getProjectInfo(row, presentation),
     projectInfoTitle: "프로젝트 정보",
     publishedAt: getPublishedAt(row),
     seoDescription,
@@ -428,9 +441,7 @@ function toCustomerInterviewCard(
     company: detail.company,
     detailSlug: detail.slug,
     id: detail.slug,
-    meta: projectName
-      ? `${detail.company} · ${projectName}`
-      : detail.company,
+    meta: projectName ?? "고객 인터뷰",
     publishedAt: detail.publishedAt,
     quote,
     thumbnail: detail.thumbnail,
@@ -457,8 +468,8 @@ function toFeaturedCustomerInterview(
     description,
     headlineLines: presentation?.featured?.headlineLines ?? [quote],
     projectName:
-      presentation?.featured?.projectName ??
       getProjectValue(detail.projectInfo, "deliverable") ??
+      presentation?.featured?.projectName ??
       detail.company,
   };
 }

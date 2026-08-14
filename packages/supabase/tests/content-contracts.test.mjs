@@ -8,10 +8,15 @@ const reviewYouTubeSqlUrl = new URL(
   '../../../supabase/manual/add_review_youtube_video.sql',
   import.meta.url,
 )
+const reviewProjectInfoSqlUrl = new URL(
+  '../../../supabase/manual/add_review_project_info.sql',
+  import.meta.url,
+)
 const typesUrl = new URL('../src/types.ts', import.meta.url)
 
-const [baseline, reviewYouTubeSql, types] = await Promise.all([
+const [baseline, reviewProjectInfoSql, reviewYouTubeSql, types] = await Promise.all([
   readFile(baselineUrl, 'utf8'),
+  readFile(reviewProjectInfoSqlUrl, 'utf8'),
   readFile(reviewYouTubeSqlUrl, 'utf8'),
   readFile(typesUrl, 'utf8'),
 ])
@@ -37,6 +42,8 @@ test('fresh baseline declares the current admin content contracts', () => {
     'pinned',
     'company_name',
     'manager_name',
+    'project_deliverable',
+    'project_usage',
     'youtube_video_id',
     'complaint_type',
     'phone_verified',
@@ -101,7 +108,7 @@ test('TypeScript mirrors the current content tables', () => {
   )
   assert.match(
     types,
-    /reviews:\s*\{[\s\S]*?Row:\s*\{[\s\S]*?company_name: string;[\s\S]*?manager_name: string \| null;[\s\S]*?show_on_landing: boolean;[\s\S]*?youtube_video_id: string \| null;/,
+    /reviews:\s*\{[\s\S]*?Row:\s*\{[\s\S]*?company_name: string;[\s\S]*?manager_name: string \| null;[\s\S]*?project_deliverable: string \| null;[\s\S]*?project_usage: string \| null;[\s\S]*?show_on_landing: boolean;[\s\S]*?youtube_video_id: string \| null;/,
   )
   assert.match(
     types,
@@ -125,6 +132,20 @@ test('manual review YouTube SQL replaces the known legacy published-video check'
     reviewYouTubeSql,
     /nullif\(btrim\(video_path\), ''\) is not null[\s\S]*or[\s\S]*youtube_video_id is not null/,
   )
+})
+
+test('manual review project-info SQL adds, backfills, and validates both fields', () => {
+  assert.match(
+    reviewProjectInfoSql,
+    /add column if not exists project_deliverable text/,
+  )
+  assert.match(reviewProjectInfoSql, /add column if not exists project_usage text/)
+  assert.match(reviewProjectInfoSql, /where kind = 'interview'/)
+  assert.match(
+    reviewProjectInfoSql,
+    /constraint reviews_published_interview_project_info_check/,
+  )
+  assert.match(reviewProjectInfoSql, /select count\(\*\) as invalid_count/)
 })
 
 test('TypeScript mirrors the current JSONB product table', () => {

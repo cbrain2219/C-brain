@@ -14,6 +14,8 @@ export type ReviewFormState = {
   readonly contentMode: ReviewContentMode
   readonly isLandingEnabled: boolean
   readonly manager: string
+  readonly projectDeliverable: string
+  readonly projectUsage: string
   readonly publishedAt: string
   readonly seoDescription: string
   readonly slug: string
@@ -45,6 +47,8 @@ export type ReviewMutationInput = Pick<
   | 'content_mode'
   | 'kind'
   | 'manager_name'
+  | 'project_deliverable'
+  | 'project_usage'
   | 'published_at'
   | 'seo_description'
   | 'show_on_landing'
@@ -63,6 +67,8 @@ export function createInitialReviewForm(): ReviewFormState {
     contentMode: 'html',
     isLandingEnabled: true,
     manager: '',
+    projectDeliverable: '',
+    projectUsage: '',
     publishedAt: '',
     seoDescription: '',
     slug: '',
@@ -112,6 +118,8 @@ export function toReviewFormState(
     contentMode: review.content_mode,
     isLandingEnabled: review.show_on_landing,
     manager: review.manager_name ?? '',
+    projectDeliverable: review.project_deliverable ?? '',
+    projectUsage: review.project_usage ?? '',
     publishedAt: toDateInputValue(review.published_at),
     seoDescription: review.seo_description ?? '',
     slug: review.slug ?? '',
@@ -137,6 +145,8 @@ export function toReviewMutationInput(
   const company = form.company.trim()
   const content = form.content.trim()
   const manager = form.manager.trim()
+  const projectDeliverable = form.projectDeliverable.trim()
+  const projectUsage = form.projectUsage.trim()
   const publishedAt = toPublishedAt(form.publishedAt)
   const slug = form.slug.trim()
   const title = form.title.trim()
@@ -156,7 +166,13 @@ export function toReviewMutationInput(
     (!company ||
       !content ||
       !publishedAt ||
-      (isInterview ? !title || !slug || !hasInterviewVideo : !manager))
+      (isInterview
+        ? !title ||
+          !projectDeliverable ||
+          !projectUsage ||
+          !slug ||
+          !hasInterviewVideo
+        : !manager))
   ) {
     throw new Error('필수 정보를 모두 입력해주세요.')
   }
@@ -167,6 +183,8 @@ export function toReviewMutationInput(
     content_mode: form.contentMode,
     kind: isInterview ? 'interview' : 'testimonial',
     manager_name: isInterview ? null : manager || null,
+    project_deliverable: isInterview ? projectDeliverable || null : null,
+    project_usage: isInterview ? projectUsage || null : null,
     published_at: publishedAt,
     seo_description: isInterview ? form.seoDescription.trim() || null : null,
     show_on_landing: isInterview ? false : form.isLandingEnabled,

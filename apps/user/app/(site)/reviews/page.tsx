@@ -237,9 +237,7 @@ export default async function CustomerReviewsPage() {
                               {interview.category}
                             </p>
                             <div className={styles.reviewsInterviewCopy}>
-                              <h3 id={titleId}>
-                                {interview.company} — 씨브레인 고객 인터뷰
-                              </h3>
+                              <h3 id={titleId}>{interview.title}</h3>
                               <blockquote>
                                 &quot;{interview.quote}&quot;
                               </blockquote>

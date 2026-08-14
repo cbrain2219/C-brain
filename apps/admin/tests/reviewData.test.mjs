@@ -17,6 +17,8 @@ function review(overrides = {}) {
     id: 'review-1',
     kind: 'testimonial',
     manager_name: '김담당',
+    project_deliverable: null,
+    project_usage: null,
     published_at: '2026-07-21T00:00:00.000Z',
     seo_description: null,
     show_on_landing: true,
@@ -45,6 +47,8 @@ test('interview rows hydrate the conditional form and existing video', () => {
     review({
       kind: 'interview',
       manager_name: null,
+      project_deliverable: '브로슈어',
+      project_usage: '영업 자료 활용',
       seo_description: '인터뷰 설명',
       slug: 'orca-story',
       title: '오르카 인터뷰',
@@ -56,6 +60,8 @@ test('interview rows hydrate the conditional form and existing video', () => {
 
   assert.equal(form.type, '인터뷰')
   assert.equal(form.slug, 'orca-story')
+  assert.equal(form.projectDeliverable, '브로슈어')
+  assert.equal(form.projectUsage, '영업 자료 활용')
   assert.equal(form.videoPath, 'reviews/orca.mp4')
   assert.equal(form.videoPreviewUrl, 'https://example.com/orca.mp4')
   assert.equal(form.videoSource, 'file')
@@ -105,6 +111,8 @@ test('testimonial mutations clear interview-only fields', () => {
     content_mode: 'html',
     kind: 'testimonial',
     manager_name: '김담당',
+    project_deliverable: null,
+    project_usage: null,
     published_at: '2026-07-20T15:00:00.000Z',
     seo_description: null,
     show_on_landing: true,
@@ -123,6 +131,8 @@ test('published YouTube interview mutations store only the normalized video id',
       ...createInitialReviewForm(),
       company: '새 고객사',
       content: '인터뷰 내용입니다.',
+      projectDeliverable: '제품 소개 브로슈어',
+      projectUsage: '전시회 배포',
       publishedAt: '2026-08-14',
       slug: 'youtube-interview',
       title: 'YouTube 인터뷰',
@@ -136,6 +146,8 @@ test('published YouTube interview mutations store only the normalized video id',
 
   assert.equal(input.video_path, null)
   assert.equal(input.youtube_video_id, 'dQw4w9WgXcQ')
+  assert.equal(input.project_deliverable, '제품 소개 브로슈어')
+  assert.equal(input.project_usage, '전시회 배포')
 })
 
 test('published uploaded-file interview mutations clear an inactive YouTube link', () => {
@@ -144,6 +156,8 @@ test('published uploaded-file interview mutations clear an inactive YouTube link
       ...createInitialReviewForm(),
       company: '새 고객사',
       content: '인터뷰 내용입니다.',
+      projectDeliverable: '완료보고서',
+      projectUsage: '프로젝트 결과 공유',
       publishedAt: '2026-08-14',
       slug: 'file-interview',
       title: '파일 인터뷰',

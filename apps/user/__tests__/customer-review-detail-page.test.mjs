@@ -183,6 +183,9 @@ test("customer review detail content preserves local presentation metadata", asy
   assert.match(content, /의뢰처/);
   assert.match(content, /제작물/);
   assert.match(content, /활용/);
+  assert.match(content, /row\.project_deliverable\?\.trim\(\)/);
+  assert.match(content, /row\.project_usage\?\.trim\(\)/);
+  assert.match(content, /projectInfo: getProjectInfo\(row, presentation\)/);
   assert.doesNotMatch(content, /figma\.com\/api\/mcp\/asset/);
 });
 

@@ -93,6 +93,8 @@ create table public.reviews (
     check (kind in ('interview', 'testimonial')),
   company_name text not null,
   manager_name text,
+  project_deliverable text,
+  project_usage text,
   title text,
   slug text,
   video_path text,
@@ -120,6 +122,25 @@ create table public.reviews (
     check (
       nullif(btrim(video_path), '') is null
       or youtube_video_id is null
+    ),
+  constraint reviews_project_deliverable_nonblank_check
+    check (
+      project_deliverable is null
+      or nullif(btrim(project_deliverable), '') is not null
+    ),
+  constraint reviews_project_usage_nonblank_check
+    check (
+      project_usage is null
+      or nullif(btrim(project_usage), '') is not null
+    ),
+  constraint reviews_published_interview_project_info_check
+    check (
+      kind <> 'interview'
+      or status <> 'published'
+      or (
+        nullif(btrim(project_deliverable), '') is not null
+        and nullif(btrim(project_usage), '') is not null
+      )
     ),
   constraint reviews_published_interview_video_check check (
     kind <> 'interview'
