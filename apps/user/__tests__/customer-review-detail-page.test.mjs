@@ -104,15 +104,19 @@ test("customer review detail page keeps semantic article markup and admin video 
   assert.match(source, /const videoUrl = detail\.videoUrl/);
   assert.match(
     source,
-    /detail\.videoUrl \? \([\s\S]*<video[\s\S]*controls[\s\S]*playsInline/,
+    /detail\.videoUrl \? \([\s\S]*<video[\s\S]*autoPlay[\s\S]*controls[\s\S]*muted[\s\S]*playsInline/,
   );
   assert.doesNotMatch(source, /href=\{detail\.videoUrl\}/);
   assert.doesNotMatch(source, /reviewDetailPlayButton/);
-  assert.match(source, /detail\.youtubeEmbedUrl \? \(/);
+  assert.match(source, /detail\.youtubeEmbedUrl/);
+  assert.match(source, /getMutedAutoplayEmbedUrl/);
+  assert.match(source, /url\.searchParams\.set\("autoplay", "1"\)/);
+  assert.match(source, /url\.searchParams\.set\("mute", "1"\)/);
+  assert.match(source, /url\.searchParams\.set\("playsinline", "1"\)/);
   assert.match(source, /<iframe/);
-  assert.match(source, /src=\{detail\.youtubeEmbedUrl\}/);
+  assert.match(source, /src=\{mutedAutoplayEmbedUrl\}/);
   assert.match(source, /allowFullScreen/);
-  assert.match(source, /loading="lazy"/);
+  assert.match(source, /loading="eager"/);
   assert.match(source, /referrerPolicy="strict-origin-when-cross-origin"/);
   assert.doesNotMatch(source, /itemType="https:\/\/schema\.org\/VideoObject"/);
   assert.match(source, /<figcaption className=\{styles\.visuallyHidden\}>/);

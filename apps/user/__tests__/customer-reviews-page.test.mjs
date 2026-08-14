@@ -43,14 +43,6 @@ const educationInterviewImagePath = new URL(
   "../public/figma-assets/review-interview-education.png",
   import.meta.url,
 );
-const largePlayIconPath = new URL(
-  "../public/figma-assets/review-play-large.svg",
-  import.meta.url,
-);
-const smallPlayIconPath = new URL(
-  "../public/figma-assets/review-play-small.svg",
-  import.meta.url,
-);
 const quoteMarkIconPath = new URL(
   "../public/figma-assets/review-quote-mark.svg",
   import.meta.url,
@@ -436,17 +428,28 @@ test("customer reviews page keeps Figma image assets local", async () => {
   await stat(interviewImagePath);
   await stat(healthcareInterviewImagePath);
   await stat(educationInterviewImagePath);
-  await stat(largePlayIconPath);
-  await stat(smallPlayIconPath);
   await stat(quoteMarkIconPath);
   assert.match(contentSource, /review-hero-office\.png/);
   assert.match(contentSource, /review-interview-brochure\.png/);
   assert.match(contentSource, /review-interview-healthcare\.png/);
   assert.match(contentSource, /review-interview-education\.png/);
-  assert.match(contentSource, /review-play-large\.svg/);
-  assert.match(contentSource, /review-play-small\.svg/);
   assert.match(contentSource, /review-quote-mark\.svg/);
   assert.doesNotMatch(contentSource, /figma\.com\/api\/mcp\/asset/);
+});
+
+test("customer interview thumbnails do not render play button overlays", async () => {
+  const [pageSource, stylesSource, contentSource] = await Promise.all([
+    readFile(pagePath, "utf8"),
+    readFile(stylesPath, "utf8"),
+    readFile(contentPath, "utf8"),
+  ]);
+
+  assert.doesNotMatch(pageSource, /PlayButton|reviewsPlayButton|reviewPlay/);
+  assert.doesNotMatch(
+    stylesSource,
+    /\.reviewsPlayButton|\.reviewsPlayIconImage/,
+  );
+  assert.doesNotMatch(contentSource, /reviewPlay(?:Large|Small)Icon/);
 });
 
 test("customer reviews hero image exposes descriptive alternative text", async () => {
@@ -634,10 +637,6 @@ test("featured customer interview keeps the redesigned quote layout at 640px and
   assert.match(
     foldMedia,
     /\.reviewsFeaturedMedia\s*\{[^}]*aspect-ratio: 600 \/ 338;/s,
-  );
-  assert.match(
-    foldMedia,
-    /\.reviewsPlayButtonLarge\s*\{[^}]*width: 64px;[^}]*height: 64px;/s,
   );
 });
 

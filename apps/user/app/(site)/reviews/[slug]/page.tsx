@@ -22,6 +22,16 @@ function getAbsoluteUrl(path: string, siteUrl: string | undefined) {
   return siteUrl ? new URL(path, siteUrl).toString() : undefined;
 }
 
+function getMutedAutoplayEmbedUrl(embedUrl: string) {
+  const url = new URL(embedUrl);
+
+  url.searchParams.set("autoplay", "1");
+  url.searchParams.set("mute", "1");
+  url.searchParams.set("playsinline", "1");
+
+  return url.toString();
+}
+
 export async function generateMetadata({
   params,
 }: CustomerReviewDetailPageProps): Promise<Metadata> {
@@ -84,6 +94,9 @@ export default async function CustomerReviewDetailPage({
   const videoUrl = detail.videoUrl;
   const absoluteVideoUrl = videoUrl
     ? getAbsoluteUrl(videoUrl, siteUrl)
+    : undefined;
+  const mutedAutoplayEmbedUrl = detail.youtubeEmbedUrl
+    ? getMutedAutoplayEmbedUrl(detail.youtubeEmbedUrl)
     : undefined;
   const videoStructuredData = detail.youtubeEmbedUrl
     ? {
@@ -166,14 +179,14 @@ export default async function CustomerReviewDetailPage({
           itemProp="articleBody"
         >
           <figure className={styles.reviewDetailVideo}>
-            {detail.youtubeEmbedUrl ? (
+            {mutedAutoplayEmbedUrl ? (
               <iframe
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                 allowFullScreen
                 className={styles.reviewDetailYouTubeEmbed}
-                loading="lazy"
+                loading="eager"
                 referrerPolicy="strict-origin-when-cross-origin"
-                src={detail.youtubeEmbedUrl}
+                src={mutedAutoplayEmbedUrl}
                 title={detail.videoAlt}
               />
             ) : (
@@ -181,8 +194,10 @@ export default async function CustomerReviewDetailPage({
                 {detail.videoUrl ? (
                   <video
                     aria-label={detail.videoAlt}
+                    autoPlay
                     className={styles.reviewDetailVideoPreview}
                     controls
+                    muted
                     playsInline
                     preload="metadata"
                     src={`${detail.videoUrl}#t=0.001`}

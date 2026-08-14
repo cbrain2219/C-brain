@@ -1590,24 +1590,6 @@
   pointer-events: none;
 }
 
-.reviewsPlayButton {
-  display: block;
-  border-radius: 50%;
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  overflow: hidden;
-  z-index: 1;
-}
-
-.reviewsPlayButtonLarge,
-.reviewsPlayButtonSmall {
-  width: 36px;
-  height: 36px;
-}
-
-.reviewsPlayIconImage,
 .reviewsQuoteMarkImage {
   object-fit: contain;
 }
@@ -2961,11 +2943,6 @@
 
   .reviewsFeaturedMedia {
     aspect-ratio: 600 / 338;
-  }
-
-  .reviewsPlayButtonLarge {
-    width: 64px;
-    height: 64px;
   }
 
   .reviewsInterviewMedia {

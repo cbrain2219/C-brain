@@ -20,8 +20,6 @@ export const reviewInterviewHealthcareImage =
   "/figma-assets/review-interview-healthcare.png";
 export const reviewInterviewEducationImage =
   "/figma-assets/review-interview-education.png";
-export const reviewPlayLargeIcon = "/figma-assets/review-play-large.svg";
-export const reviewPlaySmallIcon = "/figma-assets/review-play-small.svg";
 export const reviewQuoteMarkIcon = "/figma-assets/review-quote-mark.svg";
 
 export type CustomerInterviewContentBlock =

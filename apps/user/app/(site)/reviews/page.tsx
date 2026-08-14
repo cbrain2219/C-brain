@@ -8,8 +8,6 @@ import {
   type FeaturedCustomerInterview,
   getCustomerReviewPageData,
   reviewHeroImage,
-  reviewPlayLargeIcon,
-  reviewPlaySmallIcon,
   reviewQuoteMarkIcon,
 } from "../../_content/customerReviews";
 import { createPageMetadata } from "../../_content/seo";
@@ -18,27 +16,6 @@ import styles from "../../page.module.css";
 import { CustomerTestimonialList } from "./CustomerTestimonialList";
 
 export const metadata = createPageMetadata("reviews");
-
-function PlayButton({ size = "small" }: { size?: "large" | "small" }) {
-  return (
-    <span
-      aria-hidden="true"
-      className={`${styles.reviewsPlayButton} ${
-        size === "large"
-          ? styles.reviewsPlayButtonLarge
-          : styles.reviewsPlayButtonSmall
-      }`}
-    >
-      <Image
-        alt=""
-        className={styles.reviewsPlayIconImage}
-        fill
-        sizes={size === "large" ? "64px" : "36px"}
-        src={size === "large" ? reviewPlayLargeIcon : reviewPlaySmallIcon}
-      />
-    </span>
-  );
-}
 
 function InterviewThumbnail({
   alt,
@@ -125,7 +102,6 @@ function FeaturedInterview({
             videoUrl={featuredCustomerInterview.videoUrl}
           />
           <span className={styles.reviewsMediaOverlay} aria-hidden="true" />
-          <PlayButton size="large" />
         </Link>
       </figure>
     </article>
@@ -230,7 +206,6 @@ export default async function CustomerReviewsPage() {
                               className={styles.reviewsMediaOverlay}
                               aria-hidden="true"
                             />
-                            <PlayButton />
                           </figure>
                           <div className={styles.reviewsInterviewBody}>
                             <p className={styles.reviewsCategory}>
