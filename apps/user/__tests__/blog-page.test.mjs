@@ -380,7 +380,7 @@ test("blog category active tab uses a transparent-edge gradient underline", asyn
   );
   assert.match(
     categoryListStyle ?? "",
-    /background:\s*linear-gradient\(var\(--landing-gray-100\), var\(--landing-gray-100\)\)[\s\S]*left 20px bottom\s*\/\s*calc\(100% - 40px\) 1px no-repeat;/,
+    /background:\s*linear-gradient\(var\(--landing-gray-100\), var\(--landing-gray-100\)\)[\s\S]*left bottom\s*\/\s*100% 1px no-repeat;/,
   );
   assert.doesNotMatch(categoryListStyle ?? "", /border-bottom:/);
   assert.doesNotMatch(styles, /\.blogCategoryList > li:first-child\s*\{/);

@@ -332,17 +332,49 @@ function readVariant(
   };
 }
 
+function getOptionSelections(variant: OrderProductVariant) {
+  return variant.optionSections.reduce<OrderProductSelection["optionValues"][]>(
+    (selections, section) =>
+      selections.flatMap((selection) =>
+        section.values.map((value) => ({
+          ...selection,
+          [section.key]: value,
+        })),
+      ),
+    [{}],
+  );
+}
+
 function getStartingPrice(variants: readonly OrderProductVariant[]) {
-  const quantityPrices = variants.flatMap((variant) =>
-    Object.values(variant.priceRowsBySelection).flatMap((rows) =>
-      rows.map((row) => row.unitPrice),
-    ),
-  );
-  const estimatePrices = variants.flatMap((variant) =>
-    Object.values(variant.serviceEstimatesBySelection).map(
-      (estimate) => estimate.designPrintEstimate,
-    ),
-  );
+  const quantityPrices: number[] = [];
+  const estimatePrices: number[] = [];
+
+  for (const variant of variants) {
+    for (const optionValues of getOptionSelections(variant)) {
+      const quantityRows = getProductPriceRows(variant, optionValues);
+
+      if (variant.quantitySection) {
+        for (const row of quantityRows) {
+          const calculation = calculateProductSelection(variant, {
+            hasPlanning: false,
+            optionValues,
+            quantity: row.quantity,
+          });
+
+          if (calculation) quantityPrices.push(calculation.totalPrice);
+        }
+      } else {
+        const calculation = calculateProductSelection(variant, {
+          hasPlanning: false,
+          optionValues,
+          quantity: null,
+        });
+
+        if (calculation) estimatePrices.push(calculation.totalPrice);
+      }
+    }
+  }
+
   const prices = quantityPrices.length > 0 ? quantityPrices : estimatePrices;
 
   return prices.length > 0 ? Math.min(...prices) : null;
@@ -499,16 +531,18 @@ export function calculateProductSelection(
 
   const estimatedDesignAmount =
     estimate.designPrintEstimate * estimateMultiplier;
-  const baseAmount = quantityRow?.unitPrice ?? estimatedDesignAmount;
-  const designPrintAmount = Math.min(estimatedDesignAmount, baseAmount);
-  const printAmount = baseAmount - designPrintAmount;
+  const designPrintAmount = estimatedDesignAmount;
+  const printAmount = quantityRow
+    ? quantityRow.quantity * quantityRow.unitPrice
+    : 0;
   const planningAmount = selection.hasPlanning
     ? (estimate.planningEstimate ?? 0) * estimateMultiplier
     : 0;
-  const totalPrice = baseAmount + planningAmount;
+  const totalPrice = designPrintAmount + planningAmount + printAmount;
 
   if (
     !isSafeAmount(estimatedDesignAmount) ||
+    !isSafeAmount(printAmount) ||
     !isSafeAmount(planningAmount) ||
     !isSafeAmount(totalPrice)
   ) {
@@ -559,18 +593,7 @@ export function calculateProductSelection(
 export function createDefaultProductSelection(
   variant: OrderProductVariant,
 ): OrderProductSelection | null {
-  const optionSelections = variant.optionSections.reduce<
-    OrderProductSelection["optionValues"][]
-  >(
-    (selections, section) =>
-      selections.flatMap((selection) =>
-        section.values.map((value) => ({
-          ...selection,
-          [section.key]: value,
-        })),
-      ),
-    [{}],
-  );
+  const optionSelections = getOptionSelections(variant);
 
   for (const optionValues of optionSelections) {
     const selection = createProductSelectionForOptions(

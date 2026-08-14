@@ -34,15 +34,13 @@ test('complaint list exposes intake-backed columns without an admin create actio
   ])
   assert.match(pageSource, /title="불편접수 현황"/)
   assert.match(pageSource, /'접수된 불편사항이 없습니다\.'/)
-  assert.match(
-    pageSource,
-    /placeholder: '접수자 또는 접수 내용으로 검색해주세요\.'/,
-  )
+  assert.doesNotMatch(pageSource, /접수자 또는 접수 내용으로 검색해주세요\./)
   assert.match(pageSource, /listAdminComplaints\(supabase\)/)
   assert.match(pageSource, /complaints\.map\(toComplaintRow\)/)
   assert.match(pageSource, /filterValues=\{\{ status: filters\.status, type: filters\.type \}\}/)
   assert.match(pageSource, /onFilterValueChange=\{handleFilterValueChange\}/)
-  assert.match(pageSource, /searchValue=\{filters\.query\}/)
+  assert.doesNotMatch(pageSource, /onSearchValueChange=/)
+  assert.doesNotMatch(pageSource, /searchValue=/)
   assert.doesNotMatch(pageSource, /isAcceptDrag/)
   assert.doesNotMatch(pageSource, /bottomAction=/)
   assert.match(

@@ -1,5 +1,3 @@
-import { productTypes } from '@repo/supabase/categories'
-import type { ProductType } from '@repo/supabase/categories'
 import {
   getProductPriceOptionKeys as getSharedProductPriceOptionKeys,
   getProductSelectionKey,
@@ -7,16 +5,18 @@ import {
   getProductUiProfile,
   getProductVariants,
   productSubtypeOptions,
+  productTypes,
   productUiProfiles,
-} from '@repo/supabase/product-configuration'
+} from '@repo/supabase'
 import type {
   ProductOptionSectionKey,
   ProductPriceSectionKey,
   ProductSubtype,
+  ProductType,
   ProductUiProfile,
   ProductUiSection,
   ProductVariant,
-} from '@repo/supabase/product-configuration'
+} from '@repo/supabase'
 
 export {
   getProductUiProfile,

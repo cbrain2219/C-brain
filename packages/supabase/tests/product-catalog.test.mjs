@@ -26,16 +26,17 @@ function brochureProduct() {
     "브로슈어 · 카탈로그": {
       optionValues: {
         coverCoating: ["무광"],
-        pageCount: ["8", "16"],
+        pageCount: ["8", "12"],
         paper: ["일반지"],
         thickness: ["보통"],
       },
       priceRowsBySelection: {
         "0:0:0:0": [
-          { quantity: 100, unitPrice: 850000 },
-          { quantity: 200, unitPrice: 1010000 },
+          { quantity: 100, unitPrice: 2100 },
+          { quantity: 200, unitPrice: 1850 },
+          { quantity: 300, unitPrice: 1633 },
         ],
-        "1:0:0:0": [{ quantity: 100, unitPrice: 1240000 }],
+        "1:0:0:0": [{ quantity: 100, unitPrice: 2800 }],
       },
       serviceEstimatesBySelection: {
         "": { designPrintEstimate: 80000, planningEstimate: 50000 },
@@ -71,7 +72,7 @@ function businessCardEnvelopeProduct() {
         thickness: ["보통"],
       },
       priceRowsBySelection: {
-        "0:0:0": [{ quantity: 500, unitPrice: 90000 }],
+        "0:0:0": [{ quantity: 500, unitPrice: 120 }],
       },
       serviceEstimatesBySelection: {
         "": { designPrintEstimate: 30000, planningEstimate: 20000 },
@@ -116,7 +117,7 @@ test("grouped products parse into profile-ordered public catalog items", () => {
   });
 });
 
-test("quantity rows are exact totals and option combinations select new prices", () => {
+test("service estimates plus quantity unit prices drive calculated totals", () => {
   const variant = createOrderProductCatalogItem(brochureProduct()).variants[0];
   const eightPages = {
     coverCoating: "무광",
@@ -126,21 +127,31 @@ test("quantity rows are exact totals and option combinations select new prices",
   };
 
   assert.deepEqual(getProductPriceRows(variant, eightPages), [
-    { quantity: 100, unitPrice: 850000 },
-    { quantity: 200, unitPrice: 1010000 },
+    { quantity: 100, unitPrice: 2100 },
+    { quantity: 200, unitPrice: 1850 },
+    { quantity: 300, unitPrice: 1633 },
   ]);
+  const calculated = calculateProductSelection(variant, {
+    hasPlanning: false,
+    optionValues: eightPages,
+    quantity: 100,
+  });
+
+  assert.equal(calculated.designPrintAmount, 640000);
+  assert.equal(calculated.printAmount, 210000);
+  assert.equal(calculated.totalPrice, 850000);
   assert.equal(
     calculateProductSelection(variant, {
       hasPlanning: false,
       optionValues: eightPages,
-      quantity: 100,
+      quantity: 300,
     }).totalPrice,
-    850000,
+    1129900,
   );
   assert.equal(
     calculateProductSelection(variant, {
       hasPlanning: false,
-      optionValues: { ...eightPages, pageCount: "16" },
+      optionValues: { ...eightPages, pageCount: "12" },
       quantity: 100,
     }).totalPrice,
     1240000,
@@ -260,7 +271,7 @@ test("sparse administrator prices fail closed per selection", () => {
     "브로슈어 · 카탈로그"
   ].priceRowsBySelection["0:0:0:0"].push({
     quantity: 100,
-    unitPrice: 900000,
+    unitPrice: 2600,
   });
 
   const invalidEstimate = clone(logoProduct());

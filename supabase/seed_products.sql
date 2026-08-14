@@ -38,505 +38,505 @@ $variants$
         "0:0:0:0": [
           {
             "quantity": 100,
-            "unitPrice": 850000
+            "unitPrice": 2100
           },
           {
             "quantity": 200,
-            "unitPrice": 1010000
+            "unitPrice": 1850
           },
           {
             "quantity": 300,
-            "unitPrice": 1130000
+            "unitPrice": 1633
           }
         ],
         "0:0:0:1": [
           {
             "quantity": 100,
-            "unitPrice": 850000
+            "unitPrice": 2100
           },
           {
             "quantity": 200,
-            "unitPrice": 1010000
+            "unitPrice": 1850
           },
           {
             "quantity": 300,
-            "unitPrice": 1130000
+            "unitPrice": 1633
           }
         ],
         "1:0:0:0": [
           {
             "quantity": 100,
-            "unitPrice": 1240000
+            "unitPrice": 2800
           },
           {
             "quantity": 200,
-            "unitPrice": 1440000
+            "unitPrice": 2400
           },
           {
             "quantity": 300,
-            "unitPrice": 1620000
+            "unitPrice": 2200
           }
         ],
         "1:0:0:1": [
           {
             "quantity": 100,
-            "unitPrice": 1240000
+            "unitPrice": 2800
           },
           {
             "quantity": 200,
-            "unitPrice": 1440000
+            "unitPrice": 2400
           },
           {
             "quantity": 300,
-            "unitPrice": 1620000
+            "unitPrice": 2200
           }
         ],
         "2:0:0:0": [
           {
             "quantity": 100,
-            "unitPrice": 1610000
+            "unitPrice": 3300
           },
           {
             "quantity": 200,
-            "unitPrice": 1870000
+            "unitPrice": 2950
           },
           {
             "quantity": 300,
-            "unitPrice": 1910000
+            "unitPrice": 2100
           }
         ],
         "2:0:0:1": [
           {
             "quantity": 100,
-            "unitPrice": 1610000
+            "unitPrice": 3300
           },
           {
             "quantity": 200,
-            "unitPrice": 1870000
+            "unitPrice": 2950
           },
           {
             "quantity": 300,
-            "unitPrice": 1910000
+            "unitPrice": 2100
           }
         ],
         "0:0:1:0": [
           {
             "quantity": 100,
-            "unitPrice": 860000
+            "unitPrice": 2200
           },
           {
             "quantity": 200,
-            "unitPrice": 1020000
+            "unitPrice": 1900
           },
           {
             "quantity": 300,
-            "unitPrice": 1140000
+            "unitPrice": 1667
           }
         ],
         "0:0:1:1": [
           {
             "quantity": 100,
-            "unitPrice": 860000
+            "unitPrice": 2200
           },
           {
             "quantity": 200,
-            "unitPrice": 1020000
+            "unitPrice": 1900
           },
           {
             "quantity": 300,
-            "unitPrice": 1140000
+            "unitPrice": 1667
           }
         ],
         "1:0:1:0": [
           {
             "quantity": 100,
-            "unitPrice": 1250000
+            "unitPrice": 2900
           },
           {
             "quantity": 200,
-            "unitPrice": 1450000
+            "unitPrice": 2450
           },
           {
             "quantity": 300,
-            "unitPrice": 1630000
+            "unitPrice": 2233
           }
         ],
         "1:0:1:1": [
           {
             "quantity": 100,
-            "unitPrice": 1250000
+            "unitPrice": 2900
           },
           {
             "quantity": 200,
-            "unitPrice": 1450000
+            "unitPrice": 2450
           },
           {
             "quantity": 300,
-            "unitPrice": 1630000
+            "unitPrice": 2233
           }
         ],
         "2:0:1:0": [
           {
             "quantity": 100,
-            "unitPrice": 1620000
+            "unitPrice": 3400
           },
           {
             "quantity": 200,
-            "unitPrice": 1900000
+            "unitPrice": 3100
           },
           {
             "quantity": 300,
-            "unitPrice": 1940000
+            "unitPrice": 2200
           }
         ],
         "2:0:1:1": [
           {
             "quantity": 100,
-            "unitPrice": 1620000
+            "unitPrice": 3400
           },
           {
             "quantity": 200,
-            "unitPrice": 1900000
+            "unitPrice": 3100
           },
           {
             "quantity": 300,
-            "unitPrice": 1940000
+            "unitPrice": 2200
           }
         ],
         "0:0:2:0": [
           {
             "quantity": 100,
-            "unitPrice": 860000
+            "unitPrice": 2200
           },
           {
             "quantity": 200,
-            "unitPrice": 1030000
+            "unitPrice": 1950
           },
           {
             "quantity": 300,
-            "unitPrice": 1160000
+            "unitPrice": 1733
           }
         ],
         "0:0:2:1": [
           {
             "quantity": 100,
-            "unitPrice": 860000
+            "unitPrice": 2200
           },
           {
             "quantity": 200,
-            "unitPrice": 1030000
+            "unitPrice": 1950
           },
           {
             "quantity": 300,
-            "unitPrice": 1160000
+            "unitPrice": 1733
           }
         ],
         "1:0:2:0": [
           {
             "quantity": 100,
-            "unitPrice": 1250000
+            "unitPrice": 2900
           },
           {
             "quantity": 200,
-            "unitPrice": 1470000
+            "unitPrice": 2550
           },
           {
             "quantity": 300,
-            "unitPrice": 1660000
+            "unitPrice": 2333
           }
         ],
         "1:0:2:1": [
           {
             "quantity": 100,
-            "unitPrice": 1250000
+            "unitPrice": 2900
           },
           {
             "quantity": 200,
-            "unitPrice": 1470000
+            "unitPrice": 2550
           },
           {
             "quantity": 300,
-            "unitPrice": 1660000
+            "unitPrice": 2333
           }
         ],
         "2:0:2:0": [
           {
             "quantity": 100,
-            "unitPrice": 1620000
+            "unitPrice": 3400
           },
           {
             "quantity": 200,
-            "unitPrice": 1900000
+            "unitPrice": 3100
           },
           {
             "quantity": 300,
-            "unitPrice": 2000000
+            "unitPrice": 2400
           }
         ],
         "2:0:2:1": [
           {
             "quantity": 100,
-            "unitPrice": 1620000
+            "unitPrice": 3400
           },
           {
             "quantity": 200,
-            "unitPrice": 1900000
+            "unitPrice": 3100
           },
           {
             "quantity": 300,
-            "unitPrice": 2000000
+            "unitPrice": 2400
           }
         ],
         "0:1:0:0": [
           {
             "quantity": 100,
-            "unitPrice": 880000
+            "unitPrice": 2400
           },
           {
             "quantity": 200,
-            "unitPrice": 1060000
+            "unitPrice": 2100
           },
           {
             "quantity": 300,
-            "unitPrice": 1210000
+            "unitPrice": 1900
           }
         ],
         "0:1:0:1": [
           {
             "quantity": 100,
-            "unitPrice": 880000
+            "unitPrice": 2400
           },
           {
             "quantity": 200,
-            "unitPrice": 1060000
+            "unitPrice": 2100
           },
           {
             "quantity": 300,
-            "unitPrice": 1210000
+            "unitPrice": 1900
           }
         ],
         "1:1:0:0": [
           {
             "quantity": 100,
-            "unitPrice": 1280000
+            "unitPrice": 3200
           },
           {
             "quantity": 200,
-            "unitPrice": 1510000
+            "unitPrice": 2750
           },
           {
             "quantity": 300,
-            "unitPrice": 1720000
+            "unitPrice": 2533
           }
         ],
         "1:1:0:1": [
           {
             "quantity": 100,
-            "unitPrice": 1280000
+            "unitPrice": 3200
           },
           {
             "quantity": 200,
-            "unitPrice": 1510000
+            "unitPrice": 2750
           },
           {
             "quantity": 300,
-            "unitPrice": 1720000
+            "unitPrice": 2533
           }
         ],
         "2:1:0:0": [
           {
             "quantity": 100,
-            "unitPrice": 1650000
+            "unitPrice": 3700
           },
           {
             "quantity": 200,
-            "unitPrice": 1960000
+            "unitPrice": 3400
           },
           {
             "quantity": 300,
-            "unitPrice": 2090000
+            "unitPrice": 2700
           }
         ],
         "2:1:0:1": [
           {
             "quantity": 100,
-            "unitPrice": 1650000
+            "unitPrice": 3700
           },
           {
             "quantity": 200,
-            "unitPrice": 1960000
+            "unitPrice": 3400
           },
           {
             "quantity": 300,
-            "unitPrice": 2090000
+            "unitPrice": 2700
           }
         ],
         "0:1:1:0": [
           {
             "quantity": 100,
-            "unitPrice": 890000
+            "unitPrice": 2500
           },
           {
             "quantity": 200,
-            "unitPrice": 1080000
+            "unitPrice": 2200
           },
           {
             "quantity": 300,
-            "unitPrice": 1230000
+            "unitPrice": 1967
           }
         ],
         "0:1:1:1": [
           {
             "quantity": 100,
-            "unitPrice": 890000
+            "unitPrice": 2500
           },
           {
             "quantity": 200,
-            "unitPrice": 1080000
+            "unitPrice": 2200
           },
           {
             "quantity": 300,
-            "unitPrice": 1230000
+            "unitPrice": 1967
           }
         ],
         "1:1:1:0": [
           {
             "quantity": 100,
-            "unitPrice": 1290000
+            "unitPrice": 3300
           },
           {
             "quantity": 200,
-            "unitPrice": 1540000
+            "unitPrice": 2900
           },
           {
             "quantity": 300,
-            "unitPrice": 1760000
+            "unitPrice": 2667
           }
         ],
         "1:1:1:1": [
           {
             "quantity": 100,
-            "unitPrice": 1290000
+            "unitPrice": 3300
           },
           {
             "quantity": 200,
-            "unitPrice": 1540000
+            "unitPrice": 2900
           },
           {
             "quantity": 300,
-            "unitPrice": 1760000
+            "unitPrice": 2667
           }
         ],
         "2:1:1:0": [
           {
             "quantity": 100,
-            "unitPrice": 1670000
+            "unitPrice": 3900
           },
           {
             "quantity": 200,
-            "unitPrice": 1990000
+            "unitPrice": 3550
           },
           {
             "quantity": 300,
-            "unitPrice": 2150000
+            "unitPrice": 2900
           }
         ],
         "2:1:1:1": [
           {
             "quantity": 100,
-            "unitPrice": 1670000
+            "unitPrice": 3900
           },
           {
             "quantity": 200,
-            "unitPrice": 1990000
+            "unitPrice": 3550
           },
           {
             "quantity": 300,
-            "unitPrice": 2150000
+            "unitPrice": 2900
           }
         ],
         "0:1:2:0": [
           {
             "quantity": 100,
-            "unitPrice": 900000
+            "unitPrice": 2600
           },
           {
             "quantity": 200,
-            "unitPrice": 1100000
+            "unitPrice": 2300
           },
           {
             "quantity": 300,
-            "unitPrice": 1260000
+            "unitPrice": 2067
           }
         ],
         "0:1:2:1": [
           {
             "quantity": 100,
-            "unitPrice": 900000
+            "unitPrice": 2600
           },
           {
             "quantity": 200,
-            "unitPrice": 1100000
+            "unitPrice": 2300
           },
           {
             "quantity": 300,
-            "unitPrice": 1260000
+            "unitPrice": 2067
           }
         ],
         "1:1:2:0": [
           {
             "quantity": 100,
-            "unitPrice": 1300000
+            "unitPrice": 3400
           },
           {
             "quantity": 200,
-            "unitPrice": 1560000
+            "unitPrice": 3000
           },
           {
             "quantity": 300,
-            "unitPrice": 1790000
+            "unitPrice": 2767
           }
         ],
         "1:1:2:1": [
           {
             "quantity": 100,
-            "unitPrice": 1300000
+            "unitPrice": 3400
           },
           {
             "quantity": 200,
-            "unitPrice": 1560000
+            "unitPrice": 3000
           },
           {
             "quantity": 300,
-            "unitPrice": 1790000
+            "unitPrice": 2767
           }
         ],
         "2:1:2:0": [
           {
             "quantity": 100,
-            "unitPrice": 1680000
+            "unitPrice": 4000
           },
           {
             "quantity": 200,
-            "unitPrice": 2010000
+            "unitPrice": 3650
           },
           {
             "quantity": 300,
-            "unitPrice": 2240000
+            "unitPrice": 3200
           }
         ],
         "2:1:2:1": [
           {
             "quantity": 100,
-            "unitPrice": 1680000
+            "unitPrice": 4000
           },
           {
             "quantity": 200,
-            "unitPrice": 2010000
+            "unitPrice": 3650
           },
           {
             "quantity": 300,
-            "unitPrice": 2240000
+            "unitPrice": 3200
           }
         ]
       },
@@ -545,7 +545,8 @@ $variants$
           "designPrintEstimate": 80000,
           "planningEstimate": 50000
         }
-      }
+      },
+      "priceModel": "service-plus-print-unit-v1"
     }
   },
   {
@@ -578,505 +579,505 @@ $variants$
         "0:0:0:0": [
           {
             "quantity": 100,
-            "unitPrice": 780000
+            "unitPrice": 3000
           },
           {
             "quantity": 200,
-            "unitPrice": 970000
+            "unitPrice": 2450
           },
           {
             "quantity": 750,
-            "unitPrice": 1020000
+            "unitPrice": 720
           }
         ],
         "0:0:0:1": [
           {
             "quantity": 100,
-            "unitPrice": 780000
+            "unitPrice": 3000
           },
           {
             "quantity": 200,
-            "unitPrice": 970000
+            "unitPrice": 2450
           },
           {
             "quantity": 750,
-            "unitPrice": 1020000
+            "unitPrice": 720
           }
         ],
         "0:0:1:0": [
           {
             "quantity": 100,
-            "unitPrice": 780000
+            "unitPrice": 3000
           },
           {
             "quantity": 200,
-            "unitPrice": 970000
+            "unitPrice": 2450
           },
           {
             "quantity": 750,
-            "unitPrice": 1040000
+            "unitPrice": 747
           }
         ],
         "0:0:1:1": [
           {
             "quantity": 100,
-            "unitPrice": 780000
+            "unitPrice": 3000
           },
           {
             "quantity": 200,
-            "unitPrice": 970000
+            "unitPrice": 2450
           },
           {
             "quantity": 750,
-            "unitPrice": 1040000
+            "unitPrice": 747
           }
         ],
         "0:0:2:0": [
           {
             "quantity": 100,
-            "unitPrice": 790000
+            "unitPrice": 3100
           },
           {
             "quantity": 200,
-            "unitPrice": 980000
+            "unitPrice": 2500
           },
           {
             "quantity": 750,
-            "unitPrice": 1080000
+            "unitPrice": 800
           }
         ],
         "0:0:2:1": [
           {
             "quantity": 100,
-            "unitPrice": 790000
+            "unitPrice": 3100
           },
           {
             "quantity": 200,
-            "unitPrice": 980000
+            "unitPrice": 2500
           },
           {
             "quantity": 750,
-            "unitPrice": 1080000
+            "unitPrice": 800
           }
         ],
         "0:1:0:0": [
           {
             "quantity": 100,
-            "unitPrice": 780000
+            "unitPrice": 3000
           },
           {
             "quantity": 200,
-            "unitPrice": 1000000
+            "unitPrice": 2600
           },
           {
             "quantity": 750,
-            "unitPrice": 1230000
+            "unitPrice": 1000
           }
         ],
         "0:1:0:1": [
           {
             "quantity": 100,
-            "unitPrice": 780000
+            "unitPrice": 3000
           },
           {
             "quantity": 200,
-            "unitPrice": 1000000
+            "unitPrice": 2600
           },
           {
             "quantity": 750,
-            "unitPrice": 1230000
+            "unitPrice": 1000
           }
         ],
         "0:1:1:0": [
           {
             "quantity": 100,
-            "unitPrice": 800000
+            "unitPrice": 3200
           },
           {
             "quantity": 200,
-            "unitPrice": 1020000
+            "unitPrice": 2700
           },
           {
             "quantity": 750,
-            "unitPrice": 1250000
+            "unitPrice": 1027
           }
         ],
         "0:1:1:1": [
           {
             "quantity": 100,
-            "unitPrice": 800000
+            "unitPrice": 3200
           },
           {
             "quantity": 200,
-            "unitPrice": 1020000
+            "unitPrice": 2700
           },
           {
             "quantity": 750,
-            "unitPrice": 1250000
+            "unitPrice": 1027
           }
         ],
         "0:1:2:0": [
           {
             "quantity": 100,
-            "unitPrice": 840000
+            "unitPrice": 3600
           },
           {
             "quantity": 200,
-            "unitPrice": 1060000
+            "unitPrice": 2900
           },
           {
             "quantity": 750,
-            "unitPrice": 1290000
+            "unitPrice": 1080
           }
         ],
         "0:1:2:1": [
           {
             "quantity": 100,
-            "unitPrice": 840000
+            "unitPrice": 3600
           },
           {
             "quantity": 200,
-            "unitPrice": 1060000
+            "unitPrice": 2900
           },
           {
             "quantity": 750,
-            "unitPrice": 1290000
+            "unitPrice": 1080
           }
         ],
         "1:0:0:0": [
           {
             "quantity": 100,
-            "unitPrice": 640000
+            "unitPrice": 1600
           },
           {
             "quantity": 300,
-            "unitPrice": 790000
+            "unitPrice": 1033
           },
           {
             "quantity": 500,
-            "unitPrice": 910000
+            "unitPrice": 860
           }
         ],
         "1:0:0:1": [
           {
             "quantity": 100,
-            "unitPrice": 640000
+            "unitPrice": 1600
           },
           {
             "quantity": 300,
-            "unitPrice": 790000
+            "unitPrice": 1033
           },
           {
             "quantity": 500,
-            "unitPrice": 910000
+            "unitPrice": 860
           }
         ],
         "1:0:1:0": [
           {
             "quantity": 100,
-            "unitPrice": 640000
+            "unitPrice": 1600
           },
           {
             "quantity": 300,
-            "unitPrice": 790000
+            "unitPrice": 1033
           },
           {
             "quantity": 500,
-            "unitPrice": 930000
+            "unitPrice": 900
           }
         ],
         "1:0:1:1": [
           {
             "quantity": 100,
-            "unitPrice": 640000
+            "unitPrice": 1600
           },
           {
             "quantity": 300,
-            "unitPrice": 790000
+            "unitPrice": 1033
           },
           {
             "quantity": 500,
-            "unitPrice": 930000
+            "unitPrice": 900
           }
         ],
         "1:0:2:0": [
           {
             "quantity": 100,
-            "unitPrice": 640000
+            "unitPrice": 1600
           },
           {
             "quantity": 300,
-            "unitPrice": 800000
+            "unitPrice": 1067
           },
           {
             "quantity": 500,
-            "unitPrice": 950000
+            "unitPrice": 940
           }
         ],
         "1:0:2:1": [
           {
             "quantity": 100,
-            "unitPrice": 640000
+            "unitPrice": 1600
           },
           {
             "quantity": 300,
-            "unitPrice": 800000
+            "unitPrice": 1067
           },
           {
             "quantity": 500,
-            "unitPrice": 950000
+            "unitPrice": 940
           }
         ],
         "1:1:0:0": [
           {
             "quantity": 100,
-            "unitPrice": 660000
+            "unitPrice": 1800
           },
           {
             "quantity": 300,
-            "unitPrice": 750000
+            "unitPrice": 900
           },
           {
             "quantity": 500,
-            "unitPrice": 1010000
+            "unitPrice": 1060
           }
         ],
         "1:1:0:1": [
           {
             "quantity": 100,
-            "unitPrice": 660000
+            "unitPrice": 1800
           },
           {
             "quantity": 300,
-            "unitPrice": 750000
+            "unitPrice": 900
           },
           {
             "quantity": 500,
-            "unitPrice": 1010000
+            "unitPrice": 1060
           }
         ],
         "1:1:1:0": [
           {
             "quantity": 100,
-            "unitPrice": 660000
+            "unitPrice": 1800
           },
           {
             "quantity": 300,
-            "unitPrice": 850000
+            "unitPrice": 1233
           },
           {
             "quantity": 500,
-            "unitPrice": 1030000
+            "unitPrice": 1100
           }
         ],
         "1:1:1:1": [
           {
             "quantity": 100,
-            "unitPrice": 660000
+            "unitPrice": 1800
           },
           {
             "quantity": 300,
-            "unitPrice": 850000
+            "unitPrice": 1233
           },
           {
             "quantity": 500,
-            "unitPrice": 1030000
+            "unitPrice": 1100
           }
         ],
         "1:1:2:0": [
           {
             "quantity": 100,
-            "unitPrice": 660000
+            "unitPrice": 1800
           },
           {
             "quantity": 300,
-            "unitPrice": 840000
+            "unitPrice": 1200
           },
           {
             "quantity": 500,
-            "unitPrice": 1010000
+            "unitPrice": 1060
           }
         ],
         "1:1:2:1": [
           {
             "quantity": 100,
-            "unitPrice": 660000
+            "unitPrice": 1800
           },
           {
             "quantity": 300,
-            "unitPrice": 840000
+            "unitPrice": 1200
           },
           {
             "quantity": 500,
-            "unitPrice": 1010000
+            "unitPrice": 1060
           }
         ],
         "2:0:0:0": [
           {
             "quantity": 100,
-            "unitPrice": 370000
+            "unitPrice": 1300
           },
           {
             "quantity": 500,
-            "unitPrice": 520000
+            "unitPrice": 560
           },
           {
             "quantity": 1000,
-            "unitPrice": 670000
+            "unitPrice": 430
           }
         ],
         "2:0:0:1": [
           {
             "quantity": 100,
-            "unitPrice": 370000
+            "unitPrice": 1300
           },
           {
             "quantity": 500,
-            "unitPrice": 520000
+            "unitPrice": 560
           },
           {
             "quantity": 1000,
-            "unitPrice": 670000
+            "unitPrice": 430
           }
         ],
         "2:0:1:0": [
           {
             "quantity": 100,
-            "unitPrice": 370000
+            "unitPrice": 1300
           },
           {
             "quantity": 500,
-            "unitPrice": 520000
+            "unitPrice": 560
           },
           {
             "quantity": 1000,
-            "unitPrice": 690000
+            "unitPrice": 450
           }
         ],
         "2:0:1:1": [
           {
             "quantity": 100,
-            "unitPrice": 370000
+            "unitPrice": 1300
           },
           {
             "quantity": 500,
-            "unitPrice": 520000
+            "unitPrice": 560
           },
           {
             "quantity": 1000,
-            "unitPrice": 690000
+            "unitPrice": 450
           }
         ],
         "2:0:2:0": [
           {
             "quantity": 100,
-            "unitPrice": 370000
+            "unitPrice": 1300
           },
           {
             "quantity": 500,
-            "unitPrice": 530000
+            "unitPrice": 580
           },
           {
             "quantity": 1000,
-            "unitPrice": 710000
+            "unitPrice": 470
           }
         ],
         "2:0:2:1": [
           {
             "quantity": 100,
-            "unitPrice": 370000
+            "unitPrice": 1300
           },
           {
             "quantity": 500,
-            "unitPrice": 530000
+            "unitPrice": 580
           },
           {
             "quantity": 1000,
-            "unitPrice": 710000
+            "unitPrice": 470
           }
         ],
         "2:1:0:0": [
           {
             "quantity": 100,
-            "unitPrice": 380000
+            "unitPrice": 1400
           },
           {
             "quantity": 500,
-            "unitPrice": 560000
+            "unitPrice": 640
           },
           {
             "quantity": 1000,
-            "unitPrice": 780000
+            "unitPrice": 540
           }
         ],
         "2:1:0:1": [
           {
             "quantity": 100,
-            "unitPrice": 380000
+            "unitPrice": 1400
           },
           {
             "quantity": 500,
-            "unitPrice": 560000
+            "unitPrice": 640
           },
           {
             "quantity": 1000,
-            "unitPrice": 780000
+            "unitPrice": 540
           }
         ],
         "2:1:1:0": [
           {
             "quantity": 100,
-            "unitPrice": 380000
+            "unitPrice": 1400
           },
           {
             "quantity": 500,
-            "unitPrice": 570000
+            "unitPrice": 660
           },
           {
             "quantity": 1000,
-            "unitPrice": 790000
+            "unitPrice": 550
           }
         ],
         "2:1:1:1": [
           {
             "quantity": 100,
-            "unitPrice": 380000
+            "unitPrice": 1400
           },
           {
             "quantity": 500,
-            "unitPrice": 570000
+            "unitPrice": 660
           },
           {
             "quantity": 1000,
-            "unitPrice": 790000
+            "unitPrice": 550
           }
         ],
         "2:1:2:0": [
           {
             "quantity": 100,
-            "unitPrice": 380000
+            "unitPrice": 1400
           },
           {
             "quantity": 500,
-            "unitPrice": 560000
+            "unitPrice": 640
           },
           {
             "quantity": 1000,
-            "unitPrice": 780000
+            "unitPrice": 540
           }
         ],
         "2:1:2:1": [
           {
             "quantity": 100,
-            "unitPrice": 380000
+            "unitPrice": 1400
           },
           {
             "quantity": 500,
-            "unitPrice": 560000
+            "unitPrice": 640
           },
           {
             "quantity": 1000,
-            "unitPrice": 780000
+            "unitPrice": 540
           }
         ]
       },
@@ -1093,7 +1094,8 @@ $variants$
           "designPrintEstimate": 40000,
           "planningEstimate": 30000
         }
-      }
+      },
+      "priceModel": "service-plus-print-unit-v1"
     }
   },
   {
@@ -1123,113 +1125,113 @@ $variants$
         "0:0:0:0": [
           {
             "quantity": 100,
-            "unitPrice": 520000
+            "unitPrice": 2700
           },
           {
             "quantity": 300,
-            "unitPrice": 590000
+            "unitPrice": 1133
           },
           {
             "quantity": 500,
-            "unitPrice": 650000
+            "unitPrice": 800
           }
         ],
         "0:0:0:1": [
           {
             "quantity": 100,
-            "unitPrice": 520000
+            "unitPrice": 2700
           },
           {
             "quantity": 300,
-            "unitPrice": 590000
+            "unitPrice": 1133
           },
           {
             "quantity": 500,
-            "unitPrice": 650000
+            "unitPrice": 800
           }
         ],
         "0:0:1:0": [
           {
             "quantity": 100,
-            "unitPrice": 550000
+            "unitPrice": 3000
           },
           {
             "quantity": 300,
-            "unitPrice": 660000
+            "unitPrice": 1367
           },
           {
             "quantity": 500,
-            "unitPrice": 740000
+            "unitPrice": 980
           }
         ],
         "0:0:1:1": [
           {
             "quantity": 100,
-            "unitPrice": 550000
+            "unitPrice": 3000
           },
           {
             "quantity": 300,
-            "unitPrice": 660000
+            "unitPrice": 1367
           },
           {
             "quantity": 500,
-            "unitPrice": 740000
+            "unitPrice": 980
           }
         ],
         "1:0:0:0": [
           {
             "quantity": 100,
-            "unitPrice": 440000
+            "unitPrice": 1900
           },
           {
             "quantity": 300,
-            "unitPrice": 540000
+            "unitPrice": 967
           },
           {
             "quantity": 500,
-            "unitPrice": 560000
+            "unitPrice": 620
           }
         ],
         "1:0:0:1": [
           {
             "quantity": 100,
-            "unitPrice": 440000
+            "unitPrice": 1900
           },
           {
             "quantity": 300,
-            "unitPrice": 540000
+            "unitPrice": 967
           },
           {
             "quantity": 500,
-            "unitPrice": 560000
+            "unitPrice": 620
           }
         ],
         "1:0:1:0": [
           {
             "quantity": 100,
-            "unitPrice": 450000
+            "unitPrice": 2000
           },
           {
             "quantity": 300,
-            "unitPrice": 570000
+            "unitPrice": 1067
           },
           {
             "quantity": 500,
-            "unitPrice": 610000
+            "unitPrice": 720
           }
         ],
         "1:0:1:1": [
           {
             "quantity": 100,
-            "unitPrice": 450000
+            "unitPrice": 2000
           },
           {
             "quantity": 300,
-            "unitPrice": 570000
+            "unitPrice": 1067
           },
           {
             "quantity": 500,
-            "unitPrice": 610000
+            "unitPrice": 720
           }
         ]
       },
@@ -1238,7 +1240,8 @@ $variants$
           "designPrintEstimate": 250000,
           "planningEstimate": 200000
         }
-      }
+      },
+      "priceModel": "service-plus-print-unit-v1"
     }
   },
   {
@@ -1267,57 +1270,57 @@ $variants$
         "0:0:0:0": [
           {
             "quantity": 100,
-            "unitPrice": 130000
+            "unitPrice": 300
           },
           {
             "quantity": 300,
-            "unitPrice": 160000
+            "unitPrice": 200
           },
           {
             "quantity": 4000,
-            "unitPrice": 190000
+            "unitPrice": 22
           }
         ],
         "0:0:0:1": [
           {
             "quantity": 100,
-            "unitPrice": 190000
+            "unitPrice": 400
           },
           {
             "quantity": 300,
-            "unitPrice": 250000
+            "unitPrice": 333
           },
           {
             "quantity": 4000,
-            "unitPrice": 260000
+            "unitPrice": 28
           }
         ],
         "0:0:1:0": [
           {
             "quantity": 100,
-            "unitPrice": 130000
+            "unitPrice": 300
           },
           {
             "quantity": 300,
-            "unitPrice": 170000
+            "unitPrice": 233
           },
           {
             "quantity": 4000,
-            "unitPrice": 290000
+            "unitPrice": 48
           }
         ],
         "0:0:1:1": [
           {
             "quantity": 100,
-            "unitPrice": 200000
+            "unitPrice": 500
           },
           {
             "quantity": 300,
-            "unitPrice": 260000
+            "unitPrice": 367
           },
           {
             "quantity": 4000,
-            "unitPrice": 360000
+            "unitPrice": 52
           }
         ]
       },
@@ -1330,7 +1333,8 @@ $variants$
           "designPrintEstimate": 75000,
           "planningEstimate": 40000
         }
-      }
+      },
+      "priceModel": "service-plus-print-unit-v1"
     }
   },
   {
@@ -1361,13 +1365,13 @@ $variants$
         "0:0:0:0:0": [
           {
             "quantity": 1,
-            "unitPrice": 110000
+            "unitPrice": 30000
           }
         ],
         "0:1:0:0:0": [
           {
             "quantity": 1,
-            "unitPrice": 130000
+            "unitPrice": 50000
           }
         ]
       },
@@ -1376,7 +1380,8 @@ $variants$
           "designPrintEstimate": 80000,
           "planningEstimate": 50000
         }
-      }
+      },
+      "priceModel": "service-plus-print-unit-v1"
     }
   },
   {
@@ -1405,25 +1410,25 @@ $variants$
         "0:0:0:0": [
           {
             "quantity": 1,
-            "unitPrice": 130000
+            "unitPrice": 50000
           }
         ],
         "0:1:0:0": [
           {
             "quantity": 1,
-            "unitPrice": 140000
+            "unitPrice": 60000
           }
         ],
         "1:0:0:0": [
           {
             "quantity": 1,
-            "unitPrice": 130000
+            "unitPrice": 50000
           }
         ],
         "1:1:0:0": [
           {
             "quantity": 1,
-            "unitPrice": 160000
+            "unitPrice": 80000
           }
         ]
       },
@@ -1432,7 +1437,8 @@ $variants$
           "designPrintEstimate": 80000,
           "planningEstimate": 50000
         }
-      }
+      },
+      "priceModel": "service-plus-print-unit-v1"
     }
   },
   {
@@ -1460,13 +1466,13 @@ $variants$
         "0:0:0:0": [
           {
             "quantity": 1,
-            "unitPrice": 80000
+            "unitPrice": 30000
           }
         ],
         "0:0:0:1": [
           {
             "quantity": 1,
-            "unitPrice": 100000
+            "unitPrice": 50000
           }
         ]
       },
@@ -1475,7 +1481,8 @@ $variants$
           "designPrintEstimate": 50000,
           "planningEstimate": 30000
         }
-      }
+      },
+      "priceModel": "service-plus-print-unit-v1"
     }
   },
   {
@@ -1524,7 +1531,8 @@ $variants$
           "designPrintEstimate": 60000,
           "planningEstimate": 20000
         }
-      }
+      },
+      "priceModel": "service-plus-print-unit-v1"
     }
   },
   {
@@ -1551,61 +1559,61 @@ $variants$
         "0:0:0": [
           {
             "quantity": 500,
-            "unitPrice": 90000
+            "unitPrice": 120
           },
           {
             "quantity": 1000,
-            "unitPrice": 120000
+            "unitPrice": 90
           }
         ],
         "0:0:1": [
           {
             "quantity": 500,
-            "unitPrice": 470000
+            "unitPrice": 880
           },
           {
             "quantity": 1000,
-            "unitPrice": 560000
+            "unitPrice": 530
           }
         ],
         "1:0:0": [
           {
             "quantity": 500,
-            "unitPrice": 90000
+            "unitPrice": 120
           },
           {
             "quantity": 1000,
-            "unitPrice": 120000
+            "unitPrice": 90
           }
         ],
         "1:0:1": [
           {
             "quantity": 500,
-            "unitPrice": 470000
+            "unitPrice": 880
           },
           {
             "quantity": 1000,
-            "unitPrice": 560000
+            "unitPrice": 530
           }
         ],
         "2:0:0": [
           {
             "quantity": 500,
-            "unitPrice": 220000
+            "unitPrice": 380
           },
           {
             "quantity": 1000,
-            "unitPrice": 260000
+            "unitPrice": 230
           }
         ],
         "2:0:1": [
           {
             "quantity": 500,
-            "unitPrice": 560000
+            "unitPrice": 1060
           },
           {
             "quantity": 1000,
-            "unitPrice": 720000
+            "unitPrice": 690
           }
         ]
       },
@@ -1614,7 +1622,8 @@ $variants$
           "designPrintEstimate": 30000,
           "planningEstimate": 20000
         }
-      }
+      },
+      "priceModel": "service-plus-print-unit-v1"
     }
   },
   {
@@ -1645,7 +1654,8 @@ $variants$
           "designPrintEstimate": 80000,
           "planningEstimate": null
         }
-      }
+      },
+      "priceModel": "service-plus-print-unit-v1"
     }
   }
 ]

@@ -152,13 +152,7 @@ export function ComplaintPage() {
         filterValues={{ status: filters.status, type: filters.type }}
         getRowKey={(row) => row.id}
         onFilterValueChange={handleFilterValueChange}
-        onSearchValueChange={(query) => setFilters((current) => ({ ...current, query }))}
         rows={filteredRows}
-        search={{
-          label: '검색',
-          placeholder: '접수자 또는 접수 내용으로 검색해주세요.',
-        }}
-        searchValue={filters.query}
         title="불편접수 현황"
       />
     </main>

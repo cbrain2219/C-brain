@@ -47,18 +47,32 @@ test('grouped product list uses its category name and lowest variant price', () 
     configuration: {
       variants: {
         포스터: {
-          optionValues: {},
-          priceRowsBySelection: {
-            poster: [{ quantity: 100, unitPrice: 520000 }],
+          optionValues: {
+            coating: ['무광'],
+            paper: ['일반지'],
+            size: ['A1'],
+            thickness: ['얇은'],
           },
-          serviceEstimatesBySelection: {},
+          priceRowsBySelection: {
+            '0:0:0:0': [{ quantity: 100, unitPrice: 2700 }],
+          },
+          serviceEstimatesBySelection: {
+            '': { designPrintEstimate: 250000, planningEstimate: 200000 },
+          },
         },
         전단지: {
-          optionValues: {},
-          priceRowsBySelection: {
-            flyer: [{ quantity: 100, unitPrice: 130000 }],
+          optionValues: {
+            paper: ['일반지'],
+            side: ['단면'],
+            size: ['A4'],
+            thickness: ['얇은'],
           },
-          serviceEstimatesBySelection: {},
+          priceRowsBySelection: {
+            '0:0:0:0': [{ quantity: 100, unitPrice: 300 }],
+          },
+          serviceEstimatesBySelection: {
+            0: { designPrintEstimate: 100000, planningEstimate: 60000 },
+          },
         },
       },
     },
@@ -81,10 +95,13 @@ test('product dates use KST and service-only products expose their estimate', ()
     configuration: {
       variants: {
         로고: {
-          optionValues: {},
+          optionValues: {
+            logoType: ['워드마크'],
+            proposalCount: ['1'],
+          },
           priceRowsBySelection: {},
           serviceEstimatesBySelection: {
-            '': { designPrintEstimate: 50000, planningEstimate: null },
+            0: { designPrintEstimate: 50000, planningEstimate: null },
           },
         },
       },

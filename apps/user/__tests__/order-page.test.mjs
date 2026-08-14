@@ -315,6 +315,14 @@ test("order page route, content, responsive styles, and navigation are wired", (
   assert.match(optionSelectionSource, /selectedVariant\.quantitySection/);
   assert.match(optionSelectionSource, /quantityRows\.map/);
   assert.match(optionSelectionSource, /quantityTableScroll/);
+  assert.match(
+    optionSelectionSource,
+    /<span role="columnheader">인쇄 단가<\/span>/,
+  );
+  assert.match(
+    optionSelectionSource,
+    /<span role="columnheader">합계<\/span>/,
+  );
   assert.match(optionSelectionSource, /주문 요약/);
   assert.match(optionSelectionSource, /mobilePaymentBar/);
   assert.match(optionSelectionSource, /결제하기/);

@@ -55,7 +55,7 @@ function groupedProductRecord(overrides = {}) {
             thickness: ['얇은'],
           },
           priceRowsBySelection: {
-            '0:0:0:0': [{ quantity: 100, unitPrice: 520000 }],
+            '0:0:0:0': [{ quantity: 100, unitPrice: 2700 }],
           },
           serviceEstimatesBySelection: {
             '': { designPrintEstimate: 250000, planningEstimate: 200000 },
@@ -69,7 +69,7 @@ function groupedProductRecord(overrides = {}) {
             thickness: ['얇은'],
           },
           priceRowsBySelection: {
-            '0:0:0:0': [{ quantity: 100, unitPrice: 130000 }],
+            '0:0:0:0': [{ quantity: 100, unitPrice: 300 }],
           },
           serviceEstimatesBySelection: {
             0: { designPrintEstimate: 100000, planningEstimate: 60000 },
@@ -153,7 +153,7 @@ test('grouped JSONB round trips every variant and future key', () => {
   assert.equal(draft.productType, '포스터 · 전단지')
   assert.deepEqual(Object.keys(draft.variants), ['포스터', '전단지'])
   assert.deepEqual(draft.variants.포스터.priceRowsBySelection['0:0:0:0'], [
-    { quantity: '100', unitPrice: '520,000' },
+    { quantity: '100', unitPrice: '2,700' },
   ])
   assert.deepEqual(input, {
     configuration: record.configuration,
@@ -234,7 +234,6 @@ test('drafts store blank numbers as null in the grouped configuration', () => {
     storedBrochure.priceRowsBySelection['0:0:0:0'][0].unitPrice,
     null,
   )
-
   brochure.optionValues.pageCount[0] = ''
 
   assert.equal(
@@ -303,7 +302,7 @@ test('publishing requires service estimates for every selectable service combina
 
   flyer.optionValues.side.push('양면')
   flyer.priceRowsBySelection['0:0:0:1'] = [
-    { quantity: '100', unitPrice: '150,000' },
+    { quantity: '100', unitPrice: '400' },
   ]
 
   assert.deepEqual(getProductValidationIssue(draft, 'published'), {

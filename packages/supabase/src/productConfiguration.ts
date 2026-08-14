@@ -421,6 +421,9 @@ export function getProductEstimateMultiplier(
   selectedOptionValues: Partial<Record<ProductOptionSectionKey, string>>,
 ) {
   const variant = getProductVariant(productType, productSubtype);
+
+  if (variant === "리플렛 · 팜플렛") return 6;
+
   const optionKey = estimateMultiplierOptionByVariant[variant];
 
   if (!optionKey) return 1;

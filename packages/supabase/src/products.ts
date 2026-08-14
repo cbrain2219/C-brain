@@ -1,3 +1,5 @@
+import { isProductType } from "./categories.ts";
+import { createOrderProductCatalogItem } from "./productCatalog.ts";
 import { requireAdmin } from "./auth.ts";
 import { assertSupabaseSuccess, unwrapSupabaseData } from "./result.ts";
 import type { CBrainSupabaseClient } from "./server.ts";
@@ -58,60 +60,17 @@ export function getLowestProductUnitPrice(configuration: Json | undefined) {
   return lowestPrice;
 }
 
-function getLowestVariantEstimate(configuration: Json | undefined) {
-  if (!isJsonObject(configuration)) return null;
+export function getLowestProductPrice(configuration: Json, productType: string) {
+  if (!isProductType(productType)) return null;
 
-  const estimatesBySelection = configuration.serviceEstimatesBySelection;
-
-  if (!isJsonObject(estimatesBySelection)) return null;
-
-  let lowestPrice: number | null = null;
-
-  for (const estimate of Object.values(estimatesBySelection)) {
-    if (!isJsonObject(estimate)) continue;
-
-    const designPrintEstimate = estimate.designPrintEstimate;
-
-    if (
-      typeof designPrintEstimate === "number" &&
-      Number.isFinite(designPrintEstimate) &&
-      designPrintEstimate >= 0 &&
-      (lowestPrice === null || designPrintEstimate < lowestPrice)
-    ) {
-      lowestPrice = designPrintEstimate;
-    }
-  }
-
-  return lowestPrice;
-}
-
-export function getLowestProductPrice(configuration: Json) {
-  if (!isJsonObject(configuration) || !isJsonObject(configuration.variants)) {
-    return null;
-  }
-
-  let lowestEstimate: number | null = null;
-  let lowestUnitPrice: number | null = null;
-
-  for (const variant of Object.values(configuration.variants)) {
-    const unitPrice = getLowestProductUnitPrice(variant);
-    const estimate = getLowestVariantEstimate(variant);
-
-    if (
-      unitPrice !== null &&
-      (lowestUnitPrice === null || unitPrice < lowestUnitPrice)
-    ) {
-      lowestUnitPrice = unitPrice;
-    }
-    if (
-      estimate !== null &&
-      (lowestEstimate === null || estimate < lowestEstimate)
-    ) {
-      lowestEstimate = estimate;
-    }
-  }
-
-  return lowestUnitPrice ?? lowestEstimate;
+  return (
+    createOrderProductCatalogItem({
+      configuration,
+      id: "price-preview",
+      product_type: productType,
+      sort_order: 0,
+    })?.startingPrice ?? null
+  );
 }
 
 export async function listPublishedProducts(client: CBrainSupabaseClient) {

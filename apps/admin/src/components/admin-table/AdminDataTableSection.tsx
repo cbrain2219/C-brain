@@ -48,7 +48,7 @@ export type AdminDataTableSectionProps<Row> = {
   readonly onRowsReorder?: (rows: readonly Row[]) => void
   readonly onSearchValueChange?: (value: string) => void
   readonly rows: readonly Row[]
-  readonly search: AdminTableSearch
+  readonly search?: AdminTableSearch
   readonly searchValue?: string
   readonly title: string
 }
@@ -274,20 +274,22 @@ export function AdminDataTableSection<Row>({
                 </label>
               ))}
 
-              <label className="admin-data-table-search">
-                <span className="admin-data-table-search__label pretendard-bold-14">{search.label}</span>
-                <span className="admin-data-table-search__control">
-                  <SearchIcon />
-                  <input
-                    aria-label={search.placeholder}
-                    className="admin-data-table-search__input pretendard-medium-14"
-                    onChange={(event) => onSearchValueChange?.(event.currentTarget.value)}
-                    placeholder={search.placeholder}
-                    type="search"
-                    value={searchValue}
-                  />
-                </span>
-              </label>
+              {search ? (
+                <label className="admin-data-table-search">
+                  <span className="admin-data-table-search__label pretendard-bold-14">{search.label}</span>
+                  <span className="admin-data-table-search__control">
+                    <SearchIcon />
+                    <input
+                      aria-label={search.placeholder}
+                      className="admin-data-table-search__input pretendard-medium-14"
+                      onChange={(event) => onSearchValueChange?.(event.currentTarget.value)}
+                      placeholder={search.placeholder}
+                      type="search"
+                      value={searchValue}
+                    />
+                  </span>
+                </label>
+              ) : null}
             </div>
           </div>
 

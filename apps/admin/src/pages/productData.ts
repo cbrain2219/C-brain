@@ -20,7 +20,10 @@ export function formatNumericValue(value: string) {
 }
 
 export function toProductListRow(product: ProductRecord): ProductListRow {
-  const lowestPrice = getLowestProductPrice(product.configuration)
+  const lowestPrice = getLowestProductPrice(
+    product.configuration,
+    product.product_type,
+  )
 
   return {
     createdAt: formatAdminDate(product.created_at),

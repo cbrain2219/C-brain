@@ -48,7 +48,6 @@ const {
   deleteProduct,
   getAdminProduct,
   getPublishedProduct,
-  getLowestProductPrice,
   getLowestProductUnitPrice,
   listPublishedProducts,
   updateProduct,
@@ -203,57 +202,19 @@ test("published content queries use stable display ordering", async () => {
   );
 });
 
-test("product pricing uses the lowest valid unit price across variants", () => {
+test("product pricing reads only valid print unit prices", () => {
   const poster = {
     priceRowsBySelection: {
       "0:0:0": [
-        { quantity: 100, unitPrice: 160000 },
-        { quantity: 200, unitPrice: 120000 },
+        { quantity: 100, unitPrice: 600 },
+        { quantity: 200, unitPrice: 350 },
         { quantity: 300, unitPrice: null },
       ],
-      invalid: [{ quantity: 1, unitPrice: "100000" }],
-    },
-    serviceEstimatesBySelection: {
-      "": { designPrintEstimate: 50000, planningEstimate: 20000 },
+      invalid: [{ quantity: 1, unitPrice: "100" }],
     },
   };
 
-  assert.equal(getLowestProductUnitPrice(poster), 120000);
-  assert.equal(
-    getLowestProductPrice({
-      variants: {
-        포스터: poster,
-        전단지: {
-          priceRowsBySelection: {
-            flyer: [{ quantity: 100, unitPrice: 130000 }],
-          },
-          serviceEstimatesBySelection: {
-            "": { designPrintEstimate: 10000 },
-          },
-        },
-      },
-    }),
-    120000,
-  );
-  assert.equal(
-    getLowestProductPrice({
-      variants: {
-        포스터: {
-          priceRowsBySelection: {},
-          serviceEstimatesBySelection: {
-            "0": { designPrintEstimate: 60000 },
-          },
-        },
-        전단지: {
-          priceRowsBySelection: {},
-          serviceEstimatesBySelection: {
-            "1": { designPrintEstimate: 50000 },
-          },
-        },
-      },
-    }),
-    50000,
-  );
+  assert.equal(getLowestProductUnitPrice(poster), 350);
   assert.equal(getLowestProductUnitPrice({}), null);
   assert.equal(getLowestProductUnitPrice([]), null);
 });

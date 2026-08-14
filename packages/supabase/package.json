@@ -25,7 +25,8 @@
   "scripts": {
     "lint": "eslint . --max-warnings 0",
     "check-types": "tsc --noEmit",
-    "test": "node --experimental-strip-types --test tests/*.test.mjs"
+    "test": "node --experimental-strip-types --test tests/*.test.mjs",
+    "sync-product-print-prices": "node --experimental-strip-types scripts/sync-product-print-unit-prices.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.8.0",

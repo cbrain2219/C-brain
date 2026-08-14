@@ -173,7 +173,7 @@
   margin: 0;
   padding-inline: 20px;
   background: linear-gradient(var(--landing-gray-100), var(--landing-gray-100))
-    left 20px bottom / calc(100% - 40px) 1px no-repeat;
+    left bottom / 100% 1px no-repeat;
   display: flex;
   align-items: stretch;
   gap: 4px;

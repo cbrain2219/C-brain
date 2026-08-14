@@ -101,6 +101,7 @@ test('spreadsheet seed contains only complete price rows', () => {
   assert.match(seed, /고급지\(랑데뷰\)/)
   assert.doesNotMatch(seed, /고급지\(량데뷰\)/)
   assert.doesNotMatch(seed, /"unitPrice": null/)
+  assert.doesNotMatch(seed, /"finalPrice"/)
 })
 
 test('workbook reconciliation is transactional and verifies its result', () => {

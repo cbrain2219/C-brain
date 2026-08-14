@@ -104,6 +104,10 @@ test("estimate multipliers follow the administrator per-unit labels", () => {
     12,
   );
   assert.equal(
+    getProductEstimateMultiplier("리플렛 · 팜플렛", "", {}),
+    6,
+  );
+  assert.equal(
     getProductEstimateMultiplier("포스터 · 전단지", "전단지", {
       side: "양면",
     }),
