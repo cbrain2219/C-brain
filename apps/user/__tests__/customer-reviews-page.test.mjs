@@ -645,15 +645,16 @@ test("customer interviews keep the desktop section layout from 1080px upward", a
   assert.match(pageSource, /reviewsFeaturedMeta/);
   assert.match(
     pageSource,
-    /featuredCustomerInterview\.headlineLines\.map\(\(line, index\) =>/,
+    /\{featuredCustomerInterview\.title\}/,
   );
-  assert.match(
-    pageSource,
-    /key=\{`\$\{featuredCustomerInterview\.id\}-headline-\$\{index\}`\}/,
-  );
-  assert.doesNotMatch(pageSource, /<span key=\{line\}>/);
+  assert.doesNotMatch(pageSource, /featuredCustomerInterview\.headlineLines/);
   assert.match(pageSource, /reviewsQuoteMark/);
   assert.match(pageSource, /reviewsMediaOverlay/);
+
+  assert.match(
+    stylesSource,
+    /\.reviewsFeaturedDescription\s*\{[^}]*display: -webkit-box;[^}]*overflow: hidden;[^}]*-webkit-box-orient: vertical;[^}]*-webkit-line-clamp: 2;/s,
+  );
 
   assert.doesNotMatch(stylesSource, /\.reviewsFeaturedInline/);
   assert.doesNotMatch(stylesSource, /\.reviewsFeaturedStandalone/);

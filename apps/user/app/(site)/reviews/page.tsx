@@ -95,13 +95,7 @@ function FeaturedInterview({
             </span>
             <div className={styles.reviewsFeaturedCopy}>
               <h3 className={styles.reviewsFeaturedTitle}>
-                {featuredCustomerInterview.headlineLines.map((line, index) => (
-                  <span
-                    key={`${featuredCustomerInterview.id}-headline-${index}`}
-                  >
-                    {line}
-                  </span>
-                ))}
+                {featuredCustomerInterview.title}
               </h3>
               <p className={styles.reviewsFeaturedDescription}>
                 {featuredCustomerInterview.description}
