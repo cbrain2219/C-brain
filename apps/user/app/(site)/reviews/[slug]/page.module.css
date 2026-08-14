@@ -103,44 +103,6 @@
   display: block;
 }
 
-.reviewDetailVideoLink {
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  display: block;
-  color: inherit;
-  text-decoration: none;
-}
-
-.reviewDetailVideoLink:focus-visible {
-  outline: 2px solid var(--landing-brand-500);
-  outline-offset: -4px;
-}
-
-.reviewDetailVideoOverlay {
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  background: rgba(0, 0, 0, 0.2);
-  pointer-events: none;
-}
-
-.reviewDetailPlayButton {
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  overflow: hidden;
-  z-index: 1;
-}
-
-.reviewDetailPlayIcon {
-  object-fit: contain;
-}
-
 .reviewDetailBody {
   gap: 20px;
   color: var(--landing-gray-800);

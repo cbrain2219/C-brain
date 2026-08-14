@@ -8,7 +8,6 @@ import { JsonLdScript } from "../../../_components/JsonLdScript";
 import {
   getCustomerInterviewDetailSeo,
   getPublishedCustomerInterviewDetailBySlug,
-  reviewPlayLargeIcon,
 } from "../../../_content/customerReviews";
 import { createArticleStructuredData } from "../../../_content/structured-data";
 import styles from "./page.module.css";
@@ -181,9 +180,9 @@ export default async function CustomerReviewDetailPage({
               <>
                 {detail.videoUrl ? (
                   <video
-                    aria-hidden="true"
+                    aria-label={detail.videoAlt}
                     className={styles.reviewDetailVideoPreview}
-                    muted
+                    controls
                     playsInline
                     preload="metadata"
                     src={`${detail.videoUrl}#t=0.001`}
@@ -198,30 +197,6 @@ export default async function CustomerReviewDetailPage({
                     src={detail.thumbnail}
                   />
                 )}
-                {detail.videoUrl ? (
-                  <a
-                    aria-label={`${detail.title} 영상 보기`}
-                    href={detail.videoUrl}
-                    className={styles.reviewDetailVideoLink}
-                  >
-                    <span
-                      aria-hidden="true"
-                      className={styles.reviewDetailVideoOverlay}
-                    />
-                    <span
-                      aria-hidden="true"
-                      className={styles.reviewDetailPlayButton}
-                    >
-                      <Image
-                        alt=""
-                        className={styles.reviewDetailPlayIcon}
-                        fill
-                        sizes="48px"
-                        src={reviewPlayLargeIcon}
-                      />
-                    </span>
-                  </a>
-                ) : null}
               </>
             )}
             <figcaption className={styles.visuallyHidden}>

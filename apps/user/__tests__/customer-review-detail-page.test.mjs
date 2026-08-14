@@ -22,11 +22,6 @@ const authorIconPath = new URL(
   "../public/figma-assets/cbrain-author.svg",
   import.meta.url,
 );
-const playIconPath = new URL(
-  "../public/figma-assets/review-play-large.svg",
-  import.meta.url,
-);
-
 test("customer review detail page follows portfolio detail route conventions", async () => {
   await stat(detailPagePath);
 
@@ -109,8 +104,10 @@ test("customer review detail page keeps semantic article markup and admin video 
   assert.match(source, /const videoUrl = detail\.videoUrl/);
   assert.match(
     source,
-    /detail\.videoUrl \? \([\s\S]*href=\{detail\.videoUrl\}[\s\S]*reviewDetailPlayButton/,
+    /detail\.videoUrl \? \([\s\S]*<video[\s\S]*controls[\s\S]*playsInline/,
   );
+  assert.doesNotMatch(source, /href=\{detail\.videoUrl\}/);
+  assert.doesNotMatch(source, /reviewDetailPlayButton/);
   assert.match(source, /detail\.youtubeEmbedUrl \? \(/);
   assert.match(source, /<iframe/);
   assert.match(source, /src=\{detail\.youtubeEmbedUrl\}/);
@@ -167,7 +164,6 @@ test("customer review detail content preserves local presentation metadata", asy
 
   await stat(thumbnailPath);
   await stat(authorIconPath);
-  await stat(playIconPath);
 
   assert.match(content, /export type CustomerInterviewDetail/);
   assert.match(content, /publishedAt: string/);
@@ -198,7 +194,6 @@ test("customer review detail styles match the P/T/F/M responsive detail frame", 
     ".reviewDetailInner",
     ".reviewDetailVideo",
     ".reviewDetailVideoPreview",
-    ".reviewDetailPlayButton",
     ".reviewDetailYouTubeEmbed",
     ".reviewDetailBody",
     ".projectInfoList",
@@ -223,10 +218,6 @@ test("customer review detail styles match the P/T/F/M responsive detail frame", 
   assert.match(
     styles,
     /\.projectInfoItem \+ \.projectInfoItem\s*\{[\s\S]*border-top: 1px dotted var\(--landing-gray-100\);/,
-  );
-  assert.match(
-    styles,
-    /\.reviewDetailPlayButton\s*\{[\s\S]*width: 48px;[\s\S]*height: 48px;/,
   );
   assert.match(
     styles,
