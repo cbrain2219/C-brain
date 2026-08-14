@@ -138,7 +138,10 @@ test("landing blog cards group titles and summaries with a 4px gap", async () =>
 test("blog list page exposes SEO metadata", async () => {
   const page = await source("page");
 
-  assert.match(page, /import \{ createPageMetadata \} from "..\/..\/_content\/seo"/);
+  assert.match(
+    page,
+    /import \{ createPageMetadata \} from "..\/..\/_content\/seo"/,
+  );
   assert.match(page, /export const metadata = createPageMetadata\("blog"\)/);
   assert.doesNotMatch(page, /siteName: "C-Brain"/);
 });
@@ -191,7 +194,10 @@ test("blog featured carousel wraps infinitely through cloned edge slides", async
   );
   assert.match(featuredCard, /window\.setTimeout\(/);
   assert.match(featuredCard, /BLOG_FEATURED_TRANSITION_MS/);
-  assert.match(featuredCard, /trackIndex < 0 \|\| trackIndex > slideCount \+ 1/);
+  assert.match(
+    featuredCard,
+    /trackIndex < 0 \|\| trackIndex > slideCount \+ 1/,
+  );
   assert.match(featuredCard, /trackIndex === slideCount \+ 1/);
   assert.match(featuredCard, /onTransitionEnd=\{handleTrackTransitionEnd\}/);
   assert.match(featuredCard, /styles\.blogFeaturedTrackInstant/);
@@ -311,10 +317,7 @@ test("blog list uses semantic navigation and article lists without changing visu
   assert.match(board, /<ul className=\{styles\.blogOrdinaryGrid\}>/);
   assert.match(card, /<li className=\{styles\.blogCard\}>/);
   assert.match(card, /<article>/);
-  assert.match(
-    authorMeta,
-    /<footer className=\{styles\.blogAuthorMeta\}>/,
-  );
+  assert.match(authorMeta, /<footer className=\{styles\.blogAuthorMeta\}>/);
   assert.match(authorMeta, /import Image from "next\/image"/);
   assert.match(authorMeta, /src="\/figma-assets\/cbrain-author\.svg"/);
   assert.match(authorMeta, /className=\{styles\.blogAuthorIcon\}/);
@@ -343,18 +346,9 @@ test("blog list vertical spacing is expressed with parent gaps", async () => {
 
   assert.match(board, /<div className=\{styles\.blogBoardControls\}>/);
   assert.match(card, /<div className=\{styles\.blogCardTextGroup\}>/);
-  assert.match(
-    styles,
-    /\.blogBoardControls\s*\{[\s\S]*?gap:\s*32px;/,
-  );
-  assert.match(
-    styles,
-    /\.blogCardBody\s*\{[\s\S]*?gap:\s*20px;/,
-  );
-  assert.match(
-    styles,
-    /\.blogCardTextGroup\s*\{[\s\S]*?gap:\s*8px;/,
-  );
+  assert.match(styles, /\.blogBoardControls\s*\{[\s\S]*?gap:\s*32px;/);
+  assert.match(styles, /\.blogCardBody\s*\{[\s\S]*?gap:\s*20px;/);
+  assert.match(styles, /\.blogCardTextGroup\s*\{[\s\S]*?gap:\s*8px;/);
   assert.match(
     styles,
     /@media \(min-width:\s*1440px\)[\s\S]*?\.blogBoardControls\s*\{[\s\S]*?gap:\s*52px;/,
@@ -374,10 +368,7 @@ test("blog category active tab uses a transparent-edge gradient underline", asyn
     /\.blogCategoryButton\s*\{[\s\S]*?\}/,
   )?.[0];
 
-  assert.match(
-    categoryListStyle ?? "",
-    /padding-inline:\s*20px;/,
-  );
+  assert.match(categoryListStyle ?? "", /padding-inline:\s*20px;/);
   assert.match(
     categoryListStyle ?? "",
     /background:\s*linear-gradient\(var\(--landing-gray-100\), var\(--landing-gray-100\)\)[\s\S]*left bottom\s*\/\s*100% 1px no-repeat;/,
@@ -486,15 +477,16 @@ test("blog hero relies on shared frame padding without a custom fixed height", a
 });
 
 test("blog pages load DB content while keeping detail route conventions", async () => {
-  const [detailPage, homePage, page, posts, blogSection, card, featuredCard] = await Promise.all([
-    source("detailPage"),
-    source("homePage"),
-    source("page"),
-    source("posts"),
-    source("blogSection"),
-    source("card"),
-    source("featuredCard"),
-  ]);
+  const [detailPage, homePage, page, posts, blogSection, card, featuredCard] =
+    await Promise.all([
+      source("detailPage"),
+      source("homePage"),
+      source("page"),
+      source("posts"),
+      source("blogSection"),
+      source("card"),
+      source("featuredCard"),
+    ]);
 
   assert.match(posts, /slug:/);
   assert.match(posts, /detail:/);
@@ -520,7 +512,9 @@ test("blog pages load DB content while keeping detail route conventions", async 
     detailPage,
     /alternates: canonicalUrl \? \{ canonical: canonicalUrl \} : undefined/,
   );
-  assert.match(detailPage, /openGraph: \{[\s\S]*type: "article"/);
+  assert.match(detailPage, /type: "article" as const/);
+  assert.match(detailPage, /getPublishedBlogPostSource\(slug\)/);
+  assert.match(detailPage, /parseBlogHtmlDocument\(source\.content\)/);
   assert.match(detailPage, /getBlogPostBySlug\(slug, posts\)/);
   assert.match(detailPage, /getRelatedBlogPosts\(post\.slug, posts\)/);
   assert.match(detailPage, /alt=\{relatedPost\.imageAlt\}/);
@@ -530,11 +524,11 @@ test("blog pages load DB content while keeping detail route conventions", async 
 test("blog detail page keeps semantic article markup and list restoration", async () => {
   const [detailPage, detailStyles, detailBackLink, historyUtils] =
     await Promise.all([
-    source("detailPage"),
-    source("detailStyles"),
-    source("detailBackLink"),
-    source("historyUtils"),
-  ]);
+      source("detailPage"),
+      source("detailStyles"),
+      source("detailBackLink"),
+      source("historyUtils"),
+    ]);
 
   assert.match(
     detailPage,
@@ -551,24 +545,25 @@ test("blog detail page keeps semantic article markup and list restoration", asyn
   );
   assert.match(detailPage, /className=\{styles\.blogDetailAuthorIdentity\}/);
   assert.match(detailPage, /src="\/figma-assets\/cbrain-author\.svg"/);
-  assert.match(
-    detailStyles,
-    /\.blogDetailAuthorLine\s*\{[\s\S]*gap: 8px;/,
-  );
-  assert.match(
-    detailStyles,
-    /\.blogDetailAuthorIdentity\s*\{[\s\S]*gap: 4px;/,
-  );
+  assert.match(detailStyles, /\.blogDetailAuthorLine\s*\{[\s\S]*gap: 8px;/);
+  assert.match(detailStyles, /\.blogDetailAuthorIdentity\s*\{[\s\S]*gap: 4px;/);
   assert.match(detailPage, /<time[\s\S]*dateTime=\{post\.publishedAtIso\}/);
   assert.match(
     detailPage,
     /<section[\s\S]*aria-labelledby="blog-detail-title"[\s\S]*itemProp="articleBody"/,
   );
+  assert.match(
+    detailPage,
+    /<header className=\{styles\.blogDetailHeader\}>[\s\S]*<section[\s\S]*<BlogHtmlContent document=\{htmlDocument\} \/>/,
+  );
   assert.match(detailPage, /<BlogDetailBackLink href=\{listHref\} \/>/);
   assert.match(detailBackLink, /useEffect/);
   assert.match(detailBackLink, /useRef/);
   assert.match(detailBackLink, /activateBlogListHistory/);
-  assert.match(detailBackLink, /rememberBlogListScrollRestore\(href, scrollY\)/);
+  assert.match(
+    detailBackLink,
+    /rememberBlogListScrollRestore\(href, scrollY\)/,
+  );
   assert.match(detailBackLink, /clearActiveBlogListHistory\(\)/);
   assert.match(detailBackLink, /router\.back\(\)/);
   assert.match(historyUtils, /BLOG_LIST_ACTIVE_HISTORY_KEY/);
@@ -631,19 +626,13 @@ test("blog detail styles match the P/T/F/M responsive detail frame", async () =>
 
   assert.match(
     detailPage,
-    /<div className=\{styles\.blogDetailArticleContent\}>[\s\S]*?<BlogDetailBackLink href=\{listHref\} \/>[\s\S]*?<\/div>[\s\S]*?<aside/,
+    /<div className=\{styles\.blogDetailArticleContent\}>[\s\S]*?<BlogDetailBackLink href=\{listHref\} \/>[\s\S]*?<\/div>[\s\S]*?<MoreBlogSection/,
   );
   assert.match(styles, /\.blogDetailInner/);
   assert.match(styles, /width: min\(calc\(100% - 40px\), 640px\)/);
   assert.match(styles, /\.blogDetailInner\s*\{[^}]*gap: 52px;/s);
-  assert.match(
-    styles,
-    /\.blogDetailArticleContent\s*\{[^}]*gap: 20px;/s,
-  );
-  assert.match(
-    styles,
-    /\.blogDetailInner\s*\{[^}]*padding:\s*32px 0 52px;/s,
-  );
+  assert.match(styles, /\.blogDetailArticleContent\s*\{[^}]*gap: 20px;/s);
+  assert.match(styles, /\.blogDetailInner\s*\{[^}]*padding:\s*32px 0 52px;/s);
   assert.match(
     styles,
     /@media \(min-width: 1080px\)[\s\S]*?\.blogDetailInner\s*\{[^}]*padding-top:\s*52px;/,

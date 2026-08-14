@@ -4,6 +4,19 @@
   color: var(--landing-gray-800);
 }
 
+.blogHtmlDocumentBoundary {
+  width: 100%;
+  min-width: 0;
+  position: relative;
+  contain: layout paint;
+  isolation: isolate;
+}
+
+.blogHtmlDocumentContent {
+  width: 100%;
+  min-width: 0;
+}
+
 .blogDetailInner {
   width: min(calc(100% - 40px), 640px);
   margin: 0 auto;
