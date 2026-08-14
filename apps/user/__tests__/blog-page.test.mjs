@@ -25,6 +25,10 @@ const paths = {
     "../app/(site)/blog/[slug]/BlogDetailBackLink.tsx",
     import.meta.url,
   ),
+  detailHtmlFrame: new URL(
+    "../app/(site)/blog/[slug]/BlogHtmlDocumentFrame.tsx",
+    import.meta.url,
+  ),
   blogSection: new URL("../app/_components/BlogSection.tsx", import.meta.url),
   historyUtils: new URL(
     "../app/(site)/blog/_utils/blogListHistory.ts",
@@ -518,7 +522,8 @@ test("blog pages load DB content while keeping detail route conventions", async 
   );
   assert.match(detailPage, /type: "article" as const/);
   assert.match(detailPage, /getPublishedBlogPostSource\(slug\)/);
-  assert.match(detailPage, /parseBlogHtmlDocument\(source\.content\)/);
+  assert.match(detailPage, /source\.content/);
+  assert.match(detailPage, /<BlogHtmlDocumentFrame/);
   assert.match(detailPage, /getBlogPostBySlug\(slug, posts\)/);
   assert.match(detailPage, /getRelatedBlogPosts\(post\.slug, posts\)/);
   assert.match(detailPage, /alt=\{relatedPost\.imageAlt\}/);
@@ -526,13 +531,19 @@ test("blog pages load DB content while keeping detail route conventions", async 
 });
 
 test("blog detail page keeps semantic article markup and list restoration", async () => {
-  const [detailPage, detailStyles, detailBackLink, historyUtils] =
-    await Promise.all([
-      source("detailPage"),
-      source("detailStyles"),
-      source("detailBackLink"),
-      source("historyUtils"),
-    ]);
+  const [
+    detailPage,
+    detailStyles,
+    detailBackLink,
+    detailHtmlFrame,
+    historyUtils,
+  ] = await Promise.all([
+    source("detailPage"),
+    source("detailStyles"),
+    source("detailBackLink"),
+    source("detailHtmlFrame"),
+    source("historyUtils"),
+  ]);
 
   assert.match(
     detailPage,
@@ -558,8 +569,11 @@ test("blog detail page keeps semantic article markup and list restoration", asyn
   );
   assert.match(
     detailPage,
-    /<header className=\{styles\.blogDetailHeader\}>[\s\S]*<section[\s\S]*<BlogHtmlContent document=\{htmlDocument\} \/>/,
+    /<header className=\{styles\.blogDetailHeader\}>[\s\S]*<section[\s\S]*<BlogHtmlDocumentFrame html=\{htmlSource\} title=\{post\.title\} \/>/,
   );
+  assert.match(detailHtmlFrame, /srcDoc=\{framedHtml\}/);
+  assert.match(detailHtmlFrame, /sandbox="allow-scripts"/);
+  assert.doesNotMatch(detailHtmlFrame, /allow-same-origin/);
   assert.match(detailPage, /<BlogDetailBackLink href=\{listHref\} \/>/);
   assert.match(detailBackLink, /useEffect/);
   assert.match(detailBackLink, /useRef/);

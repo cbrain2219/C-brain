@@ -13,10 +13,6 @@ import {
   getBlogPostBySlug,
   getRelatedBlogPosts,
 } from "../_data/blogPosts";
-import {
-  parseBlogHtmlDocument,
-  type BlogHtmlDocument,
-} from "../_data/blogHtmlDocument";
 import type { BlogContentBlock, BlogPost } from "../_types/blog";
 import { LightHeroBadge } from "../../../../components/LightHeroBadge";
 import { JsonLdScript } from "../../../_components/JsonLdScript";
@@ -26,6 +22,7 @@ import {
   getPublishedBlogPosts,
 } from "../../../../lib/publicContent";
 import { BlogDetailBackLink } from "./BlogDetailBackLink";
+import { BlogHtmlDocumentFrame } from "./BlogHtmlDocumentFrame";
 import styles from "./page.module.css";
 
 type BlogDetailPageProps = {
@@ -118,19 +115,6 @@ function renderBlogContentBlock(block: BlogContentBlock) {
   }
 }
 
-function BlogHtmlContent({ document }: { document: BlogHtmlDocument }) {
-  return (
-    <div className={styles.blogHtmlDocumentBoundary}>
-      {document.css ? <style>{document.css}</style> : null}
-      <div
-        className={styles.blogHtmlDocumentContent}
-        data-blog-html-document=""
-        dangerouslySetInnerHTML={{ __html: document.bodyHtml }}
-      />
-    </div>
-  );
-}
-
 function MoreBlogSection({
   activeCategory,
   relatedPosts,
@@ -206,69 +190,40 @@ function MoreBlogSection({
   );
 }
 
-function createBlogMetadata(
-  post: BlogPost,
-  htmlDocument: BlogHtmlDocument | undefined,
-): Metadata {
+function createBlogMetadata(post: BlogPost): Metadata {
   const seo = getBlogDetailSeo(post);
-  const custom = htmlDocument?.metadata;
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
-  const defaultCanonicalUrl = siteUrl
+  const canonicalUrl = siteUrl
     ? new URL(`/blog/${post.slug}`, siteUrl)
     : undefined;
-  const canonicalUrl = custom?.canonical ?? defaultCanonicalUrl;
-  const defaultSocialImage = siteUrl
+  const socialImage = siteUrl
     ? {
         alt: post.imageAlt,
         url: new URL(post.image, siteUrl),
       }
     : undefined;
-  const openGraphImage = custom?.openGraph.image
-    ? { alt: post.imageAlt, url: custom.openGraph.image }
-    : defaultSocialImage;
-  const twitterImage = custom?.twitter.image
-    ? { alt: post.imageAlt, url: custom.twitter.image }
-    : openGraphImage;
-  const description = custom?.description ?? seo.description;
-  const title = custom?.title ?? seo.title;
-  const openGraphBase = {
-    description: custom?.openGraph.description ?? description,
-    images: openGraphImage ? [openGraphImage] : undefined,
-    locale: custom?.openGraph.locale ?? "ko_KR",
-    siteName: custom?.openGraph.siteName ?? "C-Brain",
-    title: custom?.openGraph.title ?? title,
-    url: custom?.openGraph.url ?? canonicalUrl,
-  };
-  const openGraph =
-    custom?.openGraph.type === "website"
-      ? {
-          ...openGraphBase,
-          type: "website" as const,
-        }
-      : {
-          ...openGraphBase,
-          authors: custom?.openGraph.author
-            ? [custom.openGraph.author]
-            : undefined,
-          modifiedTime: custom?.openGraph.modifiedTime ?? post.publishedAtIso,
-          publishedTime: custom?.openGraph.publishedTime ?? post.publishedAtIso,
-          section: custom?.openGraph.section,
-          type: "article" as const,
-        };
 
   return {
     alternates: canonicalUrl ? { canonical: canonicalUrl } : undefined,
-    authors: custom?.author ? [{ name: custom.author }] : undefined,
-    description,
-    keywords: custom?.keywords ? [...custom.keywords] : seo.keywords,
-    openGraph,
-    robots: custom?.robots,
-    title: custom?.title ? { absolute: custom.title } : title,
+    description: seo.description,
+    keywords: seo.keywords,
+    openGraph: {
+      description: seo.description,
+      images: socialImage ? [socialImage] : undefined,
+      locale: "ko_KR",
+      modifiedTime: post.publishedAtIso,
+      publishedTime: post.publishedAtIso,
+      siteName: "C-Brain",
+      title: seo.title,
+      type: "article" as const,
+      url: canonicalUrl,
+    },
+    title: seo.title,
     twitter: {
-      card: custom?.twitter.card ?? "summary",
-      description: custom?.twitter.description ?? description,
-      images: twitterImage ? [twitterImage] : undefined,
-      title: custom?.twitter.title ?? title,
+      card: "summary",
+      description: seo.description,
+      images: socialImage ? [socialImage] : undefined,
+      title: seo.title,
     },
   };
 }
@@ -276,12 +231,8 @@ function createBlogMetadata(
 export async function generateMetadata({
   params,
 }: BlogDetailPageProps): Promise<Metadata> {
-  const postsPromise = getPublishedBlogPosts();
   const { slug } = await params;
-  const [posts, source] = await Promise.all([
-    postsPromise,
-    getPublishedBlogPostSource(slug),
-  ]);
+  const posts = await getPublishedBlogPosts();
   const post = getBlogPostBySlug(slug, posts);
 
   if (!post) {
@@ -290,12 +241,7 @@ export async function generateMetadata({
     };
   }
 
-  const htmlDocument =
-    source?.content_mode === "html"
-      ? parseBlogHtmlDocument(source.content)
-      : undefined;
-
-  return createBlogMetadata(post, htmlDocument);
+  return createBlogMetadata(post);
 }
 
 export default async function BlogDetailPage({
@@ -326,9 +272,9 @@ export default async function BlogDetailPage({
   const relatedPosts = getRelatedBlogPosts(post.slug, posts);
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
   const imageUrl = getAbsoluteUrl(post.image, siteUrl);
-  const htmlDocument =
-    source?.content_mode === "html"
-      ? parseBlogHtmlDocument(source.content)
+  const htmlSource =
+    source?.content_mode === "html" && source.content.trim()
+      ? source.content
       : undefined;
   const defaultStructuredData = createBlogPostingStructuredData({
     authorName: post.author,
@@ -340,13 +286,6 @@ export default async function BlogDetailPage({
     section: post.category,
     urlPath: `/blog/${post.slug}`,
   });
-  const structuredData =
-    htmlDocument && htmlDocument.jsonLd.length > 0
-      ? htmlDocument.jsonLd
-      : [defaultStructuredData];
-  const structuredDataScripts = structuredData.map((data, index) => (
-    <JsonLdScript data={data} key={`blog-jsonld-${index + 1}`} />
-  ));
 
   return (
     <article
@@ -358,7 +297,7 @@ export default async function BlogDetailPage({
       <meta content={post.publishedAtIso} itemProp="datePublished" />
       <meta content={post.publishedAtIso} itemProp="dateModified" />
       {imageUrl ? <meta content={imageUrl} itemProp="image" /> : null}
-      {structuredDataScripts}
+      <JsonLdScript data={defaultStructuredData} />
       <div className={styles.blogDetailInner}>
         <div className={styles.blogDetailArticleContent}>
           <header className={styles.blogDetailHeader}>
@@ -402,8 +341,8 @@ export default async function BlogDetailPage({
             className={styles.blogDetailContent}
             itemProp="articleBody"
           >
-            {htmlDocument ? (
-              <BlogHtmlContent document={htmlDocument} />
+            {htmlSource ? (
+              <BlogHtmlDocumentFrame html={htmlSource} title={post.title} />
             ) : (
               post.detail.body.map(renderBlogContentBlock)
             )}

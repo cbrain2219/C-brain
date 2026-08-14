@@ -10,7 +10,7 @@ const webhookRoutePath = new URL(
 
 async function importWebhookHelpers() {
   const source = await readFile(webhookRoutePath, "utf8");
-  const moduleSource = source
+  const moduleSource = `${source
     .replace(
       /import \{[\s\S]*?\} from "@repo\/supabase";/,
       "const createAdminSupabaseClient = () => ({});\nconst finishPayment = () => ({});\nconst finishRefund = () => ({});\nconst getPaymentByNicepayTid = () => ({});\nconst getPaymentByProviderOrderId = () => ({});\nconst listRefundsByPaymentId = () => ([]);",
@@ -18,7 +18,7 @@ async function importWebhookHelpers() {
     .replace(
       /import \{[\s\S]*?\} from "\.\.\/\.\.\/\.\.\/\.\.\/\.\.\/lib\/nicepay";/,
       "const findLatestNicepayCancellation = () => null;\nconst getNicepayConfig = () => ({});\nconst parseNicepayPayment = () => null;\nconst retrieveNicepayPayment = () => null;\nconst verifyNicepayPayment = () => false;",
-    );
+    )}\nexport { hasSucceededCancellation, isRecordedNetCancel, isRecoverableNetCancel };`;
   const ts = await import("typescript");
   const { outputText } = ts.transpileModule(moduleSource, {
     compilerOptions: {

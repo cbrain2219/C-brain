@@ -96,7 +96,7 @@ async function recordNetCancelledPayment(
   });
 }
 
-export function hasSucceededCancellation(
+function hasSucceededCancellation(
   refunds: Awaited<ReturnType<typeof listRefundsByPaymentId>>,
   cancelledTid: string,
 ) {
@@ -107,7 +107,7 @@ export function hasSucceededCancellation(
   );
 }
 
-export function isRecordedNetCancel(
+function isRecordedNetCancel(
   order: Pick<
     PaymentWithOrder,
     "nicepayTid" | "providerOrderId" | "resultCode" | "status"
@@ -128,7 +128,7 @@ export function isRecordedNetCancel(
   );
 }
 
-export function isRecoverableNetCancel(
+function isRecoverableNetCancel(
   order: Pick<
     PaymentWithOrder,
     "nicepayTid" | "providerOrderId" | "resultCode" | "status"
