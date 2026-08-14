@@ -40,6 +40,37 @@ function PlayButton({ size = "small" }: { size?: "large" | "small" }) {
   );
 }
 
+function InterviewThumbnail({
+  alt,
+  sizes,
+  thumbnail,
+  videoUrl,
+}: {
+  alt: string;
+  sizes: string;
+  thumbnail: string;
+  videoUrl?: string;
+}) {
+  return videoUrl ? (
+    <video
+      aria-hidden="true"
+      className={styles.reviewsMediaVideo}
+      muted
+      playsInline
+      preload="metadata"
+      src={`${videoUrl}#t=0.001`}
+    />
+  ) : (
+    <Image
+      alt={alt}
+      className={styles.reviewsMediaImage}
+      fill
+      sizes={sizes}
+      src={thumbnail}
+    />
+  );
+}
+
 function FeaturedInterview({
   featuredCustomerInterview,
 }: {
@@ -93,12 +124,11 @@ function FeaturedInterview({
           className={styles.reviewsFeaturedMediaLink}
           href={`/reviews/${featuredCustomerInterview.detailSlug}`}
         >
-          <Image
+          <InterviewThumbnail
             alt={featuredCustomerInterview.videoAlt}
-            className={styles.reviewsMediaImage}
-            fill
             sizes="(min-width: 1440px) 530px, (min-width: 1080px) 530px, (min-width: 640px) 600px, 350px"
-            src={featuredCustomerInterview.thumbnail}
+            thumbnail={featuredCustomerInterview.thumbnail}
+            videoUrl={featuredCustomerInterview.videoUrl}
           />
           <span className={styles.reviewsMediaOverlay} aria-hidden="true" />
           <PlayButton size="large" />
@@ -196,12 +226,11 @@ export default async function CustomerReviewsPage() {
                           href={`/reviews/${interview.detailSlug}`}
                         >
                           <figure className={styles.reviewsInterviewMedia}>
-                            <Image
+                            <InterviewThumbnail
                               alt={interview.videoAlt}
-                              className={styles.reviewsMediaImage}
-                              fill
                               sizes="(min-width: 1120px) 530px, (min-width: 640px) calc((100vw - 60px) / 2), calc(100vw - 40px)"
-                              src={interview.thumbnail}
+                              thumbnail={interview.thumbnail}
+                              videoUrl={interview.videoUrl}
                             />
                             <span
                               className={styles.reviewsMediaOverlay}

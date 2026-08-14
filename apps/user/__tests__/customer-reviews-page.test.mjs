@@ -23,6 +23,7 @@ const testimonialCardPath = new URL(
   import.meta.url,
 );
 const packagePath = new URL("../package.json", import.meta.url);
+const nextConfigPath = new URL("../next.config.js", import.meta.url);
 const rootPackagePath = new URL("../../../package.json", import.meta.url);
 const stylesPath = new URL("../app/page.module.css", import.meta.url);
 const turboConfigPath = new URL("../../../turbo.json", import.meta.url);
@@ -88,6 +89,9 @@ const getPublishedReview = async () => null;
 const listPublishedReviews = async () => [];
 const getYouTubeEmbedUrl = (videoId) => /^[A-Za-z0-9_-]{11}$/.test(videoId)
   ? "https://www.youtube-nocookie.com/embed/" + videoId
+  : null;
+const getYouTubeThumbnailUrl = (videoId) => /^[A-Za-z0-9_-]{11}$/.test(videoId)
+  ? "https://i.ytimg.com/vi/" + videoId + "/hqdefault.jpg"
   : null;
 const getYouTubeWatchUrl = (videoId) => /^[A-Za-z0-9_-]{11}$/.test(videoId)
   ? "https://www.youtube.com/watch?v=" + videoId
@@ -323,6 +327,10 @@ test("review mappers separate kinds, sanitize content, and keep presentation met
   assert.equal(detail.thumbnail, reviewInterviewImage);
   assert.equal(detail.projectInfo[0].value, "새 고객사");
   assert.equal(detail.videoUrl, "https://assets.test/reviews/new-interview.mp4");
+  assert.equal(
+    mapped.customerInterviews[0].videoUrl,
+    "https://assets.test/reviews/new-interview.mp4",
+  );
 
   const youtubeDetail = mapCustomerInterviewDetail(
     reviewRow({
@@ -346,6 +354,10 @@ test("review mappers separate kinds, sanitize content, and keep presentation met
   assert.equal(
     youtubeDetail.youtubeEmbedUrl,
     "https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ",
+  );
+  assert.equal(
+    youtubeDetail.thumbnail,
+    "https://i.ytimg.com/vi/dQw4w9WgXcQ/hqdefault.jpg",
   );
   assert.equal(youtubeDetail.videoUrl, undefined);
 
@@ -467,7 +479,10 @@ test("shared header and page spacing switch immediately above 1080px", async () 
 });
 
 test("customer reviews page includes responsive layout styles", async () => {
-  const stylesSource = await readFile(stylesPath, "utf8");
+  const [pageSource, stylesSource] = await Promise.all([
+    readFile(pagePath, "utf8"),
+    readFile(stylesPath, "utf8"),
+  ]);
 
   const requiredClasses = [
     ".reviewsPageHero",
@@ -476,6 +491,7 @@ test("customer reviews page includes responsive layout styles", async () => {
     ".reviewsFeaturedMediaLink",
     ".reviewsInterviewLink",
     ".reviewsInterviewGrid",
+    ".reviewsMediaVideo",
     ".reviewsTestimonialGrid",
   ];
 
@@ -495,6 +511,16 @@ test("customer reviews page includes responsive layout styles", async () => {
     stylesSource,
     /@media \(max-width: 640px\)\s*\{\s*\.reviewsInterviewSection\s*\{\s*gap: 32px;/,
   );
+  assert.match(pageSource, /function InterviewThumbnail/);
+  assert.match(pageSource, /src=\{`\$\{videoUrl\}#t=0\.001`\}/);
+  assert.match(pageSource, /preload="metadata"/);
+});
+
+test("YouTube interview thumbnails are allowed by the Next image config", async () => {
+  const configSource = await readFile(nextConfigPath, "utf8");
+
+  assert.match(configSource, /hostname: "i\.ytimg\.com"/);
+  assert.match(configSource, /pathname: "\/vi\/\*\*"/);
 });
 
 test("customer interview heading moves below the featured interview through 640px", async () => {

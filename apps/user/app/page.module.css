@@ -1575,6 +1575,13 @@
   object-fit: cover;
 }
 
+.reviewsMediaVideo {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
+
 .reviewsMediaOverlay {
   position: absolute;
   inset: 0;

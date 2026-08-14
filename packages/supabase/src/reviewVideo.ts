@@ -80,3 +80,11 @@ export function getYouTubeEmbedUrl(videoId: string) {
     ? `https://www.youtube-nocookie.com/embed/${normalizedVideoId}`
     : null;
 }
+
+export function getYouTubeThumbnailUrl(videoId: string) {
+  const normalizedVideoId = normalizeVideoId(videoId);
+
+  return normalizedVideoId
+    ? `https://i.ytimg.com/vi/${normalizedVideoId}/hqdefault.jpg`
+    : null;
+}

@@ -7,6 +7,11 @@ const nextConfig = {
         pathname: "/storage/v1/object/public/**",
         protocol: "https",
       },
+      {
+        hostname: "i.ytimg.com",
+        pathname: "/vi/**",
+        protocol: "https",
+      },
     ],
   },
   transpilePackages: ["@repo/supabase"],

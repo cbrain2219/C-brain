@@ -179,14 +179,25 @@ export default async function CustomerReviewDetailPage({
               />
             ) : (
               <>
-                <Image
-                  alt={detail.videoAlt}
-                  className={styles.reviewDetailVideoImage}
-                  fill
-                  priority
-                  sizes="(min-width: 640px) 640px, calc(100vw - 40px)"
-                  src={detail.thumbnail}
-                />
+                {detail.videoUrl ? (
+                  <video
+                    aria-hidden="true"
+                    className={styles.reviewDetailVideoPreview}
+                    muted
+                    playsInline
+                    preload="metadata"
+                    src={`${detail.videoUrl}#t=0.001`}
+                  />
+                ) : (
+                  <Image
+                    alt={detail.videoAlt}
+                    className={styles.reviewDetailVideoImage}
+                    fill
+                    priority
+                    sizes="(min-width: 640px) 640px, calc(100vw - 40px)"
+                    src={detail.thumbnail}
+                  />
+                )}
                 {detail.videoUrl ? (
                   <a
                     aria-label={`${detail.title} 영상 보기`}

@@ -3,6 +3,7 @@ import test from "node:test";
 
 import {
   getYouTubeEmbedUrl,
+  getYouTubeThumbnailUrl,
   getYouTubeVideoId,
   getYouTubeWatchUrl,
 } from "../src/reviewVideo.ts";
@@ -50,6 +51,11 @@ test("YouTube URL builders emit canonical HTTPS watch and privacy-enhanced embed
     getYouTubeEmbedUrl(videoId),
     `https://www.youtube-nocookie.com/embed/${videoId}`,
   );
+  assert.equal(
+    getYouTubeThumbnailUrl(videoId),
+    `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`,
+  );
   assert.equal(getYouTubeWatchUrl("too-short"), null);
   assert.equal(getYouTubeEmbedUrl("too-short"), null);
+  assert.equal(getYouTubeThumbnailUrl("too-short"), null);
 });

@@ -121,6 +121,9 @@ test("customer review detail page keeps semantic article markup and admin video 
   assert.match(source, /<figcaption className=\{styles\.visuallyHidden\}>/);
   assert.match(source, /alt=\{detail\.videoAlt\}/);
   assert.match(source, /src=\{detail\.thumbnail\}/);
+  assert.match(source, /className=\{styles\.reviewDetailVideoPreview\}/);
+  assert.match(source, /src=\{`\$\{detail\.videoUrl\}#t=0\.001`\}/);
+  assert.match(source, /preload="metadata"/);
   assert.match(
     source,
     /<blockquote[\s\S]*className=\{styles\.reviewDetailQuote\}/,
@@ -194,6 +197,7 @@ test("customer review detail styles match the P/T/F/M responsive detail frame", 
     ".reviewDetailPage",
     ".reviewDetailInner",
     ".reviewDetailVideo",
+    ".reviewDetailVideoPreview",
     ".reviewDetailPlayButton",
     ".reviewDetailYouTubeEmbed",
     ".reviewDetailBody",

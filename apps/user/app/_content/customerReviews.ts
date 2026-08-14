@@ -2,6 +2,7 @@ import {
   getYouTubeEmbedUrl,
   getPublicAssetUrl,
   getPublishedReview,
+  getYouTubeThumbnailUrl,
   getYouTubeWatchUrl,
   listPublishedReviews,
   type TableRow,
@@ -99,6 +100,7 @@ export type CustomerInterviewCard = {
   thumbnail: string;
   title: string;
   videoAlt: string;
+  videoUrl?: string;
 };
 
 export type FeaturedCustomerInterview = CustomerInterviewCard & {
@@ -381,6 +383,9 @@ export function mapCustomerInterviewDetail(
   const youtubeEmbedUrl = youtubeVideoId
     ? getYouTubeEmbedUrl(youtubeVideoId)
     : null;
+  const youtubeThumbnailUrl = youtubeVideoId
+    ? getYouTubeThumbnailUrl(youtubeVideoId)
+    : null;
 
   return {
     author: "씨브레인",
@@ -397,7 +402,8 @@ export function mapCustomerInterviewDetail(
     publishedAt: getPublishedAt(row),
     seoDescription,
     slug,
-    thumbnail: presentation?.thumbnail ?? reviewInterviewImage,
+    thumbnail:
+      youtubeThumbnailUrl ?? presentation?.thumbnail ?? reviewInterviewImage,
     title,
     videoAlt: row.video_alt?.trim() || `${row.company_name} 고객 인터뷰 영상`,
     ...(youtubeUrl && youtubeEmbedUrl
@@ -430,6 +436,7 @@ function toCustomerInterviewCard(
     thumbnail: detail.thumbnail,
     title: detail.title,
     videoAlt: detail.videoAlt,
+    ...(detail.videoUrl ? { videoUrl: detail.videoUrl } : {}),
   };
 }
 
