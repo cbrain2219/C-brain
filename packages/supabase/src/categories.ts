@@ -15,6 +15,19 @@ export const productTypes = productCategories.map(
   ({ label }) => label,
 ) as readonly ProductType[];
 
+export const portfolioCategories = [
+  ...productCategories,
+  { id: "other", label: "기타" },
+] as const;
+
+export type PortfolioCategory = (typeof portfolioCategories)[number];
+export type PortfolioCategoryId = PortfolioCategory["id"];
+export type PortfolioType = PortfolioCategory["label"];
+
+export const portfolioTypes = portfolioCategories.map(
+  ({ label }) => label,
+) as readonly PortfolioType[];
+
 export const blogAllCategory = "전체" as const;
 
 const productCategoryById = new Map(
@@ -22,6 +35,15 @@ const productCategoryById = new Map(
 );
 const productCategoryByLabel = new Map(
   productCategories.map((category) => [
+    normalizeProductType(category.label),
+    category,
+  ]),
+);
+const portfolioCategoryById = new Map(
+  portfolioCategories.map((category) => [category.id, category] as const),
+);
+const portfolioCategoryByLabel = new Map(
+  portfolioCategories.map((category) => [
     normalizeProductType(category.label),
     category,
   ]),
@@ -44,6 +66,18 @@ export function getProductCategory(value: string): ProductCategory | undefined {
   return (
     productCategoryById.get(categoryId as ProductCategoryId) ??
     productCategoryByLabel.get(normalizeProductType(trimmedValue))
+  );
+}
+
+export function getPortfolioCategory(
+  value: string,
+): PortfolioCategory | undefined {
+  const trimmedValue = value.trim();
+  const categoryId = legacyProductCategoryIds[trimmedValue] ?? trimmedValue;
+
+  return (
+    portfolioCategoryById.get(categoryId as PortfolioCategoryId) ??
+    portfolioCategoryByLabel.get(normalizeProductType(trimmedValue))
   );
 }
 
@@ -86,6 +120,18 @@ export function getProductCategoryLabel(
   );
 }
 
+export function getPortfolioCategoryLabel(
+  categoryId: PortfolioCategoryId,
+): PortfolioType {
+  return (
+    portfolioCategoryById.get(categoryId)?.label ?? portfolioCategories[0].label
+  );
+}
+
 export function isProductType(value: string): value is ProductType {
   return productTypes.some((productType) => productType === value);
+}
+
+export function isPortfolioType(value: string): value is PortfolioType {
+  return portfolioTypes.some((portfolioType) => portfolioType === value);
 }

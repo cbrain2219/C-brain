@@ -21,7 +21,7 @@ const paths = {
   services: new URL("../app/_content/services.ts", import.meta.url),
 };
 
-test("public category surfaces consume the shared six-category contract", async () => {
+test("portfolio adds other without changing the shared product category contract", async () => {
   const entries = await Promise.all(
     Object.entries(paths).map(async ([name, path]) => [
       name,
@@ -32,12 +32,13 @@ test("public category surfaces consume the shared six-category contract", async 
 
   assert.match(
     sources.portfolio,
-    /import \{[\s\S]*?productCategories[\s\S]*?\} from "@repo\/supabase\/categories"/,
+    /portfolioCategories as sharedPortfolioCategories/,
   );
   assert.match(
     sources.portfolio,
-    /export const portfolioCategories = productCategories/,
+    /export const portfolioCategories = sharedPortfolioCategories/,
   );
+  assert.match(sources.portfolio, /getSharedPortfolioCategory\(type\)\?\.id/);
   assert.match(sources.order, /import type \{ ProductCategoryId \}/);
   assert.match(
     sources.order,

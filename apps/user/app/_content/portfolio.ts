@@ -1,16 +1,16 @@
 import {
-  getProductCategory,
-  getProductCategoryLabel as getSharedProductCategoryLabel,
-  productCategories,
+  getPortfolioCategory as getSharedPortfolioCategory,
+  getPortfolioCategoryLabel as getSharedPortfolioCategoryLabel,
+  portfolioCategories as sharedPortfolioCategories,
 } from "@repo/supabase/categories";
 import type {
-  ProductCategory,
-  ProductCategoryId,
+  PortfolioCategory as SharedPortfolioCategory,
+  PortfolioCategoryId as SharedPortfolioCategoryId,
 } from "@repo/supabase/categories";
 import type { PublicPortfolioRecord } from "@repo/supabase";
 
-export type PortfolioCategoryId = ProductCategoryId;
-export type PortfolioCategory = ProductCategory;
+export type PortfolioCategoryId = SharedPortfolioCategoryId;
+export type PortfolioCategory = SharedPortfolioCategory;
 
 export type PortfolioDetailImage = {
   alt: string;
@@ -43,7 +43,7 @@ export type PortfolioSeo = {
   title: string;
 };
 
-export const portfolioCategories = productCategories;
+export const portfolioCategories = sharedPortfolioCategories;
 
 export const landingPortfolioCategorySearchParam = "portfolioCategory";
 
@@ -100,7 +100,7 @@ export function parsePortfolioImages(value: unknown): StoredPortfolioImage[] {
 }
 
 function getPortfolioCategoryId(type: string): PortfolioCategoryId | undefined {
-  return getProductCategory(type)?.id;
+  return getSharedPortfolioCategory(type)?.id;
 }
 
 function getPortfolioAssetUrl(
@@ -203,13 +203,15 @@ export function getPortfolioCategoryIdFromValue(
 ): PortfolioCategoryId | undefined {
   const categoryValue = Array.isArray(value) ? value[0] : value;
 
-  return categoryValue ? getProductCategory(categoryValue)?.id : undefined;
+  return categoryValue
+    ? getSharedPortfolioCategory(categoryValue)?.id
+    : undefined;
 }
 
 export function getPortfolioCategoryLabel(
   categoryId: PortfolioCategoryId,
 ): string {
-  return getSharedProductCategoryLabel(categoryId);
+  return getSharedPortfolioCategoryLabel(categoryId);
 }
 
 export function getPortfolioDetailSourceFromValue(

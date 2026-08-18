@@ -4,10 +4,15 @@ import test from "node:test";
 import {
   blogAllCategory,
   getBlogCategoryOptions,
+  getPortfolioCategory,
+  getPortfolioCategoryLabel,
   getProductCategory,
   getProductCategoryLabel,
+  isPortfolioType,
   isProductType,
   normalizeBlogCategory,
+  portfolioCategories,
+  portfolioTypes,
   productCategories,
   productTypes,
 } from "../src/categories.ts";
@@ -32,6 +37,17 @@ test("product categories are fixed to the admin order", () => {
       "logo",
     ],
   );
+});
+
+test("portfolio categories append other without changing product categories", () => {
+  assert.deepEqual(portfolioTypes, [...productTypes, "기타"]);
+  assert.deepEqual(
+    portfolioCategories.map(({ id }) => id),
+    [...productCategories.map(({ id }) => id), "other"],
+  );
+  assert.equal(getPortfolioCategory("기타")?.id, "other");
+  assert.equal(getPortfolioCategoryLabel("other"), "기타");
+  assert.equal(isPortfolioType("기타"), true);
 });
 
 test("product category lookup accepts stored labels and legacy public values", () => {

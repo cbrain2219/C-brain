@@ -5,7 +5,7 @@ import {
   listAdminPortfolioItems,
   updatePortfolioItem,
 } from '@repo/supabase'
-import { isProductType, productTypes } from '@repo/supabase/categories'
+import { isPortfolioType, portfolioTypes } from '@repo/supabase/categories'
 import { useEffect, useId, useRef, useState } from 'react'
 import type { ChangeEvent, DragEvent, FormEvent } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
@@ -228,8 +228,8 @@ export function PortfolioFormPage() {
   }
 
   function commitPortfolioType(nextPortfolioType: string) {
-    if (!isProductType(nextPortfolioType)) {
-      setTypeError('고정된 상품 유형 중 하나를 선택해주세요.')
+    if (!isPortfolioType(nextPortfolioType)) {
+      setTypeError('포트폴리오 유형 중 하나를 선택해주세요.')
       return
     }
 
@@ -456,7 +456,7 @@ export function PortfolioFormPage() {
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
 
-    if (!isProductType(form.type)) {
+    if (!isPortfolioType(form.type)) {
       setTypeError('포트폴리오 유형을 선택해주세요.')
       window.requestAnimationFrame(() => {
         document.getElementById(formId + '-type')?.focus()
@@ -593,7 +593,7 @@ export function PortfolioFormPage() {
             setTypeError('')
           }}
           onCommit={commitPortfolioType}
-          options={productTypes}
+          options={portfolioTypes}
           placeholder="포트폴리오 유형을 선택해주세요."
           value={form.type}
         />
