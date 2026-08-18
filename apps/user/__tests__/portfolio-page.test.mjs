@@ -26,6 +26,7 @@ const detailStylesPath = new URL(
   import.meta.url,
 );
 const iconPath = new URL("../components/Icon.tsx", import.meta.url);
+const nextConfigPath = new URL("../next.config.js", import.meta.url);
 const stylesPath = new URL(
   "../app/(site)/portfolio/page.module.css",
   import.meta.url,
@@ -366,6 +367,16 @@ test("portfolio detail body is associated with its heading and images", async ()
   const authorIconRule = detailStyles.match(/\.authorIcon\s*\{([^}]*)\}/)?.[1];
   assert.ok(authorIconRule);
   assert.doesNotMatch(authorIconRule, /\b(?:width|height)\s*:/);
+});
+
+test("portfolio detail uses an allowed high-quality optimized image", async () => {
+  const [detailPage, nextConfig] = await Promise.all([
+    readFile(detailPagePath, "utf8"),
+    readFile(nextConfigPath, "utf8"),
+  ]);
+
+  assert.match(detailPage, /quality=\{90\}/);
+  assert.match(nextConfig, /qualities:\s*\[75,\s*90\]/);
 });
 
 test("portfolio detail spacing is expressed with responsive parent gaps", async () => {

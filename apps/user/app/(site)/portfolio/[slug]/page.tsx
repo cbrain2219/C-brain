@@ -167,6 +167,7 @@ export default async function PortfolioDetailPage({
                     className={styles.detailImage}
                     fill
                     priority={image.src === item.detailImages[0]?.src}
+                    quality={90}
                     sizes="(min-width: 768px) 640px, calc(100vw - 40px)"
                     src={image.src}
                   />
