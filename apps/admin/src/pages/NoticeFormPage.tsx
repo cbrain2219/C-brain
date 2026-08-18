@@ -9,6 +9,7 @@ import {
   AdminContentEditor,
 } from '../components/admin-editor/AdminContentEditor'
 import { getManagedContentPublishError } from '../components/admin-editor/contentEditorPublish'
+import { deleteRowThenCleanContentScope } from '../components/admin-editor/contentEditorDeletion'
 import { AdminDeleteDialog } from '../components/admin-form/AdminDeleteDialog'
 import { AdminFormLayout } from '../components/admin-form/AdminFormLayout'
 import { AdminTypeCombobox } from '../components/admin-form/AdminTypeCombobox'
@@ -16,6 +17,7 @@ import { supabase } from '../lib/supabase'
 import { removeContentAssetScope } from '../lib/contentAssetStorage'
 import { managedContentIsEmpty } from '../lib/managedContent'
 import { useManagedContentEditorState } from '../hooks/useManagedContentEditorState'
+import { useUnpersistedContentUploads } from '../hooks/useUnpersistedContentUploads'
 import { getSubmitIntent } from './contentListState'
 import {
   createInitialNoticeForm,
@@ -50,6 +52,7 @@ export function NoticeFormPage() {
     contentEditorDocumentKey,
     form.contentAuthoringMode === 'wysiwyg',
   )
+  const unpersistedContentUploads = useUnpersistedContentUploads('notice', form.contentAssetScope)
   const actionLocked = isSaving || isDeleting || contentEditorState.busy
 
   useEffect(() => {
@@ -144,6 +147,8 @@ export function NoticeFormPage() {
       if (noticeId) await updatePost(supabase, noticeId, input)
       else await createPost(supabase, input)
 
+      unpersistedContentUploads.markPersisted()
+
       toast.success(status === 'draft' ? '임시저장했습니다.' : '공지사항을 저장했습니다.')
       navigate('/notices', { replace: status === 'draft' })
     } catch {
@@ -165,13 +170,14 @@ export function NoticeFormPage() {
     setSaveError('')
 
     try {
-      await deletePost(supabase, noticeId)
-      try {
-        await removeContentAssetScope('notice', form.contentAssetScope)
-      } catch {
-        toast.error('본문 이미지 파일을 정리하지 못했습니다.')
-        window.alert('공지사항은 삭제됐지만 본문 이미지 파일을 정리하지 못했습니다.')
-      }
+      await deleteRowThenCleanContentScope(
+        () => deletePost(supabase, noticeId),
+        () => removeContentAssetScope('notice', form.contentAssetScope),
+        () => {
+          toast.error('본문 이미지 파일을 정리하지 못했습니다.')
+          window.alert('공지사항은 삭제됐지만 본문 이미지 파일을 정리하지 못했습니다.')
+        },
+      )
       toast.success('공지사항을 삭제했습니다.')
       navigate('/notices', { replace: true })
     } catch {
@@ -419,6 +425,7 @@ export function NoticeFormPage() {
           onBusyChange={contentEditorState.onBusyChange}
           onChange={(value) => setForm((current) => ({ ...current, ...value }))}
           onPendingAssetCountChange={contentEditorState.onPendingAssetCountChange}
+          onUploadedAsset={unpersistedContentUploads.trackUploadedPath}
           placeholder="공지사항 내용을 입력해주세요."
           value={form}
         />

@@ -3,6 +3,26 @@ import { afterEach } from 'vitest'
 
 afterEach(() => cleanup())
 
+const emptyRect = new DOMRect(0, 0, 0, 0)
+
+if (typeof document.elementFromPoint !== 'function') {
+  Object.defineProperty(document, 'elementFromPoint', {
+    configurable: true,
+    value: () => document.querySelector<HTMLElement>('[role="textbox"]'),
+  })
+}
+
+Object.defineProperties(Range.prototype, {
+  getBoundingClientRect: {
+    configurable: true,
+    value: () => emptyRect,
+  },
+  getClientRects: {
+    configurable: true,
+    value: () => [],
+  },
+})
+
 if (typeof window.matchMedia !== 'function') {
   Object.defineProperty(window, 'matchMedia', {
     configurable: true,

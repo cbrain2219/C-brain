@@ -2,6 +2,7 @@ import type { TiptapDocument } from '@repo/content/types'
 import { Editor, type JSONContent } from '@tiptap/core'
 import { NodeSelection } from '@tiptap/pm/state'
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { StrictMode } from 'react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { AdminRichTextEditor, type AdminRichTextEditorProps } from './AdminRichTextEditor'
@@ -61,6 +62,26 @@ afterEach(() => {
 })
 
 describe('admin rich text editor contracts', () => {
+  it('emits a nonempty canonical document after typing into the mounted editor', async () => {
+    const onChange = vi.fn()
+    const props = editorProps({ onChange })
+    const user = userEvent.setup()
+
+    render(<AdminRichTextEditor {...props} />)
+    const editor = await screen.findByRole('textbox', { name: '본문 WYSIWYG 편집기' })
+    await waitFor(() => expect(props.onCreate).toHaveBeenCalledTimes(1))
+
+    await user.type(editor, '포트폴리오 본문')
+
+    await waitFor(() => expect(onChange).toHaveBeenCalled())
+    const value = onChange.mock.calls.at(-1)?.[0]
+    expect(value?.document).toMatchObject({
+      content: [{ content: [{ text: '포트폴리오 본문', type: 'text' }], type: 'paragraph' }],
+      type: 'doc',
+    })
+    expect(value?.html).toContain('포트폴리오 본문')
+  })
+
   it('normalizes bare hostnames and rejects unsafe link schemes', () => {
     expect(normalizeEditorLinkHref('example.com/path')).toBe('https://example.com/path')
     expect(normalizeEditorLinkHref('mailto:hello@example.com')).toBe('mailto:hello@example.com')
@@ -69,6 +90,33 @@ describe('admin rich text editor contracts', () => {
     expect(normalizeEditorLinkHref('java%2573cript:alert(1)')).toBeNull()
     expect(normalizeEditorLinkHref('java\u0000script:alert(1)')).toBeNull()
     expect(normalizeEditorLinkHref('https:%2f%2fevil.example')).toBeNull()
+  })
+
+  it('emits a nonempty canonical document after mounted editor typing, including Korean composition events', async () => {
+    const onChange = vi.fn()
+    const props = editorProps({ onChange })
+    render(<AdminRichTextEditor {...props} />)
+
+    await waitFor(() => expect(props.onCreate).toHaveBeenCalledTimes(1))
+    const editor = screen.getByRole('textbox', { name: '본문 WYSIWYG 편집기' })
+    fireEvent.compositionStart(editor, { data: '' })
+    await userEvent.setup().type(editor, '포트폴리오 본문')
+    fireEvent.compositionEnd(editor, { data: '포트폴리오 본문' })
+
+    await waitFor(() => expect(onChange).toHaveBeenCalled())
+    expect(onChange).toHaveBeenLastCalledWith({
+      document: {
+        content: [
+          {
+            attrs: { textAlign: null },
+            content: [{ text: '포트폴리오 본문', type: 'text' }],
+            type: 'paragraph',
+          },
+        ],
+        type: 'doc',
+      },
+      html: '<p>포트폴리오 본문</p>',
+    })
   })
 
   it('emits canonical JSON and HTML for the supported document allowlist', () => {
@@ -361,6 +409,15 @@ describe('admin rich text editor contracts', () => {
     })
     expect(onImageFiles).not.toHaveBeenCalled()
     editor.destroy()
+  })
+
+  it('does not read commands or state from an editor destroyed by a controlled rerender', () => {
+    const editor = createEditor({ type: 'doc', content: [{ type: 'paragraph' }] })
+    editor.destroy()
+
+    expect(() => render(<AdminRichTextToolbar disabled={false} editor={editor} onImageFiles={vi.fn()} />)).not.toThrow()
+    expect((screen.getByRole('button', { name: '굵게' }) as HTMLButtonElement).disabled).toBe(true)
+    expect(render(<SelectedImagePanel disabled={false} editor={editor} />).container.innerHTML).toBe('')
   })
 
   it('updates selected-image alt text and decorative state through the panel', async () => {

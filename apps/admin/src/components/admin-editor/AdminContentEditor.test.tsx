@@ -4,6 +4,7 @@ import { describe, expect, it, vi } from 'vitest'
 import {
   switchWysiwygToRaw,
   createInitialManagedContentValue,
+  managedContentIsEmpty,
   type ManagedContentFormValue,
 } from '../../lib/managedContent'
 import { useManagedContentEditorState } from '../../hooks/useManagedContentEditorState'
@@ -13,9 +14,11 @@ import { GenerationPendingAssetRegistry, createPendingAssetProducerKey } from '.
 
 const richEditorHarness = vi.hoisted(() => ({
   createHandlers: new Map<string, (value: { document: unknown; html: string }) => void>(),
+  changeHandlers: new Map<string, (value: { document: unknown; html: string }) => void>(),
   errorHandlers: new Map<string, (error: unknown) => void>(),
   pendingHandlers: new Map<string, (event: { count: number; generation: string; producerKey: symbol }) => void>(),
   producerKeys: new Map<string, symbol>(),
+  throwOnRender: false,
 }))
 
 vi.mock('./AdminRichTextEditor', async () => {
@@ -23,14 +26,18 @@ vi.mock('./AdminRichTextEditor', async () => {
   const producerKey = Symbol('test-editor')
 
   return {
-    AdminRichTextEditor: ({ documentKey, onContentError, onCreate, onPendingAssetWorkChange }: {
+    AdminRichTextEditor: ({ documentKey, onChange, onContentError, onCreate, onPendingAssetWorkChange }: {
       readonly documentKey: string
+      readonly onChange: (value: { document: unknown; html: string }) => void
       readonly onContentError: (error: unknown) => void
       readonly onCreate: (value: { document: unknown; html: string }) => void
       readonly onPendingAssetWorkChange: (event: { count: number; generation: string; producerKey: symbol }) => void
     }) => {
+      if (richEditorHarness.throwOnRender) throw new Error('lazy child unavailable')
+
       useEffect(() => {
         richEditorHarness.createHandlers.set(documentKey, onCreate)
+        richEditorHarness.changeHandlers.set(documentKey, onChange)
         richEditorHarness.errorHandlers.set(documentKey, onContentError)
         richEditorHarness.pendingHandlers.set(documentKey, onPendingAssetWorkChange)
         richEditorHarness.producerKeys.set(documentKey, producerKey)
@@ -113,6 +120,83 @@ describe('AdminContentEditor', () => {
     })
 
     expect(pendingCounts).toHaveLength(countAfterB)
+  })
+
+  it('rejects first-A callbacks after an unkeyed A→B→A visit', async () => {
+    richEditorHarness.createHandlers.clear()
+    richEditorHarness.errorHandlers.clear()
+    richEditorHarness.pendingHandlers.clear()
+    richEditorHarness.producerKeys.clear()
+    const value = createInitialManagedContentValue()
+    const onChange = vi.fn()
+    const pendingCounts: number[] = []
+    const props = {
+      entity: 'blog' as const,
+      onBusyChange: vi.fn(),
+      onChange,
+      onPendingAssetCountChange: (count: number) => pendingCounts.push(count),
+      value,
+    }
+    const view = render(<AdminContentEditor {...props} documentKey="blog:record-a" />)
+
+    await screen.findByText('테스트 TEXT Editor')
+    const firstA = [...richEditorHarness.createHandlers.keys()].at(-1) ?? ''
+    view.rerender(<AdminContentEditor {...props} documentKey="blog:record-b" />)
+    await waitFor(() => expect([...richEditorHarness.createHandlers.keys()].at(-1)).toBe('blog:record-b:1:0'))
+    view.rerender(<AdminContentEditor {...props} documentKey="blog:record-a" />)
+    await waitFor(() => expect([...richEditorHarness.createHandlers.keys()].at(-1)).toBe('blog:record-a:2:0'))
+    const changesBeforeStaleCallbacks = onChange.mock.calls.length
+    const pendingBeforeStaleCallbacks = pendingCounts.length
+
+    act(() => {
+      richEditorHarness.pendingHandlers.get(firstA)?.({
+        count: 0,
+        generation: firstA,
+        producerKey: richEditorHarness.producerKeys.get(firstA) ?? Symbol('stale-a'),
+      })
+      richEditorHarness.createHandlers.get(firstA)?.({ document: value.contentJson, html: '<p>stale</p>' })
+      richEditorHarness.errorHandlers.get(firstA)?.(new Error('stale'))
+    })
+
+    expect(onChange.mock.calls).toHaveLength(changesBeforeStaleCallbacks)
+    expect(pendingCounts).toHaveLength(pendingBeforeStaleCallbacks)
+    expect(screen.queryByRole('alert')).toBeNull()
+  })
+
+  it('rejects first-A busy and pending callbacks after an unkeyed A→B→A hook visit', async () => {
+    const states = new Map<string, ReturnType<typeof useManagedContentEditorState>>()
+
+    function Harness() {
+      const [documentKey, setDocumentKey] = useState('blog:record-a')
+      const state = useManagedContentEditorState(documentKey, true)
+      states.set(documentKey, state)
+      return (
+        <>
+          <button onClick={() => setDocumentKey('blog:record-b')} type="button">B</button>
+          <button onClick={() => setDocumentKey('blog:record-a')} type="button">A</button>
+          <output aria-label="visit hook state">{`${state.busy}:${state.pendingAssetCount}`}</output>
+        </>
+      )
+    }
+
+    render(<Harness />)
+    const firstA = states.get('blog:record-a')
+    fireEvent.click(screen.getByRole('button', { name: 'B' }))
+    await waitFor(() => expect(states.get('blog:record-b')).toBeTruthy())
+    fireEvent.click(screen.getByRole('button', { name: 'A' }))
+    await waitFor(() => expect(states.get('blog:record-a')).not.toBe(firstA))
+    await waitFor(() => {
+      act(() => {
+        states.get('blog:record-a')?.onBusyChange(false)
+        states.get('blog:record-a')?.onPendingAssetCountChange(0)
+      })
+      expect(screen.getByLabelText('visit hook state').textContent).toBe('false:0')
+    })
+    act(() => {
+      firstA?.onBusyChange(true)
+      firstA?.onPendingAssetCountChange(3)
+    })
+    expect(screen.getByLabelText('visit hook state').textContent).toBe('false:0')
   })
 
   it('keeps B action state after the parent hook receives a late A producer callback', async () => {
@@ -224,6 +308,47 @@ describe('AdminContentEditor', () => {
       richEditorHarness.createHandlers.get(secondGeneration ?? '')?.(canonicalValue)
     })
     await waitFor(() => expect(screen.getByLabelText('same-record editor state').textContent).toBe('false:0'))
+  })
+
+  it('persists a typed TEXT Editor document so publish does not treat it as empty', async () => {
+    richEditorHarness.createHandlers.clear()
+    richEditorHarness.changeHandlers.clear()
+    richEditorHarness.errorHandlers.clear()
+    richEditorHarness.pendingHandlers.clear()
+    richEditorHarness.producerKeys.clear()
+    const initial: ManagedContentFormValue = createInitialManagedContentValue()
+    const typedDocument = {
+      content: [{ content: [{ text: '저장할 본문', type: 'text' }], type: 'paragraph' }],
+      type: 'doc' as const,
+    }
+
+    function Harness() {
+      const [value, setValue] = useState(initial)
+      return (
+        <>
+          <output aria-label="typed editor empty">{String(managedContentIsEmpty(value))}</output>
+          <AdminContentEditor
+            documentKey="portfolio:typed"
+            entity="portfolio"
+            onBusyChange={vi.fn()}
+            onChange={setValue}
+            onPendingAssetCountChange={vi.fn()}
+            value={value}
+          />
+        </>
+      )
+    }
+
+    render(<Harness />)
+    await screen.findByText('테스트 TEXT Editor')
+    const generation = [...richEditorHarness.changeHandlers.keys()].at(-1) ?? ''
+    act(() => {
+      richEditorHarness.changeHandlers.get(generation)?.({
+        document: typedDocument,
+        html: '<p>저장할 본문</p>',
+      })
+    })
+    await waitFor(() => expect(screen.getByLabelText('typed editor empty').textContent).toBe('false'))
   })
 
   it('keeps raw HTML lossless through TEXT Editor round trips', async () => {
@@ -359,6 +484,32 @@ describe('AdminContentEditor', () => {
     expect((rawModeButton as HTMLButtonElement).disabled).toBe(true)
     fireEvent.click(rawModeButton)
     expect(screen.queryByRole('textbox', { name: '본문 HTML' })).toBeNull()
+  })
+
+  it('fails closed when the lazy editor child rejects while keeping raw recovery available', async () => {
+    richEditorHarness.throwOnRender = true
+    const onBusyChange = vi.fn()
+    const onChange = vi.fn()
+    try {
+      render(
+        <AdminContentEditor
+          documentKey="blog:lazy-failure"
+          entity="blog"
+          onBusyChange={onBusyChange}
+          onChange={onChange}
+          onPendingAssetCountChange={vi.fn()}
+          value={createInitialManagedContentValue()}
+        />,
+      )
+      expect((await screen.findByRole('alert')).textContent).toContain('TEXT Editor를 불러오지 못했습니다.')
+      await waitFor(() => expect(onBusyChange).toHaveBeenLastCalledWith(true))
+      const rawMode = screen.getByRole('button', { name: 'HTML 작성' }) as HTMLButtonElement
+      expect(rawMode.disabled).toBe(false)
+      fireEvent.click(rawMode)
+      expect(onChange).toHaveBeenLastCalledWith(expect.objectContaining({ contentAuthoringMode: 'raw_html' }))
+    } finally {
+      richEditorHarness.throwOnRender = false
+    }
   })
 
   it('fails closed for malformed documents while leaving raw recovery available', async () => {

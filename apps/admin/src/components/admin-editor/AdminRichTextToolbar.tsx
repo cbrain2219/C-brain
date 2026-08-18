@@ -57,22 +57,27 @@ export function AdminRichTextToolbar({
   onImageFiles,
 }: AdminRichTextToolbarProps) {
   const imageInputRef = useRef<HTMLInputElement>(null)
-  const toolbarDisabled = disabled || !editor.isEditable
+  // A controlled parent can replace an editor between React renders. Tiptap
+  // nulls its command manager during destroy, so never call `can`, `chain`,
+  // or state access after that boundary.
+  const editorAvailable = !editor.isDestroyed
+  const toolbarDisabled = disabled || !editorAvailable || !editor.isEditable
 
   function run(command: () => boolean): void {
-    if (!toolbarDisabled) command()
+    if (!toolbarDisabled && !editor.isDestroyed) command()
   }
 
   function changeImage(event: ChangeEvent<HTMLInputElement>): void {
     const files = Array.from(event.currentTarget.files ?? []).filter(isManagedEditorImageFile)
     event.currentTarget.value = ''
-    if (toolbarDisabled || files.length === 0) return
+    if (toolbarDisabled || editor.isDestroyed || files.length === 0) return
 
     const { from, to } = editor.state.selection
     onImageFiles(editor, files, { from, to })
   }
 
   function setLink(): void {
+    if (toolbarDisabled || editor.isDestroyed) return
     const currentHref = editor.getAttributes('link').href as string | undefined
     const input = window.prompt('링크 주소를 입력해 주세요.', currentHref ?? '')
     if (input === null) return
@@ -112,7 +117,7 @@ export function AdminRichTextToolbar({
       <ToolbarGroup>
         {[2, 3, 4].map((level) => (
           <ToolbarButton
-            active={editor.isActive('heading', { level })}
+            active={editorAvailable && editor.isActive('heading', { level })}
             disabled={toolbarDisabled}
             key={level}
             label={`제목 ${level}`}
@@ -122,7 +127,7 @@ export function AdminRichTextToolbar({
           </ToolbarButton>
         ))}
         <ToolbarButton
-          active={editor.isActive('bulletList')}
+          active={editorAvailable && editor.isActive('bulletList')}
           disabled={toolbarDisabled}
           label="글머리 기호 목록"
           onClick={() => run(() => editor.chain().focus().toggleBulletList().run())}
@@ -130,7 +135,7 @@ export function AdminRichTextToolbar({
           <AdminIcon name="list-bullet" />
         </ToolbarButton>
         <ToolbarButton
-          active={editor.isActive('orderedList')}
+          active={editorAvailable && editor.isActive('orderedList')}
           disabled={toolbarDisabled}
           label="번호 목록"
           onClick={() => run(() => editor.chain().focus().toggleOrderedList().run())}
@@ -138,7 +143,7 @@ export function AdminRichTextToolbar({
           <AdminIcon name="list-ordered" />
         </ToolbarButton>
         <ToolbarButton
-          active={editor.isActive('blockquote')}
+          active={editorAvailable && editor.isActive('blockquote')}
           disabled={toolbarDisabled}
           label="인용문"
           onClick={() => run(() => editor.chain().focus().toggleBlockquote().run())}
@@ -158,7 +163,7 @@ export function AdminRichTextToolbar({
 
       <ToolbarGroup>
         <ToolbarButton
-          active={editor.isActive('bold')}
+          active={editorAvailable && editor.isActive('bold')}
           disabled={toolbarDisabled}
           label="굵게"
           onClick={() => run(() => editor.chain().focus().toggleBold().run())}
@@ -167,7 +172,7 @@ export function AdminRichTextToolbar({
           <AdminIcon name="bold" />
         </ToolbarButton>
         <ToolbarButton
-          active={editor.isActive('italic')}
+          active={editorAvailable && editor.isActive('italic')}
           disabled={toolbarDisabled}
           label="기울임"
           onClick={() => run(() => editor.chain().focus().toggleItalic().run())}
@@ -176,7 +181,7 @@ export function AdminRichTextToolbar({
           <AdminIcon name="italic" />
         </ToolbarButton>
         <ToolbarButton
-          active={editor.isActive('underline')}
+          active={editorAvailable && editor.isActive('underline')}
           disabled={toolbarDisabled}
           label="밑줄"
           onClick={() => run(() => editor.chain().focus().toggleUnderline().run())}
@@ -185,7 +190,7 @@ export function AdminRichTextToolbar({
           <AdminIcon name="underline" />
         </ToolbarButton>
         <ToolbarButton
-          active={editor.isActive('strike')}
+          active={editorAvailable && editor.isActive('strike')}
           disabled={toolbarDisabled}
           label="취소선"
           onClick={() => run(() => editor.chain().focus().toggleStrike().run())}
@@ -193,7 +198,7 @@ export function AdminRichTextToolbar({
           <AdminIcon name="strike" />
         </ToolbarButton>
         <ToolbarButton
-          active={editor.isActive('link')}
+          active={editorAvailable && editor.isActive('link')}
           disabled={toolbarDisabled}
           label="링크 설정"
           onClick={setLink}
@@ -207,7 +212,7 @@ export function AdminRichTextToolbar({
       <ToolbarGroup>
         {(['left', 'center', 'right'] as const).map((alignment) => (
           <ToolbarButton
-            active={editor.isActive({ textAlign: alignment })}
+            active={editorAvailable && editor.isActive({ textAlign: alignment })}
             disabled={toolbarDisabled}
             key={alignment}
             label={`${alignment === 'left' ? '왼쪽' : alignment === 'center' ? '가운데' : '오른쪽'} 정렬`}

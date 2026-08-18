@@ -1,6 +1,6 @@
 import type { ContentEntity } from '@repo/content/types'
 import { Component, lazy, Suspense, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
-import type { ComponentType } from 'react'
+import type { ComponentType, ReactNode } from 'react'
 import {
   isContentImagePublicUrlOwnedBy,
   removeContentAsset,
@@ -27,7 +27,7 @@ const LazyAdminRichTextEditor = lazy(async () => {
 })
 
 class LocalEditorErrorBoundary extends Component<{
-  readonly children: React.ReactNode
+  readonly children: ReactNode
   readonly onError: () => void
 }> {
   state = { hasError: false }
@@ -61,6 +61,7 @@ export type AdminContentEditorProps = {
   readonly onBusyChange: (busy: boolean) => void
   readonly onChange: (value: ManagedContentFormValue) => void
   readonly onPendingAssetCountChange: (count: number) => void
+  readonly onUploadedAsset?: (path: string) => void
   readonly placeholder?: string
   readonly value: ManagedContentFormValue
 }
@@ -72,6 +73,7 @@ type CommittedEditor = {
   readonly onBusyChange: AdminContentEditorProps['onBusyChange']
   readonly onChange: AdminContentEditorProps['onChange']
   readonly onPendingAssetCountChange: AdminContentEditorProps['onPendingAssetCountChange']
+  readonly onUploadedAsset: AdminContentEditorProps['onUploadedAsset']
   readonly token: number
   readonly value: ManagedContentFormValue
   readonly visit: number
@@ -94,6 +96,7 @@ export function AdminContentEditor({
   onBusyChange,
   onChange,
   onPendingAssetCountChange,
+  onUploadedAsset,
   placeholder = '내용을 입력해주세요.',
   value,
 }: AdminContentEditorProps) {
@@ -109,6 +112,7 @@ export function AdminContentEditor({
     onBusyChange,
     onChange,
     onPendingAssetCountChange,
+    onUploadedAsset,
     token: 0,
     value,
     visit: editorVisit,
@@ -132,6 +136,7 @@ export function AdminContentEditor({
       onBusyChange,
       onChange,
       onPendingAssetCountChange,
+      onUploadedAsset,
       token,
       value,
       visit,
@@ -146,7 +151,7 @@ export function AdminContentEditor({
         committedEditor.current = { ...committed, active: false }
       }
     }
-  }, [documentKey, editorActivation, editorGeneration, editorVisit, onBusyChange, onChange, onPendingAssetCountChange, value])
+  }, [documentKey, editorActivation, editorGeneration, editorVisit, onBusyChange, onChange, onPendingAssetCountChange, onUploadedAsset, value])
 
   const isWysiwyg = value.contentAuthoringMode === 'wysiwyg'
   const contentDocument = value.contentJson
@@ -165,18 +170,28 @@ export function AdminContentEditor({
   useEffect(() => {
     const committed = committedEditor.current
 
-    if (committed.active && committed.documentKey === documentKey && committed.editorGeneration === editorGeneration) {
+    if (
+      committed.active &&
+      committed.documentKey === documentKey &&
+      committed.editorGeneration === editorGeneration &&
+      committed.visit === editorVisit
+    ) {
       committed.onBusyChange(isBusy)
     }
-  }, [documentKey, editorGeneration, isBusy])
+  }, [documentKey, editorGeneration, editorVisit, isBusy])
 
   useEffect(() => {
     const committed = committedEditor.current
 
-    if (committed.active && committed.documentKey === documentKey && committed.editorGeneration === editorGeneration) {
+    if (
+      committed.active &&
+      committed.documentKey === documentKey &&
+      committed.editorGeneration === editorGeneration &&
+      committed.visit === editorVisit
+    ) {
       committed.onPendingAssetCountChange(pendingAssetCount)
     }
-  }, [documentKey, editorGeneration, pendingAssetCount])
+  }, [documentKey, editorGeneration, editorVisit, pendingAssetCount])
 
   function changeForActiveDocument(next: ManagedContentFormValue): void {
     const committed = committedEditor.current
@@ -191,6 +206,7 @@ export function AdminContentEditor({
     return committed.active &&
       committed.documentKey === documentKey &&
       committed.editorGeneration === generation &&
+      committed.visit === editorVisit &&
       requestedActivation.current === editorActivation
   }
 
@@ -346,7 +362,18 @@ export function AdminContentEditor({
             }}
             onPendingAssetWorkChange={receivePendingAssetWork}
             onUploadError={() => undefined}
-            uploadImage={(file) => uploadContentAsset(entity, value.contentAssetScope, file)}
+            uploadImage={async (file) => {
+              const scope = value.contentAssetScope
+              const asset = await uploadContentAsset(entity, scope, file)
+
+              if (!isCurrentEditorCallback(editorGeneration)) {
+                void removeContentAsset(entity, scope, asset.path).catch(() => undefined)
+                return asset
+              }
+
+              committedEditor.current.onUploadedAsset?.(asset.path)
+              return asset
+            }}
             />
           </Suspense>
         </LocalEditorErrorBoundary>

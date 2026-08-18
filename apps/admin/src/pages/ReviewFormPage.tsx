@@ -15,6 +15,7 @@ import {
   AdminContentEditor,
 } from '../components/admin-editor/AdminContentEditor'
 import { getManagedContentPublishError } from '../components/admin-editor/contentEditorPublish'
+import { deleteRowThenCleanContentScope } from '../components/admin-editor/contentEditorDeletion'
 import { AdminDeleteDialog } from '../components/admin-form/AdminDeleteDialog'
 import { AdminFormLayout } from '../components/admin-form/AdminFormLayout'
 import { AdminTypeCombobox } from '../components/admin-form/AdminTypeCombobox'
@@ -27,6 +28,9 @@ import { removeContentAssetScope } from '../lib/contentAssetStorage'
 import { managedContentIsEmpty, type ManagedContentFormValue } from '../lib/managedContent'
 import { supabase } from '../lib/supabase'
 import { useManagedContentEditorState } from '../hooks/useManagedContentEditorState'
+import {
+  useUnpersistedContentUploads,
+} from '../hooks/useUnpersistedContentUploads'
 import { getSubmitIntent } from './contentListState'
 import {
   createInitialReviewForm,
@@ -127,6 +131,7 @@ type ContentFieldProps = {
   readonly onBusyChange: (busy: boolean) => void
   readonly onContentChange: (value: ManagedContentFormValue) => void
   readonly onPendingAssetCountChange: (count: number) => void
+  readonly onUploadedAsset: (path: string) => void
   readonly type: ReviewType
   readonly value: ManagedContentFormValue
 }
@@ -137,6 +142,7 @@ function ContentField({
   onBusyChange,
   onContentChange,
   onPendingAssetCountChange,
+  onUploadedAsset,
   type,
   value,
 }: ContentFieldProps) {
@@ -152,6 +158,7 @@ function ContentField({
         onBusyChange={onBusyChange}
         onChange={onContentChange}
         onPendingAssetCountChange={onPendingAssetCountChange}
+        onUploadedAsset={onUploadedAsset}
         placeholder={`${type} 내용을 입력해주세요.`}
         value={value}
       />
@@ -422,6 +429,7 @@ type InterviewFieldsProps = {
   readonly onManagedContentChange: (value: ManagedContentFormValue) => void
   readonly onManagedContentBusyChange: (busy: boolean) => void
   readonly onManagedContentPendingAssetCountChange: (count: number) => void
+  readonly onManagedContentUploadedAsset: (path: string) => void
   readonly onSlugErrorChange: (message: string) => void
   readonly onUpdate: UpdateReviewForm
   readonly onVideoClear: () => void
@@ -443,6 +451,7 @@ function InterviewFields({
   onManagedContentChange,
   onManagedContentBusyChange,
   onManagedContentPendingAssetCountChange,
+  onManagedContentUploadedAsset,
   onSlugErrorChange,
   onUpdate,
   onVideoClear,
@@ -558,6 +567,7 @@ function InterviewFields({
         onBusyChange={onManagedContentBusyChange}
         onContentChange={onManagedContentChange}
         onPendingAssetCountChange={onManagedContentPendingAssetCountChange}
+        onUploadedAsset={onManagedContentUploadedAsset}
         type="인터뷰"
         value={form}
       />
@@ -586,6 +596,7 @@ type CustomerReviewFieldsProps = {
   readonly onManagedContentChange: (value: ManagedContentFormValue) => void
   readonly onManagedContentBusyChange: (busy: boolean) => void
   readonly onManagedContentPendingAssetCountChange: (count: number) => void
+  readonly onManagedContentUploadedAsset: (path: string) => void
   readonly onUpdate: UpdateReviewForm
 }
 
@@ -597,6 +608,7 @@ function CustomerReviewFields({
   onManagedContentChange,
   onManagedContentBusyChange,
   onManagedContentPendingAssetCountChange,
+  onManagedContentUploadedAsset,
   onUpdate,
 }: CustomerReviewFieldsProps) {
   return (
@@ -629,6 +641,7 @@ function CustomerReviewFields({
         onBusyChange={onManagedContentBusyChange}
         onContentChange={onManagedContentChange}
         onPendingAssetCountChange={onManagedContentPendingAssetCountChange}
+        onUploadedAsset={onManagedContentUploadedAsset}
         type="후기"
         value={form}
       />
@@ -665,6 +678,7 @@ export function ReviewFormPage() {
     contentEditorDocumentKey,
     form.contentAuthoringMode === 'wysiwyg',
   )
+  const unpersistedContentUploads = useUnpersistedContentUploads('review', form.contentAssetScope)
   const actionLocked = isSaving || isDeleting || contentEditorState.busy
 
   const pageTitle = isEditing
@@ -798,6 +812,8 @@ export function ReviewFormPage() {
       if (reviewId) await updateReview(supabase, reviewId, input)
       else await createReview(supabase, input)
 
+      unpersistedContentUploads.markPersisted()
+
       if (originalVideoPath && originalVideoPath !== nextVideoPath) {
         try {
           await deletePublicAssets([originalVideoPath])
@@ -838,14 +854,14 @@ export function ReviewFormPage() {
     setSaveError('')
 
     try {
-      await deleteReview(supabase, reviewId)
-
-      try {
-        await removeContentAssetScope('review', form.contentAssetScope)
-      } catch {
-        toast.error('본문 이미지 파일을 정리하지 못했습니다.')
-        window.alert('인터뷰 · 후기는 삭제됐지만 본문 이미지 파일을 정리하지 못했습니다.')
-      }
+      await deleteRowThenCleanContentScope(
+        () => deleteReview(supabase, reviewId),
+        () => removeContentAssetScope('review', form.contentAssetScope),
+        () => {
+          toast.error('본문 이미지 파일을 정리하지 못했습니다.')
+          window.alert('인터뷰 · 후기는 삭제됐지만 본문 이미지 파일을 정리하지 못했습니다.')
+        },
+      )
 
       if (originalVideoPath) {
         try {
@@ -1078,6 +1094,7 @@ export function ReviewFormPage() {
           onManagedContentBusyChange={contentEditorState.onBusyChange}
           onManagedContentChange={(value) => setForm((current) => ({ ...current, ...value }))}
           onManagedContentPendingAssetCountChange={contentEditorState.onPendingAssetCountChange}
+          onManagedContentUploadedAsset={unpersistedContentUploads.trackUploadedPath}
           onSlugErrorChange={setSlugError}
           onUpdate={updateForm}
           onVideoClear={clearVideo}
@@ -1103,6 +1120,7 @@ export function ReviewFormPage() {
           onManagedContentBusyChange={contentEditorState.onBusyChange}
           onManagedContentChange={(value) => setForm((current) => ({ ...current, ...value }))}
           onManagedContentPendingAssetCountChange={contentEditorState.onPendingAssetCountChange}
+          onManagedContentUploadedAsset={unpersistedContentUploads.trackUploadedPath}
           onUpdate={updateForm}
         />
       ) : null}

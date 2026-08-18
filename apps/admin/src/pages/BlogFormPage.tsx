@@ -13,6 +13,7 @@ import {
   AdminContentEditor,
 } from '../components/admin-editor/AdminContentEditor'
 import { getManagedContentPublishError } from '../components/admin-editor/contentEditorPublish'
+import { deleteRowThenCleanContentScope } from '../components/admin-editor/contentEditorDeletion'
 import { AdminDeleteDialog } from '../components/admin-form/AdminDeleteDialog'
 import { AdminFormLayout } from '../components/admin-form/AdminFormLayout'
 import { AdminTypeCombobox } from '../components/admin-form/AdminTypeCombobox'
@@ -21,6 +22,7 @@ import { removeContentAssetScope } from '../lib/contentAssetStorage'
 import { managedContentIsEmpty } from '../lib/managedContent'
 import { supabase } from '../lib/supabase'
 import { useManagedContentEditorState } from '../hooks/useManagedContentEditorState'
+import { useUnpersistedContentUploads } from '../hooks/useUnpersistedContentUploads'
 import {
   createInitialBlogForm,
   getBlogThumbnailDisplayName,
@@ -99,6 +101,7 @@ export function BlogFormPage() {
     contentEditorDocumentKey,
     form.contentAuthoringMode === 'wysiwyg',
   )
+  const unpersistedContentUploads = useUnpersistedContentUploads('blog', form.contentAssetScope)
   const actionLocked = isSaving || isDeleting || contentEditorState.busy
   const thumbnailDisplayName = getBlogThumbnailDisplayName(form)
 
@@ -264,6 +267,8 @@ export function BlogFormPage() {
         await createPost(supabase, input)
       }
 
+      unpersistedContentUploads.markPersisted()
+
       if (persistedThumbnailPath && persistedThumbnailPath !== nextThumbnailPath) {
         try {
           await deletePublicAssets([persistedThumbnailPath])
@@ -298,14 +303,14 @@ export function BlogFormPage() {
     setSaveError('')
 
     try {
-      await deletePost(supabase, blogId)
-
-      try {
-        await removeContentAssetScope('blog', form.contentAssetScope)
-      } catch {
-        toast.error('본문 이미지 파일을 정리하지 못했습니다.')
-        window.alert('블로그는 삭제됐지만 본문 이미지 파일을 정리하지 못했습니다.')
-      }
+      await deleteRowThenCleanContentScope(
+        () => deletePost(supabase, blogId),
+        () => removeContentAssetScope('blog', form.contentAssetScope),
+        () => {
+          toast.error('본문 이미지 파일을 정리하지 못했습니다.')
+          window.alert('블로그는 삭제됐지만 본문 이미지 파일을 정리하지 못했습니다.')
+        },
+      )
 
       try {
         await deletePublicAssets([persistedThumbnailPath])
@@ -648,6 +653,7 @@ export function BlogFormPage() {
           onBusyChange={contentEditorState.onBusyChange}
           onChange={(value) => setForm((current) => ({ ...current, ...value }))}
           onPendingAssetCountChange={contentEditorState.onPendingAssetCountChange}
+          onUploadedAsset={unpersistedContentUploads.trackUploadedPath}
           placeholder="블로그 내용을 입력해주세요."
           value={form}
         />

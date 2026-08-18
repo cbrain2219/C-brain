@@ -15,6 +15,7 @@ import {
   AdminContentEditor,
 } from '../components/admin-editor/AdminContentEditor'
 import { getManagedContentPublishError } from '../components/admin-editor/contentEditorPublish'
+import { deleteRowThenCleanContentScope } from '../components/admin-editor/contentEditorDeletion'
 import { AdminDeleteDialog } from '../components/admin-form/AdminDeleteDialog'
 import { AdminFormLayout } from '../components/admin-form/AdminFormLayout'
 import { AdminTypeCombobox } from '../components/admin-form/AdminTypeCombobox'
@@ -31,6 +32,7 @@ import {
 import { removeContentAssetScope } from '../lib/contentAssetStorage'
 import { supabase } from '../lib/supabase'
 import { useManagedContentEditorState } from '../hooks/useManagedContentEditorState'
+import { useUnpersistedContentUploads } from '../hooks/useUnpersistedContentUploads'
 import { getSubmitIntent } from './contentListState'
 import {
   getPortfolioSettingCounts,
@@ -133,6 +135,7 @@ export function PortfolioFormPage() {
     contentEditorDocumentKey,
     form.contentAuthoringMode === 'wysiwyg',
   )
+  const unpersistedContentUploads = useUnpersistedContentUploads('portfolio', form.contentAssetScope)
   const actionLocked = isSaving || isDeleting || contentEditorState.busy
 
   const pageTitle = isEditing ? '포트폴리오 수정' : '신규 포트폴리오 등록'
@@ -385,6 +388,8 @@ export function PortfolioFormPage() {
         await createPortfolioItem(supabase, input)
       }
 
+      unpersistedContentUploads.markPersisted()
+
       didPersist = true
       const retainedPaths = new Set(images.map((image) => image.path))
       const stalePaths = storedImagePaths.filter((path) => !retainedPaths.has(path))
@@ -420,14 +425,14 @@ export function PortfolioFormPage() {
     setSaveError('')
 
     try {
-      await deletePortfolioItem(supabase, portfolioId)
-
-      try {
-        await removeContentAssetScope('portfolio', form.contentAssetScope)
-      } catch {
-        toast.error('본문 이미지 파일을 정리하지 못했습니다.')
-        window.alert('포트폴리오는 삭제됐지만 본문 이미지 파일을 정리하지 못했습니다.')
-      }
+      await deleteRowThenCleanContentScope(
+        () => deletePortfolioItem(supabase, portfolioId),
+        () => removeContentAssetScope('portfolio', form.contentAssetScope),
+        () => {
+          toast.error('본문 이미지 파일을 정리하지 못했습니다.')
+          window.alert('포트폴리오는 삭제됐지만 본문 이미지 파일을 정리하지 못했습니다.')
+        },
+      )
 
       try {
         await deletePublicAssets(storedImagePaths)
@@ -800,6 +805,7 @@ export function PortfolioFormPage() {
           onBusyChange={contentEditorState.onBusyChange}
           onChange={(value) => setForm((current) => ({ ...current, ...value }))}
           onPendingAssetCountChange={contentEditorState.onPendingAssetCountChange}
+          onUploadedAsset={unpersistedContentUploads.trackUploadedPath}
           placeholder="포트폴리오 내용을 입력해주세요."
           value={form}
         />

@@ -54,9 +54,29 @@ test('each form locks actions and removes its body scope only after the row dele
     assert.match(page, /if \(actionLocked \|\| operationInFlight\.current\) return/)
     assert.match(page, /operationInFlight\.current = true/)
     assert.match(page, /operationInFlight\.current = false/)
-    const deleteAt = page.indexOf(`await ${deleteCall}`)
+    const deleteAt = page.indexOf(`() => ${deleteCall}`)
     const cleanupAt = page.indexOf(`removeContentAssetScope('${entity}'`)
     assert.ok(deleteAt >= 0 && cleanupAt > deleteAt)
+  }
+})
+
+test('each form tracks completed body uploads until its database mutation succeeds', async () => {
+  const pages = await Promise.all([
+    source('pages/BlogFormPage.tsx'),
+    source('pages/NoticeFormPage.tsx'),
+    source('pages/PortfolioFormPage.tsx'),
+    source('pages/ReviewFormPage.tsx'),
+  ])
+
+  for (const [page, entity] of [
+    [pages[0], 'blog'],
+    [pages[1], 'notice'],
+    [pages[2], 'portfolio'],
+    [pages[3], 'review'],
+  ]) {
+    assert.match(page, new RegExp(`useUnpersistedContentUploads\\('${entity}', form\\.contentAssetScope\\)`))
+    assert.match(page, /unpersistedContentUploads\.markPersisted\(\)/)
+    assert.match(page, /trackUploadedPath/)
   }
 })
 

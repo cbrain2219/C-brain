@@ -14,27 +14,32 @@ function updateImageAtPosition(
   position: number,
   attributes: Readonly<Record<string, unknown>>,
 ): void {
+  if (editor.isDestroyed) return
   const node = editor.state.doc.nodeAt(position)
   if (!node || node.type.name !== 'image') return
   editor.view.dispatch(editor.state.tr.setNodeMarkup(position, undefined, { ...node.attrs, ...attributes }))
 }
 
-export function SelectedImagePanel({ disabled, editor }: SelectedImagePanelProps) {
+function LiveSelectedImagePanel({ disabled, editor }: SelectedImagePanelProps) {
   const altInputId = useId()
   const decorativeInputId = useId()
   const selectedImage = useEditorState({
     editor,
     selector: ({ editor: currentEditor }) => {
-      if (currentEditor.isDestroyed) return null
-      const { selection } = currentEditor.state
-      if (!(selection instanceof NodeSelection) || selection.node.type.name !== 'image') return null
+      try {
+        if (currentEditor.isDestroyed) return null
+        const { selection } = currentEditor.state
+        if (!(selection instanceof NodeSelection) || selection.node.type.name !== 'image') return null
 
-      return {
-        alt: String(selection.node.attrs.alt ?? ''),
-        altReviewed: selection.node.attrs.altReviewed === true,
-        decorative: selection.node.attrs.decorative === true,
-        pending: typeof selection.node.attrs.uploadId === 'string',
-        position: selection.from,
+        return {
+          alt: String(selection.node.attrs.alt ?? ''),
+          altReviewed: selection.node.attrs.altReviewed === true,
+          decorative: selection.node.attrs.decorative === true,
+          pending: typeof selection.node.attrs.uploadId === 'string',
+          position: selection.from,
+        }
+      } catch {
+        return null
       }
     },
   })
@@ -99,4 +104,10 @@ export function SelectedImagePanel({ disabled, editor }: SelectedImagePanelProps
       </label>
     </fieldset>
   )
+}
+
+/** Avoid subscribing to a Tiptap instance whose view was just destroyed. */
+export function SelectedImagePanel({ disabled, editor }: SelectedImagePanelProps) {
+  if (editor.isDestroyed) return null
+  return <LiveSelectedImagePanel disabled={disabled} editor={editor} />
 }
