@@ -83,6 +83,7 @@ export type Database = {
           sort_order: number;
           status: PublishStatus;
           thumbnail_alt: string | null;
+          thumbnail_file_name: string | null;
           thumbnail_path: string | null;
           title: string;
           type: string;
@@ -110,6 +111,7 @@ export type Database = {
           sort_order?: number;
           status?: PublishStatus;
           thumbnail_alt?: string | null;
+          thumbnail_file_name?: string | null;
           thumbnail_path?: string | null;
           title: string;
           type: string;
@@ -137,6 +139,7 @@ export type Database = {
           sort_order?: number;
           status?: PublishStatus;
           thumbnail_alt?: string | null;
+          thumbnail_file_name?: string | null;
           thumbnail_path?: string | null;
           title?: string;
           type?: string;

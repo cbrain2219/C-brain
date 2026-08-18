@@ -26,6 +26,7 @@ export type BlogFormState = ManagedContentFormValue & {
   slug: string
   thumbnail: File | null
   thumbnailAlt: string
+  thumbnailFileName: string | null
   thumbnailPath: string | null
   thumbnailPreviewUrl: string | null
   title: string
@@ -72,6 +73,7 @@ export type BlogMutationInput = Pick<
   | 'slug'
   | 'status'
   | 'thumbnail_alt'
+  | 'thumbnail_file_name'
   | 'thumbnail_path'
   | 'title'
   | 'type'
@@ -88,6 +90,7 @@ export function createInitialBlogForm(): BlogFormState {
     slug: '',
     thumbnail: null,
     thumbnailAlt: '',
+    thumbnailFileName: null,
     thumbnailPath: null,
     thumbnailPreviewUrl: null,
     title: '',
@@ -109,6 +112,7 @@ export function toBlogFormState(
     slug: post.slug,
     thumbnail: null,
     thumbnailAlt: post.thumbnail_alt ?? '',
+    thumbnailFileName: post.thumbnail_file_name,
     thumbnailPath: post.thumbnail_path,
     thumbnailPreviewUrl,
     title: post.title,
@@ -160,10 +164,17 @@ export function toBlogMutationInput(
     slug,
     status,
     thumbnail_alt: thumbnailPath ? form.thumbnailAlt.trim() || null : null,
+    thumbnail_file_name: thumbnailPath ? form.thumbnailFileName?.trim() || null : null,
     thumbnail_path: thumbnailPath,
     title,
     type,
   }
+}
+
+export function getBlogThumbnailDisplayName(
+  form: Pick<BlogFormState, 'thumbnail' | 'thumbnailFileName'>,
+) {
+  return form.thumbnail?.name || form.thumbnailFileName?.trim() || '등록된 썸네일'
 }
 
 export function toBlogListRow(post: TableRow<'posts'>): BlogListRow {

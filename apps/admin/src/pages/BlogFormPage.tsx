@@ -23,6 +23,7 @@ import { supabase } from '../lib/supabase'
 import { useManagedContentEditorState } from '../hooks/useManagedContentEditorState'
 import {
   createInitialBlogForm,
+  getBlogThumbnailDisplayName,
   getBlogSettingCounts,
   toBlogFormState,
   toBlogMutationInput,
@@ -99,6 +100,7 @@ export function BlogFormPage() {
     form.contentAuthoringMode === 'wysiwyg',
   )
   const actionLocked = isSaving || isDeleting || contentEditorState.busy
+  const thumbnailDisplayName = getBlogThumbnailDisplayName(form)
 
   const pageTitle = isEditing ? '블로그 수정' : '신규 블로그 등록'
   const submitLabel = isEditing ? '수정하기' : '등록하기'
@@ -205,7 +207,12 @@ export function BlogFormPage() {
     const previewUrl = URL.createObjectURL(file)
 
     thumbnailObjectUrl.current = previewUrl
-    setForm((current) => ({ ...current, thumbnail: file, thumbnailPreviewUrl: previewUrl }))
+    setForm((current) => ({
+      ...current,
+      thumbnail: file,
+      thumbnailFileName: file.name,
+      thumbnailPreviewUrl: previewUrl,
+    }))
     setThumbnailError('')
   }
 
@@ -215,6 +222,7 @@ export function BlogFormPage() {
       ...current,
       thumbnail: null,
       thumbnailAlt: '',
+      thumbnailFileName: null,
       thumbnailPath: null,
       thumbnailPreviewUrl: null,
     }))
@@ -607,16 +615,16 @@ export function BlogFormPage() {
           </button>
           {form.thumbnailPreviewUrl ? (
             <button
-              aria-label={(form.thumbnail?.name ?? '현재 썸네일') + ' 삭제'}
+              aria-label={thumbnailDisplayName + ' 삭제'}
               className="blog-form__thumbnail-chip"
               onClick={clearThumbnail}
               type="button"
             >
               <span
                 className="blog-form__thumbnail-file-name"
-                title={form.thumbnail?.name ?? form.thumbnailPath ?? '현재 썸네일'}
+                title={thumbnailDisplayName}
               >
-                {form.thumbnail?.name ?? form.thumbnailPath?.split('/').at(-1) ?? '현재 썸네일'}
+                {thumbnailDisplayName}
               </span>
               <AdminIcon name="x-close" size={20} />
             </button>

@@ -4,6 +4,7 @@ import test from 'node:test'
 import {
   createInitialBlogForm,
   filterBlogRows,
+  getBlogThumbnailDisplayName,
   getBlogSettingCounts,
   toBlogFormState,
   toBlogListRow,
@@ -33,6 +34,7 @@ function makePost(overrides = {}) {
     sort_order: 0,
     status: 'published',
     thumbnail_alt: '썸네일',
+    thumbnail_file_name: '씨브레인 오지.png',
     thumbnail_path: 'blog-thumbnails/post.webp',
     title: '첫 블로그',
     type: '디자인',
@@ -68,6 +70,7 @@ test('post row maps to list and edit form state', () => {
   assert.equal(row.type, '브로슈어 · 카탈로그')
   assert.equal(form.publishedAt, '2026-07-21')
   assert.equal(form.seoDescription, '검색 설명')
+  assert.equal(form.thumbnailFileName, '씨브레인 오지.png')
   assert.equal(form.thumbnailPath, 'blog-thumbnails/post.webp')
   assert.equal(form.thumbnailPreviewUrl, 'https://example.com/post.webp')
   assert.equal(form.type, '브로슈어 · 카탈로그')
@@ -87,6 +90,7 @@ test('form preserves raw HTML bytes while trimming surrounding field values', ()
     seoDescription: '  검색 설명  ',
     slug: '  first-blog  ',
     thumbnailAlt: '  썸네일  ',
+    thumbnailFileName: '  씨브레인 오지.png  ',
     thumbnailPath: 'blog-thumbnails/post.webp',
     title: '  첫 블로그  ',
     type: '  인쇄   실무팁  ',
@@ -111,6 +115,7 @@ test('form preserves raw HTML bytes while trimming surrounding field values', ()
     slug: 'first-blog',
     status: 'draft',
     thumbnail_alt: '썸네일',
+    thumbnail_file_name: '씨브레인 오지.png',
     thumbnail_path: 'blog-thumbnails/post.webp',
     title: '첫 블로그',
     type: '인쇄 실무팁',
@@ -133,7 +138,25 @@ test('mutation clears thumbnail alt text when no thumbnail path is saved', () =>
   const mutation = toBlogMutationInput(form, 'draft')
 
   assert.equal(mutation.thumbnail_alt, null)
+  assert.equal(mutation.thumbnail_file_name, null)
   assert.equal(mutation.thumbnail_path, null)
+})
+
+test('thumbnail chip keeps a persisted original name and hides legacy UUID paths', () => {
+  assert.equal(
+    getBlogThumbnailDisplayName({
+      thumbnail: null,
+      thumbnailFileName: '씨브레인 오지.png',
+    }),
+    '씨브레인 오지.png',
+  )
+  assert.equal(
+    getBlogThumbnailDisplayName({
+      thumbnail: null,
+      thumbnailFileName: null,
+    }),
+    '등록된 썸네일',
+  )
 })
 
 test('list filtering and setting counts use loaded post rows', () => {

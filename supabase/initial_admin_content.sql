@@ -44,6 +44,7 @@ create table public.posts (
   content_asset_scope uuid not null default gen_random_uuid(),
   excerpt text,
   thumbnail_path text,
+  thumbnail_file_name text,
   thumbnail_alt text,
   seo_description text,
   status text not null default 'draft'
@@ -61,6 +62,14 @@ create table public.posts (
   check (slug ~ '^[a-z0-9]+(?:-[a-z0-9]+)*$'),
   constraint posts_thumbnail_alt_requires_path
     check (thumbnail_path is not null or thumbnail_alt is null),
+  constraint posts_thumbnail_file_name_requires_path
+    check (
+      thumbnail_file_name is null
+      or (
+        thumbnail_path is not null
+        and nullif(btrim(thumbnail_file_name), '') is not null
+      )
+    ),
   constraint posts_content_mode_check
     check (content_mode in ('html', 'markdown')),
   constraint posts_content_authoring_mode_check

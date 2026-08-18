@@ -12,6 +12,10 @@ const managedContentMigrationUrl = new URL(
   '../../../supabase/migrations/20260814000000_add_managed_content_editor.sql',
   import.meta.url,
 )
+const blogThumbnailFileNameMigrationUrl = new URL(
+  '../../../supabase/migrations/20260818063308_add_blog_thumbnail_file_name.sql',
+  import.meta.url,
+)
 const reviewYouTubeSqlUrl = new URL(
   '../../../supabase/manual/add_review_youtube_video.sql',
   import.meta.url,
@@ -29,6 +33,7 @@ const [
   baseline,
   legacyAdminContentMigration,
   managedContentMigration,
+  blogThumbnailFileNameMigration,
   reviewProjectInfoSql,
   reviewYouTubeSql,
   blogData,
@@ -39,6 +44,7 @@ const [
   readFile(baselineUrl, 'utf8'),
   readFile(legacyAdminContentMigrationUrl, 'utf8'),
   readFile(managedContentMigrationUrl, 'utf8'),
+  readFile(blogThumbnailFileNameMigrationUrl, 'utf8'),
   readFile(reviewProjectInfoSqlUrl, 'utf8'),
   readFile(reviewYouTubeSqlUrl, 'utf8'),
   readFile(blogDataUrl, 'utf8'),
@@ -76,11 +82,16 @@ test('fresh baseline declares the current admin content contracts', () => {
     'privacy_agreed_at',
     'object_path',
     'original_file_name',
+    'thumbnail_file_name',
   ])
   assert.match(baseline, /content_mode in \('html', 'markdown'\)/)
   assert.match(
     baseline,
     /constraint posts_thumbnail_alt_requires_path\s+check \(thumbnail_path is not null or thumbnail_alt is null\)/,
+  )
+  assert.match(
+    baseline,
+    /constraint posts_thumbnail_file_name_requires_path[\s\S]*?thumbnail_file_name is null[\s\S]*?thumbnail_path is not null/,
   )
   assert.doesNotMatch(baseline, /create table public\.inquiries/)
 })
@@ -113,6 +124,7 @@ test('managed content keeps inactive authoring fields outside anonymous reads', 
     'content_json',
     'content_source_backup',
     'content_schema_version',
+    'thumbnail_file_name',
   ]
 
   for (const table of ['posts', 'portfolio_items', 'reviews']) {
@@ -209,6 +221,37 @@ test('TypeScript mirrors the current content tables', () => {
     /complaint_attachments:\s*\{[\s\S]*?Row:\s*\{[\s\S]*?object_path: string;[\s\S]*?original_file_name: string;/,
   )
   assert.match(types, /content_mode: "html" \| "markdown"/)
+  const postsType = /posts:\s*\{([\s\S]*?)Relationships: \[\];/.exec(types)
+  assert.ok(postsType)
+  for (const section of ['Row', 'Insert', 'Update']) {
+    const sectionType = new RegExp(`${section}:\\s*\\{([\\s\\S]*?)\\n\\s*\\};`).exec(postsType[1])
+    assert.ok(sectionType)
+    assert.match(sectionType[1], /thumbnail_file_name\??: string \| null;/)
+  }
+})
+
+test('blog thumbnail filename migration adds private nullable metadata safely', () => {
+  assert.match(
+    blogThumbnailFileNameMigration,
+    /alter table public\.posts\s+add column if not exists thumbnail_file_name text/,
+  )
+  assert.match(
+    blogThumbnailFileNameMigration,
+    /add constraint posts_thumbnail_file_name_requires_path[\s\S]*?thumbnail_file_name is null[\s\S]*?thumbnail_path is not null[\s\S]*?nullif\(btrim\(thumbnail_file_name\), ''\) is not null[\s\S]*?not valid/,
+  )
+  assert.match(
+    blogThumbnailFileNameMigration,
+    /validate constraint posts_thumbnail_file_name_requires_path/,
+  )
+  assert.match(
+    blogThumbnailFileNameMigration,
+    /revoke select \(thumbnail_file_name\) on table public\.posts from public, anon/,
+  )
+  assert.match(blogThumbnailFileNameMigration, /notify pgrst, 'reload schema'/)
+  assert.doesNotMatch(
+    blogThumbnailFileNameMigration,
+    /grant select[^;]*thumbnail_file_name[^;]*to anon/,
+  )
 })
 
 test('managed content columns and WYSIWYG constraints match the database contract', () => {
