@@ -5,11 +5,12 @@ import {
   getYouTubeThumbnailUrl,
   getYouTubeWatchUrl,
   listPublishedReviews,
-  type TableRow,
+  type PublicReviewRecord,
 } from "@repo/supabase";
 import { connection } from "next/server";
 import { cache } from "react";
 
+import type { PublicManagedContent } from "../../components/ManagedContent";
 import { createPublicUserSupabaseClient } from "../../lib/supabase";
 
 export const reviewHeroImage = "/figma-assets/review-hero-office.png";
@@ -54,6 +55,7 @@ export type CustomerInterviewDetail = {
   company: string;
   content: readonly CustomerInterviewContentBlock[];
   keywords: readonly string[];
+  managedContent: PublicManagedContent;
   projectInfo: readonly CustomerInterviewProjectInfo[];
   projectInfoTitle: string;
   publishedAt: string;
@@ -122,7 +124,7 @@ export type CustomerReviewPageData = {
   featuredCustomerInterview: FeaturedCustomerInterview | null;
 };
 
-type ReviewRow = TableRow<"reviews">;
+type ReviewRow = PublicReviewRecord;
 type AssetUrlResolver = (path: string) => string;
 
 const customerInterviewPresentation: readonly CustomerInterviewPresentation[] = [
@@ -408,6 +410,14 @@ export function mapCustomerInterviewDetail(
       "고객 인터뷰",
       row.company_name,
     ],
+    managedContent: {
+      content: row.content,
+      contentAssetScope: row.content_asset_scope,
+      contentAuthoringMode: row.content_authoring_mode,
+      contentMode: row.content_mode,
+      entity: "review",
+      title,
+    },
     projectInfo: getProjectInfo(row, presentation),
     projectInfoTitle: "프로젝트 정보",
     publishedAt: getPublishedAt(row),

@@ -13,7 +13,12 @@ import {
 function makePost(overrides = {}) {
   return {
     content: '<p>본문</p>',
+    content_asset_scope: '00000000-0000-4000-8000-0000000000ab',
+    content_authoring_mode: 'raw_html',
+    content_json: null,
     content_mode: 'html',
+    content_schema_version: 1,
+    content_source_backup: null,
     created_at: '2026-07-21T00:00:00.000Z',
     excerpt: null,
     featured: false,
@@ -66,12 +71,16 @@ test('post row maps to list and edit form state', () => {
   assert.equal(form.thumbnailPath, 'blog-thumbnails/post.webp')
   assert.equal(form.thumbnailPreviewUrl, 'https://example.com/post.webp')
   assert.equal(form.type, '브로슈어 · 카탈로그')
+  assert.equal(form.contentAuthoringMode, 'raw_html')
+  assert.equal(form.contentAssetScope, '00000000-0000-4000-8000-0000000000ab')
 })
 
-test('form maps to a blog mutation with trimmed values and publication settings', () => {
+test('form preserves raw HTML bytes while trimming surrounding field values', () => {
   const form = {
     ...createInitialBlogForm(),
     content: '  <p>본문</p>  ',
+    contentAuthoringMode: 'raw_html',
+    contentJson: null,
     isBannerEnabled: false,
     isFeaturedEnabled: true,
     publishedAt: '2026-07-21',
@@ -84,8 +93,13 @@ test('form maps to a blog mutation with trimmed values and publication settings'
   }
 
   assert.deepEqual(toBlogMutationInput(form, 'draft'), {
-    content: '<p>본문</p>',
+    content: '  <p>본문</p>  ',
+    content_asset_scope: form.contentAssetScope,
+    content_authoring_mode: 'raw_html',
+    content_json: null,
     content_mode: 'html',
+    content_schema_version: 1,
+    content_source_backup: null,
     excerpt: null,
     featured: true,
     kind: 'blog',
@@ -107,6 +121,8 @@ test('mutation clears thumbnail alt text when no thumbnail path is saved', () =>
   const form = {
     ...createInitialBlogForm(),
     content: '<p>본문</p>',
+    contentAuthoringMode: 'raw_html',
+    contentJson: null,
     publishedAt: '2026-07-21',
     slug: 'first-blog',
     thumbnailAlt: '남아 있는 대체 텍스트',
@@ -152,6 +168,8 @@ test('mutation rejects the all-items filter label as a blog category', () => {
   const form = {
     ...createInitialBlogForm(),
     content: '<p>본문</p>',
+    contentAuthoringMode: 'raw_html',
+    contentJson: null,
     publishedAt: '2026-07-21',
     slug: 'first-blog',
     title: '첫 블로그',

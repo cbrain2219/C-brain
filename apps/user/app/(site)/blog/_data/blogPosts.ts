@@ -1,5 +1,5 @@
 import { normalizeBlogCategory } from "@repo/supabase/categories";
-import type { TableRow } from "@repo/supabase/types";
+import type { PublicPostRecord } from "@repo/supabase";
 
 import type {
   BlogContentBlock,
@@ -37,7 +37,7 @@ function decodeHtmlEntities(value: string) {
 
 function getBlogPlainText(
   content: string,
-  contentMode: TableRow<"posts">["content_mode"],
+  contentMode: PublicPostRecord["content_mode"],
 ) {
   const text =
     contentMode === "html"
@@ -109,7 +109,7 @@ function getBlogImage(
 }
 
 function createBlogBody(
-  row: TableRow<"posts">,
+  row: PublicPostRecord,
   plainText: string,
   summary: string,
 ): BlogContentBlock[] {
@@ -126,7 +126,7 @@ function createBlogBody(
 }
 
 function createBlogDetail(
-  row: TableRow<"posts">,
+  row: PublicPostRecord,
   plainText: string,
   summary: string,
 ): BlogPostDetail {
@@ -140,7 +140,7 @@ function createBlogDetail(
 }
 
 export function mapBlogRows(
-  rows: readonly TableRow<"posts">[],
+  rows: readonly PublicPostRecord[],
   resolveAssetUrl: BlogAssetUrlResolver,
 ): BlogPost[] {
   let landingRank = 0;

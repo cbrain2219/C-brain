@@ -1,17 +1,22 @@
 import type { Json, PublishStatus, TableInsert, TableRow } from '@repo/supabase/types'
 import { filterContentRows, formatAdminDate } from './contentListState.ts'
+import {
+  managedContentFormFromRow,
+  managedContentInputFromForm,
+  managedContentIsEmpty,
+  type ManagedContentFormValue,
+} from '../lib/managedContent.ts'
 
 export type PortfolioLandingStatus = 'none' | 'published'
 
 export type PortfolioImage = {
   readonly alt: string
+  readonly fileName: string
   readonly path: string
 }
 
-export type PortfolioFormValues = {
+export type PortfolioFormValues = ManagedContentFormValue & {
   readonly clientName: string
-  readonly content: string
-  readonly contentMode: 'html' | 'markdown'
   readonly images: readonly PortfolioImage[]
   readonly isLandingEnabled: boolean
   readonly isPinned: boolean
@@ -37,7 +42,12 @@ export type PortfolioMutationInput = Pick<
   TableInsert<'portfolio_items'>,
   | 'client_name'
   | 'content'
+  | 'content_asset_scope'
+  | 'content_authoring_mode'
+  | 'content_json'
   | 'content_mode'
+  | 'content_schema_version'
+  | 'content_source_backup'
   | 'images'
   | 'pinned'
   | 'published_at'
@@ -58,7 +68,16 @@ export function getPortfolioImages(value: Json): PortfolioImage[] {
   return value.flatMap((image) => {
     if (!isJsonObject(image) || typeof image.path !== 'string' || !image.path) return []
 
-    return [{ alt: typeof image.alt === 'string' ? image.alt : '', path: image.path }]
+    const storedFileName = typeof image.fileName === 'string' ? image.fileName.trim() : ''
+    const fallbackFileName = image.path.split('/').pop() || 'image'
+
+    return [
+      {
+        alt: typeof image.alt === 'string' ? image.alt : '',
+        fileName: storedFileName || fallbackFileName,
+        path: image.path,
+      },
+    ]
   })
 }
 
@@ -82,8 +101,7 @@ export function toPortfolioFormValues(
 ): PortfolioFormValues {
   return {
     clientName: item.client_name || '',
-    content: item.content,
-    contentMode: item.content_mode,
+    ...managedContentFormFromRow(item),
     images: getPortfolioImages(item.images),
     isLandingEnabled: item.show_on_landing,
     isPinned: item.pinned,
@@ -99,12 +117,13 @@ export function toPortfolioMutationInput(
   status: PublishStatus,
   publishedAt: string | null,
 ): PortfolioMutationInput {
+  const managedContent = managedContentInputFromForm(form)
   const clientName = form.clientName.trim()
   const slug = form.slug.trim()
   const title = form.title.trim()
   const type = form.type.trim()
 
-  if (!clientName || !form.content.trim() || !slug || !title || !type) {
+  if (!managedContent || !clientName || managedContentIsEmpty(form) || !slug || !title || !type) {
     throw new Error('포트폴리오 정보를 확인해주세요.')
   }
 
@@ -114,9 +133,18 @@ export function toPortfolioMutationInput(
 
   return {
     client_name: clientName,
-    content: form.content,
-    content_mode: form.contentMode,
-    images: images.map((image) => ({ alt: image.alt.trim(), path: image.path })) as Json,
+    content: managedContent.content,
+    content_asset_scope: managedContent.content_asset_scope,
+    content_authoring_mode: managedContent.content_authoring_mode,
+    content_json: managedContent.content_json as unknown as Json,
+    content_mode: managedContent.content_mode,
+    content_schema_version: managedContent.content_schema_version,
+    content_source_backup: managedContent.content_source_backup,
+    images: images.map((image) => ({
+      alt: image.alt.trim(),
+      fileName: image.fileName.trim() || image.path.split('/').pop() || 'image',
+      path: image.path,
+    })) as Json,
     pinned: form.isPinned,
     published_at: status === 'published' ? publishedAt : null,
     show_on_landing: form.isLandingEnabled,

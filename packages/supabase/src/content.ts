@@ -5,19 +5,52 @@ import type { TableInsert, TableRow, TableUpdate } from "./types.ts";
 
 type PostKind = TableRow<"posts">["kind"];
 
+const publicPostColumns =
+  "id, kind, status, slug, title, type, content, content_mode, content_authoring_mode, content_asset_scope, created_at, excerpt, featured, pinned, published_at, seo_description, show_as_banner, show_on_landing, sort_order, thumbnail_alt, thumbnail_path, view_count";
+
+/**
+ * Deliberately narrow anonymous/public projection. Admin callers use the
+ * full-row helpers below; no public `select("*")` API exists.
+ */
+export type PublicPostRecord = Pick<
+  TableRow<"posts">,
+  | "content"
+  | "content_asset_scope"
+  | "content_authoring_mode"
+  | "content_mode"
+  | "created_at"
+  | "excerpt"
+  | "featured"
+  | "id"
+  | "kind"
+  | "pinned"
+  | "published_at"
+  | "seo_description"
+  | "show_as_banner"
+  | "show_on_landing"
+  | "slug"
+  | "sort_order"
+  | "status"
+  | "thumbnail_alt"
+  | "thumbnail_path"
+  | "title"
+  | "type"
+  | "view_count"
+>;
+
 export async function listPublishedPosts(
   client: CBrainSupabaseClient,
   kind: PostKind,
 ) {
   const { data, error } = await client
     .from("posts")
-    .select("*")
+    .select(publicPostColumns)
     .eq("kind", kind)
     .eq("status", "published")
     .order("sort_order", { ascending: true })
     .order("id", { ascending: true });
 
-  return unwrapSupabaseData(data, error);
+  return unwrapSupabaseData(data, error) as PublicPostRecord[];
 }
 
 export async function getPublishedPost(
@@ -27,15 +60,14 @@ export async function getPublishedPost(
 ) {
   const { data, error } = await client
     .from("posts")
-    .select("*")
+    .select(publicPostColumns)
     .eq("kind", kind)
     .eq("slug", slug)
     .eq("status", "published")
     .maybeSingle();
 
   if (error) throw new Error(error.message);
-
-  return data;
+  return data as PublicPostRecord | null;
 }
 
 export async function listAdminPosts(

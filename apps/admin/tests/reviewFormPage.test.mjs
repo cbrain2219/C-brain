@@ -8,6 +8,7 @@ const comboboxPath = new URL(
   import.meta.url,
 )
 const formPath = new URL('../src/pages/ReviewFormPage.tsx', import.meta.url)
+const editorPath = new URL('../src/components/admin-editor/AdminContentEditor.tsx', import.meta.url)
 const listPath = new URL('../src/pages/ReviewPage.tsx', import.meta.url)
 
 test('review admin exposes create and edit routes', async () => {
@@ -33,7 +34,10 @@ test('review admin exposes create and edit routes', async () => {
 })
 
 test('review form has one fixed selector and two conditional field branches', async () => {
-  const formSource = await readFile(formPath, 'utf8')
+  const [formSource, editorSource] = await Promise.all([
+    readFile(formPath, 'utf8'),
+    readFile(editorPath, 'utf8'),
+  ])
 
   assert.match(formSource, /options=\{reviewTypes\}/)
   assert.doesNotMatch(formSource, /allowCustomValue/)
@@ -62,10 +66,10 @@ test('review form has one fixed selector and two conditional field branches', as
   assert.match(formSource, /SEO Description/)
   assert.match(formSource, /후기 고객사/)
   assert.match(formSource, /후기 담당자/)
-  assert.match(formSource, /\{type\} 내용/)
+  assert.match(formSource, /<AdminContentEditor/)
   assert.match(formSource, /name="isLandingEnabled"/)
   assert.match(formSource, /type="date"/)
-  assert.match(formSource, /TEXT Editor 작성/)
+  assert.match(editorSource, /TEXT Editor 작성/)
   assert.match(formSource, /등록하기/)
   assert.doesNotMatch(formSource, /figma\.com\/api/)
 })

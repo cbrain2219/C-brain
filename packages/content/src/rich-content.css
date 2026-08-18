@@ -1,0 +1,88 @@
+.rich-content {
+  color: var(--foreground, #111827);
+  font-family: var(--font-sans);
+  font-size: 16px;
+  font-weight: 500;
+  letter-spacing: -0.015em;
+  line-height: 24px;
+  overflow-wrap: anywhere;
+}
+
+.rich-content :where(h2, h3, h4, p, ul, ol, blockquote, figure, pre, hr) {
+  margin: 0;
+}
+
+.rich-content :where(h2) {
+  padding-top: 48px;
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 36px;
+}
+
+.rich-content :where(h3) {
+  padding-top: 36px;
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 32px;
+}
+
+.rich-content :where(h4) {
+  padding-top: 28px;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 26px;
+}
+
+.rich-content :where(p, ul, ol, blockquote, figure, pre) {
+  padding-top: 20px;
+}
+
+.rich-content :where(ul, ol) {
+  padding-left: 24px;
+}
+
+.rich-content :where(blockquote) {
+  padding-left: 20px;
+  border-left: 3px solid #d1d5db;
+  color: #4b5563;
+}
+
+.rich-content :where(pre) {
+  overflow-x: auto;
+  padding: 20px;
+  border-radius: 8px;
+  color: #f9fafb;
+  background: #111827;
+}
+
+.rich-content :where(a) {
+  color: #2563eb;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.rich-content :where(img) {
+  display: block;
+  width: auto;
+  max-width: 100%;
+  height: auto;
+}
+
+.rich-content :where(hr) {
+  padding-top: 40px;
+  border: 0;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+@media (max-width: 640px) {
+  .rich-content {
+    font-size: 14px;
+    line-height: 21px;
+  }
+
+  .rich-content :where(h2) {
+    padding-top: 36px;
+    font-size: 24px;
+    line-height: 32px;
+  }
+}

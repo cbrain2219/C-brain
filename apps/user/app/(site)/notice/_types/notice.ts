@@ -1,3 +1,5 @@
+import type { PublicManagedContent } from "../../../../components/ManagedContent";
+
 export type NoticeCategoryValue =
   | "all"
   | "notice"
@@ -36,6 +38,7 @@ export type NoticeContentBlock =
 
 export type NoticeDetail = NoticeSummary & {
   content: readonly NoticeContentBlock[];
+  managedContent: PublicManagedContent;
 };
 
 export type NoticePageData = {

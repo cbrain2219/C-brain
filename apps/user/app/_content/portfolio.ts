@@ -7,7 +7,7 @@ import type {
   ProductCategory,
   ProductCategoryId,
 } from "@repo/supabase/categories";
-import type { TableRow } from "@repo/supabase/types";
+import type { PublicPortfolioRecord } from "@repo/supabase";
 
 export type PortfolioCategoryId = ProductCategoryId;
 export type PortfolioCategory = ProductCategory;
@@ -141,7 +141,7 @@ function markdownToPlainText(value: string) {
 
 function getPortfolioPlainText(
   content: string,
-  contentMode: TableRow<"portfolio_items">["content_mode"],
+  contentMode: PublicPortfolioRecord["content_mode"],
 ) {
   const text =
     contentMode === "html"
@@ -161,7 +161,7 @@ function getPortfolioPlainText(
 }
 
 export function mapPortfolioRows(
-  rows: readonly TableRow<"portfolio_items">[],
+  rows: readonly PublicPortfolioRecord[],
   resolveAssetUrl: PortfolioAssetUrlResolver,
 ): PortfolioItem[] {
   return rows.flatMap((row) => {

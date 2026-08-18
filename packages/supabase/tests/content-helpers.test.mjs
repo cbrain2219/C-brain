@@ -1,6 +1,11 @@
 import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
 import { register } from "node:module";
+import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 import test from "node:test";
+
+const testDirectory = dirname(fileURLToPath(import.meta.url));
 
 const loader = `
 export async function resolve(specifier, context, nextResolve) {
@@ -25,7 +30,7 @@ export async function load(url, context, nextLoad) {
 
 register(`data:text/javascript,${encodeURIComponent(loader)}`, import.meta.url);
 
-const { createPost, listPublishedPosts, reorderPosts } =
+const { createPost, getPublishedPost, listPublishedPosts, reorderPosts } =
   await import("../src/content.ts");
 const { requireAdmin } = await import("../src/auth.ts");
 const { createSignedFileUpload, createStoragePath, getFileInfo } =
@@ -52,12 +57,16 @@ const {
   listPublishedProducts,
   updateProduct,
 } = await import("../src/products.ts");
-const { listPublishedPortfolioItems, reorderPortfolioItems } =
+const {
+  getPublishedPortfolioItem,
+  listPublishedPortfolioItems,
+  reorderPortfolioItems,
+} =
   await import("../src/portfolio.ts");
-const { listPublishedReviews, reorderReviews } =
+const { getPublishedReview, listPublishedReviews, reorderReviews } =
   await import("../src/reviews.ts");
 
-function createFakeClient(dataByTable = {}) {
+function createFakeClient(dataByTable = {}, selectResponse) {
   const calls = [];
   const client = {
     auth: {
@@ -71,6 +80,12 @@ function createFakeClient(dataByTable = {}) {
       },
     },
     from(table) {
+      let selectedColumns;
+      const selectionResult = (single) =>
+        selectResponse?.({ columns: selectedColumns, single, table }) ?? {
+          data: dataByTable[table] ?? (single ? null : []),
+          error: null,
+        };
       const chain = {
         delete() {
           calls.push({ method: "delete", table });
@@ -90,12 +105,10 @@ function createFakeClient(dataByTable = {}) {
         },
         maybeSingle() {
           calls.push({ method: "maybeSingle", table });
-          return Promise.resolve({
-            data: dataByTable[table] ?? null,
-            error: null,
-          });
+          return Promise.resolve(selectionResult(true));
         },
         select(columns) {
+          selectedColumns = columns;
           calls.push({ columns, method: "select", table });
           return chain;
         },
@@ -111,10 +124,7 @@ function createFakeClient(dataByTable = {}) {
           });
         },
         then(resolve, reject) {
-          return Promise.resolve({
-            data: dataByTable[table] ?? [],
-            error: null,
-          }).then(resolve, reject);
+          return Promise.resolve(selectionResult(false)).then(resolve, reject);
         },
         update(value) {
           calls.push({ method: "update", table, value });
@@ -206,6 +216,138 @@ test("published content queries use stable display ordering", async () => {
         call.value === "published",
     ),
   );
+});
+
+test("public managed-content list and detail queries exactly match canonical anon grants", async () => {
+  const { calls, client } = createFakeClient();
+
+  await Promise.all([
+    listPublishedPosts(client, "blog"),
+    getPublishedPost(client, "notice", "notice-slug"),
+    listPublishedPortfolioItems(client),
+    getPublishedPortfolioItem(client, "portfolio-slug"),
+    listPublishedReviews(client),
+    getPublishedReview(client, "review-slug"),
+  ]);
+
+  const expectedColumns = {
+    portfolio_items: [
+      "id",
+      "client_name",
+      "content",
+      "content_mode",
+      "content_authoring_mode",
+      "content_asset_scope",
+      "created_at",
+      "images",
+      "pinned",
+      "published_at",
+      "show_on_landing",
+      "slug",
+      "sort_order",
+      "status",
+      "title",
+      "type",
+      "view_count",
+    ],
+    posts: [
+      "id",
+      "kind",
+      "status",
+      "slug",
+      "title",
+      "type",
+      "content",
+      "content_mode",
+      "content_authoring_mode",
+      "content_asset_scope",
+      "created_at",
+      "excerpt",
+      "featured",
+      "pinned",
+      "published_at",
+      "seo_description",
+      "show_as_banner",
+      "show_on_landing",
+      "sort_order",
+      "thumbnail_alt",
+      "thumbnail_path",
+      "view_count",
+    ],
+    reviews: [
+      "id",
+      "company_name",
+      "content",
+      "content_mode",
+      "content_authoring_mode",
+      "content_asset_scope",
+      "created_at",
+      "kind",
+      "manager_name",
+      "project_deliverable",
+      "project_usage",
+      "published_at",
+      "seo_description",
+      "show_on_landing",
+      "slug",
+      "sort_order",
+      "status",
+      "title",
+      "video_alt",
+      "video_path",
+      "view_count",
+      "youtube_video_id",
+    ],
+  };
+  const baseline = await readFile(
+    resolve(testDirectory, "../../../supabase/initial_admin_content.sql"),
+    "utf8",
+  );
+  const grants = new Map(
+    [...baseline.matchAll(
+      /grant select \(([\s\S]*?)\) on public\.(posts|portfolio_items|reviews) to anon;/gu,
+    )].map((match) => [match[2], match[1]]),
+  );
+
+  for (const [table, expected] of Object.entries(expectedColumns)) {
+    const selections = calls.filter(
+      (call) => call.method === "select" && call.table === table,
+    );
+    assert.equal(selections.length, 2);
+
+    for (const selection of selections) {
+      assert.deepEqual(selection.columns.split(", "), expected);
+    }
+
+    const grant = grants.get(table);
+    assert.ok(grant, `missing canonical anon grant for ${table}`);
+    const grantColumns = grant
+      .split(",")
+      .map((column) => column.trim())
+      .filter(Boolean);
+    assert.deepEqual([...expected].sort(), grantColumns.sort());
+  }
+});
+
+test("public projections surface database errors without a fallback query", async () => {
+  const { calls, client } = createFakeClient({}, () => ({
+    data: null,
+    error: { code: "42501", message: "permission denied" },
+  }));
+
+  await Promise.all([
+    assert.rejects(listPublishedPosts(client, "notice"), /permission denied/),
+    assert.rejects(getPublishedPost(client, "notice", "post-slug"), /permission denied/),
+    assert.rejects(listPublishedPortfolioItems(client), /permission denied/),
+    assert.rejects(
+      getPublishedPortfolioItem(client, "portfolio-slug"),
+      /permission denied/,
+    ),
+    assert.rejects(listPublishedReviews(client), /permission denied/),
+    assert.rejects(getPublishedReview(client, "review-slug"), /permission denied/),
+  ]);
+
+  assert.equal(calls.filter((call) => call.method === "select").length, 6);
 });
 
 test("product pricing reads only valid print unit prices", () => {

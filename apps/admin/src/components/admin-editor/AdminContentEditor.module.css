@@ -1,0 +1,152 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.tabs {
+  align-items: stretch;
+  background: var(--admin-gray-50);
+  border-radius: 16px;
+  display: flex;
+  gap: 4px;
+  min-height: 52px;
+  padding: 4px;
+}
+
+.tab {
+  background: transparent;
+  border: 0;
+  border-radius: 12px;
+  color: var(--admin-gray-600);
+  cursor: pointer;
+  flex: 1 1 0;
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: -0.015em;
+  line-height: 21px;
+  min-height: 44px;
+  min-width: 0;
+  padding: 0 16px;
+}
+
+.tab[data-active='true'] {
+  background: var(--admin-brand-500);
+  border-radius: 14px;
+  color: var(--admin-text-inverse);
+}
+
+.tab:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.rawTextarea {
+  background: var(--admin-surface);
+  border: 1px solid #f1f5f9;
+  border-radius: 16px;
+  color: var(--admin-gray-800);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 500;
+  height: 480px;
+  letter-spacing: -0.015em;
+  line-height: 21px;
+  min-height: 240px;
+  padding: 16px;
+  resize: vertical;
+  width: 100%;
+}
+
+.rawTextarea::placeholder {
+  color: var(--admin-gray-400);
+  opacity: 1;
+}
+
+.rawTextarea:disabled {
+  background: var(--admin-gray-50);
+  color: var(--admin-gray-400);
+  cursor: not-allowed;
+}
+
+.legacyNotice {
+  background: var(--admin-gray-50);
+  border: 1px solid var(--admin-gray-100);
+  border-radius: 12px;
+  color: var(--admin-gray-700);
+  display: flex;
+  flex-direction: column;
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 500;
+  gap: 10px;
+  letter-spacing: -0.015em;
+  line-height: 21px;
+  padding: 14px 16px;
+}
+
+.legacyActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.legacyAction {
+  background: var(--admin-surface);
+  border: 1px solid var(--admin-gray-100);
+  border-radius: 8px;
+  color: var(--admin-gray-800);
+  cursor: pointer;
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: inherit;
+  line-height: 21px;
+  padding: 8px 12px;
+}
+
+.legacyAction:disabled {
+  color: var(--admin-gray-400);
+  cursor: not-allowed;
+}
+
+.status,
+.error {
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: -0.015em;
+  line-height: 18px;
+  margin: 0;
+}
+
+.status {
+  color: var(--admin-gray-500);
+}
+
+.error {
+  color: var(--color-error-500);
+}
+
+.loading {
+  align-items: center;
+  background: var(--admin-gray-50);
+  border: 1px solid var(--admin-gray-100);
+  border-radius: 16px;
+  color: var(--admin-gray-500);
+  display: flex;
+  font-family: 'Pretendard GOV Variable', var(--font-sans);
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: -0.015em;
+  line-height: 21px;
+  min-height: 400px;
+  padding: 18px;
+}
+
+@media (max-width: 520px) {
+  .tab {
+    padding: 0 8px;
+  }
+}

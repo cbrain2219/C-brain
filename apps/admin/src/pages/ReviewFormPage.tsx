@@ -11,6 +11,10 @@ import type { ChangeEvent, DragEvent, FormEvent, RefObject } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { toast } from 'sonner'
 import { AdminIcon } from '../components/AdminIcon'
+import {
+  AdminContentEditor,
+} from '../components/admin-editor/AdminContentEditor'
+import { getManagedContentPublishError } from '../components/admin-editor/contentEditorPublish'
 import { AdminDeleteDialog } from '../components/admin-form/AdminDeleteDialog'
 import { AdminFormLayout } from '../components/admin-form/AdminFormLayout'
 import { AdminTypeCombobox } from '../components/admin-form/AdminTypeCombobox'
@@ -19,17 +23,17 @@ import {
   getPublicAssetUrl,
   uploadPublicAsset,
 } from '../lib/adminAssets'
+import { removeContentAssetScope } from '../lib/contentAssetStorage'
+import { managedContentIsEmpty, type ManagedContentFormValue } from '../lib/managedContent'
 import { supabase } from '../lib/supabase'
+import { useManagedContentEditorState } from '../hooks/useManagedContentEditorState'
 import { getSubmitIntent } from './contentListState'
 import {
   createInitialReviewForm,
   toReviewFormState,
   toReviewMutationInput,
 } from './reviewData'
-import type {
-  ReviewContentMode,
-  ReviewFormState,
-} from './reviewData'
+import type { ReviewFormState } from './reviewData'
 import {
   getReviewVideoError,
   getReviewYouTubeUrlError,
@@ -44,8 +48,6 @@ import type {
 } from './reviewFormState'
 import './BlogFormPage.css'
 import './ReviewFormPage.css'
-
-const contentModes = ['html', 'markdown'] as const
 
 type UpdateReviewForm = <Key extends keyof ReviewFormState>(
   key: Key,
@@ -120,48 +122,38 @@ function DateField({ id, label, onChange, value }: DateFieldProps) {
 }
 
 type ContentFieldProps = {
-  readonly content: string
-  readonly mode: ReviewContentMode
-  readonly onContentChange: (value: string) => void
-  readonly onModeChange: (mode: ReviewContentMode) => void
+  readonly disabled: boolean
+  readonly documentKey: string
+  readonly onBusyChange: (busy: boolean) => void
+  readonly onContentChange: (value: ManagedContentFormValue) => void
+  readonly onPendingAssetCountChange: (count: number) => void
   readonly type: ReviewType
+  readonly value: ManagedContentFormValue
 }
 
 function ContentField({
-  content,
-  mode,
+  disabled,
+  documentKey,
+  onBusyChange,
   onContentChange,
-  onModeChange,
+  onPendingAssetCountChange,
   type,
+  value,
 }: ContentFieldProps) {
   return (
     <fieldset className="blog-form__content-field">
       <legend className="blog-form__label">{type} 내용</legend>
-      <div className="blog-form__mode-tabs">
-        {contentModes.map((contentMode) => (
-          <button
-            aria-pressed={mode === contentMode}
-            className={
-              mode === contentMode
-                ? 'blog-form__mode-tab blog-form__mode-tab--active'
-                : 'blog-form__mode-tab'
-            }
-            key={contentMode}
-            onClick={() => onModeChange(contentMode)}
-            type="button"
-          >
-            {contentMode === 'html' ? 'HTML 작성' : 'TEXT Editor 작성'}
-          </button>
-        ))}
-      </div>
-      <textarea
-        aria-label={`${type} 내용`}
-        className="blog-form__textarea blog-form__textarea--content"
-        name="content"
-        onChange={(event) => onContentChange(event.currentTarget.value)}
+      <AdminContentEditor
+        disabled={disabled}
+        documentKey={documentKey}
+        entity="review"
+        id={`${documentKey}-content-editor`}
+        key={documentKey}
+        onBusyChange={onBusyChange}
+        onChange={onContentChange}
+        onPendingAssetCountChange={onPendingAssetCountChange}
         placeholder={`${type} 내용을 입력해주세요.`}
-        required
-        value={content}
+        value={value}
       />
     </fieldset>
   )
@@ -421,10 +413,15 @@ function LandingSetting({ checked, onChange }: LandingSettingProps) {
 }
 
 type InterviewFieldsProps = {
+  readonly contentEditorDocumentKey: string
+  readonly contentEditorDisabled: boolean
   readonly form: ReviewFormState
   readonly formId: string
   readonly onFileChange: (event: ChangeEvent<HTMLInputElement>) => void
   readonly onFileDrop: (event: DragEvent<HTMLButtonElement>) => void
+  readonly onManagedContentChange: (value: ManagedContentFormValue) => void
+  readonly onManagedContentBusyChange: (busy: boolean) => void
+  readonly onManagedContentPendingAssetCountChange: (count: number) => void
   readonly onSlugErrorChange: (message: string) => void
   readonly onUpdate: UpdateReviewForm
   readonly onVideoClear: () => void
@@ -437,10 +434,15 @@ type InterviewFieldsProps = {
 }
 
 function InterviewFields({
+  contentEditorDocumentKey,
+  contentEditorDisabled,
   form,
   formId,
   onFileChange,
   onFileDrop,
+  onManagedContentChange,
+  onManagedContentBusyChange,
+  onManagedContentPendingAssetCountChange,
   onSlugErrorChange,
   onUpdate,
   onVideoClear,
@@ -551,11 +553,13 @@ function InterviewFields({
         youtubeUrl={form.youtubeUrl}
       />
       <ContentField
-        content={form.content}
-        mode={form.contentMode}
-        onContentChange={(value) => onUpdate('content', value)}
-        onModeChange={(mode) => onUpdate('contentMode', mode)}
+        disabled={contentEditorDisabled}
+        documentKey={contentEditorDocumentKey}
+        onBusyChange={onManagedContentBusyChange}
+        onContentChange={onManagedContentChange}
+        onPendingAssetCountChange={onManagedContentPendingAssetCountChange}
         type="인터뷰"
+        value={form}
       />
       <label className="blog-form__field" htmlFor={`${formId}-seo-description`}>
         <span className="blog-form__label">SEO Description</span>
@@ -575,14 +579,24 @@ function InterviewFields({
 }
 
 type CustomerReviewFieldsProps = {
+  readonly contentEditorDocumentKey: string
+  readonly contentEditorDisabled: boolean
   readonly form: ReviewFormState
   readonly formId: string
+  readonly onManagedContentChange: (value: ManagedContentFormValue) => void
+  readonly onManagedContentBusyChange: (busy: boolean) => void
+  readonly onManagedContentPendingAssetCountChange: (count: number) => void
   readonly onUpdate: UpdateReviewForm
 }
 
 function CustomerReviewFields({
+  contentEditorDocumentKey,
+  contentEditorDisabled,
   form,
   formId,
+  onManagedContentChange,
+  onManagedContentBusyChange,
+  onManagedContentPendingAssetCountChange,
   onUpdate,
 }: CustomerReviewFieldsProps) {
   return (
@@ -610,11 +624,13 @@ function CustomerReviewFields({
         value={form.publishedAt}
       />
       <ContentField
-        content={form.content}
-        mode={form.contentMode}
-        onContentChange={(value) => onUpdate('content', value)}
-        onModeChange={(mode) => onUpdate('contentMode', mode)}
+        disabled={contentEditorDisabled}
+        documentKey={contentEditorDocumentKey}
+        onBusyChange={onManagedContentBusyChange}
+        onContentChange={onManagedContentChange}
+        onPendingAssetCountChange={onManagedContentPendingAssetCountChange}
         type="후기"
+        value={form}
       />
       <LandingSetting
         checked={form.isLandingEnabled}
@@ -639,10 +655,17 @@ export function ReviewFormPage() {
   const [isLoadingReview, setIsLoadingReview] = useState(isEditing)
   const [isSaving, setIsSaving] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
+  const operationInFlight = useRef(false)
   const [loadError, setLoadError] = useState('')
   const [saveError, setSaveError] = useState('')
   const [originalVideoPath, setOriginalVideoPath] = useState<string | null>(null)
   const [typeInputKey, setTypeInputKey] = useState(0)
+  const contentEditorDocumentKey = `review:${form.contentAssetScope}`
+  const contentEditorState = useManagedContentEditorState(
+    contentEditorDocumentKey,
+    form.contentAuthoringMode === 'wysiwyg',
+  )
+  const actionLocked = isSaving || isDeleting || contentEditorState.busy
 
   const pageTitle = isEditing
     ? `${form.type || '인터뷰 · 후기'} 수정`
@@ -750,7 +773,9 @@ export function ReviewFormPage() {
   }
 
   async function persist(status: 'draft' | 'published') {
-    if (isSaving || isDeleting) return
+    if (actionLocked || operationInFlight.current) return
+
+    operationInFlight.current = true
 
     setIsSaving(true)
     setSaveError('')
@@ -799,18 +824,28 @@ export function ReviewFormPage() {
       toast.error('인터뷰 · 후기를 저장하지 못했습니다.')
       window.alert('인터뷰 · 후기를 저장하지 못했습니다. 입력값과 권한을 확인해주세요.')
     } finally {
+      operationInFlight.current = false
       setIsSaving(false)
     }
   }
 
   async function handleDelete() {
-    if (!reviewId || isSaving || isDeleting) return
+    if (!reviewId || actionLocked || operationInFlight.current) return
+
+    operationInFlight.current = true
 
     setIsDeleting(true)
     setSaveError('')
 
     try {
       await deleteReview(supabase, reviewId)
+
+      try {
+        await removeContentAssetScope('review', form.contentAssetScope)
+      } catch {
+        toast.error('본문 이미지 파일을 정리하지 못했습니다.')
+        window.alert('인터뷰 · 후기는 삭제됐지만 본문 이미지 파일을 정리하지 못했습니다.')
+      }
 
       if (originalVideoPath) {
         try {
@@ -828,6 +863,7 @@ export function ReviewFormPage() {
       toast.error('인터뷰 · 후기를 삭제하지 못했습니다.')
       window.alert('인터뷰 · 후기를 삭제하지 못했습니다. 다시 시도해주세요.')
     } finally {
+      operationInFlight.current = false
       setIsDeleting(false)
     }
   }
@@ -879,17 +915,51 @@ export function ReviewFormPage() {
       }
     }
 
+    if (intent !== 'draft') {
+      if (managedContentIsEmpty(form)) {
+        setSaveError('내용을 입력해주세요.')
+        focusContentEditor()
+        return
+      }
+      const contentError = getManagedContentPublishError(
+        'review',
+        form,
+        contentEditorState.pendingAssetCount,
+      )
+      if (contentError) {
+        setSaveError(contentError)
+        focusContentEditor()
+        return
+      }
+    }
+
     setSlugError('')
     setVideoError('')
     setYouTubeError('')
     void persist(intent === 'draft' ? 'draft' : 'published')
   }
 
+  function focusContentEditor() {
+    window.requestAnimationFrame(() => {
+      const editor = document.getElementById(`${contentEditorDocumentKey}-content-editor`)
+      editor?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      editor?.focus()
+    })
+  }
+
   if (isLoadingReview || loadError) {
     return (
       <AdminFormLayout
         actions={
-          <Link className="admin-form__button admin-form__button--outline" to="/reviews">
+          <Link
+            aria-disabled={actionLocked || undefined}
+            className="admin-form__button admin-form__button--outline"
+            onClick={(event) => {
+              if (actionLocked) event.preventDefault()
+            }}
+            tabIndex={actionLocked ? -1 : undefined}
+            to="/reviews"
+          >
             목록으로
           </Link>
         }
@@ -906,7 +976,12 @@ export function ReviewFormPage() {
   const actions = (
     <>
       <Link
+        aria-disabled={actionLocked || undefined}
         className="admin-form__button admin-form__button--outline"
+        onClick={(event) => {
+          if (actionLocked) event.preventDefault()
+        }}
+        tabIndex={actionLocked ? -1 : undefined}
         to="/reviews"
       >
         목록으로
@@ -914,7 +989,7 @@ export function ReviewFormPage() {
       <div className="admin-form__actions-group">
         {isEditing ? (
           <AdminDeleteDialog
-            disabled={isSaving}
+            disabled={actionLocked}
             isDeleting={isDeleting}
             itemLabel="인터뷰 · 후기"
             onConfirm={handleDelete}
@@ -922,7 +997,7 @@ export function ReviewFormPage() {
         ) : null}
         <button
           className="admin-form__button admin-form__button--outline"
-          disabled={isSaving || isDeleting}
+          disabled={actionLocked}
           formNoValidate
           name="intent"
           type="submit"
@@ -932,7 +1007,7 @@ export function ReviewFormPage() {
         </button>
         <button
           className="admin-form__button admin-form__button--solid"
-          disabled={isSaving || isDeleting}
+          disabled={actionLocked}
           name="intent"
           type="submit"
           value="publish"
@@ -991,6 +1066,8 @@ export function ReviewFormPage() {
 
       {form.type === '인터뷰' ? (
         <InterviewFields
+          contentEditorDocumentKey={contentEditorDocumentKey}
+          contentEditorDisabled={isSaving || isDeleting}
           form={form}
           formId={formId}
           onFileChange={(event) => setVideo(event.currentTarget.files?.[0])}
@@ -998,6 +1075,9 @@ export function ReviewFormPage() {
             event.preventDefault()
             setVideo(event.dataTransfer.files[0])
           }}
+          onManagedContentBusyChange={contentEditorState.onBusyChange}
+          onManagedContentChange={(value) => setForm((current) => ({ ...current, ...value }))}
+          onManagedContentPendingAssetCountChange={contentEditorState.onPendingAssetCountChange}
           onSlugErrorChange={setSlugError}
           onUpdate={updateForm}
           onVideoClear={clearVideo}
@@ -1016,8 +1096,13 @@ export function ReviewFormPage() {
 
       {form.type === '후기' ? (
         <CustomerReviewFields
+          contentEditorDocumentKey={contentEditorDocumentKey}
+          contentEditorDisabled={isSaving || isDeleting}
           form={form}
           formId={formId}
+          onManagedContentBusyChange={contentEditorState.onBusyChange}
+          onManagedContentChange={(value) => setForm((current) => ({ ...current, ...value }))}
+          onManagedContentPendingAssetCountChange={contentEditorState.onPendingAssetCountChange}
           onUpdate={updateForm}
         />
       ) : null}

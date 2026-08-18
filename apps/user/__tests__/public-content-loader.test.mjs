@@ -25,6 +25,7 @@ test("public content loader uses the published Supabase boundary", async () => {
   assert.match(source, /mapPortfolioRows/);
   assert.match(source, /export const getPublishedBlogPosts = cache/);
   assert.match(source, /export const getPublishedPortfolioItems = cache/);
+  assert.match(source, /export const getPublishedPortfolioItemSource = cache/);
   assert.match(source, /export const getPublishedOrderProducts = cache/);
   assert.match(source, /if \(!client\) return \[\]/);
   assert.match(source, /catch \(error\)/);

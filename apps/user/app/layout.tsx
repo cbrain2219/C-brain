@@ -1,5 +1,6 @@
 import { createRootMetadata } from "./_content/seo";
 import "./globals.css";
+import "@repo/content/rich-content.css";
 import "../../../design-system.css";
 
 export const metadata = createRootMetadata();

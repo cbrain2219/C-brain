@@ -4,6 +4,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { LightHeroBadge } from "../../../../components/LightHeroBadge";
+import { ManagedContent } from "../../../../components/ManagedContent";
+import { RawHtmlDocumentFrame } from "../../../../components/RawHtmlDocumentFrame";
 import { JsonLdScript } from "../../../_components/JsonLdScript";
 import {
   getCustomerInterviewDetailSeo,
@@ -98,6 +100,12 @@ export default async function CustomerReviewDetailPage({
   const mutedAutoplayEmbedUrl = detail.youtubeEmbedUrl
     ? getMutedAutoplayEmbedUrl(detail.youtubeEmbedUrl)
     : undefined;
+  const rawHtmlSource =
+    detail.managedContent.contentMode === "html" &&
+    detail.managedContent.contentAuthoringMode === "raw_html" &&
+    detail.managedContent.content.trim()
+      ? detail.managedContent.content
+      : undefined;
   const videoStructuredData = detail.youtubeEmbedUrl
     ? {
         description: detail.videoAlt,
@@ -220,25 +228,32 @@ export default async function CustomerReviewDetailPage({
           </figure>
 
           <div className={styles.reviewDetailBody}>
-            {detail.content.map((block) => {
-              if (block.type === "heading") {
-                return <h2 key={block.id}>{block.text}</h2>;
-              }
+            {rawHtmlSource ? (
+              <RawHtmlDocumentFrame html={rawHtmlSource} title={detail.title} />
+            ) : (
+              <ManagedContent
+                legacyFallback={detail.content.map((block) => {
+                  if (block.type === "heading") {
+                    return <h2 key={block.id}>{block.text}</h2>;
+                  }
 
-              if (block.type === "quote") {
-                return (
-                  <blockquote
-                    className={styles.reviewDetailQuote}
-                    key={block.id}
-                  >
-                    <p>&quot;{block.text}&quot;</p>
-                    <cite>— {block.cite}</cite>
-                  </blockquote>
-                );
-              }
+                  if (block.type === "quote") {
+                    return (
+                      <blockquote
+                        className={styles.reviewDetailQuote}
+                        key={block.id}
+                      >
+                        <p>&quot;{block.text}&quot;</p>
+                        <cite>— {block.cite}</cite>
+                      </blockquote>
+                    );
+                  }
 
-              return <p key={block.id}>{block.text}</p>;
-            })}
+                  return <p key={block.id}>{block.text}</p>;
+                })}
+                value={detail.managedContent}
+              />
+            )}
           </div>
 
           <section

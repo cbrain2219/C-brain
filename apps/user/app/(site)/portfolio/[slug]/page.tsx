@@ -4,6 +4,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { LightHeroBadge } from "../../../../components/LightHeroBadge";
+import { ManagedContent } from "../../../../components/ManagedContent";
+import { RawHtmlDocumentFrame } from "../../../../components/RawHtmlDocumentFrame";
 import { JsonLdScript } from "../../../_components/JsonLdScript";
 import {
   getPortfolioCategoryIdFromValue,
@@ -15,7 +17,10 @@ import {
   getPortfolioListHref,
 } from "../../../_content/portfolio";
 import { createCreativeWorkStructuredData } from "../../../_content/structured-data";
-import { getPublishedPortfolioItems } from "../../../../lib/publicContent";
+import {
+  getPublishedPortfolioItems,
+  getPublishedPortfolioItemSource,
+} from "../../../../lib/publicContent";
 import styles from "./page.module.css";
 
 type PortfolioDetailPageProps = {
@@ -84,10 +89,14 @@ export default async function PortfolioDetailPage({
   params,
   searchParams,
 }: PortfolioDetailPageProps) {
-  const [{ slug }, resolvedSearchParams, items] = await Promise.all([
+  const itemsPromise = getPublishedPortfolioItems();
+  const [{ slug }, resolvedSearchParams] = await Promise.all([
     params,
     searchParams,
-    getPublishedPortfolioItems(),
+  ]);
+  const [items, source] = await Promise.all([
+    itemsPromise,
+    getPublishedPortfolioItemSource(slug),
   ]);
   const detail = getPortfolioDetailBySlug(slug, items);
 
@@ -103,6 +112,12 @@ export default async function PortfolioDetailPage({
     resolvedSearchParams?.from,
   );
   const listHref = getPortfolioListHref(listCategoryId, detailSource);
+  const rawHtmlSource =
+    source?.contentMode === "html" &&
+    source.contentAuthoringMode === "raw_html" &&
+    source.content.trim()
+      ? source.content
+      : undefined;
 
   return (
     <article className={styles.detailPage}>
@@ -159,7 +174,16 @@ export default async function PortfolioDetailPage({
               ))}
             </div>
 
-            <p className={styles.description}>{item.description}</p>
+            {rawHtmlSource ? (
+              <RawHtmlDocumentFrame html={rawHtmlSource} title={item.title} />
+            ) : (
+              <div className={styles.description}>
+                <ManagedContent
+                  legacyFallback={<p>{item.description}</p>}
+                  value={source}
+                />
+              </div>
+            )}
           </section>
 
           <Link className={styles.backLink} href={listHref}>

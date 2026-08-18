@@ -15,6 +15,7 @@ import {
 } from "../_data/blogPosts";
 import type { BlogContentBlock, BlogPost } from "../_types/blog";
 import { LightHeroBadge } from "../../../../components/LightHeroBadge";
+import { ManagedContent } from "../../../../components/ManagedContent";
 import { JsonLdScript } from "../../../_components/JsonLdScript";
 import { createBlogPostingStructuredData } from "../../../_content/structured-data";
 import {
@@ -272,8 +273,10 @@ export default async function BlogDetailPage({
   const relatedPosts = getRelatedBlogPosts(post.slug, posts);
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
   const imageUrl = getAbsoluteUrl(post.image, siteUrl);
-  const htmlSource =
-    source?.content_mode === "html" && source.content.trim()
+  const rawHtmlSource =
+    source?.contentMode === "html" &&
+    source.contentAuthoringMode === "raw_html" &&
+    source.content.trim()
       ? source.content
       : undefined;
   const defaultStructuredData = createBlogPostingStructuredData({
@@ -341,10 +344,13 @@ export default async function BlogDetailPage({
             className={styles.blogDetailContent}
             itemProp="articleBody"
           >
-            {htmlSource ? (
-              <BlogHtmlDocumentFrame html={htmlSource} title={post.title} />
+            {rawHtmlSource ? (
+              <BlogHtmlDocumentFrame html={rawHtmlSource} title={post.title} />
             ) : (
-              post.detail.body.map(renderBlogContentBlock)
+              <ManagedContent
+                legacyFallback={post.detail.body.map(renderBlogContentBlock)}
+                value={source}
+              />
             )}
           </section>
 

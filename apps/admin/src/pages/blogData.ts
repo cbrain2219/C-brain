@@ -1,4 +1,4 @@
-import type { PublishStatus, TableInsert, TableRow } from '@repo/supabase/types'
+import type { Json, PublishStatus, TableInsert, TableRow } from '@repo/supabase/types'
 import { blogAllCategory, normalizeBlogCategory } from '@repo/supabase/categories'
 import {
   filterContentRows,
@@ -6,14 +6,18 @@ import {
   toDateInputValue,
   toPublishedAt,
 } from './contentListState.ts'
+import {
+  createInitialManagedContentValue,
+  managedContentFormFromRow,
+  managedContentInputFromForm,
+  managedContentIsEmpty,
+  type ManagedContentFormValue,
+} from '../lib/managedContent.ts'
 
-export type BlogContentMode = 'html' | 'markdown'
 export type BlogStatus = Extract<PublishStatus, 'draft' | 'published'>
 export type BlogStatusLabel = '임시저장' | '게시됨'
 
-export type BlogFormState = {
-  content: string
-  contentMode: BlogContentMode
+export type BlogFormState = ManagedContentFormValue & {
   isBannerEnabled: boolean
   isFeaturedEnabled: boolean
   isLandingEnabled: boolean
@@ -51,7 +55,12 @@ export type BlogSettingCounts = {
 export type BlogMutationInput = Pick<
   TableInsert<'posts'>,
   | 'content'
+  | 'content_asset_scope'
+  | 'content_authoring_mode'
+  | 'content_json'
   | 'content_mode'
+  | 'content_schema_version'
+  | 'content_source_backup'
   | 'excerpt'
   | 'featured'
   | 'kind'
@@ -70,8 +79,7 @@ export type BlogMutationInput = Pick<
 
 export function createInitialBlogForm(): BlogFormState {
   return {
-    content: '',
-    contentMode: 'html',
+    ...createInitialManagedContentValue(),
     isBannerEnabled: true,
     isFeaturedEnabled: false,
     isLandingEnabled: true,
@@ -92,8 +100,7 @@ export function toBlogFormState(
   thumbnailPreviewUrl: string | null,
 ): BlogFormState {
   return {
-    content: post.content,
-    contentMode: post.content_mode,
+    ...managedContentFormFromRow(post),
     isBannerEnabled: post.show_as_banner,
     isFeaturedEnabled: post.featured,
     isLandingEnabled: post.show_on_landing,
@@ -114,21 +121,34 @@ export function toBlogMutationInput(
   status: BlogStatus,
   thumbnailPath = form.thumbnailPath,
 ): BlogMutationInput {
-  const content = form.content.trim()
+  const managedContent = managedContentInputFromForm(form)
   const publishedAt = toPublishedAt(form.publishedAt)
   const slug = form.slug.trim()
   const title = form.title.trim()
   const type = normalizeBlogCategory(form.type)
 
-  if (!content || !publishedAt || !slug || !title || !type || type === blogAllCategory) {
+  if (
+    !managedContent ||
+    managedContentIsEmpty(form) ||
+    !publishedAt ||
+    !slug ||
+    !title ||
+    !type ||
+    type === blogAllCategory
+  ) {
     throw new Error('블로그 정보를 확인해주세요.')
   }
 
   const seoDescription = form.seoDescription.trim()
 
   return {
-    content,
-    content_mode: form.contentMode,
+    content: managedContent.content,
+    content_asset_scope: managedContent.content_asset_scope,
+    content_authoring_mode: managedContent.content_authoring_mode,
+    content_json: managedContent.content_json as unknown as Json,
+    content_mode: managedContent.content_mode,
+    content_schema_version: managedContent.content_schema_version,
+    content_source_backup: managedContent.content_source_backup,
     excerpt: null,
     featured: form.isFeaturedEnabled,
     kind: 'blog',

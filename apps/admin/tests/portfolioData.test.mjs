@@ -12,12 +12,17 @@ import {
 const portfolioItem = {
   client_name: '씨브레인',
   content: '<p>내용</p>',
+  content_asset_scope: '00000000-0000-4000-8000-0000000000ab',
+  content_authoring_mode: 'raw_html',
+  content_json: null,
   content_mode: 'html',
+  content_schema_version: 1,
+  content_source_backup: null,
   created_at: '2026-07-21T00:00:00.000Z',
   id: 'portfolio-a',
   images: [
-    { alt: '첫 이미지', path: 'portfolio/first.webp' },
-    { alt: '두 번째 이미지', path: 'portfolio/second.webp' },
+    { alt: '첫 이미지', fileName: '첫 이미지.webp', path: 'portfolio/first.webp' },
+    { alt: '두 번째 이미지', fileName: '두 번째 이미지.webp', path: 'portfolio/second.webp' },
   ],
   pinned: true,
   published_at: '2026-07-21T00:00:00.000Z',
@@ -51,6 +56,8 @@ test('portfolio DB row maps to list and edit form values', () => {
   )
   assert.deepEqual(form.images, portfolioItem.images)
   assert.equal(form.contentMode, 'html')
+  assert.equal(form.contentAuthoringMode, 'raw_html')
+  assert.equal(form.contentAssetScope, '00000000-0000-4000-8000-0000000000ab')
   assert.equal(form.isPinned, true)
 })
 
@@ -63,9 +70,35 @@ test('portfolio images preserve valid path order and normalize missing alt text'
       null,
     ]),
     [
-      { alt: '', path: 'portfolio/a.webp' },
-      { alt: 'B', path: 'portfolio/b.webp' },
+      { alt: '', fileName: 'a.webp', path: 'portfolio/a.webp' },
+      { alt: 'B', fileName: 'b.webp', path: 'portfolio/b.webp' },
     ],
+  )
+})
+
+test('portfolio images preserve the original Korean file name separately from its storage path', () => {
+  assert.deepEqual(
+    getPortfolioImages([
+      {
+        alt: '표지',
+        fileName: '씨브레인 회사소개서 최종본.jpg',
+        path: 'portfolio/11111111-1111-4111-8111-111111111111.jpg',
+      },
+    ]),
+    [
+      {
+        alt: '표지',
+        fileName: '씨브레인 회사소개서 최종본.jpg',
+        path: 'portfolio/11111111-1111-4111-8111-111111111111.jpg',
+      },
+    ],
+  )
+})
+
+test('portfolio images fall back to the storage filename when fileName is whitespace', () => {
+  assert.deepEqual(
+    getPortfolioImages([{ alt: '표지', fileName: '   ', path: 'portfolio/storage-name.webp' }]),
+    [{ alt: '표지', fileName: 'storage-name.webp', path: 'portfolio/storage-name.webp' }],
   )
 })
 
@@ -73,7 +106,12 @@ test('portfolio mutation keeps ordered image paths and draft publication state',
   const form = {
     clientName: ' 씨브레인 ',
     content: '<p>내용</p>',
+    contentAssetScope: '00000000-0000-4000-8000-0000000000ab',
+    contentAuthoringMode: 'raw_html',
+    contentJson: null,
     contentMode: 'html',
+    contentSchemaVersion: 1,
+    contentSourceBackup: null,
     isLandingEnabled: true,
     isPinned: false,
     slug: ' cbrain-work ',
@@ -81,17 +119,22 @@ test('portfolio mutation keeps ordered image paths and draft publication state',
     type: ' 브로슈어 ',
   }
   const images = [
-    { alt: ' 첫 이미지 ', path: 'portfolio/first.webp' },
-    { alt: '두 번째 이미지', path: 'portfolio/second.webp' },
+    { alt: ' 첫 이미지 ', fileName: ' 첫 이미지.webp ', path: 'portfolio/first.webp' },
+    { alt: '두 번째 이미지', fileName: '두 번째 이미지.webp', path: 'portfolio/second.webp' },
   ]
 
   assert.deepEqual(toPortfolioMutationInput(form, images, 'draft', '2026-07-21T00:00:00Z'), {
     client_name: '씨브레인',
     content: '<p>내용</p>',
+    content_asset_scope: '00000000-0000-4000-8000-0000000000ab',
+    content_authoring_mode: 'raw_html',
+    content_json: null,
     content_mode: 'html',
+    content_schema_version: 1,
+    content_source_backup: null,
     images: [
-      { alt: '첫 이미지', path: 'portfolio/first.webp' },
-      { alt: '두 번째 이미지', path: 'portfolio/second.webp' },
+      { alt: '첫 이미지', fileName: '첫 이미지.webp', path: 'portfolio/first.webp' },
+      { alt: '두 번째 이미지', fileName: '두 번째 이미지.webp', path: 'portfolio/second.webp' },
     ],
     pinned: false,
     published_at: null,
@@ -103,11 +146,45 @@ test('portfolio mutation keeps ordered image paths and draft publication state',
   })
 })
 
+test('portfolio mutation falls back to the storage filename when an image fileName is whitespace', () => {
+  const form = {
+    clientName: '씨브레인',
+    content: '<p>내용</p>',
+    contentAssetScope: '00000000-0000-4000-8000-0000000000ab',
+    contentAuthoringMode: 'raw_html',
+    contentJson: null,
+    contentMode: 'html',
+    contentSchemaVersion: 1,
+    contentSourceBackup: null,
+    isLandingEnabled: false,
+    isPinned: false,
+    slug: 'cbrain-work',
+    title: '포트폴리오',
+    type: '브로슈어',
+  }
+
+  const mutation = toPortfolioMutationInput(
+    form,
+    [{ alt: '표지', fileName: '   ', path: 'portfolio/storage-name.webp' }],
+    'draft',
+    null,
+  )
+
+  assert.deepEqual(mutation.images, [
+    { alt: '표지', fileName: 'storage-name.webp', path: 'portfolio/storage-name.webp' },
+  ])
+})
+
 test('published portfolios require at least one image while drafts may be partial', () => {
   const form = {
     clientName: '씨브레인',
     content: '내용',
+    contentAssetScope: '00000000-0000-4000-8000-0000000000ab',
+    contentAuthoringMode: 'raw_html',
+    contentJson: null,
     contentMode: 'markdown',
+    contentSchemaVersion: 1,
+    contentSourceBackup: null,
     isLandingEnabled: false,
     isPinned: false,
     slug: 'cbrain-work',

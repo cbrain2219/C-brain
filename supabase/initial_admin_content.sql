@@ -36,8 +36,12 @@ create table public.posts (
   title text not null,
   slug text not null,
   content text not null,
-  content_mode text not null default 'html'
-    check (content_mode in ('html', 'markdown')),
+  content_mode text not null default 'html',
+  content_authoring_mode text not null default 'raw_html',
+  content_json jsonb,
+  content_schema_version integer not null default 1,
+  content_source_backup text,
+  content_asset_scope uuid not null default gen_random_uuid(),
   excerpt text,
   thumbnail_path text,
   thumbnail_alt text,
@@ -57,6 +61,22 @@ create table public.posts (
   check (slug ~ '^[a-z0-9]+(?:-[a-z0-9]+)*$'),
   constraint posts_thumbnail_alt_requires_path
     check (thumbnail_path is not null or thumbnail_alt is null),
+  constraint posts_content_mode_check
+    check (content_mode in ('html', 'markdown')),
+  constraint posts_content_authoring_mode_check
+    check (content_authoring_mode in ('raw_html', 'wysiwyg')),
+  constraint posts_content_schema_version_check
+    check (content_schema_version = 1),
+  constraint posts_wysiwyg_content_document_check
+    check (
+      content_authoring_mode <> 'wysiwyg'
+      or (
+        content_mode = 'html'
+        and content_json is not null
+        and jsonb_typeof(content_json) = 'object'
+        and coalesce(content_json ->> 'type' = 'doc', false)
+      )
+    ),
   check (kind <> 'notice' or nullif(btrim(excerpt), '') is not null)
 );
 
@@ -69,8 +89,12 @@ create table public.portfolio_items (
   images jsonb not null default '[]'::jsonb
     check (jsonb_typeof(images) = 'array'),
   content text not null,
-  content_mode text not null default 'html'
-    check (content_mode in ('html', 'markdown')),
+  content_mode text not null default 'html',
+  content_authoring_mode text not null default 'raw_html',
+  content_json jsonb,
+  content_schema_version integer not null default 1,
+  content_source_backup text,
+  content_asset_scope uuid not null default gen_random_uuid(),
   show_on_landing boolean not null default false,
   pinned boolean not null default false,
   status text not null default 'draft'
@@ -84,7 +108,23 @@ create table public.portfolio_items (
   check (
     status <> 'published'
     or (published_at is not null and jsonb_array_length(images) > 0)
-  )
+  ),
+  constraint portfolio_items_content_mode_check
+    check (content_mode in ('html', 'markdown')),
+  constraint portfolio_items_content_authoring_mode_check
+    check (content_authoring_mode in ('raw_html', 'wysiwyg')),
+  constraint portfolio_items_content_schema_version_check
+    check (content_schema_version = 1),
+  constraint portfolio_items_wysiwyg_content_document_check
+    check (
+      content_authoring_mode <> 'wysiwyg'
+      or (
+        content_mode = 'html'
+        and content_json is not null
+        and jsonb_typeof(content_json) = 'object'
+        and coalesce(content_json ->> 'type' = 'doc', false)
+      )
+    )
 );
 
 create table public.reviews (
@@ -102,8 +142,12 @@ create table public.reviews (
   video_alt text,
   seo_description text,
   content text not null,
-  content_mode text not null default 'html'
-    check (content_mode in ('html', 'markdown')),
+  content_mode text not null default 'html',
+  content_authoring_mode text not null default 'raw_html',
+  content_json jsonb,
+  content_schema_version integer not null default 1,
+  content_source_backup text,
+  content_asset_scope uuid not null default gen_random_uuid(),
   show_on_landing boolean not null default false,
   status text not null default 'draft'
     check (status in ('draft', 'published', 'archived')),
@@ -159,7 +203,23 @@ create table public.reviews (
     kind <> 'testimonial'
     or status <> 'published'
     or published_at is not null
-  )
+  ),
+  constraint reviews_content_mode_check
+    check (content_mode in ('html', 'markdown')),
+  constraint reviews_content_authoring_mode_check
+    check (content_authoring_mode in ('raw_html', 'wysiwyg')),
+  constraint reviews_content_schema_version_check
+    check (content_schema_version = 1),
+  constraint reviews_wysiwyg_content_document_check
+    check (
+      content_authoring_mode <> 'wysiwyg'
+      or (
+        content_mode = 'html'
+        and content_json is not null
+        and jsonb_typeof(content_json) = 'object'
+        and coalesce(content_json ->> 'type' = 'doc', false)
+      )
+    )
 );
 
 create unique index reviews_interview_slug_key
@@ -364,6 +424,41 @@ begin
 end;
 $$;
 
+-- Content asset scopes bind public rich-content URLs to a single record.
+-- Regular saves may resubmit the same value, but a persisted record cannot
+-- take ownership of another scope.
+create or replace function public.prevent_content_asset_scope_change()
+returns trigger
+language plpgsql
+set search_path = ''
+as $$
+begin
+  if new.content_asset_scope is distinct from old.content_asset_scope then
+    raise exception 'content_asset_scope is immutable';
+  end if;
+
+  return new;
+end;
+$$;
+
+revoke execute on function public.prevent_content_asset_scope_change()
+from public, anon, authenticated;
+
+create trigger posts_prevent_content_asset_scope_change
+before update of content_asset_scope on public.posts
+for each row
+execute function public.prevent_content_asset_scope_change();
+
+create trigger portfolio_items_prevent_content_asset_scope_change
+before update of content_asset_scope on public.portfolio_items
+for each row
+execute function public.prevent_content_asset_scope_change();
+
+create trigger reviews_prevent_content_asset_scope_change
+before update of content_asset_scope on public.reviews
+for each row
+execute function public.prevent_content_asset_scope_change();
+
 -- -----------------------------------------------------------------------------
 -- Row Level Security
 -- Admin authorization uses auth.users.raw_app_meta_data through auth.jwt().
@@ -392,7 +487,7 @@ with check ((select auth.jwt() -> 'app_metadata' ->> 'role') = 'admin');
 create policy posts_public_read_published
 on public.posts
 for select
-to anon, authenticated
+to anon
 using (status = 'published');
 
 create policy posts_admin_manage
@@ -405,7 +500,7 @@ with check ((select auth.jwt() -> 'app_metadata' ->> 'role') = 'admin');
 create policy portfolio_items_public_read_published
 on public.portfolio_items
 for select
-to anon, authenticated
+to anon
 using (status = 'published');
 
 create policy portfolio_items_admin_manage
@@ -418,7 +513,7 @@ with check ((select auth.jwt() -> 'app_metadata' ->> 'role') = 'admin');
 create policy reviews_public_read_published
 on public.reviews
 for select
-to anon, authenticated
+to anon
 using (status = 'published');
 
 create policy reviews_admin_manage
@@ -463,12 +558,30 @@ from public, anon, authenticated;
 
 grant usage on schema public to anon, authenticated, service_role;
 
-grant select
-on public.products,
-   public.posts,
-   public.portfolio_items,
-   public.reviews
-to anon;
+grant select on public.products to anon;
+
+revoke all privileges on table public.posts, public.portfolio_items, public.reviews
+from public, anon;
+
+grant select (
+  id, kind, type, title, slug, content, content_mode, content_authoring_mode,
+  content_asset_scope, excerpt, thumbnail_path, thumbnail_alt, seo_description,
+  status, published_at, show_on_landing, show_as_banner, featured, pinned,
+  view_count, sort_order, created_at
+) on public.posts to anon;
+
+grant select (
+  id, type, title, slug, client_name, images, content, content_mode,
+  content_authoring_mode, content_asset_scope, show_on_landing, pinned, status,
+  published_at, view_count, sort_order, created_at
+) on public.portfolio_items to anon;
+
+grant select (
+  id, kind, company_name, manager_name, project_deliverable, project_usage, title,
+  slug, video_path, youtube_video_id, video_alt, seo_description, content,
+  content_mode, content_authoring_mode, content_asset_scope, show_on_landing,
+  status, published_at, view_count, sort_order, created_at
+) on public.reviews to anon;
 
 grant select, insert, update, delete
 on public.products,
@@ -476,6 +589,9 @@ on public.products,
    public.portfolio_items,
    public.reviews
 to authenticated;
+
+grant all privileges on table public.posts, public.portfolio_items, public.reviews
+to service_role;
 
 grant select on public.complaints, public.complaint_attachments
 to authenticated;

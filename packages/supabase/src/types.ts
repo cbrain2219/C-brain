@@ -18,6 +18,7 @@ export type TableUpdate<TableName extends keyof PublicTables> =
 
 export type PublishStatus = PublicEnums["publish_status"];
 export type ContentMode = PublicEnums["content_mode"];
+export type ContentAuthoringMode = "raw_html" | "wysiwyg";
 export type ComplaintStatus = PublicEnums["inquiry_status"];
 export type InquiryStatus = PublicEnums["inquiry_status"];
 export type PostKind = PublicEnums["post_kind"];
@@ -61,6 +62,11 @@ export type Database = {
       };
       posts: {
         Row: {
+          content_asset_scope: string;
+          content_authoring_mode: ContentAuthoringMode;
+          content_json: Json | null;
+          content_schema_version: number;
+          content_source_backup: string | null;
           content: string;
           content_mode: ContentMode;
           created_at: string;
@@ -83,6 +89,11 @@ export type Database = {
           view_count: number;
         };
         Insert: {
+          content_asset_scope?: string;
+          content_authoring_mode?: ContentAuthoringMode;
+          content_json?: Json | null;
+          content_schema_version?: number;
+          content_source_backup?: string | null;
           content: string;
           content_mode?: ContentMode;
           created_at?: string;
@@ -105,6 +116,11 @@ export type Database = {
           view_count?: number;
         };
         Update: {
+          content_asset_scope?: string;
+          content_authoring_mode?: ContentAuthoringMode;
+          content_json?: Json | null;
+          content_schema_version?: number;
+          content_source_backup?: string | null;
           content?: string;
           content_mode?: ContentMode;
           created_at?: string;
@@ -131,6 +147,11 @@ export type Database = {
       portfolio_items: {
         Row: {
           client_name: string | null;
+          content_asset_scope: string;
+          content_authoring_mode: ContentAuthoringMode;
+          content_json: Json | null;
+          content_schema_version: number;
+          content_source_backup: string | null;
           content: string;
           content_mode: ContentMode;
           created_at: string;
@@ -148,6 +169,11 @@ export type Database = {
         };
         Insert: {
           client_name?: string | null;
+          content_asset_scope?: string;
+          content_authoring_mode?: ContentAuthoringMode;
+          content_json?: Json | null;
+          content_schema_version?: number;
+          content_source_backup?: string | null;
           content: string;
           content_mode?: ContentMode;
           created_at?: string;
@@ -165,6 +191,11 @@ export type Database = {
         };
         Update: {
           client_name?: string | null;
+          content_asset_scope?: string;
+          content_authoring_mode?: ContentAuthoringMode;
+          content_json?: Json | null;
+          content_schema_version?: number;
+          content_source_backup?: string | null;
           content?: string;
           content_mode?: ContentMode;
           created_at?: string;
@@ -185,6 +216,11 @@ export type Database = {
       reviews: {
         Row: {
           company_name: string;
+          content_asset_scope: string;
+          content_authoring_mode: ContentAuthoringMode;
+          content_json: Json | null;
+          content_schema_version: number;
+          content_source_backup: string | null;
           content: string;
           content_mode: ContentMode;
           created_at: string;
@@ -207,6 +243,11 @@ export type Database = {
         };
         Insert: {
           company_name: string;
+          content_asset_scope?: string;
+          content_authoring_mode?: ContentAuthoringMode;
+          content_json?: Json | null;
+          content_schema_version?: number;
+          content_source_backup?: string | null;
           content: string;
           content_mode?: ContentMode;
           created_at?: string;
@@ -229,6 +270,11 @@ export type Database = {
         };
         Update: {
           company_name?: string;
+          content_asset_scope?: string;
+          content_authoring_mode?: ContentAuthoringMode;
+          content_json?: Json | null;
+          content_schema_version?: number;
+          content_source_backup?: string | null;
           content?: string;
           content_mode?: ContentMode;
           created_at?: string;

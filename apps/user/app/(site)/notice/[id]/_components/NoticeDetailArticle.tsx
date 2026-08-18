@@ -3,6 +3,7 @@ import { NoticeAuthorMark } from "../../_components/NoticeAuthorMark";
 import type { NoticeCategoryValue, NoticeDetail } from "../../_types/notice";
 import { formatPublishedDate } from "../../_utils/formatPublishedDate";
 import { LightHeroBadge } from "../../../../../components/LightHeroBadge";
+import { ManagedContent } from "../../../../../components/ManagedContent";
 import styles from "../page.module.css";
 import { NoticeBackButton } from "./NoticeBackButton";
 
@@ -52,31 +53,34 @@ export function NoticeDetailArticle({
           </header>
 
           <div className={styles.noticeBody}>
-            {notice.content.map((block, blockIndex) => {
-              if (block.type === "paragraph") {
-                return <p key={`paragraph-${blockIndex}`}>{block.text}</p>;
-              }
+            <ManagedContent
+              legacyFallback={notice.content.map((block, blockIndex) => {
+                if (block.type === "paragraph") {
+                  return <p key={`paragraph-${blockIndex}`}>{block.text}</p>;
+                }
 
-              return (
-                <ol
-                  className={styles.orderedList}
-                  key={`ordered-list-${blockIndex}`}
-                >
-                  {block.items.map((item) => (
-                    <li key={item.title}>
-                      <span className={styles.orderedListItemTitle}>
-                        {item.title}
-                      </span>
-                      <ul className={styles.detailList}>
-                        {item.details.map((detail) => (
-                          <li key={detail}>{detail}</li>
-                        ))}
-                      </ul>
-                    </li>
-                  ))}
-                </ol>
-              );
-            })}
+                return (
+                  <ol
+                    className={styles.orderedList}
+                    key={`ordered-list-${blockIndex}`}
+                  >
+                    {block.items.map((item) => (
+                      <li key={item.title}>
+                        <span className={styles.orderedListItemTitle}>
+                          {item.title}
+                        </span>
+                        <ul className={styles.detailList}>
+                          {item.details.map((detail) => (
+                            <li key={detail}>{detail}</li>
+                          ))}
+                        </ul>
+                      </li>
+                    ))}
+                  </ol>
+                );
+              })}
+              value={notice.managedContent}
+            />
           </div>
         </article>
 

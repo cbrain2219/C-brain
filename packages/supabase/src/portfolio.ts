@@ -1,20 +1,48 @@
 import { requireAdmin } from "./auth.ts";
 import { assertSupabaseSuccess, unwrapSupabaseData } from "./result.ts";
 import type { CBrainSupabaseClient } from "./server.ts";
-import type { TableInsert, TableUpdate } from "./types.ts";
+import type { TableInsert, TableRow, TableUpdate } from "./types.ts";
+
+const publicPortfolioColumns =
+  "id, client_name, content, content_mode, content_authoring_mode, content_asset_scope, created_at, images, pinned, published_at, show_on_landing, slug, sort_order, status, title, type, view_count";
+
+/**
+ * Deliberately narrow anonymous/public projection. Admin callers use the
+ * full-row helpers below; no public `select("*")` API exists.
+ */
+export type PublicPortfolioRecord = Pick<
+  TableRow<"portfolio_items">,
+  | "client_name"
+  | "content"
+  | "content_asset_scope"
+  | "content_authoring_mode"
+  | "content_mode"
+  | "created_at"
+  | "id"
+  | "images"
+  | "pinned"
+  | "published_at"
+  | "show_on_landing"
+  | "slug"
+  | "sort_order"
+  | "status"
+  | "title"
+  | "type"
+  | "view_count"
+>;
 
 export async function listPublishedPortfolioItems(
   client: CBrainSupabaseClient,
 ) {
   const { data, error } = await client
     .from("portfolio_items")
-    .select("*")
+    .select(publicPortfolioColumns)
     .eq("status", "published")
     .order("pinned", { ascending: false })
     .order("sort_order", { ascending: true })
     .order("id", { ascending: true });
 
-  return unwrapSupabaseData(data, error);
+  return unwrapSupabaseData(data, error) as PublicPortfolioRecord[];
 }
 
 export async function getPublishedPortfolioItem(
@@ -23,14 +51,13 @@ export async function getPublishedPortfolioItem(
 ) {
   const { data, error } = await client
     .from("portfolio_items")
-    .select("*")
+    .select(publicPortfolioColumns)
     .eq("slug", slug)
     .eq("status", "published")
     .maybeSingle();
 
   if (error) throw new Error(error.message);
-
-  return data;
+  return data as PublicPortfolioRecord | null;
 }
 
 export async function listAdminPortfolioItems(client: CBrainSupabaseClient) {

@@ -14,7 +14,7 @@ const nextConfig = {
       },
     ],
   },
-  transpilePackages: ["@repo/supabase"],
+  transpilePackages: ["@repo/content", "@repo/supabase"],
 };
 
 export default nextConfig;

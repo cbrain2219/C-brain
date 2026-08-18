@@ -9,11 +9,18 @@ import type { ChangeEvent, DragEvent, FormEvent } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { toast } from 'sonner'
 import { AdminIcon } from '../components/AdminIcon'
+import {
+  AdminContentEditor,
+} from '../components/admin-editor/AdminContentEditor'
+import { getManagedContentPublishError } from '../components/admin-editor/contentEditorPublish'
 import { AdminDeleteDialog } from '../components/admin-form/AdminDeleteDialog'
 import { AdminFormLayout } from '../components/admin-form/AdminFormLayout'
 import { AdminTypeCombobox } from '../components/admin-form/AdminTypeCombobox'
 import { deletePublicAssets, getPublicAssetUrl, uploadPublicAsset } from '../lib/adminAssets'
+import { removeContentAssetScope } from '../lib/contentAssetStorage'
+import { managedContentIsEmpty } from '../lib/managedContent'
 import { supabase } from '../lib/supabase'
+import { useManagedContentEditorState } from '../hooks/useManagedContentEditorState'
 import {
   createInitialBlogForm,
   getBlogSettingCounts,
@@ -84,7 +91,14 @@ export function BlogFormPage() {
   const [loadError, setLoadError] = useState('')
   const [isSaving, setIsSaving] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
+  const operationInFlight = useRef(false)
   const [saveError, setSaveError] = useState('')
+  const contentEditorDocumentKey = `blog:${form.contentAssetScope}`
+  const contentEditorState = useManagedContentEditorState(
+    contentEditorDocumentKey,
+    form.contentAuthoringMode === 'wysiwyg',
+  )
+  const actionLocked = isSaving || isDeleting || contentEditorState.busy
 
   const pageTitle = isEditing ? '블로그 수정' : '신규 블로그 등록'
   const submitLabel = isEditing ? '수정하기' : '등록하기'
@@ -219,7 +233,9 @@ export function BlogFormPage() {
   }
 
   async function persist(status: BlogStatus) {
-    if (isSaving || isDeleting) return
+    if (actionLocked || operationInFlight.current) return
+
+    operationInFlight.current = true
 
     let uploadedThumbnailPath: string | null = null
 
@@ -260,18 +276,28 @@ export function BlogFormPage() {
       toast.error('블로그를 저장하지 못했습니다.')
       window.alert('블로그를 저장하지 못했습니다. 다시 시도해주세요.')
     } finally {
+      operationInFlight.current = false
       setIsSaving(false)
     }
   }
 
   async function handleDelete() {
-    if (!blogId || isSaving || isDeleting) return
+    if (!blogId || actionLocked || operationInFlight.current) return
+
+    operationInFlight.current = true
 
     setIsDeleting(true)
     setSaveError('')
 
     try {
       await deletePost(supabase, blogId)
+
+      try {
+        await removeContentAssetScope('blog', form.contentAssetScope)
+      } catch {
+        toast.error('본문 이미지 파일을 정리하지 못했습니다.')
+        window.alert('블로그는 삭제됐지만 본문 이미지 파일을 정리하지 못했습니다.')
+      }
 
       try {
         await deletePublicAssets([persistedThumbnailPath])
@@ -287,6 +313,7 @@ export function BlogFormPage() {
       toast.error('블로그를 삭제하지 못했습니다.')
       window.alert('블로그를 삭제하지 못했습니다. 다시 시도해주세요.')
     } finally {
+      operationInFlight.current = false
       setIsDeleting(false)
     }
   }
@@ -313,14 +340,51 @@ export function BlogFormPage() {
     }
 
     setSlugError('')
-    void persist(getSubmitIntent(event) === 'draft' ? 'draft' : 'published')
+    const status = getSubmitIntent(event) === 'draft' ? 'draft' : 'published'
+
+    if (managedContentIsEmpty(form)) {
+      setSaveError('블로그 내용을 입력해주세요.')
+      focusContentEditor()
+      return
+    }
+
+    if (status === 'published') {
+      const contentError = getManagedContentPublishError(
+        'blog',
+        form,
+        contentEditorState.pendingAssetCount,
+      )
+      if (contentError) {
+        setSaveError(contentError)
+        focusContentEditor()
+        return
+      }
+    }
+
+    void persist(status)
+  }
+
+  function focusContentEditor() {
+    window.requestAnimationFrame(() => {
+      const editor = document.getElementById(`${formId}-content-editor`)
+      editor?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      editor?.focus()
+    })
   }
 
   if (isLoadingBlog || loadError) {
     return (
       <AdminFormLayout
         actions={
-          <Link className="admin-form__button admin-form__button--outline" to="/blog">
+          <Link
+            aria-disabled={actionLocked || undefined}
+            className="admin-form__button admin-form__button--outline"
+            onClick={(event) => {
+              if (actionLocked) event.preventDefault()
+            }}
+            tabIndex={actionLocked ? -1 : undefined}
+            to="/blog"
+          >
             목록으로
           </Link>
         }
@@ -336,13 +400,21 @@ export function BlogFormPage() {
 
   const formActions = (
     <>
-      <Link className="admin-form__button admin-form__button--outline" to="/blog">
+      <Link
+        aria-disabled={actionLocked || undefined}
+        className="admin-form__button admin-form__button--outline"
+        onClick={(event) => {
+          if (actionLocked) event.preventDefault()
+        }}
+        tabIndex={actionLocked ? -1 : undefined}
+        to="/blog"
+      >
         목록으로
       </Link>
       <div className="admin-form__actions-group">
         {isEditing ? (
           <AdminDeleteDialog
-            disabled={isSaving}
+            disabled={actionLocked}
             isDeleting={isDeleting}
             itemLabel="블로그"
             onConfirm={handleDelete}
@@ -350,7 +422,7 @@ export function BlogFormPage() {
         ) : null}
         <button
           className="admin-form__button admin-form__button--outline"
-          disabled={isSaving || isDeleting}
+          disabled={actionLocked}
           name="intent"
           type="submit"
           value="draft"
@@ -359,7 +431,7 @@ export function BlogFormPage() {
         </button>
         <button
           className="admin-form__button admin-form__button--solid"
-          disabled={isSaving || isDeleting}
+          disabled={actionLocked}
           name="intent"
           type="submit"
           value="published"
@@ -559,39 +631,17 @@ export function BlogFormPage() {
 
       <fieldset className="blog-form__content-field">
         <legend className="blog-form__label">블로그 내용</legend>
-        <div className="blog-form__mode-tabs">
-          <button
-            aria-pressed={form.contentMode === 'html'}
-            className={
-              form.contentMode === 'html'
-                ? 'blog-form__mode-tab blog-form__mode-tab--active'
-                : 'blog-form__mode-tab'
-            }
-            onClick={() => updateForm('contentMode', 'html')}
-            type="button"
-          >
-            HTML 작성
-          </button>
-          <button
-            aria-pressed={form.contentMode === 'markdown'}
-            className={
-              form.contentMode === 'markdown'
-                ? 'blog-form__mode-tab blog-form__mode-tab--active'
-                : 'blog-form__mode-tab'
-            }
-            onClick={() => updateForm('contentMode', 'markdown')}
-            type="button"
-          >
-            TEXT Editor 작성
-          </button>
-        </div>
-        <textarea
-          className="blog-form__textarea blog-form__textarea--content"
-          name="content"
-          onChange={(event) => updateForm('content', event.currentTarget.value)}
+        <AdminContentEditor
+          disabled={isSaving || isDeleting}
+          documentKey={contentEditorDocumentKey}
+          entity="blog"
+          id={`${formId}-content-editor`}
+          key={contentEditorDocumentKey}
+          onBusyChange={contentEditorState.onBusyChange}
+          onChange={(value) => setForm((current) => ({ ...current, ...value }))}
+          onPendingAssetCountChange={contentEditorState.onPendingAssetCountChange}
           placeholder="블로그 내용을 입력해주세요."
-          required
-          value={form.content}
+          value={form}
         />
       </fieldset>
 

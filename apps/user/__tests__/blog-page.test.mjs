@@ -26,7 +26,7 @@ const paths = {
     import.meta.url,
   ),
   detailHtmlFrame: new URL(
-    "../app/(site)/blog/[slug]/BlogHtmlDocumentFrame.tsx",
+    "../components/RawHtmlDocumentFrame.tsx",
     import.meta.url,
   ),
   blogSection: new URL("../app/_components/BlogSection.tsx", import.meta.url),
@@ -569,7 +569,7 @@ test("blog detail page keeps semantic article markup and list restoration", asyn
   );
   assert.match(
     detailPage,
-    /<header className=\{styles\.blogDetailHeader\}>[\s\S]*<section[\s\S]*<BlogHtmlDocumentFrame html=\{htmlSource\} title=\{post\.title\} \/>/,
+    /<header className=\{styles\.blogDetailHeader\}>[\s\S]*<section[\s\S]*<BlogHtmlDocumentFrame html=\{rawHtmlSource\} title=\{post\.title\} \/>/,
   );
   assert.match(detailHtmlFrame, /srcDoc=\{framedHtml\}/);
   assert.match(detailHtmlFrame, /sandbox="allow-scripts"/);

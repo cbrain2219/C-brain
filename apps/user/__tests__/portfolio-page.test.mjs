@@ -325,6 +325,19 @@ test("portfolio detail metadata and related cards reuse representative image sem
   assert.match(detailPage, /alt=\{relatedItem\.imageAlt\}/);
 });
 
+test("portfolio detail renders legacy HTML inside the shared sandboxed document", async () => {
+  const detailPage = await readFile(detailPagePath, "utf8");
+
+  assert.match(detailPage, /getPublishedPortfolioItemSource/);
+  assert.match(detailPage, /source\?\.contentMode === "html"/);
+  assert.match(detailPage, /source\.contentAuthoringMode === "raw_html"/);
+  assert.match(
+    detailPage,
+    /<RawHtmlDocumentFrame html=\{rawHtmlSource\} title=\{item\.title\} \/>/,
+  );
+  assert.doesNotMatch(detailPage, /dangerouslySetInnerHTML/);
+});
+
 test("portfolio detail body is associated with its heading and images", async () => {
   const detailPage = await readFile(detailPagePath, "utf8");
   const detailStyles = await readFile(detailStylesPath, "utf8");

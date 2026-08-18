@@ -1,14 +1,21 @@
 import { createPost, deletePost, getAdminPost, updatePost } from '@repo/supabase'
 import type { PublishStatus } from '@repo/supabase/types'
-import { useEffect, useId, useState } from 'react'
+import { useEffect, useId, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { toast } from 'sonner'
 import { AdminIcon } from '../components/AdminIcon'
+import {
+  AdminContentEditor,
+} from '../components/admin-editor/AdminContentEditor'
+import { getManagedContentPublishError } from '../components/admin-editor/contentEditorPublish'
 import { AdminDeleteDialog } from '../components/admin-form/AdminDeleteDialog'
 import { AdminFormLayout } from '../components/admin-form/AdminFormLayout'
 import { AdminTypeCombobox } from '../components/admin-form/AdminTypeCombobox'
 import { supabase } from '../lib/supabase'
+import { removeContentAssetScope } from '../lib/contentAssetStorage'
+import { managedContentIsEmpty } from '../lib/managedContent'
+import { useManagedContentEditorState } from '../hooks/useManagedContentEditorState'
 import { getSubmitIntent } from './contentListState'
 import {
   createInitialNoticeForm,
@@ -21,8 +28,6 @@ import {
 import type { NoticeFormState } from './noticeData'
 import { isValidPortfolioSlug } from './portfolioFormState'
 import './BlogFormPage.css'
-
-const contentModes = ['html', 'markdown'] as const
 
 export function NoticeFormPage() {
   const formId = useId().replaceAll(':', '')
@@ -37,8 +42,15 @@ export function NoticeFormPage() {
   const [loadError, setLoadError] = useState('')
   const [isDeleting, setIsDeleting] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
+  const operationInFlight = useRef(false)
   const [saveError, setSaveError] = useState('')
   const [typeInputKey, setTypeInputKey] = useState(0)
+  const contentEditorDocumentKey = `notice:${form.contentAssetScope}`
+  const contentEditorState = useManagedContentEditorState(
+    contentEditorDocumentKey,
+    form.contentAuthoringMode === 'wysiwyg',
+  )
+  const actionLocked = isSaving || isDeleting || contentEditorState.busy
 
   useEffect(() => {
     let isCurrent = true
@@ -119,7 +131,9 @@ export function NoticeFormPage() {
   }
 
   async function persist(status: PublishStatus) {
-    if (isSaving || isDeleting) return
+    if (actionLocked || operationInFlight.current) return
+
+    operationInFlight.current = true
 
     setIsSaving(true)
     setSaveError('')
@@ -137,18 +151,27 @@ export function NoticeFormPage() {
       toast.error('공지사항을 저장하지 못했습니다.')
       window.alert('공지사항을 저장하지 못했습니다. 다시 시도해주세요.')
     } finally {
+      operationInFlight.current = false
       setIsSaving(false)
     }
   }
 
   async function handleDelete() {
-    if (!noticeId || isSaving || isDeleting) return
+    if (!noticeId || actionLocked || operationInFlight.current) return
+
+    operationInFlight.current = true
 
     setIsDeleting(true)
     setSaveError('')
 
     try {
       await deletePost(supabase, noticeId)
+      try {
+        await removeContentAssetScope('notice', form.contentAssetScope)
+      } catch {
+        toast.error('본문 이미지 파일을 정리하지 못했습니다.')
+        window.alert('공지사항은 삭제됐지만 본문 이미지 파일을 정리하지 못했습니다.')
+      }
       toast.success('공지사항을 삭제했습니다.')
       navigate('/notices', { replace: true })
     } catch {
@@ -156,6 +179,7 @@ export function NoticeFormPage() {
       toast.error('공지사항을 삭제하지 못했습니다.')
       window.alert('공지사항을 삭제하지 못했습니다. 다시 시도해주세요.')
     } finally {
+      operationInFlight.current = false
       setIsDeleting(false)
     }
   }
@@ -165,7 +189,34 @@ export function NoticeFormPage() {
 
     if (!validateForm()) return
 
-    void persist(getSubmitIntent(event) === 'draft' ? 'draft' : 'published')
+    const status = getSubmitIntent(event) === 'draft' ? 'draft' : 'published'
+    if (managedContentIsEmpty(form)) {
+      setSaveError('공지사항 내용을 입력해주세요.')
+      focusContentEditor()
+      return
+    }
+    if (status === 'published') {
+      const contentError = getManagedContentPublishError(
+        'notice',
+        form,
+        contentEditorState.pendingAssetCount,
+      )
+      if (contentError) {
+        setSaveError(contentError)
+        focusContentEditor()
+        return
+      }
+    }
+
+    void persist(status)
+  }
+
+  function focusContentEditor() {
+    window.requestAnimationFrame(() => {
+      const editor = document.getElementById(`${formId}-content-editor`)
+      editor?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      editor?.focus()
+    })
   }
 
   const pageTitle = isEditing ? '공지사항 수정' : '신규 공지사항 등록'
@@ -174,7 +225,15 @@ export function NoticeFormPage() {
     return (
       <AdminFormLayout
         actions={
-          <Link className="admin-form__button admin-form__button--outline" to="/notices">
+          <Link
+            aria-disabled={actionLocked || undefined}
+            className="admin-form__button admin-form__button--outline"
+            onClick={(event) => {
+              if (actionLocked) event.preventDefault()
+            }}
+            tabIndex={actionLocked ? -1 : undefined}
+            to="/notices"
+          >
             목록으로
           </Link>
         }
@@ -192,13 +251,21 @@ export function NoticeFormPage() {
     <AdminFormLayout
       actions={
         <>
-          <Link className="admin-form__button admin-form__button--outline" to="/notices">
+          <Link
+            aria-disabled={actionLocked || undefined}
+            className="admin-form__button admin-form__button--outline"
+            onClick={(event) => {
+              if (actionLocked) event.preventDefault()
+            }}
+            tabIndex={actionLocked ? -1 : undefined}
+            to="/notices"
+          >
             목록으로
           </Link>
           <div className="admin-form__actions-group">
             {isEditing ? (
               <AdminDeleteDialog
-                disabled={isSaving}
+                disabled={actionLocked}
                 isDeleting={isDeleting}
                 itemLabel="공지사항"
                 onConfirm={handleDelete}
@@ -206,7 +273,7 @@ export function NoticeFormPage() {
             ) : null}
             <button
               className="admin-form__button admin-form__button--outline"
-              disabled={isSaving || isDeleting}
+              disabled={actionLocked}
               name="intent"
               type="submit"
               value="draft"
@@ -215,7 +282,7 @@ export function NoticeFormPage() {
             </button>
             <button
               className="admin-form__button admin-form__button--solid"
-              disabled={isSaving || isDeleting}
+              disabled={actionLocked}
               name="intent"
               type="submit"
               value="publish"
@@ -343,30 +410,17 @@ export function NoticeFormPage() {
 
       <fieldset className="blog-form__content-field">
         <legend className="blog-form__label">공지사항 내용</legend>
-        <div className="blog-form__mode-tabs">
-          {contentModes.map((mode) => (
-            <button
-              aria-pressed={form.contentMode === mode}
-              className={
-                form.contentMode === mode
-                  ? 'blog-form__mode-tab blog-form__mode-tab--active'
-                  : 'blog-form__mode-tab'
-              }
-              key={mode}
-              onClick={() => updateForm('contentMode', mode)}
-              type="button"
-            >
-              {mode === 'html' ? 'HTML 작성' : 'TEXT Editor 작성'}
-            </button>
-          ))}
-        </div>
-        <textarea
-          className="blog-form__textarea blog-form__textarea--content"
-          name="content"
-          onChange={(event) => updateForm('content', event.currentTarget.value)}
+        <AdminContentEditor
+          disabled={isSaving || isDeleting}
+          documentKey={contentEditorDocumentKey}
+          entity="notice"
+          id={`${formId}-content-editor`}
+          key={contentEditorDocumentKey}
+          onBusyChange={contentEditorState.onBusyChange}
+          onChange={(value) => setForm((current) => ({ ...current, ...value }))}
+          onPendingAssetCountChange={contentEditorState.onPendingAssetCountChange}
           placeholder="공지사항 내용을 입력해주세요."
-          required
-          value={form.content}
+          value={form}
         />
       </fieldset>
 

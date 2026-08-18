@@ -1,15 +1,18 @@
-import type { PublishStatus, TableInsert, TableRow } from '@repo/supabase/types'
+import type { Json, PublishStatus, TableInsert, TableRow } from '@repo/supabase/types'
 import type {
   AdminContentStatus,
   AdminPinnedState,
 } from '../components/admin-table/AdminContentTableCells'
 import { formatAdminDate, toDateInputValue, toPublishedAt } from './contentListState.ts'
+import {
+  createInitialManagedContentValue,
+  managedContentFormFromRow,
+  managedContentInputFromForm,
+  managedContentIsEmpty,
+  type ManagedContentFormValue,
+} from '../lib/managedContent.ts'
 
-export type NoticeContentMode = 'html' | 'markdown'
-
-export type NoticeFormState = {
-  content: string
-  contentMode: NoticeContentMode
+export type NoticeFormState = ManagedContentFormValue & {
   excerpt: string
   isPinned: boolean
   publishedAt: string
@@ -31,7 +34,12 @@ export type NoticeListRow = {
 export type NoticeMutationInput = Pick<
   TableInsert<'posts'>,
   | 'content'
+  | 'content_asset_scope'
+  | 'content_authoring_mode'
+  | 'content_json'
   | 'content_mode'
+  | 'content_schema_version'
+  | 'content_source_backup'
   | 'excerpt'
   | 'kind'
   | 'pinned'
@@ -52,8 +60,7 @@ export const defaultNoticeTypes = [
 
 export function createInitialNoticeForm(): NoticeFormState {
   return {
-    content: '',
-    contentMode: 'html',
+    ...createInitialManagedContentValue(),
     excerpt: '',
     isPinned: false,
     publishedAt: '',
@@ -93,8 +100,7 @@ export function toNoticeListRow(post: TableRow<'posts'>): NoticeListRow {
 
 export function toNoticeFormState(post: TableRow<'posts'>): NoticeFormState {
   return {
-    content: post.content,
-    contentMode: post.content_mode,
+    ...managedContentFormFromRow(post),
     excerpt: post.excerpt ?? '',
     isPinned: post.pinned,
     publishedAt: toDateInputValue(post.published_at),
@@ -108,16 +114,29 @@ export function toNoticeMutationInput(
   form: NoticeFormState,
   status: PublishStatus,
 ): NoticeMutationInput {
+  const managedContent = managedContentInputFromForm(form)
   const type = normalizeNoticeType(form.type)
   const excerpt = form.excerpt.trim()
 
-  if (!type || !form.title.trim() || !form.slug.trim() || !form.content.trim() || !excerpt) {
+  if (
+    !managedContent ||
+    managedContentIsEmpty(form) ||
+    !type ||
+    !form.title.trim() ||
+    !form.slug.trim() ||
+    !excerpt
+  ) {
     throw new Error('공지사항 정보를 확인해주세요.')
   }
 
   return {
-    content: form.content,
-    content_mode: form.contentMode,
+    content: managedContent.content,
+    content_asset_scope: managedContent.content_asset_scope,
+    content_authoring_mode: managedContent.content_authoring_mode,
+    content_json: managedContent.content_json as unknown as Json,
+    content_mode: managedContent.content_mode,
+    content_schema_version: managedContent.content_schema_version,
+    content_source_backup: managedContent.content_source_backup,
     excerpt,
     kind: 'notice',
     pinned: form.isPinned,

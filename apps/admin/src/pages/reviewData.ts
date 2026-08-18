@@ -1,17 +1,22 @@
-import type { PublishStatus, TableInsert, TableRow } from '@repo/supabase/types'
+import type { Json, PublishStatus, TableInsert, TableRow } from '@repo/supabase/types'
 import {
   getYouTubeVideoId,
   getYouTubeWatchUrl,
 } from '@repo/supabase/review-video'
 import { formatAdminDate, toDateInputValue, toPublishedAt } from './contentListState.ts'
 import type { ReviewType, ReviewVideoSource } from './reviewFormState.ts'
+import {
+  createInitialManagedContentValue,
+  managedContentFormFromRow,
+  managedContentInputFromForm,
+  managedContentIsEmpty,
+  type ManagedContentFormValue,
+} from '../lib/managedContent.ts'
 
-export type ReviewContentMode = 'html' | 'markdown'
+export type ReviewContentMode = ManagedContentFormValue['contentMode']
 
-export type ReviewFormState = {
+export type ReviewFormState = ManagedContentFormValue & {
   readonly company: string
-  readonly content: string
-  readonly contentMode: ReviewContentMode
   readonly isLandingEnabled: boolean
   readonly manager: string
   readonly projectDeliverable: string
@@ -44,7 +49,12 @@ export type ReviewMutationInput = Pick<
   TableInsert<'reviews'>,
   | 'company_name'
   | 'content'
+  | 'content_asset_scope'
+  | 'content_authoring_mode'
+  | 'content_json'
   | 'content_mode'
+  | 'content_schema_version'
+  | 'content_source_backup'
   | 'kind'
   | 'manager_name'
   | 'project_deliverable'
@@ -63,8 +73,7 @@ export type ReviewMutationInput = Pick<
 export function createInitialReviewForm(): ReviewFormState {
   return {
     company: '',
-    content: '',
-    contentMode: 'html',
+    ...createInitialManagedContentValue(),
     isLandingEnabled: true,
     manager: '',
     projectDeliverable: '',
@@ -114,8 +123,7 @@ export function toReviewFormState(
 
   return {
     company: review.company_name,
-    content: review.content,
-    contentMode: review.content_mode,
+    ...managedContentFormFromRow(review),
     isLandingEnabled: review.show_on_landing,
     manager: review.manager_name ?? '',
     projectDeliverable: review.project_deliverable ?? '',
@@ -141,9 +149,11 @@ export function toReviewMutationInput(
 ): ReviewMutationInput {
   if (!form.type) throw new Error('인터뷰 · 후기 유형을 선택해주세요.')
 
+  const managedContent = managedContentInputFromForm(form)
+  if (!managedContent) throw new Error('필수 정보를 모두 입력해주세요.')
+
   const isInterview = form.type === '인터뷰'
   const company = form.company.trim()
-  const content = form.content.trim()
   const manager = form.manager.trim()
   const projectDeliverable = form.projectDeliverable.trim()
   const projectUsage = form.projectUsage.trim()
@@ -164,7 +174,7 @@ export function toReviewMutationInput(
   if (
     status === 'published' &&
     (!company ||
-      !content ||
+      managedContentIsEmpty(form) ||
       !publishedAt ||
       (isInterview
         ? !title ||
@@ -179,8 +189,13 @@ export function toReviewMutationInput(
 
   return {
     company_name: company,
-    content,
-    content_mode: form.contentMode,
+    content: managedContent.content,
+    content_asset_scope: managedContent.content_asset_scope,
+    content_authoring_mode: managedContent.content_authoring_mode,
+    content_json: managedContent.content_json as unknown as Json,
+    content_mode: managedContent.content_mode,
+    content_schema_version: managedContent.content_schema_version,
+    content_source_backup: managedContent.content_source_backup,
     kind: isInterview ? 'interview' : 'testimonial',
     manager_name: isInterview ? null : manager || null,
     project_deliverable: isInterview ? projectDeliverable || null : null,

@@ -1,14 +1,30 @@
 import type { ReactNode } from 'react'
 
 type AdminIconName =
+  | 'align-center'
+  | 'align-left'
+  | 'align-right'
   | 'arrow-right'
+  | 'bold'
   | 'calendar'
   | 'card-check'
   | 'check'
   | 'chevron-down'
+  | 'divider'
   | 'folder-up'
+  | 'heading'
+  | 'image'
+  | 'italic'
+  | 'link'
+  | 'list-bullet'
+  | 'list-ordered'
   | 'pen-tool'
   | 'plus'
+  | 'quote'
+  | 'redo'
+  | 'strike'
+  | 'underline'
+  | 'undo'
   | 'user-profile'
   | 'x-close'
 
@@ -21,8 +37,36 @@ type AdminIconDefinition = {
 }
 
 const iconDefinitions: Record<AdminIconName, AdminIconDefinition> = {
+  'align-center': {
+    glyph: <path d="M3 4H13M5 7H11M3 10H13M5 13H11" />,
+    height: 16,
+    strokeWidth: 1.5,
+    viewBox: '0 0 16 16',
+    width: 16,
+  },
+  'align-left': {
+    glyph: <path d="M3 4H13M3 7H10M3 10H13M3 13H10" />,
+    height: 16,
+    strokeWidth: 1.5,
+    viewBox: '0 0 16 16',
+    width: 16,
+  },
+  'align-right': {
+    glyph: <path d="M3 4H13M6 7H13M3 10H13M6 13H13" />,
+    height: 16,
+    strokeWidth: 1.5,
+    viewBox: '0 0 16 16',
+    width: 16,
+  },
   'arrow-right': {
     glyph: <path d="M8.889 12.667L13.333 8L8.889 3.333M13.333 8H2.667" />,
+    height: 16,
+    strokeWidth: 1.5,
+    viewBox: '0 0 16 16',
+    width: 16,
+  },
+  bold: {
+    glyph: <path d="M5 3H9.2A2.3 2.3 0 0 1 9.2 7.6H5V3ZM5 7.6H10A2.7 2.7 0 0 1 10 13H5V7.6Z" />,
     height: 16,
     strokeWidth: 1.5,
     viewBox: '0 0 16 16',
@@ -60,6 +104,13 @@ const iconDefinitions: Record<AdminIconName, AdminIconDefinition> = {
     viewBox: '0 0 24 24',
     width: 24,
   },
+  divider: {
+    glyph: <path d="M2 8H14" />,
+    height: 16,
+    strokeWidth: 1.5,
+    viewBox: '0 0 16 16',
+    width: 16,
+  },
   'folder-up': {
     glyph: (
       <path d="M10.7106 14.2352H3.00044C1.89586 14.2352 1.00043 13.3397 1.00045 12.2352L1.00052 4.63158C1.00053 3.86998 1.00024 2.7852 1 1.99974C0.99983 1.44731 1.44761 1 2.00004 1H6.76522L9.06941 3.46136H15.9997C16.5519 3.46136 16.9997 3.90908 16.9997 4.46136V7.11768M17.0446 11.5611L15.0898 9.61768L13.0446 11.6532M15.0898 9.61768V14.6177" />
@@ -68,6 +119,48 @@ const iconDefinitions: Record<AdminIconName, AdminIconDefinition> = {
     strokeWidth: 2,
     viewBox: '0 0 18.0446 15.6177',
     width: 18.0446,
+  },
+  heading: {
+    glyph: <path d="M3 3V13M10 3V13M3 8H10M13 4H15M14 3V13" />,
+    height: 16,
+    strokeWidth: 1.5,
+    viewBox: '0 0 16 16',
+    width: 16,
+  },
+  image: {
+    glyph: <path d="M3 3H13V13H3V3ZM4 11L7 8L9 10L10.5 8.5L12 11M5.5 5.5H5.51" />,
+    height: 16,
+    strokeWidth: 1.5,
+    viewBox: '0 0 16 16',
+    width: 16,
+  },
+  italic: {
+    glyph: <path d="M9.5 3H13M3 13H6.5M10 3L6 13" />,
+    height: 16,
+    strokeWidth: 1.5,
+    viewBox: '0 0 16 16',
+    width: 16,
+  },
+  link: {
+    glyph: <path d="M6.5 10.5L9.5 7.5M6 12H4.5A2.5 2.5 0 0 1 4.5 7H6M10 4H11.5A2.5 2.5 0 0 1 11.5 9H10" />,
+    height: 16,
+    strokeWidth: 1.5,
+    viewBox: '0 0 16 16',
+    width: 16,
+  },
+  'list-bullet': {
+    glyph: <path d="M3 4H3.01M6 4H13M3 8H3.01M6 8H13M3 12H3.01M6 12H13" />,
+    height: 16,
+    strokeWidth: 1.8,
+    viewBox: '0 0 16 16',
+    width: 16,
+  },
+  'list-ordered': {
+    glyph: <path d="M2.5 3.5H3.5V6M2.5 10H3.5V13M6 4H13M6 8H13M6 12H13" />,
+    height: 16,
+    strokeWidth: 1.5,
+    viewBox: '0 0 16 16',
+    width: 16,
   },
   'pen-tool': {
     glyph: (
@@ -84,6 +177,41 @@ const iconDefinitions: Record<AdminIconName, AdminIconDefinition> = {
   },
   plus: {
     glyph: <path d="M8 3.2V12.8M3.2 8H12.8" />,
+    height: 16,
+    strokeWidth: 1.5,
+    viewBox: '0 0 16 16',
+    width: 16,
+  },
+  quote: {
+    glyph: <path d="M4 5H7V8.5H4V5ZM9 5H12V8.5H9V5ZM5.5 8.5V11M10.5 8.5V11" />,
+    height: 16,
+    strokeWidth: 1.5,
+    viewBox: '0 0 16 16',
+    width: 16,
+  },
+  redo: {
+    glyph: <path d="M10 5L13 8L10 11M13 8H7A4 4 0 0 0 3 12" />,
+    height: 16,
+    strokeWidth: 1.5,
+    viewBox: '0 0 16 16',
+    width: 16,
+  },
+  strike: {
+    glyph: <path d="M4 4.5C4.8 3.6 6 3 7.5 3C9.2 3 10.5 3.8 10.5 5M3 8H13M11 10.5C10.2 12 8.8 13 7 13C5.1 13 3.5 12 3.5 10.2" />,
+    height: 16,
+    strokeWidth: 1.5,
+    viewBox: '0 0 16 16',
+    width: 16,
+  },
+  underline: {
+    glyph: <path d="M4 3V8A4 4 0 0 0 12 8V3M3 13H13" />,
+    height: 16,
+    strokeWidth: 1.5,
+    viewBox: '0 0 16 16',
+    width: 16,
+  },
+  undo: {
+    glyph: <path d="M6 5L3 8L6 11M3 8H9A4 4 0 0 1 13 12" />,
     height: 16,
     strokeWidth: 1.5,
     viewBox: '0 0 16 16',

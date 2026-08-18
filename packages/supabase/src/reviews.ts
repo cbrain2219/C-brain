@@ -1,17 +1,50 @@
 import { requireAdmin } from "./auth.ts";
 import { assertSupabaseSuccess, unwrapSupabaseData } from "./result.ts";
 import type { CBrainSupabaseClient } from "./server.ts";
-import type { TableInsert, TableUpdate } from "./types.ts";
+import type { TableInsert, TableRow, TableUpdate } from "./types.ts";
+
+const publicReviewColumns =
+  "id, company_name, content, content_mode, content_authoring_mode, content_asset_scope, created_at, kind, manager_name, project_deliverable, project_usage, published_at, seo_description, show_on_landing, slug, sort_order, status, title, video_alt, video_path, view_count, youtube_video_id";
+
+/**
+ * Deliberately narrow anonymous/public projection. Admin callers use the
+ * full-row helpers below; no public `select("*")` API exists.
+ */
+export type PublicReviewRecord = Pick<
+  TableRow<"reviews">,
+  | "company_name"
+  | "content"
+  | "content_asset_scope"
+  | "content_authoring_mode"
+  | "content_mode"
+  | "created_at"
+  | "id"
+  | "kind"
+  | "manager_name"
+  | "project_deliverable"
+  | "project_usage"
+  | "published_at"
+  | "seo_description"
+  | "show_on_landing"
+  | "slug"
+  | "sort_order"
+  | "status"
+  | "title"
+  | "video_alt"
+  | "video_path"
+  | "view_count"
+  | "youtube_video_id"
+>;
 
 export async function listPublishedReviews(client: CBrainSupabaseClient) {
   const { data, error } = await client
     .from("reviews")
-    .select("*")
+    .select(publicReviewColumns)
     .eq("status", "published")
     .order("sort_order", { ascending: true })
     .order("id", { ascending: true });
 
-  return unwrapSupabaseData(data, error);
+  return unwrapSupabaseData(data, error) as PublicReviewRecord[];
 }
 
 export async function getPublishedReview(
@@ -20,14 +53,13 @@ export async function getPublishedReview(
 ) {
   const { data, error } = await client
     .from("reviews")
-    .select("*")
+    .select(publicReviewColumns)
     .eq("slug", slug)
     .eq("status", "published")
     .maybeSingle();
 
   if (error) throw new Error(error.message);
-
-  return data;
+  return data as PublicReviewRecord | null;
 }
 
 export async function listAdminReviews(client: CBrainSupabaseClient) {

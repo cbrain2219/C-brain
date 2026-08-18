@@ -1,7 +1,7 @@
 import {
   getPublishedPost,
   listPublishedPosts,
-  type TableRow,
+  type PublicPostRecord,
 } from "@repo/supabase";
 import { cache } from "react";
 
@@ -15,7 +15,7 @@ import type {
   NoticeSummary,
 } from "../_types/notice";
 
-type NoticeRow = TableRow<"posts">;
+type NoticeRow = PublicPostRecord;
 type PublishedNoticeCategory = Exclude<NoticeCategoryValue, "all">;
 
 const noticeCategoryByType: Record<string, PublishedNoticeCategory> = {
@@ -211,6 +211,14 @@ export function mapNoticeDetail(row: NoticeRow): NoticeDetail {
   return {
     ...mapNoticeSummary(row),
     content: toNoticeContent(row),
+    managedContent: {
+      content: row.content,
+      contentAssetScope: row.content_asset_scope,
+      contentAuthoringMode: row.content_authoring_mode,
+      contentMode: row.content_mode,
+      entity: "notice",
+      title: row.title,
+    },
   };
 }
 

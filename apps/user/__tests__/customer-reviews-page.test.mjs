@@ -4,6 +4,10 @@ import { stat, readFile } from "node:fs/promises";
 import test from "node:test";
 
 const pagePath = new URL("../app/(site)/reviews/page.tsx", import.meta.url);
+const detailPagePath = new URL(
+  "../app/(site)/reviews/[slug]/page.tsx",
+  import.meta.url,
+);
 const homePagePath = new URL("../app/(site)/page.tsx", import.meta.url);
 const testimonialListPath = new URL(
   "../app/(site)/reviews/CustomerTestimonialList.tsx",
@@ -215,10 +219,7 @@ test("review list, detail, and landing load published Supabase rows", async () =
   const pageSource = await readFile(pagePath, "utf8");
   const homePageSource = await readFile(homePagePath, "utf8");
   const landingSource = await readFile(landingSectionPath, "utf8");
-  const detailSource = await readFile(
-    new URL("../app/(site)/reviews/[slug]/page.tsx", import.meta.url),
-    "utf8",
-  );
+  const detailSource = await readFile(detailPagePath, "utf8");
 
   assert.match(contentSource, /@repo\/supabase/);
   assert.match(contentSource, /createPublicUserSupabaseClient/);
@@ -244,6 +245,21 @@ test("review list, detail, and landing load published Supabase rows", async () =
   assert.match(detailSource, /getPublishedCustomerInterviewDetailBySlug/);
   assert.match(detailSource, /await getPublishedCustomerInterviewDetailBySlug\(slug\)/);
   assert.doesNotMatch(detailSource, /getCustomerInterviewDetailBySlug/);
+});
+
+test("customer interview detail renders raw HTML in the shared document frame", async () => {
+  const detailSource = await readFile(detailPagePath, "utf8");
+
+  assert.match(detailSource, /detail\.managedContent\.contentMode === "html"/);
+  assert.match(
+    detailSource,
+    /detail\.managedContent\.contentAuthoringMode === "raw_html"/,
+  );
+  assert.match(
+    detailSource,
+    /<RawHtmlDocumentFrame html=\{rawHtmlSource\} title=\{detail\.title\} \/>/,
+  );
+  assert.doesNotMatch(detailSource, /dangerouslySetInnerHTML/);
 });
 
 test("review mappers separate kinds, sanitize content, and keep presentation metadata", async () => {

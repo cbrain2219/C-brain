@@ -12,7 +12,12 @@ function review(overrides = {}) {
   return {
     company_name: '오르카',
     content: '좋은 결과물을 받았습니다.',
+    content_asset_scope: '00000000-0000-4000-8000-0000000000ab',
+    content_authoring_mode: 'raw_html',
+    content_json: null,
     content_mode: 'markdown',
+    content_schema_version: 1,
+    content_source_backup: null,
     created_at: '2026-07-21T00:00:00.000Z',
     id: 'review-1',
     kind: 'testimonial',
@@ -66,6 +71,7 @@ test('interview rows hydrate the conditional form and existing video', () => {
   assert.equal(form.videoPreviewUrl, 'https://example.com/orca.mp4')
   assert.equal(form.videoSource, 'file')
   assert.equal(form.youtubeUrl, '')
+  assert.equal(form.contentAuthoringMode, 'raw_html')
 })
 
 test('YouTube interview rows hydrate a canonical editable URL without a Storage preview', () => {
@@ -87,28 +93,31 @@ test('YouTube interview rows hydrate a canonical editable URL without a Storage 
 })
 
 test('testimonial mutations clear interview-only fields', () => {
-  const input = toReviewMutationInput(
-    {
-      ...createInitialReviewForm(),
-      company: ' 오르카 ',
-      content: ' 만족합니다. ',
-      manager: ' 김담당 ',
-      publishedAt: '2026-07-21',
-      seoDescription: '삭제될 설명',
-      slug: 'old-interview',
-      title: '삭제될 제목',
-      type: '후기',
-      videoAlt: '삭제될 영상 설명',
-      videoPath: 'reviews/old.mp4',
-    },
-    'published',
-    'reviews/new.mp4',
-  )
+  const form = {
+    ...createInitialReviewForm(),
+    company: ' 오르카 ',
+    content: ' 만족합니다. ',
+    contentJson: { type: 'doc', content: [{ type: 'paragraph', content: [{ type: 'text', text: '만족합니다.' }] }] },
+    manager: ' 김담당 ',
+    publishedAt: '2026-07-21',
+    seoDescription: '삭제될 설명',
+    slug: 'old-interview',
+    title: '삭제될 제목',
+    type: '후기',
+    videoAlt: '삭제될 영상 설명',
+    videoPath: 'reviews/old.mp4',
+  }
+  const input = toReviewMutationInput(form, 'published', 'reviews/new.mp4')
 
   assert.deepEqual(input, {
     company_name: '오르카',
-    content: '만족합니다.',
+    content: ' 만족합니다. ',
+    content_asset_scope: form.contentAssetScope,
+    content_authoring_mode: 'wysiwyg',
+    content_json: form.contentJson,
     content_mode: 'html',
+    content_schema_version: 1,
+    content_source_backup: null,
     kind: 'testimonial',
     manager_name: '김담당',
     project_deliverable: null,
@@ -131,6 +140,7 @@ test('published YouTube interview mutations store only the normalized video id',
       ...createInitialReviewForm(),
       company: '새 고객사',
       content: '인터뷰 내용입니다.',
+      contentJson: { type: 'doc', content: [{ type: 'paragraph', content: [{ type: 'text', text: '인터뷰 내용입니다.' }] }] },
       projectDeliverable: '제품 소개 브로슈어',
       projectUsage: '전시회 배포',
       publishedAt: '2026-08-14',
@@ -156,6 +166,7 @@ test('published uploaded-file interview mutations clear an inactive YouTube link
       ...createInitialReviewForm(),
       company: '새 고객사',
       content: '인터뷰 내용입니다.',
+      contentJson: { type: 'doc', content: [{ type: 'paragraph', content: [{ type: 'text', text: '인터뷰 내용입니다.' }] }] },
       projectDeliverable: '완료보고서',
       projectUsage: '프로젝트 결과 공유',
       publishedAt: '2026-08-14',
@@ -177,6 +188,22 @@ test('drafts retain partial content while published reviews require complete fie
 
   assert.equal(toReviewMutationInput(partial, 'draft', null).status, 'draft')
   assert.throws(() => toReviewMutationInput(partial, 'published', null), {
+    message: '필수 정보를 모두 입력해주세요.',
+  })
+})
+
+test('an otherwise-complete empty WYSIWYG review may draft but cannot publish', () => {
+  const form = {
+    ...createInitialReviewForm(),
+    company: '씨브레인',
+    content: '<p></p>',
+    manager: '김담당',
+    publishedAt: '2026-08-14',
+    type: '후기',
+  }
+
+  assert.equal(toReviewMutationInput(form, 'draft', null).status, 'draft')
+  assert.throws(() => toReviewMutationInput(form, 'published', null), {
     message: '필수 정보를 모두 입력해주세요.',
   })
 })
