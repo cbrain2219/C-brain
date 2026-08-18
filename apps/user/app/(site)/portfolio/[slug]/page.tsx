@@ -33,6 +33,12 @@ type PortfolioDetailPageProps = {
   }>;
 };
 
+const portfolioDetailImageSizes =
+  "(min-width: 680px) and (max-resolution: 1dppx) 1440px, " +
+  "(min-width: 680px) and (max-resolution: 1.25dppx) 1152px, " +
+  "(min-width: 680px) and (max-resolution: 1.5dppx) 960px, " +
+  "(min-width: 680px) 720px, calc(112.5vw - 45px)";
+
 export const revalidate = 0;
 
 export async function generateMetadata({
@@ -168,7 +174,7 @@ export default async function PortfolioDetailPage({
                     fill
                     priority={image.src === item.detailImages[0]?.src}
                     quality={90}
-                    sizes="(min-width: 680px) 720px, calc(112.5vw - 45px)"
+                    sizes={portfolioDetailImageSizes}
                     src={image.src}
                   />
                 </figure>
