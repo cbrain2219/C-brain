@@ -168,7 +168,7 @@ export default async function PortfolioDetailPage({
                     fill
                     priority={image.src === item.detailImages[0]?.src}
                     quality={90}
-                    sizes="(min-width: 768px) 640px, calc(100vw - 40px)"
+                    sizes="(min-width: 680px) 720px, calc(112.5vw - 45px)"
                     src={image.src}
                   />
                 </figure>

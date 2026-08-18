@@ -369,13 +369,21 @@ test("portfolio detail body is associated with its heading and images", async ()
   assert.doesNotMatch(authorIconRule, /\b(?:width|height)\s*:/);
 });
 
-test("portfolio detail uses an allowed high-quality optimized image", async () => {
+test("portfolio detail uses DPR-sized high-quality optimized images", async () => {
   const [detailPage, nextConfig] = await Promise.all([
     readFile(detailPagePath, "utf8"),
     readFile(nextConfigPath, "utf8"),
   ]);
 
   assert.match(detailPage, /quality=\{90\}/);
+  assert.match(
+    detailPage,
+    /sizes="\(min-width: 680px\) 720px, calc\(112\.5vw - 45px\)"/,
+  );
+  assert.match(
+    nextConfig,
+    /deviceSizes:\s*\[[\s\S]*?720,[\s\S]*?900,[\s\S]*?1440,[\s\S]*?\]/,
+  );
   assert.match(nextConfig, /qualities:\s*\[75,\s*90\]/);
 });
 
