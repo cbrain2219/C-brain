@@ -1,5 +1,6 @@
 import type { TiptapDocument, TiptapNode } from '@repo/content/types'
 import type { Editor } from '@tiptap/core'
+import { managedContentDocumentIsEmpty } from '../../lib/managedContent'
 import {
   isAllowedEditorDocument,
   isAllowedEditorLinkHref,
@@ -83,9 +84,10 @@ export function canonicalValue(
   editor: Editor,
   isAllowedImageUrl: (url: string) => boolean = () => true,
 ): AdminRichTextCanonicalValue {
+  const document = editor.getJSON() as TiptapDocument
   const value = {
-    document: editor.getJSON() as TiptapDocument,
-    html: editor.getHTML(),
+    document,
+    html: managedContentDocumentIsEmpty(document) ? '' : editor.getHTML(),
   }
   if (!isAllowedEditorDocument(value.document, isAllowedImageUrl)) {
     throw new Error('Editor produced a document outside the supported allowlist.')

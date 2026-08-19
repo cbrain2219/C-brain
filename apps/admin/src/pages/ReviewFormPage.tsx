@@ -743,6 +743,15 @@ export function ReviewFormPage() {
     setForm((current) => ({ ...current, [key]: value }))
   }
 
+  function updateManagedContent(value: ManagedContentFormValue) {
+    setForm((current) => ({ ...current, ...value }))
+    setSaveError((current) =>
+      current === '내용을 입력해주세요.' && !managedContentIsEmpty(value)
+        ? ''
+        : current,
+    )
+  }
+
   function releaseVideoPreview() {
     if (!videoPreviewUrl.current) return
 
@@ -1092,7 +1101,7 @@ export function ReviewFormPage() {
             setVideo(event.dataTransfer.files[0])
           }}
           onManagedContentBusyChange={contentEditorState.onBusyChange}
-          onManagedContentChange={(value) => setForm((current) => ({ ...current, ...value }))}
+          onManagedContentChange={updateManagedContent}
           onManagedContentPendingAssetCountChange={contentEditorState.onPendingAssetCountChange}
           onManagedContentUploadedAsset={unpersistedContentUploads.trackUploadedPath}
           onSlugErrorChange={setSlugError}
@@ -1118,7 +1127,7 @@ export function ReviewFormPage() {
           form={form}
           formId={formId}
           onManagedContentBusyChange={contentEditorState.onBusyChange}
-          onManagedContentChange={(value) => setForm((current) => ({ ...current, ...value }))}
+          onManagedContentChange={updateManagedContent}
           onManagedContentPendingAssetCountChange={contentEditorState.onPendingAssetCountChange}
           onManagedContentUploadedAsset={unpersistedContentUploads.trackUploadedPath}
           onUpdate={updateForm}

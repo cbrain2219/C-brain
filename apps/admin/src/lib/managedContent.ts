@@ -192,6 +192,10 @@ function documentHasVisibleContent(node: TiptapNode): boolean {
   return node.content?.some(documentHasVisibleContent) ?? false
 }
 
+export function managedContentDocumentIsEmpty(document: unknown): boolean {
+  return !isTiptapDocument(document) || !documentHasVisibleContent(document)
+}
+
 export function managedContentIsEmpty(
   form: Pick<ManagedContentFormValue, 'content' | 'contentAuthoringMode' | 'contentJson' | 'contentMode'>,
 ): boolean {
@@ -199,9 +203,7 @@ export function managedContentIsEmpty(
     return form.content.trim().length === 0
   }
 
-  return !form.contentJson ||
-    !isTiptapDocument(form.contentJson) ||
-    !documentHasVisibleContent(form.contentJson)
+  return managedContentDocumentIsEmpty(form.contentJson)
 }
 
 export function switchRawToWysiwyg(
