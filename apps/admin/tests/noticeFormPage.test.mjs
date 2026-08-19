@@ -40,6 +40,7 @@ test("notice admin exposes create and edit routes with notice-specific controls"
   assert.match(formStylesSource, /\.blog-form__control--date \{\n  cursor: pointer;/);
   assert.match(formSource, /name="isPinned"/);
   assert.match(formSource, /공지사항 요약/);
+  assert.doesNotMatch(formSource, /maxLength=\{180\}/);
   assert.match(formSource, /공지사항 내용/);
   assert.match(listSource, /href: ["']\/notices\/new["']/);
   assert.match(listSource, /공지사항 제목으로 검색해주세요\./);
