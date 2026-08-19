@@ -185,9 +185,14 @@ export function BlogFeaturedCard({
 
     didSwipeRef.current = false;
     swipeStartXRef.current = event.clientX;
+    event.currentTarget.setPointerCapture(event.pointerId);
   };
 
   const handlePointerUp = (event: PointerEvent<HTMLAnchorElement>) => {
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
+
     if (!hasMultipleSlides || swipeStartXRef.current === null) return;
 
     const distance = event.clientX - swipeStartXRef.current;
@@ -208,7 +213,11 @@ export function BlogFeaturedCard({
     showNextSlide();
   };
 
-  const handlePointerCancel = () => {
+  const handlePointerCancel = (event: PointerEvent<HTMLAnchorElement>) => {
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
+
     swipeStartXRef.current = null;
   };
 
