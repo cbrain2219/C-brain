@@ -163,7 +163,8 @@ export function AdminContentEditor({
   const isBusy = pendingAssetCount > 0 || (isWysiwyg && (
     hasMalformedDocument || hasLazyLoadError || isInitializing || currentContentError !== null
   ))
-  const modeControlsDisabled = disabled || pendingAssetCount > 0 || (
+  const modeControlsDisabled = disabled || pendingAssetCount > 0
+  const textModeControlDisabled = modeControlsDisabled || (
     isWysiwyg && isInitializing && !hasLazyLoadError
   )
 
@@ -279,7 +280,7 @@ export function AdminContentEditor({
           aria-pressed={isWysiwyg}
           className={styles.tab}
           data-active={isWysiwyg || undefined}
-          disabled={modeControlsDisabled}
+          disabled={textModeControlDisabled}
           onClick={switchToWysiwyg}
           type="button"
         >
