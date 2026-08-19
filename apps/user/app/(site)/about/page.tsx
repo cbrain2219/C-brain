@@ -296,8 +296,10 @@ export default function AboutPage() {
         <div className={styles.historyInner}>
           <div className={styles.historyHeading}>
             <SectionBadge>연혁</SectionBadge>
-            <h2>고객과 함께 쌓아온 26년</h2>
-            <p>2000년 창립부터 현재까지, 씨브레인이 걸어온 길입니다.</p>
+            <div className={styles.historyHeadingText}>
+              <h2>고객과 함께 쌓아온 26년</h2>
+              <p>2000년 창립부터 현재까지, 씨브레인이 걸어온 길입니다.</p>
+            </div>
           </div>
 
           <div className={styles.historyContent}>

@@ -305,6 +305,22 @@ test("about intro media and timeline marker follow the reviewed desktop design",
   assert.doesNotMatch(timelineDotStyles, /box-shadow:/);
 });
 
+test("about history heading groups its title and description with a 4px gap", async () => {
+  const [stylesSource, pageSource] = await Promise.all([
+    readFile(stylesUrl, "utf8"),
+    readFile(pageUrl, "utf8"),
+  ]);
+
+  assert.match(
+    pageSource,
+    /<div className=\{styles\.historyHeadingText\}>[\s\S]*?<h2>고객과 함께 쌓아온 26년<\/h2>[\s\S]*?<p>2000년 창립부터 현재까지, 씨브레인이 걸어온 길입니다\.<\/p>[\s\S]*?<\/div>/,
+  );
+  assert.match(
+    cssBlock(stylesSource, ".historyHeadingText,"),
+    /display:\s*flex;[\s\S]*flex-direction:\s*column;[\s\S]*gap:\s*4px;/,
+  );
+});
+
 test("about intro media stacks in one column through 600px", async () => {
   const stylesSource = await readFile(stylesUrl, "utf8");
   const introMediaBreakpoint = cssBlock(

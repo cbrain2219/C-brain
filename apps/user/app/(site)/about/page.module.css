@@ -563,6 +563,7 @@
 }
 
 .reasonHeadingText,
+.historyHeadingText,
 .reasonCardBody {
   min-width: 0;
   display: flex;
