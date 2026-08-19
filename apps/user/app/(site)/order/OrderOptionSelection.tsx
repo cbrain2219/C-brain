@@ -30,7 +30,7 @@ type OrderOptionSelectionProps = {
   service: ServiceItem;
 };
 
-const sectionNumbers = ["III", "IV", "V", "VI", "VII", "VIII", "IX"];
+const sectionNumbers = ["II", "III", "IV", "V", "VI", "VII", "VIII"];
 
 function requireFirstVariant(product: OrderProductCatalogItem) {
   const variant = product.variants[0];
@@ -155,6 +155,8 @@ export function OrderOptionSelection({
   const selectedVariant =
     product.variants.find((variant) => variant.id === selectedVariantId) ??
     firstVariant;
+  const hasProductTypeSelection = product.variants.length > 1;
+  const sectionNumberOffset = Number(hasProductTypeSelection);
   const calculation = calculateProductSelection(selectedVariant, selection);
 
   if (!calculation) {
@@ -169,7 +171,7 @@ export function OrderOptionSelection({
     ? "디자인 + 인쇄 + 기획"
     : "디자인 + 인쇄";
   const optionRows = [
-    ...(product.variants.length > 1
+    ...(hasProductTypeSelection
       ? [{ label: "상품 종류", value: selectedVariant.id }]
       : []),
     ...calculation.optionRows,
@@ -214,12 +216,12 @@ export function OrderOptionSelection({
     <>
       <div className={styles.optionLayout}>
         <div className={styles.optionMain}>
-          {product.variants.length > 1 ? (
+          {hasProductTypeSelection ? (
             <section
               className={styles.optionSection}
               aria-labelledby="variant-option-title"
             >
-              <h3 id="variant-option-title">상품 종류</h3>
+              <h3 id="variant-option-title">I. 상품종류</h3>
               <div className={styles.optionChoiceGroup}>
                 {product.variants.map((variant) => (
                   <button
@@ -245,7 +247,11 @@ export function OrderOptionSelection({
             aria-labelledby="service-option-title"
           >
             <div className={styles.optionSectionHeader}>
-              <h3 id="service-option-title">II. 서비스 선택</h3>
+              <h3 id="service-option-title">
+                {hasProductTypeSelection
+                  ? "II. 서비스 선택"
+                  : "I. 서비스 선택"}
+              </h3>
               <p>
                 디자인+인쇄가 기본 포함됩니다. 기획이 필요하신 경우 추가
                 선택하세요.
@@ -311,7 +317,7 @@ export function OrderOptionSelection({
 
           {selectedVariant.optionSections.map((section, index) => (
             <OptionSection
-              index={index}
+              index={index + sectionNumberOffset}
               key={section.key}
               onSelect={setSelection}
               section={section}
@@ -328,7 +334,7 @@ export function OrderOptionSelection({
             >
               <h3 id="quantity-option-title">
                 {formatSectionHeading(
-                  selectedVariant.optionSections.length,
+                  selectedVariant.optionSections.length + sectionNumberOffset,
                   selectedVariant.quantitySection.label,
                 )}
               </h3>

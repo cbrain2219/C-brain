@@ -320,9 +320,29 @@ test("order page route, content, responsive styles, and navigation are wired", (
   assert.match(optionSelectionSource, /getProductPriceRows/);
   assert.match(optionSelectionSource, /product\.variants/);
   assert.match(optionSelectionSource, /selectedVariantId/);
+  assert.match(optionSelectionSource, /hasProductTypeSelection/);
   assert.match(optionSelectionSource, /selectedVariant\.optionSections\.map/);
   assert.match(optionSelectionSource, /disabled=\{!isAvailable \|\| !nextSelection\}/);
-  assert.match(optionSelectionSource, /II\. 서비스 선택/);
+  assert.match(
+    optionSelectionSource,
+    /<h3 id="variant-option-title">I\. 상품종류<\/h3>/,
+  );
+  assert.match(
+    optionSelectionSource,
+    /hasProductTypeSelection\s*\? "II\. 서비스 선택"\s*: "I\. 서비스 선택"/s,
+  );
+  assert.match(
+    optionSelectionSource,
+    /index=\{index \+ sectionNumberOffset\}/,
+  );
+  assert.match(
+    optionSelectionSource,
+    /selectedVariant\.optionSections\.length \+ sectionNumberOffset/,
+  );
+  assert.match(
+    optionSelectionSource,
+    /const sectionNumbers = \["II", "III", "IV", "V", "VI", "VII", "VIII"\]/,
+  );
   assert.match(optionSelectionSource, /selectedVariant\.quantitySection/);
   assert.match(optionSelectionSource, /quantityRows\.map/);
   assert.match(optionSelectionSource, /quantityTableScroll/);

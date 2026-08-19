@@ -148,7 +148,7 @@ export function OrderFlowSection({
 
             <div className={styles.productSection}>
               <div className={styles.productSectionHeader}>
-                <p>Ⅰ. 카테고리 선택</p>
+                <p>카테고리 선택</p>
               </div>
 
               <ServiceCards
