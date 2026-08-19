@@ -64,6 +64,24 @@ test("landing about reason items stay one column before their body text has one-
   );
 });
 
+test("landing about media embeds the Korea Public Procurement Expo video", async () => {
+  const [sectionSource, stylesSource] = await Promise.all([
+    readFile(aboutSectionPath, "utf8"),
+    readFile(stylesPath, "utf8"),
+  ]);
+  const aboutVideo = cssBlock(stylesSource, ".aboutVideo");
+
+  assert.match(sectionSource, /<iframe/);
+  assert.match(
+    sectionSource,
+    /src="https:\/\/www\.youtube-nocookie\.com\/embed\/XCSYhbzHbvo"/,
+  );
+  assert.doesNotMatch(sectionSource, /about-partnership\.jpg/);
+  assert.match(aboutVideo, /width:\s*100%;/);
+  assert.match(aboutVideo, /height:\s*100%;/);
+  assert.match(aboutVideo, /border:\s*0;/);
+});
+
 test("landing about reason items follow the Figma card and desktop list styles", async () => {
   const [stylesSource, reasonDividerAssetSource] = await Promise.all([
     readFile(stylesPath, "utf8"),

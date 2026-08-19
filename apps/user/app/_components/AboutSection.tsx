@@ -51,12 +51,14 @@ export function AboutSection() {
         </div>
 
         <div className={styles.aboutMedia}>
-          <Image
-            alt="코리아 나라장터 엑스포와 씨브레인의 협업 영상"
-            className={styles.aboutImage}
-            fill
-            sizes="(min-width: 1440px) 680px, calc(100vw - 40px)"
-            src="/figma-assets/about-partnership.jpg"
+          <iframe
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            allowFullScreen
+            className={styles.aboutVideo}
+            loading="lazy"
+            referrerPolicy="strict-origin-when-cross-origin"
+            src="https://www.youtube-nocookie.com/embed/XCSYhbzHbvo"
+            title="코리아 나라장터 엑스포와 씨브레인의 협업 영상"
           />
         </div>
       </div>
