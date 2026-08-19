@@ -79,8 +79,7 @@ export const companyProfile = {
   },
   phone: "070-8830-2219",
   privacyManager: {
-    email: "jhy@cbrain.kr",
-    name: "김훈",
+    name: "정혜영",
   },
   productionRooms: {
     osan: "경기도 오산시 독산성로 232번길 14-24",

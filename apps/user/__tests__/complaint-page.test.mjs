@@ -612,7 +612,7 @@ test("footer contains current C-Brain business information", async () => {
   assert.equal(companyProfile.phone, "070-8830-2219");
   assert.equal(companyProfile.businessRegistrationNumber, "120-07-84415");
   assert.equal(companyProfile.mailOrderSalesNumber, "2022-성남중원-0006");
-  assert.equal(companyProfile.privacyManager.email, "jhy@cbrain.kr");
+  assert.equal(companyProfile.privacyManager.name, "정혜영");
 
   assert.match(footerSource, /companyProfile/);
   assert.match(footerSource, /companyProfile\.phone/);
@@ -625,7 +625,8 @@ test("footer contains current C-Brain business information", async () => {
   assert.match(footerSource, /companyProfile\.productionRooms\.seongsu/);
   assert.match(footerSource, /companyProfile\.productionRooms\.paju/);
   assert.match(footerSource, /companyProfile\.productionRooms\.osan/);
-  assert.match(footerSource, /companyProfile\.privacyManager\.email/);
+  assert.match(footerSource, /companyProfile\.privacyManager\.name/);
+  assert.doesNotMatch(footerSource, /companyProfile\.privacyManager\.email/);
   assert.doesNotMatch(footerSource, /070-8830-2219/);
   assert.doesNotMatch(footerSource, /120-07-84415/);
   assert.doesNotMatch(footerSource, /2022-성남중원-0006/);

@@ -10,6 +10,10 @@ const productFormDataSource = await readFile(
   new URL('../src/pages/productFormUi.ts', import.meta.url),
   'utf8',
 )
+const adminFooterSource = await readFile(
+  new URL('../src/components/AdminFooter.tsx', import.meta.url),
+  'utf8',
+)
 const appSource = await readFile(
   new URL('../src/App.tsx', import.meta.url),
   'utf8',
@@ -46,6 +50,11 @@ test('product form loads and mutates JSONB products', () => {
   assert.match(appSource, /import\.meta\.env\.DEV/)
   assert.match(appSource, /path="\/products\/ui-preview"/)
   assert.match(appSource, /control\.focus\(\{ preventScroll: true \}\)/)
+})
+
+test('admin footer displays the current privacy manager without an email', () => {
+  assert.match(adminFooterSource, /개인정보관리책임자 : 정혜영/)
+  assert.doesNotMatch(adminFooterSource, /개인정보관리책임자[^<]*\([^<]+@[^<]+\)/)
 })
 
 test('changing to a stored product type loads its DB-backed edit row', () => {

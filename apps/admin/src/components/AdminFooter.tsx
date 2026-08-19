@@ -76,7 +76,7 @@ export function AdminFooter() {
         <p>
           본사 : 경기도 성남시 중원구 사기막골로 99 센트럴비즈타워2차 B타워 218호
         </p>
-        <p>개인정보관리책임자 : 김훈(jhy@cbrain.kr)</p>
+        <p>개인정보관리책임자 : 정혜영</p>
         <p className="admin-footer__copyright">
           Copyright ⓒ 2026 C-Brain. All rights reserved.
         </p>

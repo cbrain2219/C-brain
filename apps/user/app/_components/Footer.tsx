@@ -138,7 +138,7 @@ export function Footer() {
         <p>파주 출고실(인쇄물) : {companyProfile.productionRooms.paju}</p>
         <p>오산 출고실(실사) : {companyProfile.productionRooms.osan}</p>
         <p>
-          {`개인정보관리책임자 : ${companyProfile.privacyManager.name}(${companyProfile.privacyManager.email})`}
+          개인정보관리책임자 : {companyProfile.privacyManager.name}
         </p>
         <p className={styles.copyrightText}>
           Copyright ⓒ 2026 C-Brain. All rights reserved.
