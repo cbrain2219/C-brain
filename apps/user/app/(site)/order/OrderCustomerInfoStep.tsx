@@ -315,7 +315,7 @@ export function OrderCustomerInfoStep({
   return (
     <div className={styles.customerInfoStep}>
       <div className={styles.customerInfoHeader}>
-        <h3>III. 주문자 정보 입력</h3>
+        <h3>주문자 정보 입력</h3>
         <p>
           결제 완료 후 영업일 기준 1일 이내 배정 담당자가 카카오톡으로 집중 상담
           및 제작 일정을 안내드립니다.
