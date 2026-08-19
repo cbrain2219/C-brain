@@ -28,6 +28,9 @@ const BLOG_FEATURED_SLIDE_INTERVAL_MS = 5000;
 const BLOG_FEATURED_TRANSITION_MS = 420;
 const BLOG_FEATURED_SWIPE_THRESHOLD_PX = 48;
 const BLOG_FEATURED_CLICK_GUARD_MS = 250;
+// Oversample the full-width feature image without changing its visual frame.
+const blogFeaturedThumbnailSizes =
+  "(min-width: 1120px) 1620px, calc(150vw - 60px)";
 
 export function BlogFeaturedCard({
   getDetailHref,
@@ -322,7 +325,8 @@ export function BlogFeaturedCard({
                   draggable={false}
                   fill
                   priority={hasMultipleSlides ? index === 1 : index === 0}
-                  sizes="(min-width: 1440px) 720px, (min-width: 1080px) 66vw, (min-width: 640px) 100vw, 100vw"
+                  quality={90}
+                  sizes={blogFeaturedThumbnailSizes}
                   src={post.image}
                 />
                 <div

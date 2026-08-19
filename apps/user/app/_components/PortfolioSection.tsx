@@ -19,6 +19,11 @@ import { createGradientBorderButtonStyle } from "./buttonStyles";
 
 const buttonStyle = createGradientBorderButtonStyle({ width: 184 });
 const landingPortfolioScrollStorageKey = "cbrain:landing-portfolio-scroll-y";
+// Preserve enough vertical pixels when 3:2 source images cover square/portrait cards.
+const portfolioCoverImageSizes =
+  "(min-width: 1440px) 488px, " +
+  "(min-width: 1080px) 50vw, " +
+  "(min-width: 640px) 87vw, 450px";
 
 type PortfolioSectionProps = {
   initialCategoryId?: PortfolioCategoryId;
@@ -145,7 +150,8 @@ export function PortfolioSection({
                 alt={item.imageAlt}
                 className={styles.coverImage}
                 fill
-                sizes="(min-width: 1440px) 325px, (min-width: 1080px) 33vw, (min-width: 640px) 50vw, 300px"
+                quality={90}
+                sizes={portfolioCoverImageSizes}
                 src={item.image}
               />
               <div className={styles.portfolioOverlay}>

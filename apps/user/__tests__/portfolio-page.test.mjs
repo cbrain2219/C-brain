@@ -100,8 +100,13 @@ test("portfolio grid keeps three columns from the 960px breakpoint", async () =>
   );
   assert.match(
     gallery,
-    /sizes="\(min-width: 1120px\) 347px, \(min-width: 960px\) calc\(33\.333vw - 26\.667px\), \(min-width: 640px\) calc\(50vw - 30px\), calc\(100vw - 40px\)"/,
+    /\(min-width: 1120px\) 520px/,
   );
+  assert.match(gallery, /\(min-width: 960px\) calc\(50vw - 40px\)/);
+  assert.match(gallery, /\(min-width: 640px\) calc\(75vw - 45px\)/);
+  assert.match(gallery, /calc\(150vw - 60px\)/);
+  assert.match(gallery, /quality=\{90\}/);
+  assert.match(gallery, /sizes=\{portfolioThumbnailSizes\}/);
 });
 
 test("portfolio hero keeps frame padding without a fixed hero height", async () => {
@@ -146,6 +151,16 @@ test("portfolio landing tabs filter cards on click", async () => {
   assert.match(landingPortfolio, /setActiveCategoryId\(categoryId\)/);
   assert.match(landingPortfolio, /aria-pressed=\{isActive\}/);
   assert.match(landingPortfolio, /activePortfolioItems\.map/);
+});
+
+test("landing portfolio requests enough source pixels for its cover crop", async () => {
+  const landingPortfolio = await readFile(landingPortfolioPath, "utf8");
+
+  assert.match(landingPortfolio, /quality=\{90\}/);
+  assert.match(landingPortfolio, /\(min-width: 1440px\) 488px/);
+  assert.match(landingPortfolio, /\(min-width: 1080px\) 50vw/);
+  assert.match(landingPortfolio, /\(min-width: 640px\) 87vw, 450px/);
+  assert.match(landingPortfolio, /sizes=\{portfolioCoverImageSizes\}/);
 });
 
 test("landing portfolio hover shows plain content with responsive line limits", async () => {

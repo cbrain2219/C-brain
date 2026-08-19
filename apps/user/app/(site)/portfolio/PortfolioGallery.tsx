@@ -16,6 +16,11 @@ import {
 import styles from "./page.module.css";
 
 const PORTFOLIO_SCROLL_RESTORE_KEY = "portfolio-scroll-restore";
+// Oversample detailed print mockups so browser downscaling keeps small text sharp.
+const portfolioThumbnailSizes =
+  "(min-width: 1440px) 488px, " +
+  "(min-width: 1080px) 50vw, " +
+  "(min-width: 640px) 87vw, 450px";
 
 type PortfolioGalleryProps = {
   categories: readonly PortfolioCategory[];
@@ -186,7 +191,8 @@ export function PortfolioGallery({
                           alt={item.imageAlt}
                           className={styles.portfolioImage}
                           fill
-                          sizes="(min-width: 1120px) 347px, (min-width: 960px) calc(33.333vw - 26.667px), (min-width: 640px) calc(50vw - 30px), calc(100vw - 40px)"
+                          quality={90}
+                          sizes={portfolioThumbnailSizes}
                           src={item.image}
                         />
                       </div>

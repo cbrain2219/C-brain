@@ -153,6 +153,34 @@ test("landing blog card summaries truncate after two lines", async () => {
   assert.match(summaryStyles, /-webkit-line-clamp:\s*2/);
 });
 
+test("landing blog cards request high-quality responsive thumbnails", async () => {
+  const blogSection = await source("blogSection");
+
+  assert.match(blogSection, /quality=\{90\}/);
+  assert.match(blogSection, /\(min-width: 1440px\) 488px/);
+  assert.match(blogSection, /\(min-width: 1080px\) 50vw/);
+  assert.match(blogSection, /\(min-width: 640px\) 87vw, 450px/);
+  assert.match(blogSection, /sizes=\{blogCoverImageSizes\}/);
+});
+
+test("blog list cards request high-quality oversized thumbnails", async () => {
+  const [card, featuredCard] = await Promise.all([
+    source("card"),
+    source("featuredCard"),
+  ]);
+
+  assert.match(card, /quality=\{90\}/);
+  assert.match(card, /\(min-width: 1080px\) 533px/);
+  assert.match(card, /\(min-width: 640px\) calc\(75vw - 36px\)/);
+  assert.match(card, /calc\(150vw - 60px\)/);
+  assert.match(card, /sizes=\{blogCardThumbnailSizes\}/);
+
+  assert.match(featuredCard, /quality=\{90\}/);
+  assert.match(featuredCard, /\(min-width: 1120px\) 1620px/);
+  assert.match(featuredCard, /calc\(150vw - 60px\)/);
+  assert.match(featuredCard, /sizes=\{blogFeaturedThumbnailSizes\}/);
+});
+
 test("blog list page exposes SEO metadata", async () => {
   const page = await source("page");
 

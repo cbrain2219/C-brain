@@ -9,6 +9,10 @@ import styles from "../page.module.css";
 import { createGradientBorderButtonStyle } from "./buttonStyles";
 
 const buttonStyle = createGradientBorderButtonStyle();
+const blogCoverImageSizes =
+  "(min-width: 1440px) 488px, " +
+  "(min-width: 1080px) 50vw, " +
+  "(min-width: 640px) 87vw, 450px";
 
 type BlogSectionProps = {
   posts: readonly BlogPost[];
@@ -56,7 +60,8 @@ export function BlogSection({ posts }: BlogSectionProps) {
                 alt={post.imageAlt}
                 className={styles.coverImage}
                 fill
-                sizes="(min-width: 1440px) 440px, (min-width: 1080px) 33vw, (min-width: 640px) 400px, 350px"
+                quality={90}
+                sizes={blogCoverImageSizes}
                 src={post.image}
               />
             </div>

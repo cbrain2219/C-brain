@@ -11,6 +11,12 @@ type BlogCardProps = {
   post: BlogPost;
 };
 
+// Oversample detailed print mockups so browser downscaling keeps small text sharp.
+const blogCardThumbnailSizes =
+  "(min-width: 1440px) 488px, " +
+  "(min-width: 1080px) 50vw, " +
+  "(min-width: 640px) 87vw, 450px";
+
 export function BlogCard({ detailHref, post }: BlogCardProps) {
   return (
     <li className={styles.blogCard}>
@@ -26,7 +32,8 @@ export function BlogCard({ detailHref, post }: BlogCardProps) {
               alt={post.imageAlt}
               className={styles.blogCardImageAsset}
               fill
-              sizes="(min-width: 1080px) 340px, (min-width: 640px) 50vw, 100vw"
+              quality={90}
+              sizes={blogCardThumbnailSizes}
               src={post.image}
             />
           </div>
