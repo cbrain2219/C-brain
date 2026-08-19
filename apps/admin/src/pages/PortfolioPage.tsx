@@ -40,6 +40,14 @@ function renderLanding(row: PortfolioRow) {
   return <span>-</span>
 }
 
+function renderPinned(row: PortfolioRow) {
+  if (row.isPinned) {
+    return <span className="admin-data-table__brand-text">고정</span>
+  }
+
+  return <span>-</span>
+}
+
 const portfolioColumns = [
   {
     header: '상태',
@@ -57,7 +65,7 @@ const portfolioColumns = [
     header: '포트폴리오 제목',
     id: 'title',
     renderCell: (row) => <span className="admin-data-table__title-cell">{row.title}</span>,
-    track: '456fr',
+    track: '336fr',
   },
   {
     header: '고객사',
@@ -69,6 +77,12 @@ const portfolioColumns = [
     header: '랜딩',
     id: 'landing',
     renderCell: renderLanding,
+    track: '120fr',
+  },
+  {
+    header: '상단고정',
+    id: 'pinned',
+    renderCell: renderPinned,
     track: '120fr',
   },
   {
