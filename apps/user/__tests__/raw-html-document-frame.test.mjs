@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
 import { register } from "node:module";
 import test from "node:test";
 
@@ -27,6 +28,17 @@ const {
   createFramedHtml,
   getTrustedFrameResizeHeight,
 } = await import("../components/rawHtmlFrameHelpers.ts");
+
+test("raw HTML frame can shrink below its initial height", async () => {
+  const frameStyles = await readFile(
+    new URL("../components/RawHtmlDocumentFrame.module.css", import.meta.url),
+    "utf8",
+  );
+
+  assert.equal(MIN_FRAME_HEIGHT, 0);
+  assert.match(frameStyles, /height:\s*320px/);
+  assert.doesNotMatch(frameStyles, /min-height:\s*320px/);
+});
 
 test("raw HTML srcDoc removes supplied scripts and injects nonce-bound resize code", () => {
   const token = "test-nonce";

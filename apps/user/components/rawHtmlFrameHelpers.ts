@@ -1,4 +1,4 @@
-export const MIN_FRAME_HEIGHT = 320;
+export const MIN_FRAME_HEIGHT = 0;
 export const MAX_FRAME_HEIGHT = 100_000;
 export const RESIZE_MESSAGE_TYPE = "cbrain:raw-html-resize";
 
