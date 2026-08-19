@@ -17,6 +17,7 @@ import type { BlogContentBlock, BlogPost } from "../_types/blog";
 import { LightHeroBadge } from "../../../../components/LightHeroBadge";
 import { ManagedContent } from "../../../../components/ManagedContent";
 import { JsonLdScript } from "../../../_components/JsonLdScript";
+import { ContentViewTracker } from "../../../_components/ContentViewTracker";
 import { createBlogPostingStructuredData } from "../../../_content/structured-data";
 import {
   getPublishedBlogPostSource,
@@ -296,6 +297,7 @@ export default async function BlogDetailPage({
       itemScope
       itemType="https://schema.org/Article"
     >
+      <ContentViewTracker contentId={post.id} contentType="blog" />
       <meta content={post.detail.seoDescription} itemProp="description" />
       <meta content={post.publishedAtIso} itemProp="datePublished" />
       <meta content={post.publishedAtIso} itemProp="dateModified" />

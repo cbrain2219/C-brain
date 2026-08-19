@@ -23,6 +23,7 @@ export type PortfolioItem = {
   client: string;
   description: string;
   detailImages: readonly PortfolioDetailImage[];
+  id: string;
   image: string;
   imageAlt: string;
   showOnLanding: boolean;
@@ -187,6 +188,7 @@ export function mapPortfolioRows(
         client,
         description: description || defaultPortfolioDescription,
         detailImages,
+        id: row.id,
         image: representativeImage.src,
         imageAlt: representativeImage.alt,
         showOnLanding: row.show_on_landing,

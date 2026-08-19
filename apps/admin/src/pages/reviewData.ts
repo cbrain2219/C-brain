@@ -111,7 +111,10 @@ export function toReviewListRow(review: TableRow<'reviews'>): ReviewListRow {
     status: review.status,
     title: review.kind === 'interview' ? review.title || '제목 없는 인터뷰' : getTestimonialTitle(review),
     type: review.kind === 'interview' ? '인터뷰' : '후기',
-    views: new Intl.NumberFormat('ko-KR').format(review.view_count),
+    views:
+      review.kind === 'interview'
+        ? new Intl.NumberFormat('ko-KR').format(review.view_count)
+        : '-',
   }
 }
 

@@ -16,6 +16,10 @@ const blogThumbnailFileNameMigrationUrl = new URL(
   '../../../supabase/migrations/20260818063308_add_blog_thumbnail_file_name.sql',
   import.meta.url,
 )
+const contentViewMigrationUrl = new URL(
+  '../../../supabase/migrations/20260819063942_add_content_view_increment.sql',
+  import.meta.url,
+)
 const reviewYouTubeSqlUrl = new URL(
   '../../../supabase/manual/add_review_youtube_video.sql',
   import.meta.url,
@@ -34,6 +38,7 @@ const [
   legacyAdminContentMigration,
   managedContentMigration,
   blogThumbnailFileNameMigration,
+  contentViewMigration,
   reviewProjectInfoSql,
   reviewYouTubeSql,
   blogData,
@@ -45,6 +50,7 @@ const [
   readFile(legacyAdminContentMigrationUrl, 'utf8'),
   readFile(managedContentMigrationUrl, 'utf8'),
   readFile(blogThumbnailFileNameMigrationUrl, 'utf8'),
+  readFile(contentViewMigrationUrl, 'utf8'),
   readFile(reviewProjectInfoSqlUrl, 'utf8'),
   readFile(reviewYouTubeSqlUrl, 'utf8'),
   readFile(blogDataUrl, 'utf8'),
@@ -197,6 +203,51 @@ test('reorder RPCs validate complete duplicate-free ID lists', () => {
     'cardinality',
   ])
   assert.equal((baseline.match(/count\(distinct /g) ?? []).length, 4)
+})
+
+test('content view RPC increments only published detail records with server-only access', () => {
+  for (const source of [baseline, contentViewMigration]) {
+    const functionMatch =
+      /create or replace function public\.increment_content_view\(\s*p_content_type text,\s*p_content_id uuid\s*\)[\s\S]*?\n\$\$;/.exec(
+        source,
+      )
+    assert.ok(functionMatch)
+    const functionSql = functionMatch[0]
+
+    assert.match(
+      functionSql,
+      /returns void\s*language plpgsql\s*security invoker\s*set search_path = ''/,
+    )
+    assert.match(
+      functionSql,
+      /update public\.posts\s+set view_count = view_count \+ 1/,
+    )
+    assert.match(
+      functionSql,
+      /update public\.portfolio_items\s+set view_count = view_count \+ 1/,
+    )
+    assert.match(
+      functionSql,
+      /update public\.reviews\s+set view_count = view_count \+ 1/,
+    )
+    assert.equal((functionSql.match(/status = 'published'/g) ?? []).length, 3)
+    assert.match(functionSql, /kind = 'blog'/)
+    assert.match(functionSql, /kind = 'interview'/)
+    assert.doesNotMatch(functionSql, /kind = 'testimonial'/)
+  }
+
+  assert.match(
+    contentViewMigration,
+    /revoke execute on function public\.increment_content_view\(text, uuid\)\s+from public, anon, authenticated;/,
+  )
+  assert.match(
+    contentViewMigration,
+    /grant execute on function public\.increment_content_view\(text, uuid\)\s+to service_role;/,
+  )
+  assert.match(
+    types,
+    /increment_content_view:\s*\{\s*Args:\s*\{\s*p_content_id: string;\s*p_content_type: string;\s*\};\s*Returns: undefined;/,
+  )
 })
 
 test('TypeScript mirrors the current content tables', () => {
