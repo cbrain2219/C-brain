@@ -35,6 +35,19 @@ test('every managed-content form delegates body authoring to the shared editor',
   assert.match(editor, /lazy\(async \(\) =>/)
 })
 
+test('every new managed-content form starts in raw HTML authoring mode', async () => {
+  const [blogData, noticeData, portfolioPage, reviewData] = await Promise.all([
+    source('pages/blogData.ts'),
+    source('pages/noticeData.ts'),
+    source('pages/PortfolioFormPage.tsx'),
+    source('pages/reviewData.ts'),
+  ])
+
+  for (const formSource of [blogData, noticeData, portfolioPage, reviewData]) {
+    assert.match(formSource, /createInitialManagedContentValue\('raw_html'\)/)
+  }
+})
+
 test('each form locks actions and removes its body scope only after the row deletion', async () => {
   const [blog, notice, portfolio, review] = await Promise.all([
     source('pages/BlogFormPage.tsx'),

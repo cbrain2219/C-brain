@@ -30,10 +30,12 @@ function row(overrides = {}) {
   }
 }
 
-test('starts WYSIWYG content without synthetic HTML while retaining the empty editor document', () => {
-  const initial = createInitialManagedContentValue()
+test('creates raw HTML content with an empty recoverable editor document', () => {
+  const initial = createInitialManagedContentValue('raw_html')
 
   assert.equal(initial.content, '')
+  assert.equal(initial.contentAuthoringMode, 'raw_html')
+  assert.equal(initial.contentMode, 'html')
   assert.equal(managedContentDocumentIsEmpty(initial.contentJson), true)
   assert.equal(
     managedContentDocumentIsEmpty({ type: 'doc', content: [{ type: 'horizontalRule' }] }),

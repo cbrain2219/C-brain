@@ -64,7 +64,7 @@ type PortfolioFormState = ManagedContentFormValue & {
 
 function createInitialPortfolioForm(): PortfolioFormState {
   return {
-    ...createInitialManagedContentValue(),
+    ...createInitialManagedContentValue('raw_html'),
     clientName: '',
     images: [{ alt: '', file: null, fileName: null, id: 'image-1', path: null, previewUrl: null }],
     isLandingEnabled: false,

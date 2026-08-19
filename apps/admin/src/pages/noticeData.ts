@@ -60,7 +60,7 @@ export const defaultNoticeTypes = [
 
 export function createInitialNoticeForm(): NoticeFormState {
   return {
-    ...createInitialManagedContentValue(),
+    ...createInitialManagedContentValue('raw_html'),
     excerpt: '',
     isPinned: false,
     publishedAt: '',

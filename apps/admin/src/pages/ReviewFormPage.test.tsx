@@ -94,6 +94,14 @@ async function selectReviewType(user: User, type: '인터뷰' | '후기') {
   await user.click(screen.getByRole('option', { name: type }))
 }
 
+async function openTextEditor(user: User) {
+  await user.click(screen.getByRole('button', { name: 'TEXT Editor 작성' }))
+
+  return screen.findByRole('textbox', {
+    name: '본문 WYSIWYG 편집기',
+  })
+}
+
 async function fillPublishedInterview(user: User, body?: string) {
   await selectReviewType(user, '인터뷰')
   await user.type(screen.getByLabelText('인터뷰 제목'), '윙즈윗 고객 인터뷰')
@@ -109,9 +117,7 @@ async function fillPublishedInterview(user: User, body?: string) {
     screen.getByLabelText('YouTube 영상 링크'),
     'https://youtu.be/dQw4w9WgXcQ',
   )
-  const editor = await screen.findByRole('textbox', {
-    name: '본문 WYSIWYG 편집기',
-  })
+  const editor = await openTextEditor(user)
 
   if (body) await user.type(editor, body)
 }
@@ -123,9 +129,7 @@ async function fillPublishedTestimonial(user: User, body?: string) {
   fireEvent.change(screen.getByLabelText('후기 작성일'), {
     target: { value: '2026-08-18' },
   })
-  const editor = await screen.findByRole('textbox', {
-    name: '본문 WYSIWYG 편집기',
-  })
+  const editor = await openTextEditor(user)
 
   if (body) await user.type(editor, body)
 }
@@ -136,6 +140,21 @@ async function publish(user: User) {
   await waitFor(() => expect(button.disabled).toBe(false))
   await user.click(button)
 }
+
+it('starts a new review in HTML authoring mode', async () => {
+  await renderNewReviewPage()
+  const user = userEvent.setup()
+
+  await selectReviewType(user, '인터뷰')
+
+  expect(
+    screen.getByRole('button', { name: 'HTML 작성' }).getAttribute('aria-pressed'),
+  ).toBe('true')
+  expect(
+    screen.getByRole('button', { name: 'TEXT Editor 작성' }).getAttribute('aria-pressed'),
+  ).toBe('false')
+  expect(screen.getByRole('textbox', { name: '본문 HTML' })).toBeTruthy()
+})
 
 it('publishes canonical WYSIWYG content for a new Interview', async () => {
   await renderNewReviewPage()

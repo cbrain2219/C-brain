@@ -139,11 +139,13 @@ export function managedContentFormFromRow(row: ManagedContentRow): ManagedConten
   }
 }
 
-export function createInitialManagedContentValue(): ManagedContentFormValue {
+export function createInitialManagedContentValue(
+  contentAuthoringMode: ContentAuthoringMode = 'wysiwyg',
+): ManagedContentFormValue {
   return {
     content: '',
     contentAssetScope: crypto.randomUUID().toLowerCase(),
-    contentAuthoringMode: 'wysiwyg',
+    contentAuthoringMode,
     contentJson: EMPTY_TIPTAP_DOCUMENT,
     contentMode: 'html',
     contentSchemaVersion: SUPPORTED_CONTENT_SCHEMA_VERSION,

@@ -81,7 +81,7 @@ export type BlogMutationInput = Pick<
 
 export function createInitialBlogForm(): BlogFormState {
   return {
-    ...createInitialManagedContentValue(),
+    ...createInitialManagedContentValue('raw_html'),
     isBannerEnabled: true,
     isFeaturedEnabled: false,
     isLandingEnabled: true,

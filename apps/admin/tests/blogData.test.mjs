@@ -43,6 +43,10 @@ function makePost(overrides = {}) {
   }
 }
 
+test('new blog forms start in raw HTML authoring mode', () => {
+  assert.equal(createInitialBlogForm().contentAuthoringMode, 'raw_html')
+})
+
 test('post row maps to list and edit form state', () => {
   const post = makePost({ type: ' 브로슈어·카탈로그 ' })
   const row = toBlogListRow(post)

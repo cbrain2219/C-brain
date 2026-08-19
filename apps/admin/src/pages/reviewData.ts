@@ -73,7 +73,7 @@ export type ReviewMutationInput = Pick<
 export function createInitialReviewForm(): ReviewFormState {
   return {
     company: '',
-    ...createInitialManagedContentValue(),
+    ...createInitialManagedContentValue('raw_html'),
     isLandingEnabled: true,
     manager: '',
     projectDeliverable: '',

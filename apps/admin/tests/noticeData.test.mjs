@@ -38,6 +38,10 @@ const notice = {
   view_count: 10,
 }
 
+test('new notice forms start in raw HTML authoring mode', () => {
+  assert.equal(createInitialNoticeForm().contentAuthoringMode, 'raw_html')
+})
+
 test('notice categories are trimmed, collapsed, and deduplicated case-insensitively', () => {
   assert.equal(normalizeNoticeType('  서비스   변경 '), '서비스 변경')
   assert.deepEqual(mergeNoticeTypes(['News'], ' news '), ['News'])
@@ -77,6 +81,7 @@ test('notice form maps to a notice post mutation', () => {
   const form = {
     ...createInitialNoticeForm(),
     content: '본문',
+    contentAuthoringMode: 'wysiwyg',
     contentJson: { type: 'doc', content: [{ type: 'paragraph', content: [{ type: 'text', text: '본문' }] }] },
     excerpt: ' 요약 ',
     isPinned: true,

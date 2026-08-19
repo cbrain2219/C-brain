@@ -39,6 +39,10 @@ function review(overrides = {}) {
   }
 }
 
+test('new review forms start in raw HTML authoring mode', () => {
+  assert.equal(createInitialReviewForm().contentAuthoringMode, 'raw_html')
+})
+
 test('testimonial list rows derive a useful title from attribution', () => {
   const row = toReviewListRow(review())
 
@@ -111,6 +115,7 @@ test('testimonial mutations clear interview-only fields', () => {
     ...createInitialReviewForm(),
     company: ' 오르카 ',
     content: ' 만족합니다. ',
+    contentAuthoringMode: 'wysiwyg',
     contentJson: { type: 'doc', content: [{ type: 'paragraph', content: [{ type: 'text', text: '만족합니다.' }] }] },
     manager: ' 김담당 ',
     publishedAt: '2026-07-21',
@@ -211,6 +216,7 @@ test('an otherwise-complete empty WYSIWYG review may draft but cannot publish', 
     ...createInitialReviewForm(),
     company: '씨브레인',
     content: '<p></p>',
+    contentAuthoringMode: 'wysiwyg',
     manager: '김담당',
     publishedAt: '2026-08-14',
     type: '후기',
