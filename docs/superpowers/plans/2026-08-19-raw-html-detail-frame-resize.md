@@ -205,7 +205,7 @@ git commit -m "fix(user): resize raw HTML frames to content"
 - Consumes: `notice.managedContent` and `RawHtmlDocumentFrame({ html, title })` from Task 1.
 - Produces: Notice rendering with three explicit branches: `html/raw_html` frame, sanitized WYSIWYG inline content, and legacy Markdown blocks.
 
-- [ ] **Step 1: Write the failing Notice routing test**
+- [x] **Step 1: Write the failing Notice routing test**
 
 Extend the Notice detail source contract to require:
 
@@ -224,7 +224,7 @@ assert.match(article, /<ManagedContent/);
 assert.match(article, /notice\.content\.map/);
 ```
 
-- [ ] **Step 2: Run the Notice test and verify it fails**
+- [x] **Step 2: Run the Notice test and verify it fails**
 
 Run:
 
@@ -234,7 +234,7 @@ pnpm --filter user exec node --test __tests__/notice-pages.test.mjs
 
 Expected: FAIL because Notice detail currently sends every Raw HTML record to the plain legacy fallback.
 
-- [ ] **Step 3: Route Notice Raw HTML through the shared frame**
+- [x] **Step 3: Route Notice Raw HTML through the shared frame**
 
 Import `RawHtmlDocumentFrame`, derive the source without trimming the persisted value, and branch before `ManagedContent`:
 
@@ -255,13 +255,13 @@ const rawHtmlSource =
 
 Do not change Notice list/excerpt plain-text derivation, WYSIWYG sanitization, Markdown parsing, metadata, or back-navigation.
 
-- [ ] **Step 4: Run the Notice test and verify it passes**
+- [x] **Step 4: Run the Notice test and verify it passes**
 
 Run the Step 2 command.
 
 Expected: PASS with existing Notice behavior assertions unchanged.
 
-- [ ] **Step 5: Commit the Notice integration**
+- [x] **Step 5: Commit the Notice integration**
 
 ```bash
 git add \
@@ -281,7 +281,7 @@ git commit -m "feat(user): render raw HTML notices in shared frame"
 - Consumes: shared frame sizing and four detail-surface routing from Tasks 1-2.
 - Produces: test, type, lint, and live-browser evidence that the change is complete.
 
-- [ ] **Step 1: Run the full User test suite**
+- [x] **Step 1: Run the full User test suite**
 
 ```bash
 pnpm --filter user test
@@ -289,7 +289,7 @@ pnpm --filter user test
 
 Expected: all User tests pass.
 
-- [ ] **Step 2: Run User type checking and linting**
+- [x] **Step 2: Run User type checking and linting**
 
 ```bash
 pnpm --filter user check-types
@@ -298,7 +298,7 @@ pnpm --filter user lint
 
 Expected: both commands exit `0` with no warnings.
 
-- [ ] **Step 3: Verify the live frame can shrink**
+- [x] **Step 3: Verify the live frame can shrink**
 
 At `http://localhost:3000/blog/brochure-vs-catalogue` with a `390x800` viewport:
 
@@ -307,11 +307,11 @@ At `http://localhost:3000/blog/brochure-vs-catalogue` with a `390x800` viewport:
 3. Resize from `390x800` to `1024x800`; assert the iframe height matches the shorter reflowed content instead of retaining the mobile height.
 4. Confirm the root document has no active vertical scrollbar.
 
-- [ ] **Step 4: Verify shared detail surfaces**
+- [x] **Step 4: Verify shared detail surfaces**
 
 Repeat the narrow-to-wide height comparison for every currently published Raw HTML Portfolio and Review route. Confirm the existing Notice detail still renders its current non-Raw-HTML mode, and rely on the focused Notice routing contract for the Raw HTML branch if no published Raw HTML notice fixture exists.
 
-- [ ] **Step 5: Confirm repository scope**
+- [x] **Step 5: Confirm repository scope**
 
 ```bash
 git status --short
