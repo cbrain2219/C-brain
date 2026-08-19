@@ -20,6 +20,7 @@ export function AdminHeader() {
       <div className="admin-header__left">
         <NavLink
           className="admin-header__logo"
+          reloadDocument
           to="/products"
           aria-label="C-Brain 관리자 홈"
         >
@@ -51,6 +52,7 @@ export function AdminHeader() {
                 ].join(' ')
               }
               key={item.to}
+              reloadDocument
               to={item.to}
             >
               {item.label}

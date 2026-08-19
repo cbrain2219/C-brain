@@ -82,7 +82,7 @@ const complaintColumns = [
     header: '상세',
     id: 'detailLink',
     renderCell: (row) => (
-      <Link className="admin-data-table__link" to={row.detailHref}>
+      <Link className="admin-data-table__link" reloadDocument to={row.detailHref}>
         상세
       </Link>
     ),

@@ -48,7 +48,7 @@ const noticeColumns = [
     header: '상세',
     id: 'detail',
     renderCell: (row) => (
-      <Link className="admin-data-table__link" to={row.detailHref}>
+      <Link className="admin-data-table__link" reloadDocument to={row.detailHref}>
         상세
       </Link>
     ),
