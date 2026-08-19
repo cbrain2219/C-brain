@@ -78,6 +78,15 @@ test("mobile header keeps 20px horizontal padding at every mobile breakpoint", a
   );
 });
 
+test("desktop navigation keeps a fixed 32px gap", async () => {
+  const { app } = await readStyles();
+  const desktopNavGaps = [
+    ...app.matchAll(/\.desktopNav\s*\{[^}]*?gap:\s*(\d+)px;/g),
+  ].map((match) => match[1]);
+
+  assert.deepEqual(desktopNavGaps, ["32"]);
+});
+
 test("every public page start consumes the shared responsive spacing", async () => {
   const styles = await readStyles();
   const directOffsetSources = [

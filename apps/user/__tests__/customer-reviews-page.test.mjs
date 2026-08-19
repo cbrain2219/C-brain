@@ -502,8 +502,11 @@ test("customer reviews page uses shared navigation and CTA", async () => {
   assert.doesNotMatch(pageSource, /reviewsCta/);
 });
 
-test("shared header and page spacing switch immediately above 1080px", async () => {
-  const stylesSource = await readFile(stylesPath, "utf8");
+test("page spacing switches above 1080px and header navigation above 1200px", async () => {
+  const [headerSource, stylesSource] = await Promise.all([
+    readFile(headerPath, "utf8"),
+    readFile(stylesPath, "utf8"),
+  ]);
 
   assert.match(
     stylesSource,
@@ -519,8 +522,9 @@ test("shared header and page spacing switch immediately above 1080px", async () 
   );
   assert.match(
     stylesSource,
-    /@media \(min-width: 1100px\)[\s\S]*?\.mobileMenuButton\s*\{[\s\S]*?display: none;/,
+    /@media \(min-width: 1201px\)[\s\S]*?\.mobileMenuButton\s*\{[\s\S]*?display: none;/,
   );
+  assert.match(headerSource, /window\.matchMedia\("\(min-width: 1201px\)"\)/);
 });
 
 test("customer reviews page includes responsive layout styles", async () => {
