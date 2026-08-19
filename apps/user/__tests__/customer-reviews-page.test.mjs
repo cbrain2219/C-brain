@@ -26,6 +26,10 @@ const testimonialCardPath = new URL(
   "../app/_components/CustomerTestimonialCard.tsx",
   import.meta.url,
 );
+const expandableTestimonialBodyPath = new URL(
+  "../app/_components/ExpandableCustomerTestimonialBody.tsx",
+  import.meta.url,
+);
 const packagePath = new URL("../package.json", import.meta.url);
 const nextConfigPath = new URL("../next.config.js", import.meta.url);
 const rootPackagePath = new URL("../../../package.json", import.meta.url);
@@ -898,6 +902,45 @@ test("customer reviews page reveals testimonials in responsive batches", async (
   );
   assert.doesNotMatch(stylesSource, /\.reviewsInterviewCard:nth-child/);
   assert.doesNotMatch(stylesSource, /\.reviewsTestimonialCard:nth-child/);
+});
+
+test("long customer testimonials expand once from a four-line preview", async () => {
+  const [testimonialCardSource, expandableBodySource, stylesSource] =
+    await Promise.all([
+      readFile(testimonialCardPath, "utf8"),
+      readFile(expandableTestimonialBodyPath, "utf8"),
+      readFile(stylesPath, "utf8"),
+    ]);
+
+  assert.match(
+    testimonialCardSource,
+    /<ExpandableCustomerTestimonialBody variant=\{variant\}>/,
+  );
+  assert.match(expandableBodySource, /variant: "landing" \| "reviews"/);
+  assert.match(expandableBodySource, /body\.scrollHeight > body\.clientHeight/);
+  assert.match(expandableBodySource, />\s*\.\.\. 더보기\s*<\/button>/);
+  assert.match(expandableBodySource, /setIsExpanded\(true\)/);
+  assert.doesNotMatch(expandableBodySource, /접기/);
+  assert.match(
+    stylesSource,
+    /\.reviewBodyCollapsed\s*\{[^}]*-webkit-line-clamp: 4;/s,
+  );
+  assert.match(
+    stylesSource,
+    /\.reviewMoreButton\s*\{[^}]*color: #a0aab8;[^}]*font-size: 12px;[^}]*line-height: 16px;[^}]*letter-spacing: -0\.18px;/s,
+  );
+  assert.match(
+    stylesSource,
+    /\.reviewsTestimonialBody\s*\{[^}]*-webkit-line-clamp: 4;/s,
+  );
+  assert.match(
+    stylesSource,
+    /\.reviewsTestimonialBodyExpanded\s*\{[^}]*-webkit-line-clamp: unset;/s,
+  );
+  assert.match(
+    stylesSource,
+    /\.reviewsTestimonialMoreButton\s*\{[^}]*font-size: 12px;[^}]*line-height: 16px;[^}]*letter-spacing: -0\.18px;/s,
+  );
 });
 
 test("customer reviews keep compact spacing through the 1080px breakpoint", async () => {

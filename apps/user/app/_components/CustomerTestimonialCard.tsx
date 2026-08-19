@@ -1,8 +1,8 @@
 import type { CustomerTestimonial } from "../_content/customerReviews";
 import styles from "../page.module.css";
+import { ExpandableCustomerTestimonialBody } from "./ExpandableCustomerTestimonialBody";
 
 type CustomerTestimonialCardVariant = "landing" | "reviews";
-type CustomerTestimonialBodyElement = "p" | "blockquote";
 
 type CustomerTestimonialCardProps =
   | {
@@ -19,7 +19,6 @@ type CustomerTestimonialCardProps =
 
 const testimonialCardClassNames = {
   landing: {
-    body: styles.reviewBody,
     card: styles.reviewCard,
     content: styles.reviewContent,
     divider: styles.reviewDivider,
@@ -28,7 +27,6 @@ const testimonialCardClassNames = {
   },
   reviews: {
     article: styles.reviewsTestimonialArticle,
-    body: styles.reviewsTestimonialBody,
     card: styles.reviewsTestimonialCard,
     content: styles.reviewsTestimonialContent,
     divider: styles.reviewsDivider,
@@ -38,15 +36,12 @@ const testimonialCardClassNames = {
 } as const;
 
 function CustomerTestimonialCardContent({
-  bodyElement,
   testimonial,
   variant,
 }: {
-  bodyElement: CustomerTestimonialBodyElement;
   testimonial: Pick<CustomerTestimonial, "body" | "company" | "name">;
   variant: CustomerTestimonialCardVariant;
 }) {
-  const BodyElement = bodyElement;
   const classNames = testimonialCardClassNames[variant];
 
   return (
@@ -55,9 +50,9 @@ function CustomerTestimonialCardContent({
         <p className={classNames.stars} aria-label="별점 5점">
           ★★★★★
         </p>
-        <BodyElement className={classNames.body}>
+        <ExpandableCustomerTestimonialBody variant={variant}>
           {testimonial.body}
-        </BodyElement>
+        </ExpandableCustomerTestimonialBody>
       </div>
       <span className={classNames.divider} aria-hidden="true" />
       <footer className={classNames.meta}>
@@ -77,7 +72,6 @@ export function CustomerTestimonialCard(props: CustomerTestimonialCardProps) {
           className={testimonialCardClassNames.reviews.article}
         >
           <CustomerTestimonialCardContent
-            bodyElement="blockquote"
             testimonial={props.testimonial}
             variant="reviews"
           />
@@ -89,7 +83,6 @@ export function CustomerTestimonialCard(props: CustomerTestimonialCardProps) {
   return (
     <article className={testimonialCardClassNames.landing.card}>
       <CustomerTestimonialCardContent
-        bodyElement="p"
         testimonial={props.testimonial}
         variant="landing"
       />
