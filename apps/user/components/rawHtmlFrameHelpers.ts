@@ -30,21 +30,35 @@ export function createFramedHtml(
 
   const frameReset = document.createElement("style");
   frameReset.setAttribute("data-cbrain-frame-reset", "");
-  frameReset.textContent = "body { margin: 0; }";
+  frameReset.textContent =
+    "html { overflow-y: hidden !important; } body { margin: 0; }";
 
   document.head.prepend(frameReset);
   document.head.prepend(policy);
 
   const resizeScript = `<script nonce=${JSON.stringify(token)}>(() => {
+    const getElementBottom = (element) => {
+      const style = getComputedStyle(element);
+      if (style.display === "none" || style.position === "fixed") return 0;
+      const marginBottom = Number.parseFloat(style.marginBottom);
+      return (
+        element.getBoundingClientRect().bottom +
+        window.scrollY +
+        (Number.isFinite(marginBottom) ? marginBottom : 0)
+      );
+    };
+
     const sendHeight = () => {
       const body = document.body;
-      const root = document.documentElement;
-      const height = Math.max(
-        body?.offsetHeight ?? 0,
-        body?.scrollHeight ?? 0,
-        root.offsetHeight,
-        root.scrollHeight,
+      if (!body) return;
+      let height = Math.max(
+        body.offsetHeight,
+        body.scrollHeight,
+        getElementBottom(body),
       );
+      for (const element of body.querySelectorAll("*")) {
+        height = Math.max(height, getElementBottom(element));
+      }
 
       window.parent.postMessage(
         { type: ${JSON.stringify(RESIZE_MESSAGE_TYPE)}, token: ${JSON.stringify(token)}, height },
@@ -52,12 +66,18 @@ export function createFramedHtml(
       );
     };
 
-    window.addEventListener("load", sendHeight);
-    document.fonts?.ready.then(sendHeight);
-    requestAnimationFrame(sendHeight);
+    let resizeFrame = 0;
+    const scheduleHeight = () => {
+      cancelAnimationFrame(resizeFrame);
+      resizeFrame = requestAnimationFrame(sendHeight);
+    };
+
+    window.addEventListener("load", scheduleHeight);
+    document.fonts?.ready.then(scheduleHeight);
+    scheduleHeight();
 
     if (typeof ResizeObserver !== "undefined") {
-      const observer = new ResizeObserver(sendHeight);
+      const observer = new ResizeObserver(scheduleHeight);
       observer.observe(document.documentElement);
       if (document.body) observer.observe(document.body);
     }

@@ -24,6 +24,7 @@ test("full blog HTML is rendered unchanged in a script-blocked frame", async () 
 
   assert.match(frame, /srcDoc=\{framedHtml\}/);
   assert.match(frame, /sandbox="allow-scripts"/);
+  assert.match(frame, /scrolling="no"/);
   assert.doesNotMatch(frame, /allow-same-origin/);
   assert.match(frameHelper, /Content-Security-Policy/);
   assert.match(frameHelper, /document\.querySelectorAll\("script"\)/);
