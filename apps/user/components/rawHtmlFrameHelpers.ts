@@ -27,6 +27,12 @@ export function createFramedHtml(
     "object-src 'none'",
     "form-action 'none'",
   ].join("; ");
+
+  const frameReset = document.createElement("style");
+  frameReset.setAttribute("data-cbrain-frame-reset", "");
+  frameReset.textContent = "body { margin: 0; }";
+
+  document.head.prepend(frameReset);
   document.head.prepend(policy);
 
   const resizeScript = `<script nonce=${JSON.stringify(token)}>(() => {

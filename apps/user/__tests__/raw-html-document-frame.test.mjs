@@ -41,6 +41,9 @@ test("raw HTML srcDoc removes supplied scripts and injects nonce-bound resize co
   const policy = framed.window.document.querySelector(
     'meta[http-equiv="Content-Security-Policy"]',
   );
+  const frameReset = framed.window.document.querySelector(
+    "style[data-cbrain-frame-reset]",
+  );
 
   assert.match(srcDoc, /data-kept="yes"/);
   assert.match(srcDoc, /Preserved markup/);
@@ -48,6 +51,7 @@ test("raw HTML srcDoc removes supplied scripts and injects nonce-bound resize co
   assert.equal(scripts.length, 1);
   assert.equal(scripts[0].getAttribute("nonce"), token);
   assert.match(policy?.getAttribute("content") ?? "", /script-src 'nonce-test-nonce'/);
+  assert.equal(frameReset?.textContent, "body { margin: 0; }");
   assert.match(scripts[0].textContent ?? "", /cbrain:raw-html-resize/);
 });
 
