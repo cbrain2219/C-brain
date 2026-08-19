@@ -1943,6 +1943,14 @@
   gap: 4px;
 }
 
+.blogText > p {
+  display: -webkit-box;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
 .blogCategory {
   font-family: var(--font-sans);
   font-size: 14px;

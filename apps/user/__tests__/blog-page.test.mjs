@@ -143,6 +143,16 @@ test("landing blog cards group titles and summaries with a 4px gap", async () =>
   assert.match(blogText, /gap:\s*4px/);
 });
 
+test("landing blog card summaries truncate after two lines", async () => {
+  const landingStyles = await source("landingStyles");
+  const summaryStyles = cssBlock(landingStyles, ".blogText > p");
+
+  assert.match(summaryStyles, /display:\s*-webkit-box/);
+  assert.match(summaryStyles, /overflow:\s*hidden/);
+  assert.match(summaryStyles, /-webkit-box-orient:\s*vertical/);
+  assert.match(summaryStyles, /-webkit-line-clamp:\s*2/);
+});
+
 test("blog list page exposes SEO metadata", async () => {
   const page = await source("page");
 
