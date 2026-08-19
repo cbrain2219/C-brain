@@ -405,7 +405,6 @@ export function NoticeFormPage() {
         <textarea
           className="blog-form__textarea blog-form__textarea--seo"
           id={formId + '-excerpt'}
-          maxLength={180}
           name="excerpt"
           onChange={(event) => updateForm('excerpt', event.currentTarget.value)}
           placeholder="목록에 표시할 요약을 입력해주세요."

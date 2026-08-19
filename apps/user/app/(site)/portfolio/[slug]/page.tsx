@@ -7,6 +7,7 @@ import { LightHeroBadge } from "../../../../components/LightHeroBadge";
 import { ManagedContent } from "../../../../components/ManagedContent";
 import { RawHtmlDocumentFrame } from "../../../../components/RawHtmlDocumentFrame";
 import { JsonLdScript } from "../../../_components/JsonLdScript";
+import { ContentViewTracker } from "../../../_components/ContentViewTracker";
 import {
   getPortfolioCategoryIdFromValue,
   getPortfolioCategoryLabel,
@@ -127,6 +128,7 @@ export default async function PortfolioDetailPage({
 
   return (
     <article className={styles.detailPage}>
+      <ContentViewTracker contentId={item.id} contentType="portfolio" />
       <JsonLdScript
         data={createCreativeWorkStructuredData({
           authorName: item.author,

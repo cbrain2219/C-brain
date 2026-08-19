@@ -54,6 +54,7 @@ export type CustomerInterviewDetail = {
   category: string;
   company: string;
   content: readonly CustomerInterviewContentBlock[];
+  id: string;
   keywords: readonly string[];
   managedContent: PublicManagedContent;
   projectInfo: readonly CustomerInterviewProjectInfo[];
@@ -405,6 +406,7 @@ export function mapCustomerInterviewDetail(
     category: "고객 인터뷰",
     company: row.company_name,
     content,
+    id: row.id,
     keywords: presentation?.keywords ?? [
       "씨브레인",
       "고객 인터뷰",

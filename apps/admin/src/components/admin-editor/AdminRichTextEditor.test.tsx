@@ -82,6 +82,42 @@ describe('admin rich text editor contracts', () => {
     expect(value?.html).toContain('포트폴리오 본문')
   })
 
+  it('keeps canonical updates live after StrictMode replays the mounted runtime', async () => {
+    const onChange = vi.fn()
+    const props = editorProps({ onChange })
+    const user = userEvent.setup()
+
+    render(
+      <StrictMode>
+        <AdminRichTextEditor {...props} />
+      </StrictMode>,
+    )
+    const editor = await screen.findByRole('textbox', {
+      name: '본문 WYSIWYG 편집기',
+    })
+    await waitFor(() => expect(props.onCreate).toHaveBeenCalledTimes(1))
+
+    await user.type(editor, 'StrictMode 저장 본문')
+
+    await waitFor(() => expect(onChange).toHaveBeenCalled())
+    expect(onChange).toHaveBeenLastCalledWith({
+      document: {
+        content: [
+          {
+            attrs: { textAlign: null },
+            content: [{ text: 'StrictMode 저장 본문', type: 'text' }],
+            type: 'paragraph',
+          },
+        ],
+        type: 'doc',
+      },
+      html: '<p>StrictMode 저장 본문</p>',
+    })
+    const emittedValues = onChange.mock.calls.map(([value]) => JSON.stringify(value))
+    expect(new Set(emittedValues).size).toBe(emittedValues.length)
+    expect(props.onCreate).toHaveBeenCalledTimes(1)
+  })
+
   it('normalizes bare hostnames and rejects unsafe link schemes', () => {
     expect(normalizeEditorLinkHref('example.com/path')).toBe('https://example.com/path')
     expect(normalizeEditorLinkHref('mailto:hello@example.com')).toBe('mailto:hello@example.com')
@@ -248,7 +284,7 @@ describe('admin rich text editor contracts', () => {
     const { rerender } = render(<AdminRichTextEditor {...valid} />)
 
     await waitFor(() => expect(valid.onCreate).toHaveBeenCalledTimes(1))
-    expect(valid.onCreate).toHaveBeenLastCalledWith(expect.objectContaining({ document: expect.objectContaining({ type: 'doc' }), html: '<p></p>' }))
+    expect(valid.onCreate).toHaveBeenLastCalledWith(expect.objectContaining({ document: expect.objectContaining({ type: 'doc' }), html: '' }))
 
     const invalid = editorProps({
       document: {
@@ -295,6 +331,43 @@ describe('admin rich text editor contracts', () => {
     await waitFor(() => expect(b.onCreate).toHaveBeenCalledTimes(1))
     createObjectUrl.mockRestore()
     revokeObjectUrl.mockRestore()
+  })
+
+  it('cleans an upload that resolves after the editor really unmounts', async () => {
+    const createObjectUrl = vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:unmounted-preview')
+    const revokeObjectUrl = vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => undefined)
+    const pendingUpload = deferred<{ alt: string; path: string; url: string }>()
+    const props = editorProps({ uploadImage: vi.fn(() => pendingUpload.promise) })
+
+    try {
+      const view = render(
+        <StrictMode>
+          <AdminRichTextEditor {...props} />
+        </StrictMode>,
+      )
+
+      await waitFor(() => expect(props.onCreate).toHaveBeenCalledTimes(1))
+      fireEvent.change(screen.getByLabelText('본문 이미지 파일 선택'), {
+        target: { files: [new File(['image'], 'late.png', { type: 'image/png' })] },
+      })
+      await waitFor(() => expect(props.uploadImage).toHaveBeenCalledTimes(1))
+      view.unmount()
+
+      const uploaded = {
+        alt: 'late',
+        path: 'content/blog/scope/images/late.png',
+        url: imageUrl,
+      }
+      pendingUpload.resolve(uploaded)
+
+      await waitFor(() => {
+        expect(props.cleanupOrphanedImage).toHaveBeenCalledWith(uploaded, 'editor_replaced')
+      })
+      expect(revokeObjectUrl).toHaveBeenCalledWith('blob:unmounted-preview')
+    } finally {
+      createObjectUrl.mockRestore()
+      revokeObjectUrl.mockRestore()
+    }
   })
 
   it('drops a queued malformed A document error when StrictMode changes to B', async () => {

@@ -54,6 +54,7 @@ export function RawHtmlDocumentFrame({
         className={styles.frame}
         ref={frameRef}
         sandbox="allow-scripts"
+        scrolling="no"
         srcDoc={framedHtml}
         title={`${title} 원문`}
       />

@@ -463,6 +463,47 @@ describe('AdminContentEditor', () => {
     }))
   })
 
+  it('keeps raw HTML recovery available while TEXT Editor is initializing', async () => {
+    richEditorHarness.createHandlers.clear()
+    richEditorHarness.errorHandlers.clear()
+    richEditorHarness.pendingHandlers.clear()
+    richEditorHarness.producerKeys.clear()
+    const onChange = vi.fn()
+
+    render(
+      <AdminContentEditor
+        documentKey="notice:initializing"
+        entity="notice"
+        onBusyChange={vi.fn()}
+        onChange={onChange}
+        onPendingAssetCountChange={vi.fn()}
+        value={createInitialManagedContentValue()}
+      />,
+    )
+
+    await screen.findByText('테스트 TEXT Editor')
+    const generation = [...richEditorHarness.pendingHandlers.keys()].at(-1) ?? ''
+    act(() => {
+      richEditorHarness.pendingHandlers.get(generation)?.({
+        count: 0,
+        generation,
+        producerKey: richEditorHarness.producerKeys.get(generation) ?? Symbol('initializing'),
+      })
+    })
+
+    const rawModeButton = screen.getByRole('button', { name: 'HTML 작성' }) as HTMLButtonElement
+    const textModeButton = screen.getByRole('button', {
+      name: 'TEXT Editor 작성',
+    }) as HTMLButtonElement
+
+    expect(rawModeButton.disabled).toBe(false)
+    expect(textModeButton.disabled).toBe(true)
+    fireEvent.click(rawModeButton)
+    expect(onChange).toHaveBeenLastCalledWith(
+      expect.objectContaining({ contentAuthoringMode: 'raw_html' }),
+    )
+  })
+
   it('keeps mode controls disabled while upload work is pending', async () => {
     richEditorHarness.createHandlers.clear()
     richEditorHarness.errorHandlers.clear()

@@ -44,7 +44,21 @@ test('testimonial list rows derive a useful title from attribution', () => {
 
   assert.equal(row.title, '오르카 김담당 후기')
   assert.equal(row.type, '후기')
-  assert.equal(row.views, '12')
+  assert.equal(row.views, '-')
+})
+
+test('interview list rows format their view count', () => {
+  const row = toReviewListRow(
+    review({
+      kind: 'interview',
+      manager_name: null,
+      title: '오르카 인터뷰',
+      view_count: 1234,
+    }),
+  )
+
+  assert.equal(row.type, '인터뷰')
+  assert.equal(row.views, '1,234')
 })
 
 test('interview rows hydrate the conditional form and existing video', () => {

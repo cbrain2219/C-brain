@@ -227,7 +227,7 @@ test("blog featured carousel ignores overlapping slide commands while moving", a
   assert.match(featuredCard, /BLOG_FEATURED_TRANSITION_MS/);
 });
 
-test("blog featured carousel keeps drag gestures from becoming native link drags", async () => {
+test("blog featured carousel tracks drag gestures outside the link without starting native drags", async () => {
   const featuredCard = await source("featuredCard");
   const sectionMarkup = featuredCard.match(
     /<section[\s\S]*?tabIndex=\{0\}[\s\S]*?>/,
@@ -238,8 +238,9 @@ test("blog featured carousel keeps drag gestures from becoming native link drags
 
   assert.match(featuredCard, /handleDragStart/);
   assert.match(featuredCard, /event\.preventDefault\(\)/);
-  assert.doesNotMatch(featuredCard, /setPointerCapture/);
-  assert.doesNotMatch(featuredCard, /releasePointerCapture/);
+  assert.match(featuredCard, /setPointerCapture\(event\.pointerId\)/);
+  assert.match(featuredCard, /hasPointerCapture\(event\.pointerId\)/);
+  assert.match(featuredCard, /releasePointerCapture\(event\.pointerId\)/);
   assert.match(featuredCard, /draggable=\{false\}/);
   assert.match(featuredCard, /onDragStart=\{handleDragStart\}/);
   assert.doesNotMatch(sectionMarkup ?? "", /onPointerDown/);

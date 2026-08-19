@@ -235,6 +235,17 @@ test("notice detail keeps metadata, 404, structured content, and list return", a
   assert.match(detailStyles, /\.metaGroup\s*\{[\s\S]*gap: 8px;/);
   assert.match(detailStyles, /\.author\s*\{[\s\S]*gap: 4px;/);
   assert.match(article, /<time dateTime=\{notice\.publishedAt\}>/);
+  assert.match(article, /import \{ RawHtmlDocumentFrame \}/);
+  assert.match(article, /notice\.managedContent\.contentMode === "html"/);
+  assert.match(
+    article,
+    /notice\.managedContent\.contentAuthoringMode === "raw_html"/,
+  );
+  assert.match(
+    article,
+    /<RawHtmlDocumentFrame html=\{rawHtmlSource\} title=\{notice\.title\} \/>/,
+  );
+  assert.match(article, /<ManagedContent/);
   assert.match(article, /notice\.content\.map/);
   assert.match(article, /block\.type === "paragraph"/);
   assert.match(article, /<NoticeBackButton/);

@@ -7,6 +7,7 @@ import { LightHeroBadge } from "../../../../components/LightHeroBadge";
 import { ManagedContent } from "../../../../components/ManagedContent";
 import { RawHtmlDocumentFrame } from "../../../../components/RawHtmlDocumentFrame";
 import { JsonLdScript } from "../../../_components/JsonLdScript";
+import { ContentViewTracker } from "../../../_components/ContentViewTracker";
 import {
   getCustomerInterviewDetailSeo,
   getPublishedCustomerInterviewDetailBySlug,
@@ -130,6 +131,7 @@ export default async function CustomerReviewDetailPage({
       itemScope
       itemType="https://schema.org/Article"
     >
+      <ContentViewTracker contentId={detail.id} contentType="interview" />
       <meta content={detail.seoDescription} itemProp="description" />
       <meta content={detail.publishedAt} itemProp="datePublished" />
       <meta content={detail.publishedAt} itemProp="dateModified" />

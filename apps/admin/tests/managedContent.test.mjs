@@ -6,6 +6,8 @@ import {
   ManagedContentSchemaError,
   convertLegacyTextToRaw,
   convertLegacyTextToWysiwyg,
+  createInitialManagedContentValue,
+  managedContentDocumentIsEmpty,
   managedContentFormFromRow,
   managedContentInputFromForm,
   managedContentIsEmpty,
@@ -27,6 +29,21 @@ function row(overrides = {}) {
     ...overrides,
   }
 }
+
+test('starts WYSIWYG content without synthetic HTML while retaining the empty editor document', () => {
+  const initial = createInitialManagedContentValue()
+
+  assert.equal(initial.content, '')
+  assert.equal(managedContentDocumentIsEmpty(initial.contentJson), true)
+  assert.equal(
+    managedContentDocumentIsEmpty({ type: 'doc', content: [{ type: 'horizontalRule' }] }),
+    false,
+  )
+  assert.equal(
+    managedContentDocumentIsEmpty({ type: 'doc', content: [{ type: 'image' }] }),
+    false,
+  )
+})
 
 test('maps managed rows without converting legacy Markdown', () => {
   const html = managedContentFormFromRow(row())

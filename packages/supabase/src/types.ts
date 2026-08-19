@@ -941,6 +941,13 @@ export type Database = {
         Args: Record<string, never>;
         Returns: boolean;
       };
+      increment_content_view: {
+        Args: {
+          p_content_id: string;
+          p_content_type: string;
+        };
+        Returns: undefined;
+      };
       reorder_portfolio_items: {
         Args: {
           portfolio_item_ids: string[];

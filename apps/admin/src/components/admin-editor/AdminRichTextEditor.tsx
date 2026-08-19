@@ -229,8 +229,9 @@ export function AdminRichTextEditor({
       },
       onContentError: ({ editor: currentEditor, error }) => reportContentError(currentEditor, error),
       onCreate: ({ editor: currentEditor }) => {
+        if (runtime.created || invalidEditorsRef.current.has(currentEditor)) return
         runtime.editor = currentEditor
-        if (!isCurrentRuntime(runtime, currentEditor) || runtime.created || invalidEditorsRef.current.has(currentEditor)) return
+        if (!isCurrentRuntime(runtime, currentEditor)) return
         if (hasTransientImageState(currentEditor)) {
           reportContentError(currentEditor, new Error('Stored editor content contains a pending image.'))
           return

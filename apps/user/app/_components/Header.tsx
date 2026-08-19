@@ -53,7 +53,7 @@ export function Header() {
   }, []);
 
   useEffect(() => {
-    const desktopMediaQuery = window.matchMedia("(min-width: 1100px)");
+    const desktopMediaQuery = window.matchMedia("(min-width: 1201px)");
     const closeMenuOnDesktop = (event: MediaQueryListEvent) => {
       if (event.matches) {
         setIsMenuOpen(false);
