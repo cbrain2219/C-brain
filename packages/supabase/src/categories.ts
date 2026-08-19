@@ -17,6 +17,8 @@ export const productTypes = productCategories.map(
 
 export const portfolioCategories = [
   ...productCategories,
+  { id: "package-shopping-bag", label: "패키지 · 쇼핑백" },
+  { id: "photo-shoot", label: "촬영" },
   { id: "other", label: "기타" },
 ] as const;
 

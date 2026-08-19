@@ -39,15 +39,32 @@ test("product categories are fixed to the admin order", () => {
   );
 });
 
-test("portfolio categories append other without changing product categories", () => {
-  assert.deepEqual(portfolioTypes, [...productTypes, "기타"]);
+test("portfolio categories add portfolio-only types without changing product categories", () => {
+  assert.deepEqual(portfolioTypes, [
+    ...productTypes,
+    "패키지 · 쇼핑백",
+    "촬영",
+    "기타",
+  ]);
   assert.deepEqual(
     portfolioCategories.map(({ id }) => id),
-    [...productCategories.map(({ id }) => id), "other"],
+    [
+      ...productCategories.map(({ id }) => id),
+      "package-shopping-bag",
+      "photo-shoot",
+      "other",
+    ],
   );
+  assert.equal(
+    getPortfolioCategory("패키지·쇼핑백")?.id,
+    "package-shopping-bag",
+  );
+  assert.equal(getPortfolioCategoryLabel("photo-shoot"), "촬영");
   assert.equal(getPortfolioCategory("기타")?.id, "other");
   assert.equal(getPortfolioCategoryLabel("other"), "기타");
+  assert.equal(isPortfolioType("촬영"), true);
   assert.equal(isPortfolioType("기타"), true);
+  assert.equal(isProductType("촬영"), false);
 });
 
 test("product category lookup accepts stored labels and legacy public values", () => {

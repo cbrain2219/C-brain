@@ -21,7 +21,7 @@ const paths = {
   services: new URL("../app/_content/services.ts", import.meta.url),
 };
 
-test("portfolio adds other without changing the shared product category contract", async () => {
+test("portfolio uses shared portfolio-only categories without changing the product category contract", async () => {
   const entries = await Promise.all(
     Object.entries(paths).map(async ([name, path]) => [
       name,
