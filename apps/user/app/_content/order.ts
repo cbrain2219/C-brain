@@ -23,7 +23,7 @@ export type OrderMethod = {
 export const orderSteps = [
   { number: 1, label: "카테고리 선택" },
   { number: 2, label: "옵션 선택" },
-  { number: 3, label: "정보 선택" },
+  { number: 3, label: "정보 입력" },
   { number: 4, label: "결제 완료" },
 ] as const;
 

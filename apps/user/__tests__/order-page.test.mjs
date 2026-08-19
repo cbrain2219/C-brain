@@ -139,7 +139,7 @@ test("order page route, content, responsive styles, and navigation are wired", (
 
   assert.match(contentSource, /number:\s*1,\s*label:\s*"카테고리 선택"/);
   assert.match(contentSource, /number:\s*2,\s*label:\s*"옵션 선택"/);
-  assert.match(contentSource, /number:\s*3,\s*label:\s*"정보 선택"/);
+  assert.match(contentSource, /number:\s*3,\s*label:\s*"정보 입력"/);
   assert.match(contentSource, /number:\s*4,\s*label:\s*"결제 완료"/);
 
   assert.match(iconSource, /\| "chevron-right"/);
@@ -975,7 +975,7 @@ test("order page route, content, responsive styles, and navigation are wired", (
   assert.match(orderMethodsSource, /tone:\s*"quote"/);
   assert.match(contentSource, /규격·사양이 정해진 표준 제품/);
   assert.match(contentSource, /규격 협의 필요하거나 대량 주문/);
-  assert.match(contentSource, /정보 선택/);
+  assert.match(contentSource, /정보 입력/);
   assert.match(contentSource, /export type OrderStepId/);
   assert.match(contentSource, /export type OrderSelectedOptionIds/);
   assert.match(contentSource, /export type OrderSelectionSummary/);
