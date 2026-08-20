@@ -65,9 +65,7 @@ export function formatRefundAmountInput(
   const normalized = digits.replace(/^0+(?=\d)/, '')
   const amount = Number(normalized)
 
-  if (!Number.isSafeInteger(amount) || amount > maximum) return null
-
-  return formatSalesNumber(Math.max(0, amount))
+  return formatSalesNumber(Math.min(Math.max(0, amount), maximum))
 }
 
 export function getSalesChartProductColor(

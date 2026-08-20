@@ -235,12 +235,12 @@ test('refund amount must be a whole won amount within the refundable balance', (
   )
 })
 
-test('refund amount input accepts only unambiguous digits and rejects over-limit values', () => {
+test('refund amount input accepts only digits and clamps over-limit values', () => {
   assert.equal(formatRefundAmountInput('', 38_000), '')
   assert.equal(formatRefundAmountInput('0012300', 38_000), '12,300')
   assert.equal(formatRefundAmountInput('12,300', 38_000), '12,300')
-  assert.equal(formatRefundAmountInput('38,001', 38_000), null)
-  assert.equal(formatRefundAmountInput('999999999999999999', 38_000), null)
+  assert.equal(formatRefundAmountInput('38,001', 38_000), '38,000')
+  assert.equal(formatRefundAmountInput('999999999999999999', 38_000), '38,000')
   assert.equal(formatRefundAmountInput('3.5', 38_000), null)
   assert.equal(formatRefundAmountInput('1e3', 38_000), null)
   assert.equal(formatRefundAmountInput('-5000', 38_000), null)
