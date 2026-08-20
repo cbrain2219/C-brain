@@ -20,8 +20,8 @@ const contentViewMigrationUrl = new URL(
   '../../../supabase/migrations/20260819063942_add_content_view_increment.sql',
   import.meta.url,
 )
-const reviewRequestedProductMigrationUrl = new URL(
-  '../../../supabase/migrations/20260820120142_add_review_requested_product.sql',
+const reviewProductTypeMigrationUrl = new URL(
+  '../../../supabase/migrations/20260820120142_add_review_product_type.sql',
   import.meta.url,
 )
 const reviewYouTubeSqlUrl = new URL(
@@ -43,7 +43,7 @@ const [
   managedContentMigration,
   blogThumbnailFileNameMigration,
   contentViewMigration,
-  reviewRequestedProductMigration,
+  reviewProductTypeMigration,
   reviewProjectInfoSql,
   reviewYouTubeSql,
   blogData,
@@ -56,7 +56,7 @@ const [
   readFile(managedContentMigrationUrl, 'utf8'),
   readFile(blogThumbnailFileNameMigrationUrl, 'utf8'),
   readFile(contentViewMigrationUrl, 'utf8'),
-  readFile(reviewRequestedProductMigrationUrl, 'utf8'),
+  readFile(reviewProductTypeMigrationUrl, 'utf8'),
   readFile(reviewProjectInfoSqlUrl, 'utf8'),
   readFile(reviewYouTubeSqlUrl, 'utf8'),
   readFile(blogDataUrl, 'utf8'),
@@ -88,7 +88,7 @@ test('fresh baseline declares the current admin content contracts', () => {
     'manager_name',
     'project_deliverable',
     'project_usage',
-    'requested_product',
+    'product_type',
     'youtube_video_id',
     'complaint_type',
     'phone_verified',
@@ -137,7 +137,7 @@ test('managed content keeps inactive authoring fields outside anonymous reads', 
     'content_json',
     'content_source_backup',
     'content_schema_version',
-    'requested_product',
+    'product_type',
     'thumbnail_file_name',
   ]
 
@@ -269,7 +269,7 @@ test('TypeScript mirrors the current content tables', () => {
   )
   assert.match(
     types,
-    /reviews:\s*\{[\s\S]*?Row:\s*\{[\s\S]*?company_name: string;[\s\S]*?manager_name: string \| null;[\s\S]*?project_deliverable: string \| null;[\s\S]*?project_usage: string \| null;[\s\S]*?requested_product: string \| null;[\s\S]*?show_on_landing: boolean;[\s\S]*?youtube_video_id: string \| null;/,
+    /reviews:\s*\{[\s\S]*?Row:\s*\{[\s\S]*?company_name: string;[\s\S]*?manager_name: string \| null;[\s\S]*?product_type: string \| null;[\s\S]*?project_deliverable: string \| null;[\s\S]*?project_usage: string \| null;[\s\S]*?show_on_landing: boolean;[\s\S]*?youtube_video_id: string \| null;/,
   )
   assert.match(
     types,
@@ -313,38 +313,38 @@ test('blog thumbnail filename migration adds private nullable metadata safely', 
   )
 })
 
-test('requested product migration adds private nullable review metadata safely', () => {
+test('review product type migration adds private nullable metadata safely', () => {
   assert.match(
-    reviewRequestedProductMigration,
-    /alter table public\.reviews\s+add column if not exists requested_product text/,
+    reviewProductTypeMigration,
+    /alter table public\.reviews\s+add column if not exists product_type text/,
   )
   assert.match(
-    reviewRequestedProductMigration,
-    /add constraint reviews_requested_product_nonblank_check[\s\S]*?requested_product is null[\s\S]*?nullif\(btrim\(requested_product\), ''\) is not null[\s\S]*?not valid/,
+    reviewProductTypeMigration,
+    /add constraint reviews_product_type_nonblank_check[\s\S]*?product_type is null[\s\S]*?nullif\(btrim\(product_type\), ''\) is not null[\s\S]*?not valid/,
   )
   assert.match(
-    reviewRequestedProductMigration,
-    /validate constraint reviews_requested_product_nonblank_check/,
+    reviewProductTypeMigration,
+    /validate constraint reviews_product_type_nonblank_check/,
   )
   assert.match(
-    reviewRequestedProductMigration,
-    /revoke select \(requested_product\) on table public\.reviews from public, anon/,
+    reviewProductTypeMigration,
+    /revoke select \(product_type\) on table public\.reviews from public, anon/,
   )
-  assert.match(reviewRequestedProductMigration, /notify pgrst, 'reload schema'/)
+  assert.match(reviewProductTypeMigration, /notify pgrst, 'reload schema'/)
   assert.doesNotMatch(
-    reviewRequestedProductMigration,
-    /grant select[^;]*requested_product[^;]*to anon/,
+    reviewProductTypeMigration,
+    /grant select[^;]*product_type[^;]*to anon/,
   )
   assert.match(
     baseline,
-    /constraint reviews_requested_product_nonblank_check[\s\S]*?requested_product is null[\s\S]*?nullif\(btrim\(requested_product\), ''\) is not null/,
+    /constraint reviews_product_type_nonblank_check[\s\S]*?product_type is null[\s\S]*?nullif\(btrim\(product_type\), ''\) is not null/,
   )
 
   const baselineGrant = /grant select \(([\s\S]*?)\) on public\.reviews to anon;/.exec(
     baseline,
   )
   assert.ok(baselineGrant)
-  assert.doesNotMatch(baselineGrant[1], /\brequested_product\b/)
+  assert.doesNotMatch(baselineGrant[1], /\bproduct_type\b/)
 
   const reviewsType = /reviews:\s*\{([\s\S]*?)Relationships: \[\];/.exec(types)
   assert.ok(reviewsType)
@@ -353,7 +353,7 @@ test('requested product migration adds private nullable review metadata safely',
       reviewsType[1],
     )
     assert.ok(sectionType)
-    assert.match(sectionType[1], /requested_product\??: string \| null;/)
+    assert.match(sectionType[1], /product_type\??: string \| null;/)
   }
 })
 

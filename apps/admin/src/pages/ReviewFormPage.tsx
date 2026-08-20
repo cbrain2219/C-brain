@@ -6,7 +6,6 @@ import {
   getAdminReview,
   updateReview,
 } from '@repo/supabase'
-import { isPortfolioType, portfolioTypes } from '@repo/supabase/categories'
 import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react'
 import type { ChangeEvent, DragEvent, FormEvent, RefObject } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
@@ -35,6 +34,8 @@ import {
 import { getSubmitIntent } from './contentListState'
 import {
   createInitialReviewForm,
+  isReviewRequestedProduct,
+  reviewRequestedProductOptions,
   toReviewFormState,
   toReviewMutationInput,
 } from './reviewData'
@@ -157,9 +158,9 @@ function RequestedProductField({
         inputId={id}
         name="requestedProduct"
         onCommit={(nextValue) => {
-          if (isPortfolioType(nextValue)) onChange(nextValue)
+          if (isReviewRequestedProduct(nextValue)) onChange(nextValue)
         }}
-        options={portfolioTypes}
+        options={reviewRequestedProductOptions}
         placeholder="카테고리를 선택해주세요."
         readOnly
         value={value}

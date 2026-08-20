@@ -1,4 +1,4 @@
-import { isPortfolioType } from '@repo/supabase/categories'
+import { portfolioTypes } from '@repo/supabase/categories'
 import type { Json, PublishStatus, TableInsert, TableRow } from '@repo/supabase/types'
 import {
   getYouTubeVideoId,
@@ -15,6 +15,12 @@ import {
 } from '../lib/managedContent.ts'
 
 export type ReviewContentMode = ManagedContentFormValue['contentMode']
+
+export const reviewRequestedProductOptions = [...portfolioTypes, '없음'] as const
+
+export function isReviewRequestedProduct(value: string) {
+  return reviewRequestedProductOptions.some((option) => option === value)
+}
 
 export type ReviewFormState = ManagedContentFormValue & {
   readonly company: string
@@ -59,10 +65,10 @@ export type ReviewMutationInput = Pick<
   | 'content_source_backup'
   | 'kind'
   | 'manager_name'
+  | 'product_type'
   | 'project_deliverable'
   | 'project_usage'
   | 'published_at'
-  | 'requested_product'
   | 'seo_description'
   | 'show_on_landing'
   | 'slug'
@@ -133,10 +139,10 @@ export function toReviewFormState(
     ...managedContentFormFromRow(review),
     isLandingEnabled: review.show_on_landing,
     manager: review.manager_name ?? '',
+    requestedProduct: review.product_type ?? '',
     projectDeliverable: review.project_deliverable ?? '',
     projectUsage: review.project_usage ?? '',
     publishedAt: toDateInputValue(review.published_at),
-    requestedProduct: review.requested_product ?? '',
     seoDescription: review.seo_description ?? '',
     slug: review.slug ?? '',
     title: review.title ?? '',
@@ -180,7 +186,7 @@ export function toReviewMutationInput(
       ? Boolean(youtubeVideoId)
       : Boolean(nextVideoPath || form.video)
 
-  if (requestedProduct && !isPortfolioType(requestedProduct)) {
+  if (requestedProduct && !isReviewRequestedProduct(requestedProduct)) {
     throw new Error('의뢰하신 제품을 선택해주세요.')
   }
 
@@ -212,10 +218,10 @@ export function toReviewMutationInput(
     content_source_backup: managedContent.content_source_backup,
     kind: isInterview ? 'interview' : 'testimonial',
     manager_name: isInterview ? null : manager || null,
+    product_type: requestedProduct || null,
     project_deliverable: isInterview ? projectDeliverable || null : null,
     project_usage: isInterview ? projectUsage || null : null,
     published_at: publishedAt,
-    requested_product: requestedProduct || null,
     seo_description: isInterview ? form.seoDescription.trim() || null : null,
     show_on_landing: isInterview ? false : form.isLandingEnabled,
     slug: isInterview ? slug || null : null,

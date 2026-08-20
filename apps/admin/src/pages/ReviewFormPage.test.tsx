@@ -210,12 +210,13 @@ it.each([
     expect(product.required).toBe(true)
 
     await user.click(product)
+    expect(portfolioTypes).not.toContain('없음')
     expect(
       screen.getAllByRole('option').map((option) => option.textContent),
-    ).toEqual([...portfolioTypes])
+    ).toEqual([...portfolioTypes, '없음'])
 
-    await user.click(screen.getByRole('option', { name: '촬영' }))
-    expect(product.value).toBe('촬영')
+    await user.click(screen.getByRole('option', { name: '없음' }))
+    expect(product.value).toBe('없음')
   },
 )
 
@@ -249,7 +250,7 @@ it('publishes canonical WYSIWYG content for a new Interview', async () => {
       kind: 'interview',
       project_deliverable: '브랜드 영상',
       project_usage: '온라인 캠페인',
-      requested_product: '브로슈어 · 카탈로그',
+      product_type: '브로슈어 · 카탈로그',
       slug: 'wingsweet-interview',
       status: 'published',
       title: '윙즈윗 고객 인터뷰\n두 번째 줄',
@@ -281,7 +282,7 @@ it('publishes canonical WYSIWYG content for a new Testimonial', async () => {
       manager_name: '김담당',
       project_deliverable: null,
       project_usage: null,
-      requested_product: '브로슈어 · 카탈로그',
+      product_type: '브로슈어 · 카탈로그',
       show_on_landing: true,
       status: 'published',
       title: null,

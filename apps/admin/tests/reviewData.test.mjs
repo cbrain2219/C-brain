@@ -25,7 +25,7 @@ function review(overrides = {}) {
     project_deliverable: null,
     project_usage: null,
     published_at: '2026-07-21T00:00:00.000Z',
-    requested_product: null,
+    product_type: null,
     seo_description: null,
     show_on_landing: true,
     slug: null,
@@ -73,7 +73,7 @@ test('interview rows hydrate the conditional form and existing video', () => {
       manager_name: null,
       project_deliverable: '브로슈어',
       project_usage: '영업 자료 활용',
-      requested_product: '브로슈어 · 카탈로그',
+      product_type: '브로슈어 · 카탈로그',
       seo_description: '인터뷰 설명',
       slug: 'orca-story',
       title: '오르카 인터뷰',
@@ -146,7 +146,7 @@ test('testimonial mutations clear interview-only fields', () => {
     project_deliverable: null,
     project_usage: null,
     published_at: '2026-07-20T15:00:00.000Z',
-    requested_product: '촬영',
+    product_type: '촬영',
     seo_description: null,
     show_on_landing: true,
     slug: null,
@@ -183,7 +183,7 @@ test('published YouTube interview mutations store only the normalized video id',
   assert.equal(input.youtube_video_id, 'dQw4w9WgXcQ')
   assert.equal(input.project_deliverable, '제품 소개 브로슈어')
   assert.equal(input.project_usage, '전시회 배포')
-  assert.equal(input.requested_product, '브로슈어 · 카탈로그')
+  assert.equal(input.product_type, '브로슈어 · 카탈로그')
 })
 
 test('published uploaded-file interview mutations clear an inactive YouTube link', () => {
@@ -219,7 +219,7 @@ test('drafts retain partial content while published reviews require complete fie
   })
 })
 
-test('published reviews require a requested product from the shared portfolio types', () => {
+test('published reviews require a supported requested product option', () => {
   const completeTestimonial = {
     ...createInitialReviewForm(),
     company: '씨브레인',
@@ -242,6 +242,13 @@ test('published reviews require a requested product from the shared portfolio ty
       ),
     { message: '의뢰하신 제품을 선택해주세요.' },
   )
+
+  const withoutRequestedProduct = toReviewMutationInput(
+    { ...completeTestimonial, requestedProduct: '없음' },
+    'published',
+    null,
+  )
+  assert.equal(withoutRequestedProduct.product_type, '없음')
 })
 
 test('an otherwise-complete empty WYSIWYG review may draft but cannot publish', () => {
