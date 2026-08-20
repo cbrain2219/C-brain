@@ -16,6 +16,7 @@ import { filterContentRows } from './contentListState'
 import { toReviewListRow } from './reviewData'
 import type { ReviewListRow } from './reviewData'
 import './PortfolioPage.css'
+import './ReviewPage.css'
 
 const statusFilterOptions = ['전체', '임시저장', '게시됨', '보관됨'] as const
 
@@ -46,7 +47,11 @@ const reviewColumns = [
   {
     header: '인터뷰 · 후기 제목',
     id: 'title',
-    renderCell: (row) => <span className="admin-data-table__title-cell">{row.title}</span>,
+    renderCell: (row) => (
+      <span className="admin-data-table__title-cell review-page__title-cell">
+        {row.title}
+      </span>
+    ),
     track: '600fr',
   },
   {
@@ -172,7 +177,7 @@ export function ReviewPage() {
     filters.type === '전체'
 
   return (
-    <main className="portfolio-page" aria-label="고객 인터뷰 · 후기 관리">
+    <main className="portfolio-page review-page" aria-label="고객 인터뷰 · 후기 관리">
       <AdminDataTableSection
         bottomAction={{
           href: '/reviews/new',

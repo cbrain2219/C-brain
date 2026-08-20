@@ -504,10 +504,9 @@ export function mapCustomerReviewRows(
   const publishedRows = rows.filter((row) => row.status === "published");
   const interviewDetails = publishedRows
     .filter((row) => row.kind === "interview")
+    .sort((left, right) => left.sort_order - right.sort_order)
     .map((row) => mapCustomerInterviewDetail(row, resolveAssetUrl));
-  const featuredDetail =
-    interviewDetails.find((detail) => getPresentation(detail.slug)?.featured) ??
-    interviewDetails[0];
+  const featuredDetail = interviewDetails[0];
 
   return {
     customerInterviews: interviewDetails.map(toCustomerInterviewCard),

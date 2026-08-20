@@ -113,7 +113,10 @@ async function openTextEditor(user: User) {
 
 async function fillPublishedInterview(user: User, body?: string) {
   await selectReviewType(user, '인터뷰')
-  await user.type(screen.getByLabelText('인터뷰 제목'), '윙즈윗 고객 인터뷰')
+  await user.type(
+    screen.getByLabelText('인터뷰 제목'),
+    '윙즈윗 고객 인터뷰{Enter}두 번째 줄',
+  )
   await user.type(screen.getByLabelText('인터뷰 고객사(의뢰처)'), '윙즈윗 고객사')
   await selectRequestedProduct(user)
   await user.type(screen.getByLabelText('진행 프로젝트(제작물)'), '브랜드 영상')
@@ -165,6 +168,24 @@ it('starts a new review in HTML authoring mode', async () => {
     screen.getByRole('button', { name: 'TEXT Editor 작성' }).getAttribute('aria-pressed'),
   ).toBe('false')
   expect(screen.getByRole('textbox', { name: '본문 HTML' })).toBeTruthy()
+})
+
+it('accepts interview titles with or without manual line breaks', async () => {
+  await renderNewReviewPage()
+  const user = userEvent.setup()
+
+  await selectReviewType(user, '인터뷰')
+
+  const title = screen.getByLabelText('인터뷰 제목') as HTMLTextAreaElement
+
+  expect(title.tagName).toBe('TEXTAREA')
+  expect(title.rows).toBe(1)
+
+  await user.type(title, '한 줄 제목')
+  expect(title.value).toBe('한 줄 제목')
+
+  await user.type(title, '{Enter}둘째 줄{Enter}셋째 줄')
+  expect(title.value).toBe('한 줄 제목\n둘째 줄\n셋째 줄')
 })
 
 it.each([
@@ -231,7 +252,7 @@ it('publishes canonical WYSIWYG content for a new Interview', async () => {
       requested_product: '브로슈어 · 카탈로그',
       slug: 'wingsweet-interview',
       status: 'published',
-      title: '윙즈윗 고객 인터뷰',
+      title: '윙즈윗 고객 인터뷰\n두 번째 줄',
       video_path: null,
       youtube_video_id: 'dQw4w9WgXcQ',
     }),

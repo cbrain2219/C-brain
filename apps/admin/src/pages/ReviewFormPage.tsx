@@ -7,7 +7,7 @@ import {
   updateReview,
 } from '@repo/supabase'
 import { isPortfolioType, portfolioTypes } from '@repo/supabase/categories'
-import { useEffect, useId, useRef, useState } from 'react'
+import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react'
 import type { ChangeEvent, DragEvent, FormEvent, RefObject } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { toast } from 'sonner'
@@ -90,6 +90,49 @@ function TextField({
         placeholder={placeholder}
         required={required}
         type="text"
+        value={value}
+      />
+    </label>
+  )
+}
+
+type InterviewTitleFieldProps = {
+  readonly id: string
+  readonly onChange: (value: string) => void
+  readonly value: string
+}
+
+function resizeTitleTextarea(textarea: HTMLTextAreaElement) {
+  const borderHeight = textarea.offsetHeight - textarea.clientHeight
+
+  textarea.style.height = 'auto'
+  textarea.style.height = `${textarea.scrollHeight + borderHeight}px`
+}
+
+function InterviewTitleField({
+  id,
+  onChange,
+  value,
+}: InterviewTitleFieldProps) {
+  const textarea = useRef<HTMLTextAreaElement | null>(null)
+
+  useLayoutEffect(() => {
+    if (textarea.current) resizeTitleTextarea(textarea.current)
+  }, [value])
+
+  return (
+    <label className="blog-form__field" htmlFor={id}>
+      <span className="blog-form__label">인터뷰 제목</span>
+      <textarea
+        autoComplete="off"
+        className="blog-form__textarea review-form__title-textarea"
+        id={id}
+        name="title"
+        onChange={(event) => onChange(event.currentTarget.value)}
+        placeholder="인터뷰 제목을 입력해주세요."
+        ref={textarea}
+        required
+        rows={1}
         value={value}
       />
     </label>
@@ -494,12 +537,9 @@ function InterviewFields({
 }: InterviewFieldsProps) {
   return (
     <>
-      <TextField
+      <InterviewTitleField
         id={`${formId}-title`}
-        label="인터뷰 제목"
-        name="title"
         onChange={(value) => onUpdate('title', value)}
-        placeholder="인터뷰 제목을 입력해주세요."
         value={form.title}
       />
       <TextField

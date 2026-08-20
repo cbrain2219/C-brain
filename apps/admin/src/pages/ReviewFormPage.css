@@ -1,3 +1,10 @@
+.review-form__title-textarea {
+  min-height: 52px;
+  padding: 14px 16px;
+  overflow-y: hidden;
+  resize: none;
+}
+
 .review-form__video-dropzone {
   margin: 0;
   appearance: none;

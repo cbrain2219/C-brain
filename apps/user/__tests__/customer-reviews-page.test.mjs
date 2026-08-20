@@ -187,6 +187,42 @@ test("featured customer interview is not repeated in the interview grid", async 
   assert.match(pageSource, /: featuredCustomerInterview \? null : \(/);
 });
 
+test("only the featured customer interview title preserves manual line breaks", async () => {
+  const styles = await readFile(stylesPath, "utf8");
+  const featuredTitle = extractCssBlock(styles, ".reviewsFeaturedTitle");
+  const cardTitle = extractCssBlock(styles, ".reviewsInterviewBody h3");
+
+  assert.match(featuredTitle, /white-space:\s*pre-line;/);
+  assert.doesNotMatch(cardTitle, /white-space:\s*pre-line;/);
+  assert.match(cardTitle, /white-space:\s*nowrap;/);
+  assert.match(cardTitle, /text-overflow:\s*ellipsis;/);
+});
+
+test("the published interview with the lowest sort order is featured", async () => {
+  const { mapCustomerReviewRows } = await importCustomerReviewMappers();
+  const mapped = mapCustomerReviewRows([
+    reviewRow({
+      id: "legacy-featured",
+      kind: "interview",
+      manager_name: null,
+      slug: "chungkang-college",
+      sort_order: 4,
+      title: "기존 샘플 인터뷰",
+    }),
+    reviewRow({
+      id: "first-ordered",
+      kind: "interview",
+      manager_name: null,
+      slug: "first-ordered",
+      sort_order: 0,
+      title: "첫 번째 인터뷰",
+    }),
+  ]);
+
+  assert.equal(mapped.featuredCustomerInterview?.id, "first-ordered");
+  assert.equal(mapped.featuredCustomerInterview?.title, "첫 번째 인터뷰");
+});
+
 test("landing and reviews pages share the testimonial card component", async () => {
   const [landingSource, testimonialListSource] = await Promise.all([
     readFile(landingSectionPath, "utf8"),

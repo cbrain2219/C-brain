@@ -1,0 +1,10 @@
+.review-page .admin-data-table__cell {
+  height: auto;
+  min-height: 52px;
+  padding-block: 8px;
+}
+
+.review-page__title-cell {
+  max-width: 100%;
+  white-space: pre-line;
+}
