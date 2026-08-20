@@ -20,6 +20,7 @@ import {
   verifyNicepayPayment,
   type NicepayPayment,
 } from "../../../../../../lib/nicepay";
+import { notifyNewPaidPayment } from "../../../../../../lib/paymentAlimtalk";
 
 export const runtime = "nodejs";
 
@@ -178,7 +179,7 @@ export async function POST(request: Request, { params }: RouteContext) {
       return json(request, { status: "unknown" }, 202);
     }
 
-    await finishPayment(
+    const finishedPayment = await finishPayment(
       authorization.client,
       paymentInput(payment, {
         balanceAmount: provider.balanceAmt,
@@ -193,6 +194,7 @@ export async function POST(request: Request, { params }: RouteContext) {
         status: "paid",
       }),
     );
+    await notifyNewPaidPayment(payment, finishedPayment);
     return json(request, { status: "resolved" });
   }
 

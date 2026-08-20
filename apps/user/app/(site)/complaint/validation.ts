@@ -13,7 +13,6 @@ export type RequiredComplaintFieldName =
   (typeof requiredComplaintFieldNames)[number];
 
 export const COMPLAINT_VERIFICATION_CODE_LENGTH = 6;
-export const COMPLAINT_TEMP_VERIFICATION_CODE = "123456";
 export const COMPLAINT_VERIFICATION_CODE_INPUT_PATTERN = `[0-9]{${COMPLAINT_VERIFICATION_CODE_LENGTH}}`;
 export const COMPLAINT_PHONE_INPUT_MAX_LENGTH = 13;
 export const COMPLAINT_PHONE_INPUT_PATTERN = "010-[0-9]{4}-[0-9]{4}";
@@ -40,7 +39,10 @@ export function hasComplaintFieldValue(
 export function isVerificationCodeValid(
   value: boolean | FormDataEntryValue | null | undefined,
 ) {
-  return value === COMPLAINT_TEMP_VERIFICATION_CODE;
+  return (
+    typeof value === "string" &&
+    new RegExp(`^${COMPLAINT_VERIFICATION_CODE_INPUT_PATTERN}$`).test(value)
+  );
 }
 
 export function isEmailValid(

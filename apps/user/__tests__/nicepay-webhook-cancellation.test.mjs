@@ -18,6 +18,10 @@ async function importWebhookHelpers() {
     .replace(
       /import \{[\s\S]*?\} from "\.\.\/\.\.\/\.\.\/\.\.\/\.\.\/lib\/nicepay";/,
       "const findLatestNicepayCancellation = () => null;\nconst getNicepayConfig = () => ({});\nconst parseNicepayPayment = () => null;\nconst retrieveNicepayPayment = () => null;\nconst verifyNicepayPayment = () => false;",
+    )
+    .replace(
+      'import { notifyNewPaidPayment } from "../../../../../lib/paymentAlimtalk";',
+      "const notifyNewPaidPayment = () => false;",
     )}\nexport { hasSucceededCancellation, isRecordedNetCancel, isRecoverableNetCancel };`;
   const ts = await import("typescript");
   const { outputText } = ts.transpileModule(moduleSource, {

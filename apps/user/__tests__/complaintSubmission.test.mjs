@@ -133,10 +133,6 @@ test("complaint payload keeps file bytes out of the server request", async () =>
 
   assert.equal(uploadParsed.ok, true);
   assert.equal(
-    parseComplaintUploadRequest({ ...uploadRequest, website: "bot.test" }).ok,
-    false,
-  );
-  assert.equal(
     parseComplaintUploadRequest({
       ...uploadRequest,
       service: "알 수 없는 서비스",
@@ -224,10 +220,6 @@ test("complaint validation rejects invalid fields and attachment limits", async 
     ),
     /필수 항목/,
   );
-  assert.match(
-    validateComplaintSubmission({ ...validValues(), website: "bot.test" }, []),
-    /필수 항목/,
-  );
 });
 
 test("complaint payload rejects paths outside its signed upload scope", async () => {
@@ -285,13 +277,13 @@ test("complaint form uploads directly with a signed token before JSON submission
   assert.doesNotMatch(uploadRouteSource, /\.from\("inquiry_attachments"\)/);
 });
 
-test("complaint mapping remains unverified", async () => {
+test("complaint mapping records the completed client verification", async () => {
   const { toComplaintInput } = await importSubmissionModule();
   const input = toComplaintInput(validValues(), "2026-07-21T00:00:00.000Z");
 
   assert.equal(input.status, "received");
   assert.equal(input.phone, "010-1234-5678");
-  assert.equal(input.phone_verified, false);
+  assert.equal(input.phone_verified, true);
   assert.equal(input.privacy_agreed_at, "2026-07-21T00:00:00.000Z");
   assert.equal("title" in input, false);
   assert.equal("user_id" in input, false);

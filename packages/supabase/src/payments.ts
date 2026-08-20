@@ -60,9 +60,14 @@ export type PaymentRow = {
 
 export type PaymentWithOrder = PaymentRow & {
   order: {
+    buyerCompany: string | null;
+    buyerEmail: string;
+    buyerName: string;
+    buyerPhone: string;
     id: string;
     publicToken: string;
     channel: OrderChannel;
+    itemSnapshot: Json;
     orderName: string;
     amount: number;
     status: OrderStatus;
@@ -274,26 +279,50 @@ async function getPaymentWithOrder(
 ): Promise<PaymentWithOrder | null> {
   const { data, error } = await client
     .from("payments")
-    .select("*, orders!inner(id, public_token, channel, order_name, amount, status)")
+    .select(
+      "*, orders!inner(id, public_token, channel, order_name, amount, status, item_snapshot, buyer_name, buyer_company, buyer_phone, buyer_email)",
+    )
     .eq(column, value)
     .maybeSingle();
 
   if (error) throw new Error(error.message);
   if (!data) return null;
 
-  return paymentWithOrder(data as TableRow<"payments"> & {
-    orders: Pick<
-      TableRow<"orders">,
-      "amount" | "channel" | "id" | "order_name" | "public_token" | "status"
-    >;
-  });
+  return paymentWithOrder(
+    data as TableRow<"payments"> & {
+      orders: Pick<
+        TableRow<"orders">,
+        | "amount"
+        | "buyer_company"
+        | "buyer_email"
+        | "buyer_name"
+        | "buyer_phone"
+        | "channel"
+        | "id"
+        | "item_snapshot"
+        | "order_name"
+        | "public_token"
+        | "status"
+      >;
+    },
+  );
 }
 
 function paymentWithOrder(
   joined: TableRow<"payments"> & {
     orders: Pick<
       TableRow<"orders">,
-      "amount" | "channel" | "id" | "order_name" | "public_token" | "status"
+      | "amount"
+      | "buyer_company"
+      | "buyer_email"
+      | "buyer_name"
+      | "buyer_phone"
+      | "channel"
+      | "id"
+      | "item_snapshot"
+      | "order_name"
+      | "public_token"
+      | "status"
     >;
   },
 ): PaymentWithOrder {
@@ -301,8 +330,13 @@ function paymentWithOrder(
     ...paymentRow(joined),
     order: {
       amount: joined.orders.amount,
+      buyerCompany: joined.orders.buyer_company,
+      buyerEmail: joined.orders.buyer_email,
+      buyerName: joined.orders.buyer_name,
+      buyerPhone: joined.orders.buyer_phone,
       channel: joined.orders.channel,
       id: joined.orders.id,
+      itemSnapshot: joined.orders.item_snapshot,
       orderName: joined.orders.order_name,
       publicToken: joined.orders.public_token,
       status: joined.orders.status,

@@ -25,3 +25,25 @@ test("failed complaint finalization deletes its complaint before uploaded files"
   );
   assert.doesNotMatch(source, /referencedAttachments|orphanPaths/);
 });
+
+test("completed complaint persistence sends a best-effort admin AlimTalk", async () => {
+  const source = await readFile(routePath, "utf8");
+  const attachmentInsertPosition = source.indexOf(
+    "await createComplaintAttachments",
+  );
+  const notificationPosition = source.indexOf("await sendComplaintAlimtalk");
+  const successResponsePosition = source.indexOf(
+    "return NextResponse.json({ id: complaint.id }, { status: 201 })",
+  );
+
+  assert.match(
+    source,
+    /import \{ sendComplaintAlimtalk \} from "\.\.\/\.\.\/\.\.\/lib\/complaintAlimtalk";/,
+  );
+  assert.ok(notificationPosition > attachmentInsertPosition);
+  assert.ok(successResponsePosition > notificationPosition);
+  assert.match(
+    source,
+    /try \{[\s\S]*?await sendComplaintAlimtalk\([\s\S]*?\);[\s\S]*?\} catch \(error\) \{[\s\S]*?\[complaint-alimtalk\] failed/,
+  );
+});

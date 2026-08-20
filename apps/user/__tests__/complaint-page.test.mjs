@@ -16,6 +16,10 @@ const phoneVerificationPath = new URL(
   "../app/(site)/complaint/phoneVerification.ts",
   import.meta.url,
 );
+const phoneVerificationRoutePath = new URL(
+  "../app/api/complaints/phone-verification/route.ts",
+  import.meta.url,
+);
 const complaintTypesPath = new URL(
   "../app/(site)/complaint/complaintTypes.ts",
   import.meta.url,
@@ -232,9 +236,8 @@ test("complaint privacy consent starts unchecked and links to its notice page", 
   assert.doesNotMatch(formSource, /<details/);
   assert.doesNotMatch(formSource, /<summary/);
   assert.doesNotMatch(formSource, /href="#privacy-policy"/);
-  assert.match(formSource, /register\("website"\)/);
-  assert.match(formSource, /aria-hidden="true"/);
-  assert.match(formSource, /tabIndex=\{-1\}/);
+  assert.doesNotMatch(formSource, /register\("website"\)/);
+  assert.doesNotMatch(formSource, /complaintHoneypot/);
 });
 
 test("complaint types provide the supplied descriptions in order", async () => {
@@ -395,13 +398,16 @@ test("complaint phone input keeps digits only and formats an 010 number", async 
 
 test("complaint validation requires a six digit verification code", async () => {
   const {
-    COMPLAINT_TEMP_VERIFICATION_CODE,
     COMPLAINT_VERIFICATION_CODE_LENGTH,
     getInvalidRequiredComplaintFields,
+    isVerificationCodeValid,
   } = await importTypescriptModule(validationPath);
 
-  assert.equal(COMPLAINT_TEMP_VERIFICATION_CODE, "123456");
   assert.equal(COMPLAINT_VERIFICATION_CODE_LENGTH, 6);
+  assert.equal(isVerificationCodeValid("123456"), true);
+  assert.equal(isVerificationCodeValid("654321"), true);
+  assert.equal(isVerificationCodeValid("12345"), false);
+  assert.equal(isVerificationCodeValid("12345a"), false);
 
   const validValues = {
     complaintType: "상담/응대",
@@ -423,7 +429,7 @@ test("complaint validation requires a six digit verification code", async () => 
   assert.deepEqual(
     getInvalidRequiredComplaintFields({
       ...validValues,
-      verificationCode: COMPLAINT_TEMP_VERIFICATION_CODE,
+      verificationCode: "654321",
     }),
     [],
   );
@@ -442,14 +448,49 @@ test("complaint form exposes the phone verification integration boundary", async
   const formSource = await readFile(formPath, "utf8");
   const { normalizePhoneNumber, requestPhoneVerification } =
     await importTypescriptModule(phoneVerificationPath);
+  let requestedInit;
+  let requestedUrl;
 
   assert.match(formSource, /인증요청/);
   assert.match(formSource, /requestPhoneVerification/);
   assert.equal(normalizePhoneNumber("010-1234-5678"), "01012345678");
-  assert.deepEqual(await requestPhoneVerification({ phone: "010-1234-5678" }), {
-    normalizedPhone: "01012345678",
-    status: "not-configured",
+  const result = await requestPhoneVerification(
+    { phone: "010-1234-5678" },
+    async (url, init) => {
+      requestedUrl = url;
+      requestedInit = init;
+
+      return new Response(JSON.stringify({ ok: true }), {
+        headers: { "Content-Type": "application/json" },
+        status: 200,
+      });
+    },
+  );
+
+  assert.equal(requestedUrl, "/api/complaints/phone-verification");
+  assert.equal(requestedInit.method, "POST");
+  assert.match(result.verificationCode, /^\d{6}$/);
+  assert.deepEqual(JSON.parse(requestedInit.body), {
+    code: result.verificationCode,
+    phone: "01012345678",
   });
+  assert.equal(result.normalizedPhone, "01012345678");
+  assert.equal(result.status, "requested");
+});
+
+test("phone verification route sends the approved Popbill AlimTalk", async () => {
+  const routeSource = await readFile(phoneVerificationRoutePath, "utf8");
+
+  assert.match(routeSource, /export const runtime = "nodejs"/);
+  assert.match(routeSource, /POPBILL_TEMPLATE_AUTH_CODE/);
+  assert.match(routeSource, /sendPopbillAlimtalk/);
+  assert.match(routeSource, /"\[씨브레인\] 본인인증 안내"/);
+  assert.match(
+    routeSource,
+    /`인증번호 \[\$\{input\.code\}\]을\(를\) 입력해주세요\.`/,
+  );
+  assert.match(routeSource, /receiver: input\.phone/);
+  assert.doesNotMatch(routeSource, /POPBILL_ADMIN_PHONE/);
 });
 
 test("complaint verification code appears only after a successful request", async () => {
@@ -474,9 +515,13 @@ test("complaint verification code appears only after a successful request", asyn
   );
   assert.match(
     formSource,
-    /!isPhoneVerificationRequested\s*\|\|\s*isComplaintRequiredFieldValid\("verificationCode", value\)/,
+    /isPhoneVerificationRequested\s*&&\s*isComplaintRequiredFieldValid\("verificationCode", value\)\s*&&[\s\S]*?value === phoneVerificationResult\.verificationCode/,
   );
   assert.match(formSource, /resetField\("verificationCode"\)/);
+  assert.match(
+    formSource,
+    /disabled=\{isSubmitting \|\| !isPhoneVerificationRequested\}/,
+  );
   assert.match(
     stylesSource,
     /\.complaintVerifyButton:disabled\s*\{[\s\S]*?cursor:\s*not-allowed;/,

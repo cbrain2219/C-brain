@@ -17,6 +17,7 @@ import {
   type NicepayConfig,
   type NicepayPayment,
 } from "../../../../../lib/nicepay";
+import { notifyNewPaidPayment } from "../../../../../lib/paymentAlimtalk";
 
 export const runtime = "nodejs";
 
@@ -88,7 +89,7 @@ async function recordProviderPayment(
   payment: NicepayPayment,
   status: "paid" | "failed" | "expired" | "unknown",
 ) {
-  await recordPayment(client, order, {
+  return recordPayment(client, order, {
     balanceAmount: payment.balanceAmt,
     canPartCancel: payment.card?.canPartCancel ?? null,
     cancelledAt: toProviderTimestamp(payment.cancelledAt),
@@ -334,7 +335,13 @@ export async function POST(request: Request) {
     }
 
     try {
-      await recordProviderPayment(client, order, payment, "paid");
+      const finishedPayment = await recordProviderPayment(
+        client,
+        order,
+        payment,
+        "paid",
+      );
+      await notifyNewPaidPayment(order, finishedPayment);
     } catch {
       await recordUnknownApproval(client, order);
     }

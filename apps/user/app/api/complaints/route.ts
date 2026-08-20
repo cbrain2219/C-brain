@@ -11,6 +11,7 @@ import {
   parseComplaintSubmission,
   toComplaintInput,
 } from "../../(site)/complaint/complaintSubmission";
+import { sendComplaintAlimtalk } from "../../../lib/complaintAlimtalk";
 
 export const runtime = "nodejs";
 
@@ -79,6 +80,28 @@ export async function POST(request: Request) {
         original_file_name: attachment.name,
       })),
     );
+
+    try {
+      const receiptNumber = await sendComplaintAlimtalk({
+        complaintType: complaint.complaint_type,
+        createdAt: complaint.created_at,
+        email: complaint.email ?? "",
+        id: complaint.id,
+        name: complaint.name,
+        phone: complaint.phone,
+        service: complaint.service,
+      });
+
+      console.info("[complaint-alimtalk] accepted", {
+        complaintId: complaint.id,
+        receiptNumber,
+      });
+    } catch (error) {
+      console.error("[complaint-alimtalk] failed", {
+        complaintId: complaint.id,
+        message: error instanceof Error ? error.message : "Unknown error",
+      });
+    }
 
     return NextResponse.json({ id: complaint.id }, { status: 201 });
   } catch {

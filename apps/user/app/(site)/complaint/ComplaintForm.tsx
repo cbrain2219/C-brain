@@ -61,7 +61,6 @@ type ComplaintFormValues = {
   privacy: boolean;
   service: string;
   verificationCode: string;
-  website: string;
 };
 
 const complaintFormDefaultValues: ComplaintFormValues = {
@@ -73,7 +72,6 @@ const complaintFormDefaultValues: ComplaintFormValues = {
   privacy: false,
   service: "",
   verificationCode: "",
-  website: "",
 };
 
 const complaintInputPlaceholders = {
@@ -297,8 +295,10 @@ export function ComplaintForm() {
 
   const verificationCodeInputRegistration = register("verificationCode", {
     validate: (value) =>
-      !isPhoneVerificationRequested ||
-      isComplaintRequiredFieldValid("verificationCode", value),
+      isPhoneVerificationRequested &&
+      isComplaintRequiredFieldValid("verificationCode", value) &&
+      // ponytail: The expected code intentionally stays in client state for this lightweight flow.
+      value === phoneVerificationResult.verificationCode,
   });
 
   const handleValidSubmit: SubmitHandler<ComplaintFormValues> = async (
@@ -463,6 +463,13 @@ export function ComplaintForm() {
       if (normalizePhoneNumber(getValues("phone")) === result.normalizedPhone) {
         setPhoneVerificationResult(result);
       }
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "인증번호 발송에 실패했습니다. 잠시 후 다시 시도해주세요.";
+
+      window.alert(message);
     } finally {
       setIsRequestingPhoneVerification(false);
     }
@@ -553,15 +560,6 @@ export function ComplaintForm() {
         noValidate
         onSubmit={handleSubmit(handleValidSubmit, handleInvalidSubmit)}
       >
-        <label aria-hidden="true" className={styles.complaintHoneypot}>
-          <span>웹사이트</span>
-          <input
-            {...register("website")}
-            autoComplete="off"
-            tabIndex={-1}
-            type="text"
-          />
-        </label>
         <div className={styles.complaintFields}>
           <div className={styles.complaintFieldGrid}>
             <label
@@ -866,7 +864,7 @@ export function ComplaintForm() {
         <button
           aria-busy={isSubmitting}
           className={styles.complaintSubmitButton}
-          disabled={isSubmitting}
+          disabled={isSubmitting || !isPhoneVerificationRequested}
           type="submit"
         >
           <Icon name="edit-03" size={24} />

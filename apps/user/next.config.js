@@ -28,6 +28,7 @@ const nextConfig = {
       },
     ],
   },
+  serverExternalPackages: ["popbill"],
   transpilePackages: ["@repo/content", "@repo/supabase"],
 };
 

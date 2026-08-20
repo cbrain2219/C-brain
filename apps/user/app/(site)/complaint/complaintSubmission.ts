@@ -18,7 +18,6 @@ export type ComplaintSubmissionValues = {
   phone: string;
   privacy: boolean;
   service: string;
-  website?: string;
 };
 
 export type ComplaintAttachmentMetadata = Pick<File, "name" | "size" | "type">;
@@ -43,10 +42,7 @@ const submissionIdPattern =
 export function createComplaintUploadRequest(
   submissionId: string,
   attachments: ComplaintAttachmentMetadata[],
-  values: Pick<
-    ComplaintSubmissionValues,
-    "complaintType" | "service" | "website"
-  >,
+  values: Pick<ComplaintSubmissionValues, "complaintType" | "service">,
 ) {
   return {
     attachments: attachments.map(({ name, size, type }) => ({
@@ -57,7 +53,6 @@ export function createComplaintUploadRequest(
     complaintType: values.complaintType,
     service: values.service,
     submissionId,
-    website: values.website ?? "",
   };
 }
 
@@ -139,7 +134,6 @@ export function validateComplaintSubmission(
       );
     }) ||
     !values.privacy ||
-    Boolean(values.website?.trim()) ||
     !serviceOptions.includes(
       values.service as (typeof serviceOptions)[number],
     ) ||
@@ -160,11 +154,7 @@ export function parseComplaintUploadRequest(input: unknown) {
     typeof input.complaintType !== "string" ||
     !complaintTypeOptions.some(({ title }) => title === input.complaintType) ||
     typeof input.service !== "string" ||
-    !serviceOptions.includes(
-      input.service as (typeof serviceOptions)[number],
-    ) ||
-    typeof input.website !== "string" ||
-    Boolean(input.website.trim())
+    !serviceOptions.includes(input.service as (typeof serviceOptions)[number])
   ) {
     return invalidSubmission();
   }
@@ -252,7 +242,8 @@ export function toComplaintInput(
     email: values.email.trim(),
     name: values.name.trim(),
     phone: values.phone.trim(),
-    phone_verified: false,
+    // ponytail: This trusts the requested client-state verification flow.
+    phone_verified: true,
     privacy_agreed_at: privacyAgreedAt,
     service: values.service.trim(),
     status: "received" as const,
@@ -333,6 +324,5 @@ function parseComplaintValues(
     phone: (value.phone as string).trim(),
     privacy: value.privacy,
     service: (value.service as string).trim(),
-    website: typeof value.website === "string" ? value.website.trim() : "",
   };
 }

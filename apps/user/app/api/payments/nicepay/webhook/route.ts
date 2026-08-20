@@ -16,6 +16,7 @@ import {
   verifyNicepayPayment,
   type NicepayPayment,
 } from "../../../../../lib/nicepay";
+import { notifyNewPaidPayment } from "../../../../../lib/paymentAlimtalk";
 
 export const runtime = "nodejs";
 
@@ -332,7 +333,13 @@ export async function POST(request: Request) {
       if (!toProviderTimestamp(trustedPayment.paidAt)) {
         return new Response("Invalid paid timestamp.", { status: 400 });
       }
-      await recordPayment(client, order, trustedPayment, "paid");
+      const finishedPayment = await recordPayment(
+        client,
+        order,
+        trustedPayment,
+        "paid",
+      );
+      await notifyNewPaidPayment(order, finishedPayment);
     } else if (
       trustedPayment.status === "failed" ||
       trustedPayment.status === "expired"
