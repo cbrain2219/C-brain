@@ -1,4 +1,5 @@
 import type { ContentEntity } from '@repo/content/types'
+import { portfolioTypes } from '@repo/supabase/categories'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { StrictMode, useState } from 'react'
@@ -94,6 +95,14 @@ async function selectReviewType(user: User, type: '인터뷰' | '후기') {
   await user.click(screen.getByRole('option', { name: type }))
 }
 
+async function selectRequestedProduct(
+  user: User,
+  product = '브로슈어 · 카탈로그',
+) {
+  await user.click(screen.getByRole('combobox', { name: '의뢰하신 제품' }))
+  await user.click(screen.getByRole('option', { name: product }))
+}
+
 async function openTextEditor(user: User) {
   await user.click(screen.getByRole('button', { name: 'TEXT Editor 작성' }))
 
@@ -106,6 +115,7 @@ async function fillPublishedInterview(user: User, body?: string) {
   await selectReviewType(user, '인터뷰')
   await user.type(screen.getByLabelText('인터뷰 제목'), '윙즈윗 고객 인터뷰')
   await user.type(screen.getByLabelText('인터뷰 고객사(의뢰처)'), '윙즈윗 고객사')
+  await selectRequestedProduct(user)
   await user.type(screen.getByLabelText('진행 프로젝트(제작물)'), '브랜드 영상')
   await user.type(screen.getByLabelText('프로젝트 결과(활용)'), '온라인 캠페인')
   await user.type(screen.getByLabelText('인터뷰 Slug'), 'wingsweet-interview')
@@ -125,6 +135,7 @@ async function fillPublishedInterview(user: User, body?: string) {
 async function fillPublishedTestimonial(user: User, body?: string) {
   await selectReviewType(user, '후기')
   await user.type(screen.getByLabelText('후기 고객사'), '윙즈윗 고객사')
+  await selectRequestedProduct(user)
   await user.type(screen.getByLabelText('후기 담당자'), '김담당')
   fireEvent.change(screen.getByLabelText('후기 작성일'), {
     target: { value: '2026-08-18' },
@@ -155,6 +166,37 @@ it('starts a new review in HTML authoring mode', async () => {
   ).toBe('false')
   expect(screen.getByRole('textbox', { name: '본문 HTML' })).toBeTruthy()
 })
+
+it.each([
+  ['인터뷰', '인터뷰 고객사(의뢰처)'],
+  ['후기', '후기 고객사'],
+] as const)(
+  'shows the requested product dropdown below the %s client field',
+  async (reviewType, companyLabel) => {
+    await renderNewReviewPage()
+    const user = userEvent.setup()
+
+    await selectReviewType(user, reviewType)
+
+    const company = screen.getByLabelText(companyLabel)
+    const product = screen.getByRole('combobox', {
+      name: '의뢰하신 제품',
+    }) as HTMLInputElement
+
+    expect(company.closest('label')?.nextElementSibling).toBe(
+      product.closest('label'),
+    )
+    expect(product.required).toBe(false)
+
+    await user.click(product)
+    expect(
+      screen.getAllByRole('option').map((option) => option.textContent),
+    ).toEqual([...portfolioTypes])
+
+    await user.click(screen.getByRole('option', { name: '촬영' }))
+    expect(product.value).toBe('촬영')
+  },
+)
 
 it('publishes canonical WYSIWYG content for a new Interview', async () => {
   await renderNewReviewPage()

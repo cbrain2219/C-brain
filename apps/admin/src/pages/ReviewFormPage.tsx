@@ -6,6 +6,7 @@ import {
   getAdminReview,
   updateReview,
 } from '@repo/supabase'
+import { isPortfolioType, portfolioTypes } from '@repo/supabase/categories'
 import { useEffect, useId, useRef, useState } from 'react'
 import type { ChangeEvent, DragEvent, FormEvent, RefObject } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
@@ -89,6 +90,36 @@ function TextField({
         placeholder={placeholder}
         required={required}
         type="text"
+        value={value}
+      />
+    </label>
+  )
+}
+
+type RequestedProductFieldProps = {
+  readonly id: string
+  readonly onChange: (value: string) => void
+  readonly value: string
+}
+
+function RequestedProductField({
+  id,
+  onChange,
+  value,
+}: RequestedProductFieldProps) {
+  return (
+    <label className="blog-form__field" htmlFor={id}>
+      <span className="blog-form__label">의뢰하신 제품</span>
+      <AdminTypeCombobox
+        inputId={id}
+        name="requestedProduct"
+        onCommit={(nextValue) => {
+          if (isPortfolioType(nextValue)) onChange(nextValue)
+        }}
+        options={portfolioTypes}
+        placeholder="카테고리를 선택해주세요."
+        readOnly
+        required={false}
         value={value}
       />
     </label>
@@ -430,11 +461,13 @@ type InterviewFieldsProps = {
   readonly onManagedContentBusyChange: (busy: boolean) => void
   readonly onManagedContentPendingAssetCountChange: (count: number) => void
   readonly onManagedContentUploadedAsset: (path: string) => void
+  readonly onRequestedProductChange: (value: string) => void
   readonly onSlugErrorChange: (message: string) => void
   readonly onUpdate: UpdateReviewForm
   readonly onVideoClear: () => void
   readonly onVideoSourceChange: (source: ReviewVideoSource) => void
   readonly onYouTubeErrorChange: (message: string) => void
+  readonly requestedProduct: string
   readonly slugError: string
   readonly videoError: string
   readonly videoInput: RefObject<HTMLInputElement | null>
@@ -452,11 +485,13 @@ function InterviewFields({
   onManagedContentBusyChange,
   onManagedContentPendingAssetCountChange,
   onManagedContentUploadedAsset,
+  onRequestedProductChange,
   onSlugErrorChange,
   onUpdate,
   onVideoClear,
   onVideoSourceChange,
   onYouTubeErrorChange,
+  requestedProduct,
   slugError,
   videoError,
   videoInput,
@@ -479,6 +514,11 @@ function InterviewFields({
         onChange={(value) => onUpdate('company', value)}
         placeholder="인터뷰 고객사를 입력해주세요."
         value={form.company}
+      />
+      <RequestedProductField
+        id={`${formId}-requested-product`}
+        onChange={onRequestedProductChange}
+        value={requestedProduct}
       />
       <TextField
         id={`${formId}-project-deliverable`}
@@ -597,7 +637,9 @@ type CustomerReviewFieldsProps = {
   readonly onManagedContentBusyChange: (busy: boolean) => void
   readonly onManagedContentPendingAssetCountChange: (count: number) => void
   readonly onManagedContentUploadedAsset: (path: string) => void
+  readonly onRequestedProductChange: (value: string) => void
   readonly onUpdate: UpdateReviewForm
+  readonly requestedProduct: string
 }
 
 function CustomerReviewFields({
@@ -609,7 +651,9 @@ function CustomerReviewFields({
   onManagedContentBusyChange,
   onManagedContentPendingAssetCountChange,
   onManagedContentUploadedAsset,
+  onRequestedProductChange,
   onUpdate,
+  requestedProduct,
 }: CustomerReviewFieldsProps) {
   return (
     <>
@@ -620,6 +664,11 @@ function CustomerReviewFields({
         onChange={(value) => onUpdate('company', value)}
         placeholder="후기 고객사를 입력해주세요."
         value={form.company}
+      />
+      <RequestedProductField
+        id={`${formId}-requested-product`}
+        onChange={onRequestedProductChange}
+        value={requestedProduct}
       />
       <TextField
         id={`${formId}-manager`}
@@ -661,6 +710,7 @@ export function ReviewFormPage() {
   const { reviewId } = useParams<{ reviewId: string }>()
   const isEditing = reviewId !== undefined
   const [form, setForm] = useState<ReviewFormState>(createInitialReviewForm)
+  const [requestedProduct, setRequestedProduct] = useState('')
   const [slugError, setSlugError] = useState('')
   const [typeError, setTypeError] = useState('')
   const [videoError, setVideoError] = useState('')
@@ -1104,6 +1154,7 @@ export function ReviewFormPage() {
           onManagedContentChange={updateManagedContent}
           onManagedContentPendingAssetCountChange={contentEditorState.onPendingAssetCountChange}
           onManagedContentUploadedAsset={unpersistedContentUploads.trackUploadedPath}
+          onRequestedProductChange={setRequestedProduct}
           onSlugErrorChange={setSlugError}
           onUpdate={updateForm}
           onVideoClear={clearVideo}
@@ -1113,6 +1164,7 @@ export function ReviewFormPage() {
             setYouTubeError('')
           }}
           onYouTubeErrorChange={setYouTubeError}
+          requestedProduct={requestedProduct}
           slugError={slugError}
           videoError={videoError}
           videoInput={videoInput}
@@ -1130,7 +1182,9 @@ export function ReviewFormPage() {
           onManagedContentChange={updateManagedContent}
           onManagedContentPendingAssetCountChange={contentEditorState.onPendingAssetCountChange}
           onManagedContentUploadedAsset={unpersistedContentUploads.trackUploadedPath}
+          onRequestedProductChange={setRequestedProduct}
           onUpdate={updateForm}
+          requestedProduct={requestedProduct}
         />
       ) : null}
     </AdminFormLayout>

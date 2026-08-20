@@ -19,6 +19,7 @@ type AdminTypeComboboxProps = {
   readonly options: readonly string[]
   readonly placeholder: string
   readonly readOnly?: boolean
+  readonly required?: boolean
   readonly value: string
 }
 
@@ -37,6 +38,7 @@ export function AdminTypeCombobox({
   options,
   placeholder,
   readOnly = false,
+  required = true,
   value,
 }: AdminTypeComboboxProps) {
   const listboxId = `${inputId}-options`
@@ -160,7 +162,7 @@ export function AdminTypeCombobox({
         onKeyDown={handleKeyDown}
         placeholder={placeholder}
         readOnly={readOnly}
-        required
+        required={required}
         role="combobox"
         spellCheck={false}
         type="text"
