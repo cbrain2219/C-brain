@@ -186,7 +186,7 @@ it.each([
     expect(company.closest('label')?.nextElementSibling).toBe(
       product.closest('label'),
     )
-    expect(product.required).toBe(false)
+    expect(product.required).toBe(true)
 
     await user.click(product)
     expect(
@@ -228,6 +228,7 @@ it('publishes canonical WYSIWYG content for a new Interview', async () => {
       kind: 'interview',
       project_deliverable: '브랜드 영상',
       project_usage: '온라인 캠페인',
+      requested_product: '브로슈어 · 카탈로그',
       slug: 'wingsweet-interview',
       status: 'published',
       title: '윙즈윗 고객 인터뷰',
@@ -259,6 +260,7 @@ it('publishes canonical WYSIWYG content for a new Testimonial', async () => {
       manager_name: '김담당',
       project_deliverable: null,
       project_usage: null,
+      requested_product: '브로슈어 · 카탈로그',
       show_on_landing: true,
       status: 'published',
       title: null,

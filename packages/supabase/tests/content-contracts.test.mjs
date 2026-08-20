@@ -20,6 +20,10 @@ const contentViewMigrationUrl = new URL(
   '../../../supabase/migrations/20260819063942_add_content_view_increment.sql',
   import.meta.url,
 )
+const reviewRequestedProductMigrationUrl = new URL(
+  '../../../supabase/migrations/20260820120142_add_review_requested_product.sql',
+  import.meta.url,
+)
 const reviewYouTubeSqlUrl = new URL(
   '../../../supabase/manual/add_review_youtube_video.sql',
   import.meta.url,
@@ -39,6 +43,7 @@ const [
   managedContentMigration,
   blogThumbnailFileNameMigration,
   contentViewMigration,
+  reviewRequestedProductMigration,
   reviewProjectInfoSql,
   reviewYouTubeSql,
   blogData,
@@ -51,6 +56,7 @@ const [
   readFile(managedContentMigrationUrl, 'utf8'),
   readFile(blogThumbnailFileNameMigrationUrl, 'utf8'),
   readFile(contentViewMigrationUrl, 'utf8'),
+  readFile(reviewRequestedProductMigrationUrl, 'utf8'),
   readFile(reviewProjectInfoSqlUrl, 'utf8'),
   readFile(reviewYouTubeSqlUrl, 'utf8'),
   readFile(blogDataUrl, 'utf8'),
@@ -82,6 +88,7 @@ test('fresh baseline declares the current admin content contracts', () => {
     'manager_name',
     'project_deliverable',
     'project_usage',
+    'requested_product',
     'youtube_video_id',
     'complaint_type',
     'phone_verified',
@@ -130,6 +137,7 @@ test('managed content keeps inactive authoring fields outside anonymous reads', 
     'content_json',
     'content_source_backup',
     'content_schema_version',
+    'requested_product',
     'thumbnail_file_name',
   ]
 
@@ -261,7 +269,7 @@ test('TypeScript mirrors the current content tables', () => {
   )
   assert.match(
     types,
-    /reviews:\s*\{[\s\S]*?Row:\s*\{[\s\S]*?company_name: string;[\s\S]*?manager_name: string \| null;[\s\S]*?project_deliverable: string \| null;[\s\S]*?project_usage: string \| null;[\s\S]*?show_on_landing: boolean;[\s\S]*?youtube_video_id: string \| null;/,
+    /reviews:\s*\{[\s\S]*?Row:\s*\{[\s\S]*?company_name: string;[\s\S]*?manager_name: string \| null;[\s\S]*?project_deliverable: string \| null;[\s\S]*?project_usage: string \| null;[\s\S]*?requested_product: string \| null;[\s\S]*?show_on_landing: boolean;[\s\S]*?youtube_video_id: string \| null;/,
   )
   assert.match(
     types,
@@ -303,6 +311,50 @@ test('blog thumbnail filename migration adds private nullable metadata safely', 
     blogThumbnailFileNameMigration,
     /grant select[^;]*thumbnail_file_name[^;]*to anon/,
   )
+})
+
+test('requested product migration adds private nullable review metadata safely', () => {
+  assert.match(
+    reviewRequestedProductMigration,
+    /alter table public\.reviews\s+add column if not exists requested_product text/,
+  )
+  assert.match(
+    reviewRequestedProductMigration,
+    /add constraint reviews_requested_product_nonblank_check[\s\S]*?requested_product is null[\s\S]*?nullif\(btrim\(requested_product\), ''\) is not null[\s\S]*?not valid/,
+  )
+  assert.match(
+    reviewRequestedProductMigration,
+    /validate constraint reviews_requested_product_nonblank_check/,
+  )
+  assert.match(
+    reviewRequestedProductMigration,
+    /revoke select \(requested_product\) on table public\.reviews from public, anon/,
+  )
+  assert.match(reviewRequestedProductMigration, /notify pgrst, 'reload schema'/)
+  assert.doesNotMatch(
+    reviewRequestedProductMigration,
+    /grant select[^;]*requested_product[^;]*to anon/,
+  )
+  assert.match(
+    baseline,
+    /constraint reviews_requested_product_nonblank_check[\s\S]*?requested_product is null[\s\S]*?nullif\(btrim\(requested_product\), ''\) is not null/,
+  )
+
+  const baselineGrant = /grant select \(([\s\S]*?)\) on public\.reviews to anon;/.exec(
+    baseline,
+  )
+  assert.ok(baselineGrant)
+  assert.doesNotMatch(baselineGrant[1], /\brequested_product\b/)
+
+  const reviewsType = /reviews:\s*\{([\s\S]*?)Relationships: \[\];/.exec(types)
+  assert.ok(reviewsType)
+  for (const section of ['Row', 'Insert', 'Update']) {
+    const sectionType = new RegExp(`${section}:\\s*\\{([\\s\\S]*?)\\n\\s*\\};`).exec(
+      reviewsType[1],
+    )
+    assert.ok(sectionType)
+    assert.match(sectionType[1], /requested_product\??: string \| null;/)
+  }
 })
 
 test('managed content columns and WYSIWYG constraints match the database contract', () => {

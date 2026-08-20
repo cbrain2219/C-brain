@@ -1,3 +1,4 @@
+import { isPortfolioType } from '@repo/supabase/categories'
 import type { Json, PublishStatus, TableInsert, TableRow } from '@repo/supabase/types'
 import {
   getYouTubeVideoId,
@@ -22,6 +23,7 @@ export type ReviewFormState = ManagedContentFormValue & {
   readonly projectDeliverable: string
   readonly projectUsage: string
   readonly publishedAt: string
+  readonly requestedProduct: string
   readonly seoDescription: string
   readonly slug: string
   readonly title: string
@@ -60,6 +62,7 @@ export type ReviewMutationInput = Pick<
   | 'project_deliverable'
   | 'project_usage'
   | 'published_at'
+  | 'requested_product'
   | 'seo_description'
   | 'show_on_landing'
   | 'slug'
@@ -79,6 +82,7 @@ export function createInitialReviewForm(): ReviewFormState {
     projectDeliverable: '',
     projectUsage: '',
     publishedAt: '',
+    requestedProduct: '',
     seoDescription: '',
     slug: '',
     title: '',
@@ -132,6 +136,7 @@ export function toReviewFormState(
     projectDeliverable: review.project_deliverable ?? '',
     projectUsage: review.project_usage ?? '',
     publishedAt: toDateInputValue(review.published_at),
+    requestedProduct: review.requested_product ?? '',
     seoDescription: review.seo_description ?? '',
     slug: review.slug ?? '',
     title: review.title ?? '',
@@ -161,6 +166,7 @@ export function toReviewMutationInput(
   const projectDeliverable = form.projectDeliverable.trim()
   const projectUsage = form.projectUsage.trim()
   const publishedAt = toPublishedAt(form.publishedAt)
+  const requestedProduct = form.requestedProduct.trim()
   const slug = form.slug.trim()
   const title = form.title.trim()
   const youtubeVideoId =
@@ -174,11 +180,16 @@ export function toReviewMutationInput(
       ? Boolean(youtubeVideoId)
       : Boolean(nextVideoPath || form.video)
 
+  if (requestedProduct && !isPortfolioType(requestedProduct)) {
+    throw new Error('의뢰하신 제품을 선택해주세요.')
+  }
+
   if (
     status === 'published' &&
     (!company ||
       managedContentIsEmpty(form) ||
       !publishedAt ||
+      !requestedProduct ||
       (isInterview
         ? !title ||
           !projectDeliverable ||
@@ -204,6 +215,7 @@ export function toReviewMutationInput(
     project_deliverable: isInterview ? projectDeliverable || null : null,
     project_usage: isInterview ? projectUsage || null : null,
     published_at: publishedAt,
+    requested_product: requestedProduct || null,
     seo_description: isInterview ? form.seoDescription.trim() || null : null,
     show_on_landing: isInterview ? false : form.isLandingEnabled,
     slug: isInterview ? slug || null : null,

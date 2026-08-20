@@ -233,6 +233,7 @@ export type Database = {
           project_deliverable: string | null;
           project_usage: string | null;
           published_at: string | null;
+          requested_product: string | null;
           seo_description: string | null;
           show_on_landing: boolean;
           slug: string | null;
@@ -260,6 +261,7 @@ export type Database = {
           project_deliverable?: string | null;
           project_usage?: string | null;
           published_at?: string | null;
+          requested_product?: string | null;
           seo_description?: string | null;
           show_on_landing?: boolean;
           slug?: string | null;
@@ -287,6 +289,7 @@ export type Database = {
           project_deliverable?: string | null;
           project_usage?: string | null;
           published_at?: string | null;
+          requested_product?: string | null;
           seo_description?: string | null;
           show_on_landing?: boolean;
           slug?: string | null;

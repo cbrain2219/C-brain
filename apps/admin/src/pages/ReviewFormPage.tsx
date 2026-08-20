@@ -119,7 +119,6 @@ function RequestedProductField({
         options={portfolioTypes}
         placeholder="카테고리를 선택해주세요."
         readOnly
-        required={false}
         value={value}
       />
     </label>
@@ -461,13 +460,11 @@ type InterviewFieldsProps = {
   readonly onManagedContentBusyChange: (busy: boolean) => void
   readonly onManagedContentPendingAssetCountChange: (count: number) => void
   readonly onManagedContentUploadedAsset: (path: string) => void
-  readonly onRequestedProductChange: (value: string) => void
   readonly onSlugErrorChange: (message: string) => void
   readonly onUpdate: UpdateReviewForm
   readonly onVideoClear: () => void
   readonly onVideoSourceChange: (source: ReviewVideoSource) => void
   readonly onYouTubeErrorChange: (message: string) => void
-  readonly requestedProduct: string
   readonly slugError: string
   readonly videoError: string
   readonly videoInput: RefObject<HTMLInputElement | null>
@@ -485,13 +482,11 @@ function InterviewFields({
   onManagedContentBusyChange,
   onManagedContentPendingAssetCountChange,
   onManagedContentUploadedAsset,
-  onRequestedProductChange,
   onSlugErrorChange,
   onUpdate,
   onVideoClear,
   onVideoSourceChange,
   onYouTubeErrorChange,
-  requestedProduct,
   slugError,
   videoError,
   videoInput,
@@ -517,8 +512,8 @@ function InterviewFields({
       />
       <RequestedProductField
         id={`${formId}-requested-product`}
-        onChange={onRequestedProductChange}
-        value={requestedProduct}
+        onChange={(value) => onUpdate('requestedProduct', value)}
+        value={form.requestedProduct}
       />
       <TextField
         id={`${formId}-project-deliverable`}
@@ -637,9 +632,7 @@ type CustomerReviewFieldsProps = {
   readonly onManagedContentBusyChange: (busy: boolean) => void
   readonly onManagedContentPendingAssetCountChange: (count: number) => void
   readonly onManagedContentUploadedAsset: (path: string) => void
-  readonly onRequestedProductChange: (value: string) => void
   readonly onUpdate: UpdateReviewForm
-  readonly requestedProduct: string
 }
 
 function CustomerReviewFields({
@@ -651,9 +644,7 @@ function CustomerReviewFields({
   onManagedContentBusyChange,
   onManagedContentPendingAssetCountChange,
   onManagedContentUploadedAsset,
-  onRequestedProductChange,
   onUpdate,
-  requestedProduct,
 }: CustomerReviewFieldsProps) {
   return (
     <>
@@ -667,8 +658,8 @@ function CustomerReviewFields({
       />
       <RequestedProductField
         id={`${formId}-requested-product`}
-        onChange={onRequestedProductChange}
-        value={requestedProduct}
+        onChange={(value) => onUpdate('requestedProduct', value)}
+        value={form.requestedProduct}
       />
       <TextField
         id={`${formId}-manager`}
@@ -710,7 +701,6 @@ export function ReviewFormPage() {
   const { reviewId } = useParams<{ reviewId: string }>()
   const isEditing = reviewId !== undefined
   const [form, setForm] = useState<ReviewFormState>(createInitialReviewForm)
-  const [requestedProduct, setRequestedProduct] = useState('')
   const [slugError, setSlugError] = useState('')
   const [typeError, setTypeError] = useState('')
   const [videoError, setVideoError] = useState('')
@@ -1154,7 +1144,6 @@ export function ReviewFormPage() {
           onManagedContentChange={updateManagedContent}
           onManagedContentPendingAssetCountChange={contentEditorState.onPendingAssetCountChange}
           onManagedContentUploadedAsset={unpersistedContentUploads.trackUploadedPath}
-          onRequestedProductChange={setRequestedProduct}
           onSlugErrorChange={setSlugError}
           onUpdate={updateForm}
           onVideoClear={clearVideo}
@@ -1164,7 +1153,6 @@ export function ReviewFormPage() {
             setYouTubeError('')
           }}
           onYouTubeErrorChange={setYouTubeError}
-          requestedProduct={requestedProduct}
           slugError={slugError}
           videoError={videoError}
           videoInput={videoInput}
@@ -1182,9 +1170,7 @@ export function ReviewFormPage() {
           onManagedContentChange={updateManagedContent}
           onManagedContentPendingAssetCountChange={contentEditorState.onPendingAssetCountChange}
           onManagedContentUploadedAsset={unpersistedContentUploads.trackUploadedPath}
-          onRequestedProductChange={setRequestedProduct}
           onUpdate={updateForm}
-          requestedProduct={requestedProduct}
         />
       ) : null}
     </AdminFormLayout>

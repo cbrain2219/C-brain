@@ -25,6 +25,7 @@ function review(overrides = {}) {
     project_deliverable: null,
     project_usage: null,
     published_at: '2026-07-21T00:00:00.000Z',
+    requested_product: null,
     seo_description: null,
     show_on_landing: true,
     slug: null,
@@ -72,6 +73,7 @@ test('interview rows hydrate the conditional form and existing video', () => {
       manager_name: null,
       project_deliverable: '브로슈어',
       project_usage: '영업 자료 활용',
+      requested_product: '브로슈어 · 카탈로그',
       seo_description: '인터뷰 설명',
       slug: 'orca-story',
       title: '오르카 인터뷰',
@@ -85,6 +87,7 @@ test('interview rows hydrate the conditional form and existing video', () => {
   assert.equal(form.slug, 'orca-story')
   assert.equal(form.projectDeliverable, '브로슈어')
   assert.equal(form.projectUsage, '영업 자료 활용')
+  assert.equal(form.requestedProduct, '브로슈어 · 카탈로그')
   assert.equal(form.videoPath, 'reviews/orca.mp4')
   assert.equal(form.videoPreviewUrl, 'https://example.com/orca.mp4')
   assert.equal(form.videoSource, 'file')
@@ -119,6 +122,7 @@ test('testimonial mutations clear interview-only fields', () => {
     contentJson: { type: 'doc', content: [{ type: 'paragraph', content: [{ type: 'text', text: '만족합니다.' }] }] },
     manager: ' 김담당 ',
     publishedAt: '2026-07-21',
+    requestedProduct: ' 촬영 ',
     seoDescription: '삭제될 설명',
     slug: 'old-interview',
     title: '삭제될 제목',
@@ -142,6 +146,7 @@ test('testimonial mutations clear interview-only fields', () => {
     project_deliverable: null,
     project_usage: null,
     published_at: '2026-07-20T15:00:00.000Z',
+    requested_product: '촬영',
     seo_description: null,
     show_on_landing: true,
     slug: null,
@@ -163,6 +168,7 @@ test('published YouTube interview mutations store only the normalized video id',
       projectDeliverable: '제품 소개 브로슈어',
       projectUsage: '전시회 배포',
       publishedAt: '2026-08-14',
+      requestedProduct: '브로슈어 · 카탈로그',
       slug: 'youtube-interview',
       title: 'YouTube 인터뷰',
       type: '인터뷰',
@@ -177,6 +183,7 @@ test('published YouTube interview mutations store only the normalized video id',
   assert.equal(input.youtube_video_id, 'dQw4w9WgXcQ')
   assert.equal(input.project_deliverable, '제품 소개 브로슈어')
   assert.equal(input.project_usage, '전시회 배포')
+  assert.equal(input.requested_product, '브로슈어 · 카탈로그')
 })
 
 test('published uploaded-file interview mutations clear an inactive YouTube link', () => {
@@ -189,6 +196,7 @@ test('published uploaded-file interview mutations clear an inactive YouTube link
       projectDeliverable: '완료보고서',
       projectUsage: '프로젝트 결과 공유',
       publishedAt: '2026-08-14',
+      requestedProduct: '포스터 · 전단지',
       slug: 'file-interview',
       title: '파일 인터뷰',
       type: '인터뷰',
@@ -211,6 +219,31 @@ test('drafts retain partial content while published reviews require complete fie
   })
 })
 
+test('published reviews require a requested product from the shared portfolio types', () => {
+  const completeTestimonial = {
+    ...createInitialReviewForm(),
+    company: '씨브레인',
+    content: '만족합니다.',
+    manager: '김담당',
+    publishedAt: '2026-08-20',
+    type: '후기',
+  }
+
+  assert.throws(
+    () => toReviewMutationInput(completeTestimonial, 'published', null),
+    { message: '필수 정보를 모두 입력해주세요.' },
+  )
+  assert.throws(
+    () =>
+      toReviewMutationInput(
+        { ...completeTestimonial, requestedProduct: '직접 입력한 값' },
+        'draft',
+        null,
+      ),
+    { message: '의뢰하신 제품을 선택해주세요.' },
+  )
+})
+
 test('an otherwise-complete empty WYSIWYG review may draft but cannot publish', () => {
   const form = {
     ...createInitialReviewForm(),
@@ -219,6 +252,7 @@ test('an otherwise-complete empty WYSIWYG review may draft but cannot publish', 
     contentAuthoringMode: 'wysiwyg',
     manager: '김담당',
     publishedAt: '2026-08-14',
+    requestedProduct: '촬영',
     type: '후기',
   }
 

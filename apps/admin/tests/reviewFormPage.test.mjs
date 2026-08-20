@@ -91,6 +91,6 @@ test('review type validation is surfaced by the shared combobox', async () => {
   assert.match(comboboxSource, /readOnly=\{readOnly\}/)
   assert.match(comboboxSource, /readonly required\?: boolean/)
   assert.match(comboboxSource, /required=\{required\}/)
-  assert.match(formSource, /required=\{false\}/)
+  assert.doesNotMatch(formSource, /required=\{false\}/)
   assert.match(formSource, /인터뷰 · 후기 유형을 선택해주세요\./)
 })

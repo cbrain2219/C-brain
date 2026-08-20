@@ -144,6 +144,7 @@ create table public.reviews (
   manager_name text,
   project_deliverable text,
   project_usage text,
+  requested_product text,
   title text,
   slug text,
   video_path text,
@@ -185,6 +186,11 @@ create table public.reviews (
     check (
       project_usage is null
       or nullif(btrim(project_usage), '') is not null
+    ),
+  constraint reviews_requested_product_nonblank_check
+    check (
+      requested_product is null
+      or nullif(btrim(requested_product), '') is not null
     ),
   constraint reviews_published_interview_project_info_check
     check (
