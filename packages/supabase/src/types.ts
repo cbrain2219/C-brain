@@ -448,6 +448,7 @@ export type Database = {
           id: string;
           item_snapshot: Json;
           order_name: string;
+          order_number: string;
           payment_link_id: string | null;
           privacy_agreed_at: string;
           public_token: string;
@@ -468,6 +469,7 @@ export type Database = {
           id?: string;
           item_snapshot: Json;
           order_name: string;
+          order_number?: string;
           payment_link_id?: string | null;
           privacy_agreed_at: string;
           public_token?: string;
@@ -488,6 +490,7 @@ export type Database = {
           id?: string;
           item_snapshot?: Json;
           order_name?: string;
+          order_number?: string;
           payment_link_id?: string | null;
           privacy_agreed_at?: string;
           public_token?: string;

@@ -261,6 +261,7 @@ test("NICEPAY TID lookup resolves the original payment and its order", async () 
       channel: "linkpay",
       id: "order-id",
       order_name: "링크 결제",
+      order_number: "58310427",
       public_token: "order-public-token",
       status: "partially_refunded",
     },
@@ -277,7 +278,12 @@ test("NICEPAY TID lookup resolves the original payment and its order", async () 
   const payment = await getPaymentByNicepayTid(client, "original-tid");
 
   assert.equal(payment?.id, "payment-id");
+  assert.equal(payment?.order.orderNumber, "58310427");
   assert.equal(payment?.order.publicToken, "order-public-token");
+  assert.match(
+    calls.find((call) => call.method === "select").columns,
+    /\border_number\b/,
+  );
   assert.deepEqual(calls.find((call) => call.method === "eq"), {
     column: "nicepay_tid",
     method: "eq",

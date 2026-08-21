@@ -69,6 +69,7 @@ export type PaymentWithOrder = PaymentRow & {
     channel: OrderChannel;
     itemSnapshot: Json;
     orderName: string;
+    orderNumber: string;
     amount: number;
     status: OrderStatus;
   };
@@ -280,7 +281,7 @@ async function getPaymentWithOrder(
   const { data, error } = await client
     .from("payments")
     .select(
-      "*, orders!inner(id, public_token, channel, order_name, amount, status, item_snapshot, buyer_name, buyer_company, buyer_phone, buyer_email)",
+      "*, orders!inner(id, public_token, channel, order_name, order_number, amount, status, item_snapshot, buyer_name, buyer_company, buyer_phone, buyer_email)",
     )
     .eq(column, value)
     .maybeSingle();
@@ -301,6 +302,7 @@ async function getPaymentWithOrder(
         | "id"
         | "item_snapshot"
         | "order_name"
+        | "order_number"
         | "public_token"
         | "status"
       >;
@@ -321,6 +323,7 @@ function paymentWithOrder(
       | "id"
       | "item_snapshot"
       | "order_name"
+      | "order_number"
       | "public_token"
       | "status"
     >;
@@ -338,6 +341,7 @@ function paymentWithOrder(
       id: joined.orders.id,
       itemSnapshot: joined.orders.item_snapshot,
       orderName: joined.orders.order_name,
+      orderNumber: joined.orders.order_number,
       publicToken: joined.orders.public_token,
       status: joined.orders.status,
     },

@@ -21,9 +21,9 @@ export type PaymentAlimtalkInput = {
   channel: "linkpay" | "site";
   itemSnapshot: Json;
   orderName: string;
+  orderNumber: string;
   paidAt: string;
   paymentId: string;
-  providerOrderId: string;
   publicToken: string;
 };
 
@@ -242,7 +242,7 @@ export function createPaymentAdminAlimtalkContent(input: PaymentAlimtalkInput) {
     `▪ 이메일: ${normalizeTemplateValue(input.buyerEmail)}`,
     "",
     "[주문 정보]",
-    `▪ 주문번호: ${normalizeTemplateValue(input.providerOrderId)}`,
+    `▪ 주문번호: ${normalizeTemplateValue(input.orderNumber)}`,
     `▪ 카테고리: ${fields.category}`,
     `▪ 서비스: ${fields.service}`,
     `▪ 용지: ${fields.paper}`,
@@ -263,7 +263,7 @@ export function createPaymentUserAlimtalkContent(input: PaymentAlimtalkInput) {
     "",
     `${normalizeTemplateValue(input.buyerName)}님, 주문 결제가 완료되었습니다.`,
     "",
-    `▪ 주문번호: ${normalizeTemplateValue(input.providerOrderId)}`,
+    `▪ 주문번호: ${normalizeTemplateValue(input.orderNumber)}`,
     `▪ 카테고리: ${fields.category}`,
     `▪ 서비스: ${fields.service}`,
     `▪ 용지: ${fields.paper}`,
@@ -425,9 +425,9 @@ export async function notifyNewPaidPayment(
         channel: payment.order.channel,
         itemSnapshot: payment.order.itemSnapshot,
         orderName: payment.order.orderName,
+        orderNumber: payment.order.orderNumber,
         paidAt: finishedPayment.paidAt,
         paymentId: finishedPayment.id,
-        providerOrderId: finishedPayment.providerOrderId,
         publicToken: payment.order.publicToken,
       },
       options,
