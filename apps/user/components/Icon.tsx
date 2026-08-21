@@ -42,6 +42,7 @@ export type IconName =
   | "pen-tool"
   | "pin"
   | "star"
+  | "star-filled"
   | "truck"
   | "user-profile-circle"
   | "arrow-curve-left-down"
@@ -697,6 +698,25 @@ function StarIcon({ size = 24, ...props }: Omit<IconProps, "name">) {
   );
 }
 
+function StarFilledIcon({ size = 24, ...props }: Omit<IconProps, "name">) {
+  return (
+    <svg
+      aria-hidden="true"
+      fill="none"
+      height={size}
+      viewBox="0 0 43.6151 41.6"
+      width={size}
+      xmlns="http://www.w3.org/2000/svg"
+      {...props}
+    >
+      <path
+        d="M20.7134 0.680137C21.161 -0.226712 22.4541 -0.226712 22.9017 0.680137L28.6953 12.4194C28.8731 12.7795 29.2166 13.0291 29.614 13.0869L42.5691 14.9693C43.5698 15.1148 43.9694 16.3446 43.2453 17.0505L33.8709 26.1882C33.5833 26.4685 33.4521 26.8724 33.52 27.2682L35.733 40.1709C35.9039 41.1676 34.8578 41.9277 33.9627 41.4571L22.3753 35.3653C22.0199 35.1784 21.5952 35.1784 21.2398 35.3653L9.65241 41.4571C8.75729 41.9277 7.71112 41.1676 7.88207 40.1709L10.0951 27.2682C10.1629 26.8724 10.0317 26.4685 9.74416 26.1882L0.369795 17.0505C-0.354367 16.3446 0.0452349 15.1148 1.046 14.9693L14.0011 13.0869C14.3985 13.0291 14.742 12.7795 14.9197 12.4194L20.7134 0.680137Z"
+        fill="currentColor"
+      />
+    </svg>
+  );
+}
+
 function TruckIcon({ size = 24, ...props }: Omit<IconProps, "name">) {
   return (
     <svg
@@ -816,6 +836,7 @@ const icons = {
   "pen-tool": PenToolIcon,
   pin: PinIcon,
   star: StarIcon,
+  "star-filled": StarFilledIcon,
   truck: TruckIcon,
   "user-profile-circle": UserProfileCircleIcon,
   "arrow-curve-left-down": SavedArrowCurveLeftDownIcon,

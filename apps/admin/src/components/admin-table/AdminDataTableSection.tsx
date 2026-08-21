@@ -1,6 +1,7 @@
 import { useEffect, useId, useState } from 'react'
 import type { CSSProperties, DragEvent, ReactNode } from 'react'
 import { Link } from 'react-router-dom'
+import { AdminIcon } from '../AdminIcon'
 import './AdminDataTableSection.css'
 import { moveItem } from './adminTableOrdering'
 
@@ -29,6 +30,11 @@ export type AdminTableAction = {
   readonly label: string
 }
 
+export type AdminTableButtonAction = {
+  readonly label: string
+  readonly onClick: () => void
+}
+
 export type AdminTableColumn<Row> = {
   readonly id: string
   readonly header: string
@@ -38,6 +44,7 @@ export type AdminTableColumn<Row> = {
 
 export type AdminDataTableSectionProps<Row> = {
   readonly bottomAction?: AdminTableAction
+  readonly bottomLeadingAction?: AdminTableButtonAction
   readonly columns: readonly AdminTableColumn<Row>[]
   readonly emptyMessage?: string
   readonly filters: readonly AdminTableFilter[]
@@ -173,6 +180,7 @@ function PackageIcon() {
 
 export function AdminDataTableSection<Row>({
   bottomAction,
+  bottomLeadingAction,
   columns,
   emptyMessage = '표시할 데이터가 없습니다.',
   filters,
@@ -341,11 +349,29 @@ export function AdminDataTableSection<Row>({
           </div>
         </div>
 
-        {bottomAction ? (
-          <Link className="admin-data-table-section__action pretendard-bold-14" to={bottomAction.href}>
-            <PackageIcon />
-            <span>{bottomAction.label}</span>
-          </Link>
+        {bottomLeadingAction || bottomAction ? (
+          <div className="admin-data-table-section__actions">
+            {bottomLeadingAction ? (
+              <button
+                className="admin-data-table-section__action admin-data-table-section__action--button pretendard-bold-14"
+                onClick={bottomLeadingAction.onClick}
+                type="button"
+              >
+                <AdminIcon name="link" size={20} />
+                <span>{bottomLeadingAction.label}</span>
+              </button>
+            ) : null}
+
+            {bottomAction ? (
+              <Link
+                className="admin-data-table-section__action pretendard-bold-14"
+                to={bottomAction.href}
+              >
+                <PackageIcon />
+                <span>{bottomAction.label}</span>
+              </Link>
+            ) : null}
+          </div>
         ) : null}
       </section>
     </div>

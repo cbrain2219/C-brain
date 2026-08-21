@@ -142,7 +142,10 @@ export function toReviewFormState(
     requestedProduct: review.product_type ?? '',
     projectDeliverable: review.project_deliverable ?? '',
     projectUsage: review.project_usage ?? '',
-    publishedAt: toDateInputValue(review.published_at),
+    publishedAt: toDateInputValue(
+      review.published_at ??
+        (review.kind === 'testimonial' ? review.created_at : null),
+    ),
     seoDescription: review.seo_description ?? '',
     slug: review.slug ?? '',
     title: review.title ?? '',

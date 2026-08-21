@@ -19,6 +19,8 @@ import './PortfolioPage.css'
 import './ReviewPage.css'
 
 const statusFilterOptions = ['전체', '임시저장', '게시됨', '보관됨'] as const
+const userAppUrl = import.meta.env.VITE_USER_APP_URL || 'http://localhost:3000'
+const reviewRequestUrl = new URL('/reviews/request', userAppUrl).toString()
 
 function renderReviewStatus(row: ReviewListRow) {
   if (row.status !== 'archived') return renderAdminContentStatus(row.status)
@@ -168,6 +170,15 @@ export function ReviewPage() {
     }
   }
 
+  async function handleCopyReviewRequestUrl() {
+    try {
+      await navigator.clipboard.writeText(reviewRequestUrl)
+      toast.success('후기 등록 링크를 복사했습니다.')
+    } catch {
+      toast.error('후기 등록 링크를 복사하지 못했습니다.')
+    }
+  }
+
   const isAcceptDrag =
     !isLoading &&
     !isReordering &&
@@ -182,6 +193,10 @@ export function ReviewPage() {
         bottomAction={{
           href: '/reviews/new',
           label: '신규 인터뷰 · 후기 등록',
+        }}
+        bottomLeadingAction={{
+          label: '후기 등록 링크 복사',
+          onClick: () => void handleCopyReviewRequestUrl(),
         }}
         columns={reviewColumns}
         emptyMessage={

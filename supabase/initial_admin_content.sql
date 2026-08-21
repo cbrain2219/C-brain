@@ -143,6 +143,7 @@ create table public.reviews (
   company_name text not null,
   manager_name text,
   product_type text,
+  rating smallint,
   project_deliverable text,
   project_usage text,
   title text,
@@ -191,6 +192,11 @@ create table public.reviews (
     check (
       product_type is null
       or nullif(btrim(product_type), '') is not null
+    ),
+  constraint reviews_rating_range_check
+    check (
+      rating is null
+      or rating between 1 and 5
     ),
   constraint reviews_published_interview_project_info_check
     check (
@@ -627,7 +633,7 @@ grant select (
 ) on public.portfolio_items to anon;
 
 grant select (
-  id, kind, company_name, manager_name, product_type, project_deliverable,
+  id, kind, company_name, manager_name, product_type, rating, project_deliverable,
   project_usage, title, slug, video_path, youtube_video_id, video_alt,
   seo_description, content, content_mode, content_authoring_mode,
   content_asset_scope, show_on_landing, status, published_at, view_count,

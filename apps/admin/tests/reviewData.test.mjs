@@ -52,6 +52,19 @@ test('testimonial list rows derive a useful title from attribution', () => {
   assert.equal(row.views, '-')
 })
 
+test('draft testimonials use their submitted date when the written date is empty', () => {
+  const form = toReviewFormState(
+    review({
+      created_at: '2026-08-20T16:00:00.000Z',
+      published_at: null,
+      status: 'draft',
+    }),
+    null,
+  )
+
+  assert.equal(form.publishedAt, '2026-08-21')
+})
+
 test('interview list rows format their view count', () => {
   const row = toReviewListRow(
     review({

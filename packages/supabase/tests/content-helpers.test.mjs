@@ -288,6 +288,7 @@ test("public managed-content list and detail queries exactly match canonical ano
       "project_deliverable",
       "project_usage",
       "published_at",
+      "rating",
       "seo_description",
       "show_on_landing",
       "slug",

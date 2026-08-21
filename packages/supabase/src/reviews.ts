@@ -4,7 +4,7 @@ import type { CBrainSupabaseClient } from "./server.ts";
 import type { TableInsert, TableRow, TableUpdate } from "./types.ts";
 
 const publicReviewColumns =
-  "id, company_name, content, content_mode, content_authoring_mode, content_asset_scope, created_at, kind, manager_name, product_type, project_deliverable, project_usage, published_at, seo_description, show_on_landing, slug, sort_order, status, title, video_alt, video_path, view_count, youtube_video_id";
+  "id, company_name, content, content_mode, content_authoring_mode, content_asset_scope, created_at, kind, manager_name, product_type, project_deliverable, project_usage, published_at, rating, seo_description, show_on_landing, slug, sort_order, status, title, video_alt, video_path, view_count, youtube_video_id";
 
 /**
  * Deliberately narrow anonymous/public projection. Admin callers use the
@@ -25,6 +25,7 @@ export type PublicReviewRecord = Pick<
   | "project_deliverable"
   | "project_usage"
   | "published_at"
+  | "rating"
   | "seo_description"
   | "show_on_landing"
   | "slug"
@@ -35,6 +36,19 @@ export type PublicReviewRecord = Pick<
   | "video_path"
   | "view_count"
   | "youtube_video_id"
+>;
+
+export type ReviewSubmissionDraftInput = Pick<
+  TableInsert<"reviews">,
+  | "company_name"
+  | "content"
+  | "content_authoring_mode"
+  | "content_json"
+  | "content_mode"
+  | "content_schema_version"
+  | "manager_name"
+  | "product_type"
+  | "rating"
 >;
 
 export async function listPublishedReviews(client: CBrainSupabaseClient) {
@@ -61,6 +75,27 @@ export async function getPublishedReview(
 
   if (error) throw new Error(error.message);
   return data as PublicReviewRecord | null;
+}
+
+export async function createReviewSubmissionDraft(
+  client: CBrainSupabaseClient,
+  input: ReviewSubmissionDraftInput,
+) {
+  const submittedAt = new Date().toISOString();
+  const { data, error } = await client
+    .from("reviews")
+    .insert({
+      ...input,
+      created_at: submittedAt,
+      kind: "testimonial",
+      published_at: submittedAt,
+      show_on_landing: false,
+      status: "draft",
+    })
+    .select("id, status")
+    .single();
+
+  return unwrapSupabaseData(data, error);
 }
 
 export async function listAdminReviews(client: CBrainSupabaseClient) {

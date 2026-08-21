@@ -231,6 +231,7 @@ export type Database = {
           kind: ReviewKind;
           manager_name: string | null;
           product_type: string | null;
+          rating: number | null;
           project_deliverable: string | null;
           project_usage: string | null;
           published_at: string | null;
@@ -259,6 +260,7 @@ export type Database = {
           kind: ReviewKind;
           manager_name?: string | null;
           product_type?: string | null;
+          rating?: number | null;
           project_deliverable?: string | null;
           project_usage?: string | null;
           published_at?: string | null;
@@ -287,6 +289,7 @@ export type Database = {
           kind?: ReviewKind;
           manager_name?: string | null;
           product_type?: string | null;
+          rating?: number | null;
           project_deliverable?: string | null;
           project_usage?: string | null;
           published_at?: string | null;
