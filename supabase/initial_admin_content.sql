@@ -627,10 +627,11 @@ grant select (
 ) on public.portfolio_items to anon;
 
 grant select (
-  id, kind, company_name, manager_name, project_deliverable, project_usage, title,
-  slug, video_path, youtube_video_id, video_alt, seo_description, content,
-  content_mode, content_authoring_mode, content_asset_scope, show_on_landing,
-  status, published_at, view_count, sort_order, created_at
+  id, kind, company_name, manager_name, product_type, project_deliverable,
+  project_usage, title, slug, video_path, youtube_video_id, video_alt,
+  seo_description, content, content_mode, content_authoring_mode,
+  content_asset_scope, show_on_landing, status, published_at, view_count,
+  sort_order, created_at
 ) on public.reviews to anon;
 
 grant select, insert, update, delete

@@ -120,6 +120,7 @@ function reviewRow(overrides = {}) {
     id: "review-id",
     kind: "testimonial",
     manager_name: "김담당님",
+    product_type: null,
     project_deliverable: null,
     project_usage: null,
     published_at: "2026-08-02T00:00:00.000Z",
@@ -326,6 +327,7 @@ test("review mappers separate kinds, sanitize content, and keep presentation met
       id: "interview-1",
       kind: "interview",
       manager_name: null,
+      product_type: "브로슈어 · 카탈로그",
       project_deliverable: "브랜드 소개 브로슈어",
       project_usage: "전시회 배포 · 영업 자료 활용",
       seo_description: "새 인터뷰 설명",
@@ -391,8 +393,24 @@ test("review mappers separate kinds, sanitize content, and keep presentation met
     "브랜드 소개 브로슈어",
   );
   assert.equal(
+    mapped.customerInterviews[0].category,
+    "브로슈어 · 카탈로그",
+  );
+  assert.equal(
+    mapped.customerInterviews[0].description,
+    "새 인터뷰 설명",
+  );
+  assert.equal(
     mapped.featuredCustomerInterview.projectName,
     "브랜드 소개 브로슈어",
+  );
+  assert.equal(
+    mapped.featuredCustomerInterview.category,
+    "브로슈어 · 카탈로그",
+  );
+  assert.equal(
+    mapped.featuredCustomerInterview.description,
+    "새 인터뷰 설명",
   );
   assert.equal(detail.videoUrl, "https://assets.test/reviews/new-interview.mp4");
   assert.equal(
@@ -435,15 +453,19 @@ test("review mappers separate kinds, sanitize content, and keep presentation met
       id: "legacy-interview",
       kind: "interview",
       manager_name: null,
+      product_type: "브로슈어 · 카탈로그",
       project_deliverable: "새 졸업 프로젝트 완료보고서",
       project_usage: "성과 공유",
-      slug: "chungkang-college",
+      slug: "12",
       title: "청강 인터뷰",
       video_path: "reviews/chungkang.mp4",
     }),
   ]);
 
-  assert.equal(legacy.customerInterviews[0].category, "교육");
+  assert.equal(
+    legacy.customerInterviews[0].category,
+    "브로슈어 · 카탈로그",
+  );
   assert.equal(legacy.customerInterviews[0].thumbnail, reviewInterviewEducationImage);
   assert.deepEqual(legacy.featuredCustomerInterview.headlineLines, [
     "처음 맡겼는데",
@@ -453,6 +475,18 @@ test("review mappers separate kinds, sanitize content, and keep presentation met
     legacy.featuredCustomerInterview.projectName,
     "새 졸업 프로젝트 완료보고서",
   );
+
+  const withoutCategory = mapCustomerReviewRows([
+    reviewRow({
+      id: "no-product-interview",
+      kind: "interview",
+      product_type: "없음",
+      slug: "no-product-interview",
+    }),
+  ]);
+
+  assert.equal(withoutCategory.customerInterviews[0].category, undefined);
+  assert.equal(withoutCategory.featuredCustomerInterview.category, undefined);
   assert.equal((await getCustomerReviewPageData()).customerInterviews.length, 0);
   assert.deepEqual(await getLandingCustomerTestimonials(), []);
   assert.equal(
@@ -730,11 +764,24 @@ test("customer interviews keep the desktop section layout from 1080px upward", a
   assert.match(pageSource, /reviewsFeaturedMeta/);
   assert.match(
     pageSource,
+    /const featuredMeta = featuredCustomerInterview\.category/,
+  );
+  assert.match(
+    pageSource,
+    /\? `\$\{featuredCustomerInterview\.projectName\} · \$\{featuredCustomerInterview\.category\}`/,
+  );
+  assert.match(
+    pageSource,
+    /<p title=\{featuredMeta\}>\{featuredMeta\}<\/p>/,
+  );
+  assert.match(
+    pageSource,
     /\{featuredCustomerInterview\.title\}/,
   );
   assert.doesNotMatch(pageSource, /featuredCustomerInterview\.headlineLines/);
   assert.match(pageSource, /reviewsQuoteMark/);
-  assert.match(pageSource, /reviewsMediaOverlay/);
+  assert.doesNotMatch(pageSource, /reviewsMediaOverlay/);
+  assert.doesNotMatch(stylesSource, /\.reviewsMediaOverlay/);
 
   assert.match(
     stylesSource,
@@ -800,13 +847,9 @@ test("customer interviews keep the desktop section layout from 1080px upward", a
     stylesSource,
     /\.reviewsSectionCopy\s*\{[^}]*gap: 4px;/s,
   );
-  assert.match(
-    desktopMedia,
-    /\.reviewsCategory\s*\{\s*display: none;/,
-  );
   assert.doesNotMatch(
     pcMedia,
-    /\.reviews(?:InterviewSection|SectionHeading|SectionDescription|Featured|QuoteMark|InterviewGrid|TestimonialGrid|InterviewMedia|Category)\b/,
+    /\.reviews(?:InterviewSection|SectionHeading|SectionDescription|Featured|QuoteMark|InterviewGrid|TestimonialGrid|InterviewMedia)\b/,
   );
 });
 
@@ -823,6 +866,17 @@ test("customer interview markup stays semantic and uses admin video alt text", a
   assert.match(pageSource, /alt=\{interview\.videoAlt\}/);
   assert.match(
     pageSource,
+    /className=\{styles\.reviewsMediaImage\}[\s\S]*?fill[\s\S]*?quality=\{90\}/,
+  );
+  assert.match(pageSource, /\(min-width: 1440px\) 488px/);
+  assert.match(pageSource, /\(min-width: 1080px\) 50vw/);
+  assert.match(pageSource, /\(min-width: 640px\) 87vw, 450px/);
+  assert.equal(
+    pageSource.match(/sizes=\{interviewThumbnailSizes\}/g)?.length,
+    2,
+  );
+  assert.match(
+    pageSource,
     /href=\{`\/reviews\/\$\{featuredCustomerInterview\.detailSlug\}`\}/,
   );
   assert.match(
@@ -836,7 +890,10 @@ test("customer interview markup stays semantic and uses admin video alt text", a
   );
   assert.match(pageSource, /className=\{styles\.reviewsFeaturedMediaLink\}/);
   assert.match(pageSource, /href=\{`\/reviews\/\$\{interview\.detailSlug\}`\}/);
-  assert.match(pageSource, /aria-label=\{`\$\{interview\.title\} 상세 보기`\}/);
+  assert.match(
+    pageSource,
+    /aria-label=\{`\$\{interview\.company\} - \$\{interview\.title\} 상세 보기`\}/,
+  );
   assert.match(pageSource, /className=\{styles\.reviewsInterviewLink\}/);
   assert.match(
     pageSource,
@@ -847,20 +904,41 @@ test("customer interview markup stays semantic and uses admin video alt text", a
     pageSource,
     /<li[\s\S]*className=\{styles\.reviewsInterviewCard\}/,
   );
-  assert.match(pageSource, /<blockquote>/);
   assert.match(
     pageSource,
-    /<h3 id=\{titleId\}>\{interview\.title\}<\/h3>/,
+    /\{interview\.company\} - \{interview\.title\}/,
   );
+  assert.match(pageSource, /<p title=\{interview\.description\}>/);
+  assert.match(pageSource, /\{interview\.description\}/);
   assert.doesNotMatch(
     pageSource,
     /\{interview\.company\} — 씨브레인 고객 인터뷰/,
   );
-  assert.match(pageSource, /<footer className=\{styles\.reviewsCardMeta\}>/);
+  assert.match(
+    pageSource,
+    /<footer[\s\S]*?className=\{styles\.reviewsCardMeta\}/,
+  );
+  assert.match(pageSource, /const cardMeta = interview\.category/);
+  assert.match(
+    pageSource,
+    /\? `\$\{interview\.meta\} · \$\{interview\.category\}`/,
+  );
+  assert.match(pageSource, /: interview\.meta;/);
+  assert.match(pageSource, /title=\{cardMeta\}/);
+  assert.match(pageSource, /\{cardMeta\}/);
+  assert.doesNotMatch(pageSource, /interview\.quote/);
+  assert.doesNotMatch(pageSource, /styles\.reviewsCategory/);
   assert.match(stylesSource, /list-style: none;/);
   assert.match(stylesSource, /\.reviewsFeaturedDivider::before/);
   assert.match(stylesSource, /\.reviewsFeaturedMeta p:first-child/);
-  assert.match(stylesSource, /\.reviewsInterviewCopy blockquote/);
+  assert.match(
+    stylesSource,
+    /\.reviewsInterviewCopy p\s*\{[^}]*overflow: hidden;[^}]*text-overflow: ellipsis;[^}]*white-space: nowrap;/s,
+  );
+  assert.match(
+    stylesSource,
+    /\.reviewsCardMeta\s*\{[^}]*overflow: hidden;[^}]*text-overflow: ellipsis;[^}]*white-space: nowrap;/s,
+  );
   assert.match(stylesSource, /\.reviewsTestimonialContent blockquote/);
 });
 

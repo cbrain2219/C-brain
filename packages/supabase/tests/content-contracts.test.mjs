@@ -24,6 +24,10 @@ const reviewProductTypeMigrationUrl = new URL(
   '../../../supabase/migrations/20260820120142_add_review_product_type.sql',
   import.meta.url,
 )
+const reviewProductTypePublicMigrationUrl = new URL(
+  '../../../supabase/migrations/20260821020429_expose_review_product_type.sql',
+  import.meta.url,
+)
 const reviewYouTubeSqlUrl = new URL(
   '../../../supabase/manual/add_review_youtube_video.sql',
   import.meta.url,
@@ -44,6 +48,7 @@ const [
   blogThumbnailFileNameMigration,
   contentViewMigration,
   reviewProductTypeMigration,
+  reviewProductTypePublicMigration,
   reviewProjectInfoSql,
   reviewYouTubeSql,
   blogData,
@@ -57,6 +62,7 @@ const [
   readFile(blogThumbnailFileNameMigrationUrl, 'utf8'),
   readFile(contentViewMigrationUrl, 'utf8'),
   readFile(reviewProductTypeMigrationUrl, 'utf8'),
+  readFile(reviewProductTypePublicMigrationUrl, 'utf8'),
   readFile(reviewProjectInfoSqlUrl, 'utf8'),
   readFile(reviewYouTubeSqlUrl, 'utf8'),
   readFile(blogDataUrl, 'utf8'),
@@ -137,7 +143,6 @@ test('managed content keeps inactive authoring fields outside anonymous reads', 
     'content_json',
     'content_source_backup',
     'content_schema_version',
-    'product_type',
     'thumbnail_file_name',
   ]
 
@@ -158,6 +163,20 @@ test('managed content keeps inactive authoring fields outside anonymous reads', 
       assert.doesNotMatch(policy[1], /to anon, authenticated/)
     }
   }
+
+  for (const table of ['posts', 'portfolio_items']) {
+    const baselineGrant = new RegExp(
+      `grant select \\(([\\s\\S]*?)\\) on public\\.${table} to anon;`,
+    ).exec(baseline)
+    assert.ok(baselineGrant)
+    assert.doesNotMatch(baselineGrant[1], /\bproduct_type\b/)
+  }
+
+  const reviewGrant = /grant select \(([\s\S]*?)\) on public\.reviews to anon;/.exec(
+    baseline,
+  )
+  assert.ok(reviewGrant)
+  assert.match(reviewGrant[1], /\bproduct_type\b/)
 
   assert.match(
     managedContentMigration,
@@ -313,7 +332,7 @@ test('blog thumbnail filename migration adds private nullable metadata safely', 
   )
 })
 
-test('review product type migration adds private nullable metadata safely', () => {
+test('review product type migrations add nullable metadata and expose its display value safely', () => {
   assert.match(
     reviewProductTypeMigration,
     /alter table public\.reviews\s+add column if not exists product_type text/,
@@ -336,6 +355,11 @@ test('review product type migration adds private nullable metadata safely', () =
     /grant select[^;]*product_type[^;]*to anon/,
   )
   assert.match(
+    reviewProductTypePublicMigration,
+    /grant select \(product_type\) on table public\.reviews to anon/,
+  )
+  assert.match(reviewProductTypePublicMigration, /notify pgrst, 'reload schema'/)
+  assert.match(
     baseline,
     /constraint reviews_product_type_nonblank_check[\s\S]*?product_type is null[\s\S]*?nullif\(btrim\(product_type\), ''\) is not null/,
   )
@@ -344,7 +368,7 @@ test('review product type migration adds private nullable metadata safely', () =
     baseline,
   )
   assert.ok(baselineGrant)
-  assert.doesNotMatch(baselineGrant[1], /\bproduct_type\b/)
+  assert.match(baselineGrant[1], /\bproduct_type\b/)
 
   const reviewsType = /reviews:\s*\{([\s\S]*?)Relationships: \[\];/.exec(types)
   assert.ok(reviewsType)

@@ -60,6 +60,7 @@ export type CustomerInterviewDetail = {
   projectInfo: readonly CustomerInterviewProjectInfo[];
   projectInfoTitle: string;
   publishedAt: string;
+  requestedProduct?: string;
   seoDescription: string;
   slug: string;
   thumbnail: string;
@@ -83,7 +84,6 @@ type CustomerInterviewFeaturedConfig = {
 
 type CustomerInterviewPresentation = {
   featured?: CustomerInterviewFeaturedConfig;
-  industry: string;
   keywords: readonly string[];
   projectInfo: readonly CustomerInterviewProjectInfo[];
   slug: string;
@@ -91,13 +91,13 @@ type CustomerInterviewPresentation = {
 };
 
 export type CustomerInterviewCard = {
-  category: string;
+  category?: string;
   company: string;
+  description: string;
   detailSlug: string;
   id: string;
   meta: string;
   publishedAt: string;
-  quote: string;
   thumbnail: string;
   title: string;
   videoAlt: string;
@@ -105,7 +105,6 @@ export type CustomerInterviewCard = {
 };
 
 export type FeaturedCustomerInterview = CustomerInterviewCard & {
-  description: string;
   headlineLines: readonly string[];
   projectName: string;
 };
@@ -130,7 +129,6 @@ type AssetUrlResolver = (path: string) => string;
 
 const customerInterviewPresentation: readonly CustomerInterviewPresentation[] = [
   {
-    industry: "제조",
     keywords: [
       "씨브레인",
       "고객 인터뷰",
@@ -155,7 +153,6 @@ const customerInterviewPresentation: readonly CustomerInterviewPresentation[] = 
     thumbnail: reviewInterviewImage,
   },
   {
-    industry: "헬스케어",
     keywords: [
       "씨브레인",
       "고객 인터뷰",
@@ -184,7 +181,6 @@ const customerInterviewPresentation: readonly CustomerInterviewPresentation[] = 
       headlineLines: ["처음 맡겼는데", "결과물이 기대 이상이였어요."],
       projectName: "게임 졸업 프로젝트 완료 보고서",
     },
-    industry: "교육",
     keywords: [
       "씨브레인",
       "고객 인터뷰",
@@ -214,8 +210,15 @@ const customerInterviewPresentation: readonly CustomerInterviewPresentation[] = 
   },
 ] as const;
 
-function getPresentation(slug: string) {
-  return customerInterviewPresentation.find((item) => item.slug === slug);
+function getPresentation(slug: string, company?: string) {
+  const companyName = company?.trim();
+
+  return customerInterviewPresentation.find(
+    (item) =>
+      item.slug === slug ||
+      (companyName &&
+        getProjectValue(item.projectInfo, "client") === companyName),
+  );
 }
 
 function getPublishedAt(row: ReviewRow) {
@@ -384,7 +387,7 @@ export function mapCustomerInterviewDetail(
   resolveAssetUrl: AssetUrlResolver = (path) => path,
 ): CustomerInterviewDetail {
   const slug = row.slug ?? row.id;
-  const presentation = getPresentation(slug);
+  const presentation = getPresentation(slug, row.company_name);
   const content = toCustomerInterviewContentBlocks(row);
   const title = row.title?.trim() || `${row.company_name} 고객 인터뷰`;
   const seoDescription =
@@ -400,6 +403,7 @@ export function mapCustomerInterviewDetail(
   const youtubeThumbnailUrl = youtubeVideoId
     ? getYouTubeThumbnailUrl(youtubeVideoId)
     : null;
+  const requestedProduct = row.product_type?.trim();
 
   return {
     author: "씨브레인",
@@ -423,6 +427,7 @@ export function mapCustomerInterviewDetail(
     projectInfo: getProjectInfo(row, presentation),
     projectInfoTitle: "프로젝트 정보",
     publishedAt: getPublishedAt(row),
+    ...(requestedProduct ? { requestedProduct } : {}),
     seoDescription,
     slug,
     thumbnail:
@@ -440,20 +445,20 @@ export function mapCustomerInterviewDetail(
 function toCustomerInterviewCard(
   detail: CustomerInterviewDetail,
 ): CustomerInterviewCard {
-  const presentation = getPresentation(detail.slug);
   const projectName = getProjectValue(detail.projectInfo, "deliverable");
-  const quote =
-    detail.content.find((block) => block.type === "quote")?.text ??
-    detail.seoDescription;
+  const category =
+    detail.requestedProduct && detail.requestedProduct !== "없음"
+      ? detail.requestedProduct
+      : undefined;
 
   return {
-    category: presentation?.industry ?? "고객사",
+    ...(category ? { category } : {}),
     company: detail.company,
+    description: detail.seoDescription,
     detailSlug: detail.slug,
     id: detail.slug,
     meta: projectName ?? "고객 인터뷰",
     publishedAt: detail.publishedAt,
-    quote,
     thumbnail: detail.thumbnail,
     title: detail.title,
     videoAlt: detail.videoAlt,
@@ -464,18 +469,14 @@ function toCustomerInterviewCard(
 function toFeaturedCustomerInterview(
   detail: CustomerInterviewDetail,
 ): FeaturedCustomerInterview {
-  const presentation = getPresentation(detail.slug);
+  const presentation = getPresentation(detail.slug, detail.company);
   const card = toCustomerInterviewCard(detail);
   const quote =
     detail.content.find((block) => block.type === "quote")?.text ??
     detail.seoDescription;
-  const description =
-    detail.content.find((block) => block.type === "paragraph")?.text ??
-    detail.seoDescription;
 
   return {
     ...card,
-    description,
     headlineLines: presentation?.featured?.headlineLines ?? [quote],
     projectName:
       getProjectValue(detail.projectInfo, "deliverable") ??

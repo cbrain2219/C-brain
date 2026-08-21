@@ -4,7 +4,7 @@ import type { CBrainSupabaseClient } from "./server.ts";
 import type { TableInsert, TableRow, TableUpdate } from "./types.ts";
 
 const publicReviewColumns =
-  "id, company_name, content, content_mode, content_authoring_mode, content_asset_scope, created_at, kind, manager_name, project_deliverable, project_usage, published_at, seo_description, show_on_landing, slug, sort_order, status, title, video_alt, video_path, view_count, youtube_video_id";
+  "id, company_name, content, content_mode, content_authoring_mode, content_asset_scope, created_at, kind, manager_name, product_type, project_deliverable, project_usage, published_at, seo_description, show_on_landing, slug, sort_order, status, title, video_alt, video_path, view_count, youtube_video_id";
 
 /**
  * Deliberately narrow anonymous/public projection. Admin callers use the
@@ -21,6 +21,7 @@ export type PublicReviewRecord = Pick<
   | "id"
   | "kind"
   | "manager_name"
+  | "product_type"
   | "project_deliverable"
   | "project_usage"
   | "published_at"

@@ -284,6 +284,7 @@ test("public managed-content list and detail queries exactly match canonical ano
       "created_at",
       "kind",
       "manager_name",
+      "product_type",
       "project_deliverable",
       "project_usage",
       "published_at",

@@ -17,6 +17,11 @@ import { CustomerTestimonialList } from "./CustomerTestimonialList";
 
 export const metadata = createPageMetadata("reviews");
 
+const interviewThumbnailSizes =
+  "(min-width: 1440px) 488px, " +
+  "(min-width: 1080px) 50vw, " +
+  "(min-width: 640px) 87vw, 450px";
+
 function InterviewThumbnail({
   alt,
   sizes,
@@ -42,6 +47,7 @@ function InterviewThumbnail({
       alt={alt}
       className={styles.reviewsMediaImage}
       fill
+      quality={90}
       sizes={sizes}
       src={thumbnail}
     />
@@ -53,6 +59,10 @@ function FeaturedInterview({
 }: {
   featuredCustomerInterview: FeaturedCustomerInterview;
 }) {
+  const featuredMeta = featuredCustomerInterview.category
+    ? `${featuredCustomerInterview.projectName} · ${featuredCustomerInterview.category}`
+    : featuredCustomerInterview.projectName;
+
   return (
     <article
       aria-label={`${featuredCustomerInterview.title} 대표 인터뷰`}
@@ -86,7 +96,7 @@ function FeaturedInterview({
         </div>
         <footer className={styles.reviewsFeaturedMeta}>
           <p>{featuredCustomerInterview.company}</p>
-          <p>{featuredCustomerInterview.projectName}</p>
+          <p title={featuredMeta}>{featuredMeta}</p>
         </footer>
       </div>
       <figure className={styles.reviewsFeaturedMedia}>
@@ -97,11 +107,10 @@ function FeaturedInterview({
         >
           <InterviewThumbnail
             alt={featuredCustomerInterview.videoAlt}
-            sizes="(min-width: 1440px) 530px, (min-width: 1080px) 530px, (min-width: 640px) 600px, 350px"
+            sizes={interviewThumbnailSizes}
             thumbnail={featuredCustomerInterview.thumbnail}
             videoUrl={featuredCustomerInterview.videoUrl}
           />
-          <span className={styles.reviewsMediaOverlay} aria-hidden="true" />
         </Link>
       </figure>
     </article>
@@ -180,6 +189,9 @@ export default async function CustomerReviewsPage() {
               <ul className={styles.reviewsInterviewGrid}>
                 {additionalCustomerInterviews.map((interview) => {
                   const titleId = `customer-interview-${interview.id}-title`;
+                  const cardMeta = interview.category
+                    ? `${interview.meta} · ${interview.category}`
+                    : interview.meta;
 
                   return (
                     <li
@@ -191,34 +203,35 @@ export default async function CustomerReviewsPage() {
                         className={styles.reviewsInterviewArticle}
                       >
                         <Link
-                          aria-label={`${interview.title} 상세 보기`}
+                          aria-label={`${interview.company} - ${interview.title} 상세 보기`}
                           className={styles.reviewsInterviewLink}
                           href={`/reviews/${interview.detailSlug}`}
                         >
                           <figure className={styles.reviewsInterviewMedia}>
                             <InterviewThumbnail
                               alt={interview.videoAlt}
-                              sizes="(min-width: 1120px) 530px, (min-width: 640px) calc((100vw - 60px) / 2), calc(100vw - 40px)"
+                              sizes={interviewThumbnailSizes}
                               thumbnail={interview.thumbnail}
                               videoUrl={interview.videoUrl}
                             />
-                            <span
-                              className={styles.reviewsMediaOverlay}
-                              aria-hidden="true"
-                            />
                           </figure>
                           <div className={styles.reviewsInterviewBody}>
-                            <p className={styles.reviewsCategory}>
-                              {interview.category}
-                            </p>
                             <div className={styles.reviewsInterviewCopy}>
-                              <h3 id={titleId}>{interview.title}</h3>
-                              <blockquote>
-                                &quot;{interview.quote}&quot;
-                              </blockquote>
+                              <h3
+                                id={titleId}
+                                title={`${interview.company} - ${interview.title}`}
+                              >
+                                {interview.company} - {interview.title}
+                              </h3>
+                              <p title={interview.description}>
+                                {interview.description}
+                              </p>
                             </div>
-                            <footer className={styles.reviewsCardMeta}>
-                              {interview.meta}
+                            <footer
+                              className={styles.reviewsCardMeta}
+                              title={cardMeta}
+                            >
+                              {cardMeta}
                             </footer>
                           </div>
                         </Link>

@@ -1607,14 +1607,6 @@
   object-fit: cover;
 }
 
-.reviewsMediaOverlay {
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  background: rgba(0, 0, 0, 0.2);
-  pointer-events: none;
-}
-
 .reviewsQuoteMarkImage {
   object-fit: contain;
 }
@@ -1635,14 +1627,6 @@
 
 .reviewsFeaturedCopy {
   gap: 8px;
-}
-
-.reviewsCategory {
-  color: var(--landing-brand-500);
-  font-family: var(--font-sans);
-  font-size: 14px;
-  font-weight: 700;
-  line-height: 20px;
 }
 
 .reviewsQuoteMark,
@@ -1720,19 +1704,21 @@
   letter-spacing: -0.18px;
 }
 
-.reviewsInterviewCopy blockquote,
 .reviewsTestimonialContent blockquote,
 .reviewsTestimonialBody {
   margin: 0;
 }
 
 .reviewsCardMeta {
+  overflow: hidden;
   color: var(--landing-gray-600);
   font-family: var(--font-sans);
   font-size: 12px;
   font-weight: 500;
   line-height: 16px;
   letter-spacing: -0.18px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .reviewsInterviewGrid,
@@ -1797,18 +1783,14 @@
   white-space: nowrap;
 }
 
-.reviewsInterviewCopy p,
-.reviewsInterviewCopy blockquote {
+.reviewsInterviewCopy p {
+  overflow: hidden;
   color: var(--landing-gray-600);
   font-family: var(--font-sans);
   font-size: 14px;
   font-weight: 500;
   line-height: 20px;
   letter-spacing: -0.21px;
-}
-
-.reviewsInterviewCopy blockquote {
-  overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -3185,10 +3167,6 @@
   .reviewsInterviewBody {
     padding: 16px 20px;
     gap: 20px;
-  }
-
-  .reviewsCategory {
-    display: none;
   }
 
   .blogGrid {
