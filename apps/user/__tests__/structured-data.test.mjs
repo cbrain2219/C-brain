@@ -11,10 +11,8 @@ const structuredDataModuleUrl = new URL(
   "../app/_content/structured-data.ts",
   import.meta.url,
 ).href;
-const companyModuleUrl = new URL(
-  "../app/_content/company.ts",
-  import.meta.url,
-).href;
+const companyModuleUrl = new URL("../app/_content/company.ts", import.meta.url)
+  .href;
 const faqModuleUrl = new URL("../app/_content/faqs.ts", import.meta.url).href;
 const structuredDataPath = new URL(
   "../app/_content/structured-data.ts",
@@ -38,7 +36,12 @@ const staticPageSources = {
     "../app/(site)/privacy-policy/page.tsx",
     import.meta.url,
   ),
+  refundPolicy: new URL(
+    "../app/(site)/refund-policy/page.tsx",
+    import.meta.url,
+  ),
   reviews: new URL("../app/(site)/reviews/page.tsx", import.meta.url),
+  terms: new URL("../app/(site)/terms/page.tsx", import.meta.url),
 };
 
 const detailPageSources = {
@@ -261,7 +264,9 @@ test("public pages render JSON-LD through the shared script component", async ()
     portfolio: "portfolio",
     privacyCollection: "privacyCollection",
     privacyPolicy: "privacyPolicy",
+    refundPolicy: "refundPolicy",
     reviews: "reviews",
+    terms: "terms",
   };
 
   await Promise.all(

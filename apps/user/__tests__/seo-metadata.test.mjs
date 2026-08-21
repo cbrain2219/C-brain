@@ -18,7 +18,20 @@ const pageSources = {
   notice: new URL("../app/(site)/notice/page.tsx", import.meta.url),
   orderLayout: new URL("../app/(site)/order/layout.tsx", import.meta.url),
   portfolio: new URL("../app/(site)/portfolio/page.tsx", import.meta.url),
+  privacyCollection: new URL(
+    "../app/(site)/privacy-collection/page.tsx",
+    import.meta.url,
+  ),
+  privacyPolicy: new URL(
+    "../app/(site)/privacy-policy/page.tsx",
+    import.meta.url,
+  ),
+  refundPolicy: new URL(
+    "../app/(site)/refund-policy/page.tsx",
+    import.meta.url,
+  ),
   reviews: new URL("../app/(site)/reviews/page.tsx", import.meta.url),
+  terms: new URL("../app/(site)/terms/page.tsx", import.meta.url),
 };
 
 const noIndexPageSources = [
@@ -45,8 +58,10 @@ test("static page metadata is configured from one SEO content module", async () 
       ["faq", "faqSeo"],
       ["order", "orderSeo"],
       ["complaint", "complaintSeo"],
+      ["terms", "termsSeo"],
       ["privacyPolicy", "privacyPolicySeo"],
       ["privacyCollection", "privacyCollectionSeo"],
+      ["refundPolicy", "refundPolicySeo"],
     ];
     const expectedKeys = expectedEntries.map(([key]) => key);
 
@@ -110,15 +125,15 @@ test("social images use the matching Vercel deployment URL", async () => {
 
   await Promise.all(
     scenarios.map(
-      ({
-        expectedOrigin,
-        vercelEnv,
-        vercelProjectProductionUrl,
-        vercelUrl,
-      }) =>
+      ({ expectedOrigin, vercelEnv, vercelProjectProductionUrl, vercelUrl }) =>
         execFileAsync(
           process.execPath,
-          ["--experimental-strip-types", "--input-type=module", "--eval", check],
+          [
+            "--experimental-strip-types",
+            "--input-type=module",
+            "--eval",
+            check,
+          ],
           {
             env: {
               ...process.env,
@@ -144,7 +159,11 @@ test("public static pages import metadata by key instead of inlining copy", asyn
     notice: "notice",
     orderLayout: "order",
     portfolio: "portfolio",
+    privacyCollection: "privacyCollection",
+    privacyPolicy: "privacyPolicy",
+    refundPolicy: "refundPolicy",
     reviews: "reviews",
+    terms: "terms",
   };
 
   await Promise.all(

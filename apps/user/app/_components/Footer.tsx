@@ -57,9 +57,9 @@ const socials = footerSocialOrder.map((id) => {
 });
 
 const policies = [
-  { href: "#", label: "이용약관" },
-  { href: "#", isStrong: true, label: "개인정보처리방침" },
-  { href: "#", label: "취소 및 환불 규정" },
+  { href: "/terms", label: "이용약관" },
+  { href: "/privacy-policy", isStrong: true, label: "개인정보처리방침" },
+  { href: "/refund-policy", label: "취소 및 환불 규정" },
 ];
 
 export function Footer() {
@@ -108,13 +108,13 @@ export function Footer() {
       <div className={styles.footerInfo}>
         <div className={styles.policyLinks}>
           {policies.map((policy) => (
-            <a
+            <Link
               className={policy.isStrong ? styles.policyStrong : undefined}
               href={policy.href}
               key={policy.label}
             >
               {policy.label}
-            </a>
+            </Link>
           ))}
         </div>
         <div className={styles.customerCenter}>
@@ -137,9 +137,7 @@ export function Footer() {
         <p>성수동 출고실(인쇄물) : {companyProfile.productionRooms.seongsu}</p>
         <p>파주 출고실(인쇄물) : {companyProfile.productionRooms.paju}</p>
         <p>오산 출고실(실사) : {companyProfile.productionRooms.osan}</p>
-        <p>
-          개인정보관리책임자 : {companyProfile.privacyManager.name}
-        </p>
+        <p>개인정보관리책임자 : {companyProfile.privacyManager.name}</p>
         <p className={styles.copyrightText}>
           Copyright ⓒ 2026 C-Brain. All rights reserved.
         </p>

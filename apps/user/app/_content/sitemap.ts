@@ -30,8 +30,10 @@ export const sitemapStaticPageKeys = [
   "faq",
   "order",
   "complaint",
+  "terms",
   "privacyPolicy",
   "privacyCollection",
+  "refundPolicy",
 ] as const satisfies readonly StaticPageSeoKey[];
 
 type SitemapStaticPageKey = (typeof sitemapStaticPageKeys)[number];
@@ -49,8 +51,10 @@ const sitemapStaticPageOptions: Record<
   faq: { changeFrequency: "monthly", priority: 0.75 },
   order: { changeFrequency: "weekly", priority: 0.85 },
   complaint: { changeFrequency: "yearly", priority: 0.35 },
+  terms: { changeFrequency: "yearly", priority: 0.2 },
   privacyPolicy: { changeFrequency: "yearly", priority: 0.2 },
   privacyCollection: { changeFrequency: "yearly", priority: 0.2 },
+  refundPolicy: { changeFrequency: "yearly", priority: 0.2 },
 };
 
 function createSitemapEntry({

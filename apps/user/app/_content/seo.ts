@@ -155,10 +155,28 @@ export const privacyPolicySeo = {
 } as const satisfies StaticPageSeoEntry;
 
 export const privacyCollectionSeo = {
-  description: "씨브레인의 개인정보 수집 및 이용 안내를 확인하세요.",
-  keywords: ["씨브레인 개인정보 수집", "개인정보 수집 및 이용"],
+  description: "씨브레인의 개인정보 수집 및 이용 동의 내용을 확인하세요.",
+  keywords: [
+    "씨브레인 개인정보 수집",
+    "개인정보 수집 및 이용",
+    "개인정보 수집 동의",
+  ],
   path: "/privacy-collection",
-  title: "개인정보 수집 및 이용 | C-Brain",
+  title: "개인정보 수집 및 이용 동의 | C-Brain",
+} as const satisfies StaticPageSeoEntry;
+
+export const termsSeo = {
+  description: "씨브레인 인쇄·디자인 서비스 이용약관을 확인하세요.",
+  keywords: ["씨브레인 이용약관", "인쇄 서비스 이용약관"],
+  path: "/terms",
+  title: "이용약관 | C-Brain",
+} as const satisfies StaticPageSeoEntry;
+
+export const refundPolicySeo = {
+  description: "씨브레인 인쇄·디자인 서비스의 취소 및 환불 규정을 확인하세요.",
+  keywords: ["씨브레인 환불 규정", "인쇄 취소", "디자인 환불"],
+  path: "/refund-policy",
+  title: "취소 및 환불 규정 | C-Brain",
 } as const satisfies StaticPageSeoEntry;
 
 export const pageSeo = {
@@ -171,8 +189,10 @@ export const pageSeo = {
   faq: faqSeo,
   order: orderSeo,
   complaint: complaintSeo,
+  terms: termsSeo,
   privacyPolicy: privacyPolicySeo,
   privacyCollection: privacyCollectionSeo,
+  refundPolicy: refundPolicySeo,
 } as const satisfies Record<string, StaticPageSeoEntry>;
 
 export type StaticPageSeoKey = keyof typeof pageSeo;

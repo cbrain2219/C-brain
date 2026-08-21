@@ -51,8 +51,10 @@ test("sitemap helper lists public pages and excludes private payment routes", as
       "faq",
       "order",
       "complaint",
+      "terms",
       "privacyPolicy",
       "privacyCollection",
+      "refundPolicy",
     ]);
     assert.equal(entries[0].url, "https://example.com/");
     assert.equal(entries[0].priority, 1);
@@ -61,6 +63,8 @@ test("sitemap helper lists public pages and excludes private payment routes", as
     assert.ok(paths.includes("/portfolio"));
     assert.ok(paths.includes("/order"));
     assert.ok(paths.includes("/privacy-policy"));
+    assert.ok(paths.includes("/terms"));
+    assert.ok(paths.includes("/refund-policy"));
     assert.ok(paths.includes("/blog/brand-color-printing"));
     assert.ok(paths.includes("/portfolio/shinlim-product-catalog"));
     assert.equal(

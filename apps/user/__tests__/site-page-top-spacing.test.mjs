@@ -28,8 +28,8 @@ const fileUrls = {
     "../app/(site)/portfolio/[slug]/page.module.css",
     import.meta.url,
   ),
-  privacy: new URL(
-    "../app/(site)/privacy-collection/page.module.css",
+  legal: new URL(
+    "../app/(site)/_components/LegalDocument.module.css",
     import.meta.url,
   ),
   reviewDetail: new URL(
@@ -94,7 +94,7 @@ test("every public page start consumes the shared responsive spacing", async () 
     styles.portfolio,
     styles.about,
     styles.order,
-    styles.privacy,
+    styles.legal,
     styles.linkPay,
   ];
 

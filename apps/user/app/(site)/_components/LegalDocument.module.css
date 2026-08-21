@@ -1,0 +1,230 @@
+.legalPage {
+  background: #ffffff;
+  color: var(--landing-gray-800);
+}
+
+.legalSection {
+  width: min(calc(100% - 40px), 760px);
+  margin: 0 auto;
+  padding: var(--site-page-top-offset, 124px) 0 80px;
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+  font-family: var(--font-sans);
+  letter-spacing: -0.015em;
+}
+
+.legalHeader,
+.legalHeading,
+.legalBody,
+.legalBody article,
+.legalBody [data-legal-group],
+.legalBody [data-legal-addendum] {
+  display: flex;
+  flex-direction: column;
+}
+
+.legalHeader {
+  gap: 16px;
+}
+
+.legalHeading {
+  gap: 8px;
+}
+
+.legalEyebrow {
+  color: var(--landing-brand-500);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 21px;
+}
+
+.legalHeading h1 {
+  color: var(--landing-gray-800);
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 36px;
+}
+
+.legalHeading > p {
+  color: var(--landing-gray-600);
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 24px;
+}
+
+.legalBody {
+  gap: 32px;
+}
+
+.legalBody article {
+  gap: 16px;
+  padding-bottom: 32px;
+  border-bottom: 1px solid var(--landing-gray-200);
+}
+
+.legalBody article h2 {
+  color: var(--landing-gray-800);
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 26px;
+}
+
+.legalBody article p,
+.legalBody article li {
+  color: var(--landing-gray-600);
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 24px;
+}
+
+.legalBody article strong {
+  color: var(--landing-gray-800);
+  font-weight: 700;
+}
+
+.legalBody ol,
+.legalBody ul {
+  margin: 0;
+  padding-inline-start: 22px;
+  display: grid;
+  gap: 8px;
+}
+
+.legalBody li > :is(ol, ul) {
+  padding-top: 8px;
+}
+
+.legalBody [data-legal-group] {
+  gap: 12px;
+}
+
+.tableScroller {
+  width: 100%;
+  border: 1px solid var(--landing-gray-200);
+  border-radius: 8px;
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+}
+
+.tableScroller:focus-visible {
+  outline: 2px solid var(--landing-brand-500);
+  outline-offset: 2px;
+}
+
+.tableScroller table {
+  width: 100%;
+  min-width: 560px;
+  border-spacing: 0;
+  border-collapse: separate;
+  table-layout: auto;
+}
+
+.tableScroller :is(th, td) {
+  padding: 12px 14px;
+  border-right: 1px solid var(--landing-gray-200);
+  border-bottom: 1px solid var(--landing-gray-200);
+  text-align: left;
+  vertical-align: top;
+  font-size: 14px;
+  line-height: 21px;
+}
+
+.tableScroller th {
+  background: var(--landing-gray-50);
+  color: var(--landing-gray-800);
+  font-weight: 700;
+}
+
+.tableScroller td {
+  background: #ffffff;
+  color: var(--landing-gray-600);
+  font-weight: 500;
+}
+
+.tableScroller :is(th, td):last-child {
+  border-right: 0;
+}
+
+.tableScroller tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.legalBody [data-legal-note],
+.legalBody [data-legal-addendum] {
+  padding: 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 22px;
+}
+
+.legalBody [data-legal-note="info"] {
+  border: 1px solid var(--landing-info-200);
+  background: var(--landing-info-50);
+  color: var(--landing-gray-600);
+}
+
+.legalBody [data-legal-note="warning"] {
+  border: 1px solid var(--color-warning-200);
+  background: var(--color-warning-50);
+  color: var(--color-warning-800);
+}
+
+.legalBody [data-legal-addendum] {
+  gap: 12px;
+  background: var(--landing-gray-100);
+  color: var(--landing-gray-600);
+}
+
+.legalBody [data-legal-addendum] strong {
+  color: var(--landing-gray-800);
+  font-weight: 700;
+}
+
+.legalBody [data-legal-addendum] > div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+@media (min-width: 640px) {
+  .legalSection {
+    padding-bottom: 104px;
+    gap: 48px;
+  }
+
+  .legalHeading h1 {
+    font-size: 32px;
+    line-height: 40px;
+  }
+
+  .legalBody {
+    gap: 40px;
+  }
+
+  .legalBody article {
+    gap: 20px;
+    padding-bottom: 40px;
+  }
+
+  .legalBody article h2 {
+    font-size: 20px;
+    line-height: 30px;
+  }
+
+  .legalBody article p,
+  .legalBody article li {
+    font-size: 16px;
+    line-height: 24px;
+  }
+
+  .tableScroller :is(th, td) {
+    padding: 14px 16px;
+  }
+
+  .legalBody [data-legal-note],
+  .legalBody [data-legal-addendum] {
+    padding: 20px;
+  }
+}
