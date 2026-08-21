@@ -131,9 +131,21 @@ export async function createReview(
 ) {
   await requireAdmin(client);
 
+  const { data: firstReview, error: sortOrderError } = await client
+    .from("reviews")
+    .select("sort_order")
+    .order("sort_order", { ascending: true })
+    .limit(1)
+    .maybeSingle();
+
+  if (sortOrderError) throw new Error(sortOrderError.message);
+
   const { data, error } = await client
     .from("reviews")
-    .insert(input)
+    .insert({
+      ...input,
+      sort_order: (firstReview?.sort_order ?? 0) - 1,
+    })
     .select("*")
     .single();
 

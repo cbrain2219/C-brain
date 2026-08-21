@@ -30,8 +30,13 @@ export async function load(url, context, nextLoad) {
 
 register(`data:text/javascript,${encodeURIComponent(loader)}`, import.meta.url);
 
-const { createPost, getPublishedPost, listPublishedPosts, reorderPosts } =
-  await import("../src/content.ts");
+const {
+  createPost,
+  getPublishedPost,
+  listAdminPosts,
+  listPublishedPosts,
+  reorderPosts,
+} = await import("../src/content.ts");
 const { requireAdmin } = await import("../src/auth.ts");
 const { createSignedFileUpload, createStoragePath, getFileInfo } =
   await import("../src/files.ts");
@@ -58,13 +63,19 @@ const {
   updateProduct,
 } = await import("../src/products.ts");
 const {
+  createPortfolioItem,
   getPublishedPortfolioItem,
+  listAdminPortfolioItems,
   listPublishedPortfolioItems,
   reorderPortfolioItems,
 } =
   await import("../src/portfolio.ts");
-const { getPublishedReview, listPublishedReviews, reorderReviews } =
-  await import("../src/reviews.ts");
+const {
+  createReview,
+  getPublishedReview,
+  listPublishedReviews,
+  reorderReviews,
+} = await import("../src/reviews.ts");
 
 function createFakeClient(dataByTable = {}, selectResponse) {
   const calls = [];
@@ -97,6 +108,10 @@ function createFakeClient(dataByTable = {}, selectResponse) {
         },
         insert(value) {
           calls.push({ method: "insert", table, value });
+          return chain;
+        },
+        limit(count) {
+          calls.push({ count, method: "limit", table });
           return chain;
         },
         order(column, options) {
@@ -184,7 +199,13 @@ test("published content queries use stable display ordering", async () => {
     ["id", { ascending: true }],
   ]);
 
-  for (const table of ["posts", "reviews", "products"]) {
+  assert.deepEqual(orderCalls(calls, "posts"), [
+    ["pinned", { ascending: false }],
+    ["sort_order", { ascending: true }],
+    ["id", { ascending: true }],
+  ]);
+
+  for (const table of ["reviews", "products"]) {
     assert.deepEqual(orderCalls(calls, table), [
       ["sort_order", { ascending: true }],
       ["id", { ascending: true }],
@@ -216,6 +237,88 @@ test("published content queries use stable display ordering", async () => {
         call.value === "published",
     ),
   );
+});
+
+test("admin content queries keep pinned rows above regular rows", async () => {
+  const posts = createFakeClient();
+  const portfolio = createFakeClient();
+
+  await listAdminPosts(posts.client, "notice");
+  await listAdminPortfolioItems(portfolio.client);
+
+  for (const [calls, table] of [
+    [posts.calls, "posts"],
+    [portfolio.calls, "portfolio_items"],
+  ]) {
+    assert.deepEqual(orderCalls(calls, table), [
+      ["pinned", { ascending: false }],
+      ["sort_order", { ascending: true }],
+      ["id", { ascending: true }],
+    ]);
+  }
+});
+
+test("admin creations use one less than the current minimum sort order", async () => {
+  const cases = [
+    {
+      create: createProduct,
+      input: { product_type: "브로슈어", status: "draft" },
+      table: "products",
+    },
+    {
+      create: createPost,
+      input: {
+        content: "content",
+        kind: "notice",
+        slug: "notice",
+        title: "Notice",
+        type: "공지",
+      },
+      table: "posts",
+    },
+    {
+      create: createPortfolioItem,
+      input: {
+        content: "content",
+        slug: "portfolio",
+        title: "Portfolio",
+        type: "브로슈어",
+      },
+      table: "portfolio_items",
+    },
+    {
+      create: createReview,
+      input: {
+        company_name: "씨브레인",
+        content: "content",
+        kind: "testimonial",
+      },
+      table: "reviews",
+    },
+  ];
+
+  for (const scenario of cases) {
+    const { calls, client } = createFakeClient({
+      [scenario.table]: { id: `${scenario.table}-id`, sort_order: -3 },
+    });
+
+    await scenario.create(client, scenario.input);
+
+    assert.deepEqual(
+      calls.find(
+        (call) => call.method === "insert" && call.table === scenario.table,
+      )?.value,
+      { ...scenario.input, sort_order: -4 },
+    );
+    assert.ok(
+      calls.some(
+        (call) =>
+          call.method === "limit" &&
+          call.table === scenario.table &&
+          call.count === 1,
+      ),
+    );
+  }
 });
 
 test("public managed-content list and detail queries exactly match canonical anon grants", async () => {
@@ -421,7 +524,7 @@ test("product helpers use the JSONB product contract", async () => {
   assert.ok(calls.some((call) => call.method === "maybeSingle"));
 });
 
-test("post and attachment mutations pass payloads unchanged", async () => {
+test("post creation prepends an empty list and attachment mutations pass payloads unchanged", async () => {
   const { calls, client } = createFakeClient();
   const post = {
     content: "content",
@@ -445,7 +548,7 @@ test("post and attachment mutations pass payloads unchanged", async () => {
   assert.deepEqual(
     calls.find((call) => call.method === "insert" && call.table === "posts")
       ?.value,
-    post,
+    { ...post, sort_order: -1 },
   );
   assert.deepEqual(
     calls.find(

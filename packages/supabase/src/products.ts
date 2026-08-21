@@ -130,9 +130,21 @@ export async function createProduct(
 ) {
   await requireAdmin(client);
 
+  const { data: firstProduct, error: sortOrderError } = await client
+    .from("products")
+    .select("sort_order")
+    .order("sort_order", { ascending: true })
+    .limit(1)
+    .maybeSingle();
+
+  if (sortOrderError) throw new Error(sortOrderError.message);
+
   const { data, error } = await client
     .from("products")
-    .insert(input)
+    .insert({
+      ...input,
+      sort_order: (firstProduct?.sort_order ?? 0) - 1,
+    })
     .select("*")
     .single();
 

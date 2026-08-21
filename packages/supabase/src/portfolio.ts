@@ -66,6 +66,7 @@ export async function listAdminPortfolioItems(client: CBrainSupabaseClient) {
   const { data, error } = await client
     .from("portfolio_items")
     .select("*")
+    .order("pinned", { ascending: false })
     .order("sort_order", { ascending: true })
     .order("id", { ascending: true });
 
@@ -93,9 +94,21 @@ export async function createPortfolioItem(
 ) {
   await requireAdmin(client);
 
+  const { data: firstItem, error: sortOrderError } = await client
+    .from("portfolio_items")
+    .select("sort_order")
+    .order("sort_order", { ascending: true })
+    .limit(1)
+    .maybeSingle();
+
+  if (sortOrderError) throw new Error(sortOrderError.message);
+
   const { data, error } = await client
     .from("portfolio_items")
-    .insert(input)
+    .insert({
+      ...input,
+      sort_order: (firstItem?.sort_order ?? 0) - 1,
+    })
     .select("*")
     .single();
 

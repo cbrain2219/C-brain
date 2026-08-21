@@ -47,6 +47,7 @@ export async function listPublishedPosts(
     .select(publicPostColumns)
     .eq("kind", kind)
     .eq("status", "published")
+    .order("pinned", { ascending: false })
     .order("sort_order", { ascending: true })
     .order("id", { ascending: true });
 
@@ -80,6 +81,7 @@ export async function listAdminPosts(
     .from("posts")
     .select("*")
     .eq("kind", kind)
+    .order("pinned", { ascending: false })
     .order("sort_order", { ascending: true })
     .order("id", { ascending: true });
 
@@ -108,9 +110,22 @@ export async function createPost(
 ) {
   await requireAdmin(client);
 
+  const { data: firstPost, error: sortOrderError } = await client
+    .from("posts")
+    .select("sort_order")
+    .eq("kind", input.kind)
+    .order("sort_order", { ascending: true })
+    .limit(1)
+    .maybeSingle();
+
+  if (sortOrderError) throw new Error(sortOrderError.message);
+
   const { data, error } = await client
     .from("posts")
-    .insert(input)
+    .insert({
+      ...input,
+      sort_order: (firstPost?.sort_order ?? 0) - 1,
+    })
     .select("*")
     .single();
 
