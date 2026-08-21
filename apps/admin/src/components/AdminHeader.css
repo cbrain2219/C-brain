@@ -1,4 +1,7 @@
 .admin-header {
+  position: sticky;
+  z-index: 50;
+  top: 0;
   min-height: 80px;
   width: 100%;
   display: flex;
@@ -6,8 +9,9 @@
   justify-content: space-between;
   gap: 32px;
   padding: 0 40px;
-  background: var(--admin-surface);
+  background: rgb(255 255 255 / 92%);
   backdrop-filter: blur(10px);
+  box-shadow: 0 4px 16px rgb(30 41 59 / 6%);
 }
 
 .admin-header__left {

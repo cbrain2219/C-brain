@@ -349,31 +349,32 @@ export function AdminDataTableSection<Row>({
           </div>
         </div>
 
-        {bottomLeadingAction || bottomAction ? (
-          <div className="admin-data-table-section__actions">
-            {bottomLeadingAction ? (
-              <button
-                className="admin-data-table-section__action admin-data-table-section__action--button pretendard-bold-14"
-                onClick={bottomLeadingAction.onClick}
-                type="button"
-              >
-                <AdminIcon name="link" size={20} />
-                <span>{bottomLeadingAction.label}</span>
-              </button>
-            ) : null}
-
-            {bottomAction ? (
-              <Link
-                className="admin-data-table-section__action pretendard-bold-14"
-                to={bottomAction.href}
-              >
-                <PackageIcon />
-                <span>{bottomAction.label}</span>
-              </Link>
-            ) : null}
-          </div>
-        ) : null}
       </section>
+
+      {bottomLeadingAction || bottomAction ? (
+        <div className="admin-data-table-section__actions">
+          {bottomLeadingAction ? (
+            <button
+              className="admin-data-table-section__action admin-data-table-section__action--button pretendard-bold-14"
+              onClick={bottomLeadingAction.onClick}
+              type="button"
+            >
+              <AdminIcon name="link" size={20} />
+              <span>{bottomLeadingAction.label}</span>
+            </button>
+          ) : null}
+
+          {bottomAction ? (
+            <Link
+              className="admin-data-table-section__action pretendard-bold-14"
+              to={bottomAction.href}
+            >
+              <PackageIcon />
+              <span>{bottomAction.label}</span>
+            </Link>
+          ) : null}
+        </div>
+      ) : null}
     </div>
   )
 }

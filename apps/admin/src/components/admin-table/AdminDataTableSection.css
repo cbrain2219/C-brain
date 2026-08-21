@@ -269,8 +269,15 @@
 }
 
 .admin-data-table-section__actions {
+  position: fixed;
+  z-index: 40;
+  right: max(32px, calc((100vw - 1376px) / 2));
+  bottom: 32px;
+  max-width: calc(100vw - 64px);
   display: flex;
   align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
   gap: 8px;
 }
 
@@ -296,4 +303,12 @@
 
 .admin-data-table-section__action:hover {
   background: var(--admin-brand-600);
+}
+
+@media (max-width: 720px) {
+  .admin-data-table-section__actions {
+    right: 20px;
+    bottom: max(20px, env(safe-area-inset-bottom));
+    max-width: calc(100vw - 40px);
+  }
 }
