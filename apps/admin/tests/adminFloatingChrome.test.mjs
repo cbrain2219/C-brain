@@ -43,3 +43,12 @@ test('admin header and list actions remain visible while scrolling', async () =>
   assert.match(icons, /link:\s*\{[\s\S]*?strokeWidth:\s*2/)
   assert.match(icons, /link:\s*\{[\s\S]*?viewBox:\s*'0 0 20 20'/)
 })
+
+test('new content links reload the document like detail links', async () => {
+  const table = await readFile(tablePath, 'utf8')
+
+  assert.match(
+    table,
+    /<Link[\s\S]*?className="admin-data-table-section__action pretendard-bold-14"[\s\S]*?reloadDocument[\s\S]*?to=\{bottomAction\.href\}/,
+  )
+})

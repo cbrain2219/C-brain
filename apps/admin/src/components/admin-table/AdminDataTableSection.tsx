@@ -367,6 +367,7 @@ export function AdminDataTableSection<Row>({
           {bottomAction ? (
             <Link
               className="admin-data-table-section__action pretendard-bold-14"
+              reloadDocument
               to={bottomAction.href}
             >
               <PackageIcon />
