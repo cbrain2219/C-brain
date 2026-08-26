@@ -401,9 +401,19 @@ test("portfolio detail requests a 1440px desktop source across common DPRs", asy
   assert.match(detailPage, /sizes=\{portfolioDetailImageSizes\}/);
   assert.match(
     nextConfig,
-    /deviceSizes:\s*\[[\s\S]*?720,[\s\S]*?900,[\s\S]*?1440,[\s\S]*?\]/,
+    /deviceSizes:\s*\[640,\s*750,\s*828,\s*1080,\s*1440,\s*1920\]/,
   );
+  assert.match(nextConfig, /minimumCacheTTL:\s*2678400/);
   assert.match(nextConfig, /qualities:\s*\[75,\s*90\]/);
+  assert.match(
+    nextConfig,
+    /hostname:\s*"rtbbtyfjtjeihgovhdvz\.supabase\.co"/,
+  );
+  assert.match(
+    nextConfig,
+    /pathname:\s*"\/storage\/v1\/object\/public\/public-assets\/\*\*"/,
+  );
+  assert.doesNotMatch(nextConfig, /hostname:\s*"\*\*\.supabase\.co"/);
 });
 
 test("portfolio detail spacing is expressed with responsive parent gaps", async () => {

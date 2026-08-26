@@ -32,6 +32,7 @@ export async function uploadFile(
   path: string,
   body: UploadBody,
   options?: {
+    cacheControl?: string;
     contentType?: string;
     upsert?: boolean;
   },

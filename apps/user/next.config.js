@@ -1,24 +1,13 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
-    deviceSizes: [
-      640,
-      720,
-      750,
-      828,
-      900,
-      1080,
-      1200,
-      1440,
-      1920,
-      2048,
-      3840,
-    ],
+    deviceSizes: [640, 750, 828, 1080, 1440, 1920],
+    minimumCacheTTL: 2678400,
     qualities: [75, 90],
     remotePatterns: [
       {
-        hostname: "**.supabase.co",
-        pathname: "/storage/v1/object/public/**",
+        hostname: "rtbbtyfjtjeihgovhdvz.supabase.co",
+        pathname: "/storage/v1/object/public/public-assets/**",
         protocol: "https",
       },
       {

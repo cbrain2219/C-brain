@@ -26,6 +26,7 @@ export async function uploadPublicAsset(scope: string, file: File) {
   const path = createPublicAssetPath(scope, file.name)
 
   await uploadFile(supabase, STORAGE_BUCKETS.publicAssets, path, file, {
+    cacheControl: '31536000',
     contentType: file.type || assetContentTypes[getFileExtension(file)],
   })
 
