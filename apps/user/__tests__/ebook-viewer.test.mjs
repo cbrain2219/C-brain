@@ -8,6 +8,7 @@ const previewPath = new URL(
   import.meta.url,
 );
 const helperPath = new URL("../lib/publicEbooks.ts", import.meta.url);
+const metadataPath = new URL("../lib/ebookMetadata.ts", import.meta.url);
 
 test("the public E-book slug renders the stored HTTPS embed without the site shell", async () => {
   const [page, helper] = await Promise.all([
@@ -26,31 +27,40 @@ test("the public E-book slug renders the stored HTTPS embed without the site she
 });
 
 test("the public E-book page uses fixed C-Brain copy and an optional custom OG image", async () => {
-  const [page, helper] = await Promise.all([
+  const [page, helper, metadata] = await Promise.all([
     readFile(pagePath, "utf8"),
     readFile(helperPath, "utf8"),
+    readFile(metadataPath, "utf8"),
   ]);
 
   assert.match(page, /generateMetadata/);
   assert.match(page, /alternates: \{ canonical: pageUrl \}/);
-  assert.match(page, /description: ebook\.seo_description/);
-  assert.match(page, /absolute: ebook\.title/);
-  assert.match(page, /openGraph:/);
-  assert.match(page, /twitter:/);
   assert.match(page, /url: pageUrl/);
-  assert.match(page, /siteSeo\.defaultTitle/);
-  assert.match(page, /siteSeo\.defaultDescription/);
-  assert.match(page, /ebook\.og_image_url/);
-  assert.match(page, /ebook\.og_image_alt/);
-  assert.match(page, /\/opengraph-image\.png/);
+  assert.match(page, /createEbookMetadata\(ebook/);
+  assert.match(metadata, /description: ebook\.seo_description/);
+  assert.match(metadata, /title: \{ absolute:/);
+  assert.match(metadata, /openGraph:/);
+  assert.match(metadata, /twitter:/);
+  assert.match(metadata, /siteSeo\.defaultTitle/);
+  assert.match(metadata, /siteSeo\.defaultDescription/);
+  assert.match(metadata, /ebook\.og_image_url/);
+  assert.match(metadata, /ebook\.og_image_alt/);
+  assert.match(metadata, /\/opengraph-image\.png/);
   assert.match(helper, /getPublicAssetUrl\(client, ebook\.og_image_path\)/);
 });
 
-test("the E-book preview uses the stored embed without public canonical metadata", async () => {
-  const preview = await readFile(previewPath, "utf8");
+test("the E-book preview shares the same OG card while remaining noindex", async () => {
+  const [preview, metadata] = await Promise.all([
+    readFile(previewPath, "utf8"),
+    readFile(metadataPath, "utf8"),
+  ]);
 
   assert.match(preview, /getPublicEbook\(slug\)/);
   assert.match(preview, /src=\{ebook\.embed_url\}/);
+  assert.match(preview, /createEbookMetadata\(ebook/);
+  assert.match(preview, /pageTitle: `\$\{ebook\.title\} 미리보기`/);
   assert.match(preview, /robots: \{ follow: false, index: false \}/);
   assert.doesNotMatch(preview, /canonical/);
+  assert.match(metadata, /openGraph:/);
+  assert.match(metadata, /twitter:/);
 });

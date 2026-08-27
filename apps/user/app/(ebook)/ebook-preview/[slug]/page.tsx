@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
+import { createEbookMetadata } from "../../../../lib/ebookMetadata";
 import { getPublicEbook } from "../../../../lib/publicEbooks";
 import styles from "../../[slug]/page.module.css";
 
@@ -10,16 +11,28 @@ type EbookPreviewPageProps = {
 
 export const revalidate = 0;
 
+const siteOrigin = process.env.NEXT_PUBLIC_SITE_URL || "https://cbrain.kr";
+
 export async function generateMetadata({
   params,
 }: EbookPreviewPageProps): Promise<Metadata> {
   const { slug } = await params;
   const ebook = await getPublicEbook(slug);
 
-  return {
+  if (!ebook) {
+    return {
+      robots: { follow: false, index: false },
+      title: "E-book 미리보기 | C-Brain",
+    };
+  }
+
+  const previewUrl = new URL(`/ebook-preview/${slug}`, siteOrigin);
+
+  return createEbookMetadata(ebook, {
+    pageTitle: `${ebook.title} 미리보기`,
     robots: { follow: false, index: false },
-    title: ebook ? `${ebook.title} 미리보기` : "E-book 미리보기 | C-Brain",
-  };
+    url: previewUrl,
+  });
 }
 
 export default async function EbookPreviewPage({
