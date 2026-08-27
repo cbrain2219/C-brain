@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
+import { siteSeo } from "../../_content/seo";
 import { getPublicEbook } from "../../../lib/publicEbooks";
 import styles from "./page.module.css";
 
@@ -36,26 +37,31 @@ export async function generateMetadata({
   if (!ebook) return { title: "E-book | C-Brain" };
 
   const pageUrl = createPublicUrl(slug);
-  const socialImage = createSocialImage();
+  const socialImage = ebook.og_image_url
+    ? {
+        alt: ebook.og_image_alt || ebook.title,
+        url: ebook.og_image_url,
+      }
+    : createSocialImage();
 
   return {
     alternates: { canonical: pageUrl },
     description: ebook.seo_description,
     openGraph: {
-      description: ebook.seo_description,
+      description: siteSeo.defaultDescription,
       images: [socialImage],
       locale: "ko_KR",
-      siteName: "C-Brain",
-      title: ebook.title,
+      siteName: siteSeo.name,
+      title: siteSeo.defaultTitle,
       type: "website",
       url: pageUrl,
     },
-    title: ebook.title,
+    title: { absolute: ebook.title },
     twitter: {
       card: "summary_large_image",
-      description: ebook.seo_description,
+      description: siteSeo.defaultDescription,
       images: [socialImage],
-      title: ebook.title,
+      title: siteSeo.defaultTitle,
     },
   };
 }

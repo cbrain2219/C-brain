@@ -3,11 +3,18 @@ import { assertSupabaseSuccess, unwrapSupabaseData } from "./result.ts";
 import type { CBrainSupabaseClient } from "./server.ts";
 import type { TableInsert, TableRow, TableUpdate } from "./types.ts";
 
-const publicEbookColumns = "embed_url, seo_description, slug, status, title";
+const publicEbookColumns =
+  "embed_url, og_image_alt, og_image_path, seo_description, slug, status, title";
 
 export type PublicEbookRecord = Pick<
   TableRow<"ebooks">,
-  "embed_url" | "seo_description" | "slug" | "status" | "title"
+  | "embed_url"
+  | "og_image_alt"
+  | "og_image_path"
+  | "seo_description"
+  | "slug"
+  | "status"
+  | "title"
 >;
 
 export async function getPublishedEbook(

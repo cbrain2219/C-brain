@@ -99,9 +99,24 @@ create table public.ebooks (
     check (nullif(btrim(title), '') is not null),
   seo_description text not null
     check (nullif(btrim(seo_description), '') is not null),
+  og_image_alt text,
+  og_image_file_name text,
+  og_image_path text,
   status text not null default 'published'
     check (status in ('draft', 'published')),
-  created_at timestamptz not null default now()
+  created_at timestamptz not null default now(),
+  constraint ebooks_og_image_metadata_check check (
+    (
+      og_image_path is null
+      and og_image_alt is null
+      and og_image_file_name is null
+    )
+    or (
+      og_image_path ~ '^ebook-og-images/[0-9a-f-]+\.(jpeg|jpg|png|webp)$'
+      and nullif(btrim(og_image_alt), '') is not null
+      and nullif(btrim(og_image_file_name), '') is not null
+    )
+  )
 );
 
 create table public.portfolio_items (
@@ -649,7 +664,7 @@ grant usage on schema public to anon, authenticated, service_role;
 grant select on public.products to anon;
 
 grant select (
-  embed_url, seo_description, slug, status, title
+  embed_url, og_image_alt, og_image_path, seo_description, slug, status, title
 ) on public.ebooks to anon;
 
 revoke all privileges on table public.posts, public.portfolio_items, public.reviews

@@ -25,18 +25,25 @@ test("the public E-book slug renders the stored HTTPS embed without the site she
   assert.match(helper, /getPublishedEbook\(client, slug\)/);
 });
 
-test("the public E-book page uses dynamic copy and the fixed C-Brain social image", async () => {
-  const page = await readFile(pagePath, "utf8");
+test("the public E-book page uses fixed C-Brain copy and an optional custom OG image", async () => {
+  const [page, helper] = await Promise.all([
+    readFile(pagePath, "utf8"),
+    readFile(helperPath, "utf8"),
+  ]);
 
   assert.match(page, /generateMetadata/);
   assert.match(page, /alternates: \{ canonical: pageUrl \}/);
   assert.match(page, /description: ebook\.seo_description/);
-  assert.match(page, /title: ebook\.title/);
+  assert.match(page, /absolute: ebook\.title/);
   assert.match(page, /openGraph:/);
   assert.match(page, /twitter:/);
   assert.match(page, /url: pageUrl/);
+  assert.match(page, /siteSeo\.defaultTitle/);
+  assert.match(page, /siteSeo\.defaultDescription/);
+  assert.match(page, /ebook\.og_image_url/);
+  assert.match(page, /ebook\.og_image_alt/);
   assert.match(page, /\/opengraph-image\.png/);
-  assert.doesNotMatch(page, /cover_url|cover_path|cover_alt/);
+  assert.match(helper, /getPublicAssetUrl\(client, ebook\.og_image_path\)/);
 });
 
 test("the E-book preview uses the stored embed without public canonical metadata", async () => {

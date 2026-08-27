@@ -153,6 +153,9 @@ export type Database = {
           created_at: string;
           embed_url: string;
           id: string;
+          og_image_alt: string | null;
+          og_image_file_name: string | null;
+          og_image_path: string | null;
           seo_description: string;
           slug: string;
           status: EbookStatus;
@@ -162,6 +165,9 @@ export type Database = {
           created_at?: string;
           embed_url: string;
           id?: string;
+          og_image_alt?: string | null;
+          og_image_file_name?: string | null;
+          og_image_path?: string | null;
           seo_description: string;
           slug: string;
           status?: EbookStatus;
@@ -171,6 +177,9 @@ export type Database = {
           created_at?: string;
           embed_url?: string;
           id?: string;
+          og_image_alt?: string | null;
+          og_image_file_name?: string | null;
+          og_image_path?: string | null;
           seo_description?: string;
           slug?: string;
           status?: EbookStatus;

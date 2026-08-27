@@ -271,6 +271,9 @@ test("E-book helpers use the dedicated table and stable admin ordering", async (
     created_at: "2026-08-26T00:00:00.000Z",
     embed_url: "https://my.ebook36524.com/books/vzqq/",
     id: "ebook-id",
+    og_image_alt: null,
+    og_image_file_name: null,
+    og_image_path: null,
     seo_description: "E-book description",
     slug: "fluonics",
     status: "published",
@@ -312,7 +315,8 @@ test("E-book helpers use the dedicated table and stable admin ordering", async (
       (call) =>
         call.method === "select" &&
         call.table === "ebooks" &&
-        call.columns === "embed_url, seo_description, slug, status, title",
+        call.columns ===
+          "embed_url, og_image_alt, og_image_path, seo_description, slug, status, title",
     ),
   );
   assert.ok(
@@ -403,7 +407,15 @@ test("public managed-content list and detail queries exactly match canonical ano
   ]);
 
   const expectedColumns = {
-    ebooks: ["embed_url", "seo_description", "slug", "status", "title"],
+    ebooks: [
+      "embed_url",
+      "og_image_alt",
+      "og_image_path",
+      "seo_description",
+      "slug",
+      "status",
+      "title",
+    ],
     portfolio_items: [
       "id",
       "client_name",

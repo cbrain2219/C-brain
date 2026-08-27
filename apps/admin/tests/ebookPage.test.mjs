@@ -51,12 +51,15 @@ test('E-book list follows the designed table, search, copy, and create actions',
   assert.match(source, /href: '\/ebook\/new'/)
 })
 
-test('E-book registration uses the designed four fields and persists through Supabase', async () => {
+test('E-book registration manages one optional OG image and persists through Supabase', async () => {
   const source = await readFile(formPath, 'utf8')
 
   for (const copy of [
     '임베드 URL',
     'Slug',
+    'OG Img',
+    '이미지 추가',
+    'IMAGE ALT TAG를 입력해주세요.',
     'Title',
     'SEO Description',
     '목록으로',
@@ -68,7 +71,14 @@ test('E-book registration uses the designed four fields and persists through Sup
   assert.match(source, /createEbook\(supabase, input\)/)
   assert.match(source, /updateEbook\(supabase, ebookId, input\)/)
   assert.match(source, /deleteEbook\(supabase, ebookId\)/)
-  assert.doesNotMatch(source, /type="file"|uploadPublicAsset|ebook-covers/)
+  assert.match(source, /type="file"/)
+  assert.match(
+    source,
+    /uploadPublicAsset\(\s*'ebook-og-images',\s*form\.ogImage,?\s*\)/,
+  )
+  assert.match(source, /deletePublicAssets\(\[persistedOgImagePath\]\)/)
+  assert.match(source, /getPortfolioImageError/)
+  assert.match(source, /파일을 드래그 또는 클릭 후 파일 업로드 \(0\/1\)/)
   assert.match(source, /sanitizeEbookEmbedUrl\(rawValue\)/)
   assert.match(source, /sanitizeEbookSlug\(rawValue\)/)
   assert.match(source, /pattern="\[a-z0-9\]\+\(\?:-\[a-z0-9\]\+\)\*"/)

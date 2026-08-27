@@ -4,6 +4,11 @@ import { formatAdminDate } from './contentListState.ts'
 
 export type EbookFormState = {
   embedUrl: string
+  ogImage: File | null
+  ogImageAlt: string
+  ogImageFileName: string | null
+  ogImagePath: string | null
+  ogImagePreviewUrl: string | null
   seoDescription: string
   slug: string
   title: string
@@ -21,7 +26,14 @@ export type EbookListRow = {
 
 export type EbookMutationInput = Pick<
   TableInsert<'ebooks'>,
-  'embed_url' | 'seo_description' | 'slug' | 'status' | 'title'
+  | 'embed_url'
+  | 'og_image_alt'
+  | 'og_image_file_name'
+  | 'og_image_path'
+  | 'seo_description'
+  | 'slug'
+  | 'status'
+  | 'title'
 >
 
 const ebookSlugPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
@@ -30,6 +42,11 @@ const printableAsciiPattern = /^[\x20-\x7e]+$/
 export function createInitialEbookForm(): EbookFormState {
   return {
     embedUrl: '',
+    ogImage: null,
+    ogImageAlt: '',
+    ogImageFileName: null,
+    ogImagePath: null,
+    ogImagePreviewUrl: null,
     seoDescription: '',
     slug: '',
     title: '',
@@ -108,9 +125,17 @@ export function toEbookListRow(
   }
 }
 
-export function toEbookFormState(ebook: TableRow<'ebooks'>): EbookFormState {
+export function toEbookFormState(
+  ebook: TableRow<'ebooks'>,
+  ogImagePreviewUrl: string | null = null,
+): EbookFormState {
   return {
     embedUrl: ebook.embed_url,
+    ogImage: null,
+    ogImageAlt: ebook.og_image_alt || '',
+    ogImageFileName: ebook.og_image_file_name,
+    ogImagePath: ebook.og_image_path,
+    ogImagePreviewUrl,
     seoDescription: ebook.seo_description,
     slug: ebook.slug,
     title: ebook.title,
@@ -120,6 +145,7 @@ export function toEbookFormState(ebook: TableRow<'ebooks'>): EbookFormState {
 export function toEbookMutationInput(
   form: EbookFormState,
   status: EbookStatus = 'published',
+  ogImagePath: string | null = form.ogImagePath,
 ): EbookMutationInput {
   const seoDescription = form.seoDescription.trim()
   const slug = form.slug.trim()
@@ -136,9 +162,20 @@ export function toEbookMutationInput(
 
   return {
     embed_url: normalizeEbookEmbedUrl(form.embedUrl),
+    og_image_alt: ogImagePath ? form.ogImageAlt.trim() || title : null,
+    og_image_file_name: ogImagePath
+      ? form.ogImageFileName?.trim() || 'ebook-og-image'
+      : null,
+    og_image_path: ogImagePath,
     seo_description: seoDescription,
     slug,
     status,
     title,
   }
+}
+
+export function getEbookOgImageDisplayName(
+  form: Pick<EbookFormState, 'ogImage' | 'ogImageFileName'>,
+) {
+  return form.ogImage?.name || form.ogImageFileName || '등록된 OG 이미지'
 }

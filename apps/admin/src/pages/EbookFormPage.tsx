@@ -5,15 +5,21 @@ import {
   updateEbook,
 } from '@repo/supabase'
 import { useEffect, useId, useRef, useState } from 'react'
-import type { FormEvent } from 'react'
+import type { ChangeEvent, DragEvent, FormEvent } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { toast } from 'sonner'
 import { AdminIcon } from '../components/AdminIcon'
 import { AdminDeleteDialog } from '../components/admin-form/AdminDeleteDialog'
 import { AdminFormLayout } from '../components/admin-form/AdminFormLayout'
+import {
+  deletePublicAssets,
+  getPublicAssetUrl,
+  uploadPublicAsset,
+} from '../lib/adminAssets'
 import { supabase } from '../lib/supabase'
 import {
   createInitialEbookForm,
+  getEbookOgImageDisplayName,
   isValidEbookSlug,
   isValidEbookUrl,
   sanitizeEbookEmbedUrl,
@@ -22,16 +28,23 @@ import {
   toEbookMutationInput,
 } from './ebookData'
 import type { EbookFormState } from './ebookData'
+import { getPortfolioImageError } from './portfolioFormState'
 import './BlogFormPage.css'
 
 export function EbookFormPage() {
   const formId = useId().replaceAll(':', '')
+  const ogImageInput = useRef<HTMLInputElement | null>(null)
+  const ogImageObjectUrl = useRef<string | null>(null)
   const navigate = useNavigate()
   const { ebookId } = useParams<{ ebookId: string }>()
   const isEditing = ebookId !== undefined
   const [form, setForm] = useState(createInitialEbookForm)
   const [embedUrlError, setEmbedUrlError] = useState('')
+  const [ogImageError, setOgImageError] = useState('')
   const [slugError, setSlugError] = useState('')
+  const [persistedOgImagePath, setPersistedOgImagePath] = useState<
+    string | null
+  >(null)
   const [isLoading, setIsLoading] = useState(isEditing)
   const [loadError, setLoadError] = useState('')
   const [saveError, setSaveError] = useState('')
@@ -49,7 +62,8 @@ export function EbookFormPage() {
       .then((ebook) => {
         if (!isCurrent) return
 
-        setForm(toEbookFormState(ebook))
+        setForm(toEbookFormState(ebook, getPublicAssetUrl(ebook.og_image_path)))
+        setPersistedOgImagePath(ebook.og_image_path)
       })
       .catch(() => {
         if (!isCurrent) return
@@ -65,6 +79,15 @@ export function EbookFormPage() {
     }
   }, [ebookId])
 
+  useEffect(
+    () => () => {
+      if (ogImageObjectUrl.current) {
+        URL.revokeObjectURL(ogImageObjectUrl.current)
+      }
+    },
+    [],
+  )
+
   function updateForm<Key extends keyof EbookFormState>(
     key: Key,
     value: EbookFormState[Key],
@@ -77,9 +100,7 @@ export function EbookFormPage() {
     const hasValidSlug = isValidEbookSlug(form.slug)
 
     setEmbedUrlError(
-      hasValidUrl
-        ? ''
-        : '영문으로 된 http 또는 https URL을 입력해주세요.',
+      hasValidUrl ? '' : '영문으로 된 http 또는 https URL을 입력해주세요.',
     )
     setSlugError(
       hasValidSlug
@@ -100,6 +121,61 @@ export function EbookFormPage() {
     return hasValidUrl && hasValidSlug
   }
 
+  function releaseOgImagePreview() {
+    if (!ogImageObjectUrl.current) return
+
+    URL.revokeObjectURL(ogImageObjectUrl.current)
+    ogImageObjectUrl.current = null
+  }
+
+  function setOgImage(file: File | undefined) {
+    if (!file) return
+
+    const errorMessage = getPortfolioImageError(file)
+
+    if (errorMessage) {
+      setOgImageError(errorMessage)
+      return
+    }
+
+    releaseOgImagePreview()
+
+    const previewUrl = URL.createObjectURL(file)
+
+    ogImageObjectUrl.current = previewUrl
+    setForm((current) => ({
+      ...current,
+      ogImage: file,
+      ogImageFileName: file.name,
+      ogImagePreviewUrl: previewUrl,
+    }))
+    setOgImageError('')
+  }
+
+  function clearOgImage() {
+    releaseOgImagePreview()
+    setForm((current) => ({
+      ...current,
+      ogImage: null,
+      ogImageAlt: '',
+      ogImageFileName: null,
+      ogImagePath: null,
+      ogImagePreviewUrl: null,
+    }))
+    setOgImageError('')
+
+    if (ogImageInput.current) ogImageInput.current.value = ''
+  }
+
+  function handleOgImageChange(event: ChangeEvent<HTMLInputElement>) {
+    setOgImage(event.currentTarget.files?.[0])
+  }
+
+  function handleOgImageDrop(event: DragEvent<HTMLButtonElement>) {
+    event.preventDefault()
+    setOgImage(event.dataTransfer.files[0])
+  }
+
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
 
@@ -109,17 +185,42 @@ export function EbookFormPage() {
     setIsSaving(true)
     setSaveError('')
 
+    let uploadedOgImagePath: string | null = null
+
     try {
-      const input = toEbookMutationInput(form)
+      if (form.ogImage) {
+        uploadedOgImagePath = await uploadPublicAsset(
+          'ebook-og-images',
+          form.ogImage,
+        )
+      }
+
+      const nextOgImagePath = uploadedOgImagePath ?? form.ogImagePath
+      const input = toEbookMutationInput(form, 'published', nextOgImagePath)
 
       if (ebookId) await updateEbook(supabase, ebookId, input)
       else await createEbook(supabase, input)
+
+      if (persistedOgImagePath && persistedOgImagePath !== nextOgImagePath) {
+        try {
+          await deletePublicAssets([persistedOgImagePath])
+        } catch {
+          toast.error('기존 OG 이미지 파일을 정리하지 못했습니다.')
+          window.alert(
+            'E-book은 저장됐지만 기존 OG 이미지 파일을 정리하지 못했습니다.',
+          )
+        }
+      }
 
       toast.success(
         isEditing ? 'E-book을 수정했습니다.' : 'E-book을 등록했습니다.',
       )
       navigate('/ebook')
     } catch {
+      if (uploadedOgImagePath) {
+        await deletePublicAssets([uploadedOgImagePath]).catch(() => undefined)
+      }
+
       setSaveError(
         'E-book을 저장하지 못했습니다. 입력값과 권한을 확인해주세요.',
       )
@@ -140,6 +241,15 @@ export function EbookFormPage() {
 
     try {
       await deleteEbook(supabase, ebookId)
+
+      try {
+        await deletePublicAssets([persistedOgImagePath])
+      } catch {
+        toast.error('OG 이미지 파일을 정리하지 못했습니다.')
+        window.alert(
+          'E-book은 삭제됐지만 OG 이미지 파일을 정리하지 못했습니다.',
+        )
+      }
 
       toast.success('E-book을 삭제했습니다.')
       navigate('/ebook', { replace: true })
@@ -236,9 +346,7 @@ export function EbookFormPage() {
             )
           }}
           onInvalid={() =>
-            setEmbedUrlError(
-              '영문으로 된 http 또는 https URL을 입력해주세요.',
-            )
+            setEmbedUrlError('영문으로 된 http 또는 https URL을 입력해주세요.')
           }
           placeholder="임베드할 E-book URL을 입력해주세요. (영문만 작성)"
           required
@@ -296,6 +404,110 @@ export function EbookFormPage() {
           </span>
         ) : null}
       </label>
+
+      <fieldset className="blog-form__thumbnail-field">
+        <legend className="blog-form__label">OG Img</legend>
+        <div className="blog-form__thumbnail-header">
+          <span className="blog-form__thumbnail-label">
+            <span className="blog-form__check">
+              <AdminIcon name="check" />
+            </span>
+            <span>이미지 추가</span>
+          </span>
+          <label
+            className="blog-form__thumbnail-alt"
+            htmlFor={`${formId}-og-image-alt`}
+          >
+            <span className="blog-form__visually-hidden">
+              OG 이미지 대체 텍스트
+            </span>
+            <input
+              autoComplete="off"
+              className="blog-form__alt-input"
+              disabled={isSaving || isDeleting}
+              id={`${formId}-og-image-alt`}
+              name="ogImageAlt"
+              onChange={(event) =>
+                updateForm('ogImageAlt', event.currentTarget.value)
+              }
+              placeholder="IMAGE ALT TAG를 입력해주세요."
+              type="text"
+              value={form.ogImageAlt}
+            />
+          </label>
+        </div>
+        <input
+          accept="image/png,image/jpeg,image/webp"
+          aria-describedby={
+            ogImageError ? `${formId}-og-image-error` : undefined
+          }
+          aria-invalid={ogImageError ? true : undefined}
+          className="blog-form__visually-hidden"
+          disabled={isSaving || isDeleting}
+          id={`${formId}-og-image`}
+          onChange={handleOgImageChange}
+          ref={ogImageInput}
+          type="file"
+        />
+        <div className="blog-form__thumbnail-preview-wrap">
+          <button
+            className={
+              form.ogImagePreviewUrl
+                ? 'blog-form__dropzone blog-form__dropzone--preview'
+                : 'blog-form__dropzone'
+            }
+            disabled={isSaving || isDeleting}
+            onClick={() => ogImageInput.current?.click()}
+            onDragOver={(event) => event.preventDefault()}
+            onDrop={handleOgImageDrop}
+            type="button"
+          >
+            {form.ogImagePreviewUrl ? (
+              <img
+                alt={form.ogImageAlt || '선택한 OG 이미지 미리보기'}
+                className="blog-form__thumbnail-preview"
+                src={form.ogImagePreviewUrl}
+              />
+            ) : (
+              <>
+                <span className="blog-form__folder-icon">
+                  <AdminIcon name="folder-up" size={20} />
+                </span>
+                <span className="blog-form__dropzone-copy">
+                  <span>파일을 드래그 또는 클릭 후 파일 업로드 (0/1)</span>
+                  <span>PNG, JPEG, WEBP 등 / 최대 50MB 제한</span>
+                </span>
+              </>
+            )}
+          </button>
+          {form.ogImagePreviewUrl ? (
+            <button
+              aria-label={`${getEbookOgImageDisplayName(form)} 삭제`}
+              className="blog-form__thumbnail-chip"
+              disabled={isSaving || isDeleting}
+              onClick={clearOgImage}
+              type="button"
+            >
+              <span
+                className="blog-form__thumbnail-file-name"
+                title={getEbookOgImageDisplayName(form)}
+              >
+                {getEbookOgImageDisplayName(form)}
+              </span>
+              <AdminIcon name="x-close" size={20} />
+            </button>
+          ) : null}
+        </div>
+        {ogImageError ? (
+          <span
+            className="blog-form__error"
+            id={`${formId}-og-image-error`}
+            role="alert"
+          >
+            {ogImageError}
+          </span>
+        ) : null}
+      </fieldset>
 
       <label className="blog-form__field" htmlFor={`${formId}-title`}>
         <span className="blog-form__label">Title</span>
