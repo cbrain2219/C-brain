@@ -7,6 +7,8 @@ import { BlogFormPage } from './pages/BlogFormPage'
 import { BlogPage } from './pages/BlogPage'
 import { ComplaintDetailPage } from './pages/ComplaintDetailPage'
 import { ComplaintPage } from './pages/ComplaintPage'
+import { EbookFormPage } from './pages/EbookFormPage'
+import { EbookPage } from './pages/EbookPage'
 import { AdminLoginPage } from './pages/AdminLoginPage'
 import { LinkPayFormPage } from './pages/LinkPayFormPage'
 import { LinkPayPage } from './pages/LinkPayPage'
@@ -103,6 +105,9 @@ export function App() {
           <Route element={<LinkPayPage />} path="/linkpay" />
           <Route element={<LinkPayFormPage />} path="/linkpay/new" />
           <Route element={<LinkPayFormPage />} path="/linkpay/:linkPayId" />
+          <Route element={<EbookPage />} path="/ebook" />
+          <Route element={<EbookFormPage />} path="/ebook/new" />
+          <Route element={<EbookFormPage />} path="/ebook/:ebookId" />
           <Route element={<SalesPage />} path="/sales" />
           <Route element={<NotFoundPage />} path="*" />
         </Route>

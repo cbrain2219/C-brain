@@ -10,6 +10,7 @@ const menuItems = [
   { label: '공지사항', to: '/notices' },
   { label: '불편접수', to: '/complaints' },
   { label: 'LinkPay', to: '/linkpay' },
+  { label: 'E-book', to: '/ebook' },
 ] as const
 
 const userAppUrl = import.meta.env.VITE_USER_APP_URL || 'http://localhost:3000'

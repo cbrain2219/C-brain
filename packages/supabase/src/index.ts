@@ -3,6 +3,7 @@ export * from "./auth.ts";
 export * from "./client.ts";
 export * from "./categories.ts";
 export * from "./content.ts";
+export * from "./ebooks.ts";
 export * from "./env.ts";
 export * from "./faqs.ts";
 export * from "./files.ts";

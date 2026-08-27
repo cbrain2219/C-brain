@@ -37,6 +37,14 @@ const {
   listPublishedPosts,
   reorderPosts,
 } = await import("../src/content.ts");
+const {
+  createEbook,
+  deleteEbook,
+  getAdminEbook,
+  getPublishedEbook,
+  listAdminEbooks,
+  updateEbook,
+} = await import("../src/ebooks.ts");
 const { requireAdmin } = await import("../src/auth.ts");
 const { createSignedFileUpload, createStoragePath, getFileInfo } =
   await import("../src/files.ts");
@@ -258,6 +266,66 @@ test("admin content queries keep pinned rows above regular rows", async () => {
   }
 });
 
+test("E-book helpers use the dedicated table and stable admin ordering", async () => {
+  const ebook = {
+    created_at: "2026-08-26T00:00:00.000Z",
+    embed_url: "https://my.ebook36524.com/books/vzqq/",
+    id: "ebook-id",
+    seo_description: "E-book description",
+    slug: "fluonics",
+    status: "published",
+    title: "Fluonics",
+  };
+  const input = {
+    embed_url: ebook.embed_url,
+    seo_description: ebook.seo_description,
+    slug: ebook.slug,
+    status: ebook.status,
+    title: ebook.title,
+  };
+  const { calls, client } = createFakeClient({ ebooks: ebook });
+
+  assert.deepEqual(await getPublishedEbook(client, ebook.slug), ebook);
+  assert.deepEqual(await listAdminEbooks(client), ebook);
+  assert.deepEqual(await getAdminEbook(client, ebook.id), ebook);
+  assert.deepEqual(await createEbook(client, input), ebook);
+  assert.deepEqual(
+    await updateEbook(client, ebook.id, { title: "Updated E-book" }),
+    ebook,
+  );
+  await deleteEbook(client, ebook.id);
+
+  assert.deepEqual(orderCalls(calls, "ebooks"), [
+    ["created_at", { ascending: false }],
+    ["id", { ascending: true }],
+  ]);
+  assert.ok(
+    calls.some(
+      (call) =>
+        call.method === "insert" &&
+        call.table === "ebooks" &&
+        call.value === input,
+    ),
+  );
+  assert.ok(
+    calls.some(
+      (call) =>
+        call.method === "select" &&
+        call.table === "ebooks" &&
+        call.columns === "embed_url, seo_description, slug, status, title",
+    ),
+  );
+  assert.ok(
+    calls.some(
+      (call) =>
+        call.method === "eq" &&
+        call.table === "ebooks" &&
+        call.column === "status" &&
+        call.value === "published",
+    ),
+  );
+});
+
 test("admin creations use one less than the current minimum sort order", async () => {
   const cases = [
     {
@@ -325,6 +393,7 @@ test("public managed-content list and detail queries exactly match canonical ano
   const { calls, client } = createFakeClient();
 
   await Promise.all([
+    getPublishedEbook(client, "ebook-slug"),
     listPublishedPosts(client, "blog"),
     getPublishedPost(client, "notice", "notice-slug"),
     listPublishedPortfolioItems(client),
@@ -334,6 +403,7 @@ test("public managed-content list and detail queries exactly match canonical ano
   ]);
 
   const expectedColumns = {
+    ebooks: ["embed_url", "seo_description", "slug", "status", "title"],
     portfolio_items: [
       "id",
       "client_name",
@@ -410,7 +480,7 @@ test("public managed-content list and detail queries exactly match canonical ano
   );
   const grants = new Map(
     [...baseline.matchAll(
-      /grant select \(([\s\S]*?)\) on public\.(posts|portfolio_items|reviews) to anon;/gu,
+      /grant select \(([\s\S]*?)\) on public\.(ebooks|posts|portfolio_items|reviews) to anon;/gu,
     )].map((match) => [match[2], match[1]]),
   );
 
@@ -418,7 +488,7 @@ test("public managed-content list and detail queries exactly match canonical ano
     const selections = calls.filter(
       (call) => call.method === "select" && call.table === table,
     );
-    assert.equal(selections.length, 2);
+    assert.equal(selections.length, table === "ebooks" ? 1 : 2);
 
     for (const selection of selections) {
       assert.deepEqual(selection.columns.split(", "), expected);
@@ -441,6 +511,10 @@ test("public projections surface database errors without a fallback query", asyn
   }));
 
   await Promise.all([
+    assert.rejects(
+      getPublishedEbook(client, "ebook-slug"),
+      /permission denied/,
+    ),
     assert.rejects(listPublishedPosts(client, "notice"), /permission denied/),
     assert.rejects(getPublishedPost(client, "notice", "post-slug"), /permission denied/),
     assert.rejects(listPublishedPortfolioItems(client), /permission denied/),
@@ -452,7 +526,7 @@ test("public projections surface database errors without a fallback query", asyn
     assert.rejects(getPublishedReview(client, "review-slug"), /permission denied/),
   ]);
 
-  assert.equal(calls.filter((call) => call.method === "select").length, 6);
+  assert.equal(calls.filter((call) => call.method === "select").length, 7);
 });
 
 test("product pricing reads only valid print unit prices", () => {

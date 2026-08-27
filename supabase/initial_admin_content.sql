@@ -89,6 +89,21 @@ create table public.posts (
   check (kind <> 'notice' or nullif(btrim(excerpt), '') is not null)
 );
 
+create table public.ebooks (
+  id uuid primary key default gen_random_uuid(),
+  embed_url text not null
+    check (embed_url ~ '^https://[^[:space:]]+$'),
+  slug text not null unique
+    check (slug ~ '^[a-z0-9]+(?:-[a-z0-9]+)*$'),
+  title text not null
+    check (nullif(btrim(title), '') is not null),
+  seo_description text not null
+    check (nullif(btrim(seo_description), '') is not null),
+  status text not null default 'published'
+    check (status in ('draft', 'published')),
+  created_at timestamptz not null default now()
+);
+
 create table public.portfolio_items (
   id uuid primary key default gen_random_uuid(),
   type text not null,
@@ -289,6 +304,9 @@ create index posts_kind_status_published_at_idx
 
 create index posts_kind_sort_order_idx
   on public.posts (kind, sort_order);
+
+create index ebooks_status_created_at_idx
+  on public.ebooks (status, created_at desc);
 
 create index portfolio_items_status_sort_order_idx
   on public.portfolio_items (status, sort_order);
@@ -522,6 +540,7 @@ execute function public.prevent_content_asset_scope_change();
 
 alter table public.products enable row level security;
 alter table public.posts enable row level security;
+alter table public.ebooks enable row level security;
 alter table public.portfolio_items enable row level security;
 alter table public.reviews enable row level security;
 alter table public.complaints enable row level security;
@@ -548,6 +567,19 @@ using (status = 'published');
 
 create policy posts_admin_manage
 on public.posts
+for all
+to authenticated
+using ((select auth.jwt() -> 'app_metadata' ->> 'role') = 'admin')
+with check ((select auth.jwt() -> 'app_metadata' ->> 'role') = 'admin');
+
+create policy ebooks_public_read_published
+on public.ebooks
+for select
+to anon
+using (status = 'published');
+
+create policy ebooks_admin_manage
+on public.ebooks
 for all
 to authenticated
 using ((select auth.jwt() -> 'app_metadata' ->> 'role') = 'admin')
@@ -616,6 +648,10 @@ grant usage on schema public to anon, authenticated, service_role;
 
 grant select on public.products to anon;
 
+grant select (
+  embed_url, seo_description, slug, status, title
+) on public.ebooks to anon;
+
 revoke all privileges on table public.posts, public.portfolio_items, public.reviews
 from public, anon;
 
@@ -642,12 +678,13 @@ grant select (
 
 grant select, insert, update, delete
 on public.products,
+   public.ebooks,
    public.posts,
    public.portfolio_items,
    public.reviews
 to authenticated;
 
-grant all privileges on table public.posts, public.portfolio_items, public.reviews
+grant all privileges on table public.ebooks, public.posts, public.portfolio_items, public.reviews
 to service_role;
 
 grant select on public.complaints, public.complaint_attachments

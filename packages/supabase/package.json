@@ -10,6 +10,7 @@
     "./client": "./src/client.ts",
     "./categories": "./src/categories.ts",
     "./content": "./src/content.ts",
+    "./ebooks": "./src/ebooks.ts",
     "./faqs": "./src/faqs.ts",
     "./files": "./src/files.ts",
     "./inquiries": "./src/inquiries.ts",

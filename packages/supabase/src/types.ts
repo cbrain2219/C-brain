@@ -17,6 +17,7 @@ export type TableUpdate<TableName extends keyof PublicTables> =
   PublicTables[TableName]["Update"];
 
 export type PublishStatus = PublicEnums["publish_status"];
+export type EbookStatus = Extract<PublishStatus, "draft" | "published">;
 export type ContentMode = PublicEnums["content_mode"];
 export type ContentAuthoringMode = "raw_html" | "wysiwyg";
 export type ComplaintStatus = PublicEnums["inquiry_status"];
@@ -144,6 +145,36 @@ export type Database = {
           title?: string;
           type?: string;
           view_count?: number;
+        };
+        Relationships: [];
+      };
+      ebooks: {
+        Row: {
+          created_at: string;
+          embed_url: string;
+          id: string;
+          seo_description: string;
+          slug: string;
+          status: EbookStatus;
+          title: string;
+        };
+        Insert: {
+          created_at?: string;
+          embed_url: string;
+          id?: string;
+          seo_description: string;
+          slug: string;
+          status?: EbookStatus;
+          title: string;
+        };
+        Update: {
+          created_at?: string;
+          embed_url?: string;
+          id?: string;
+          seo_description?: string;
+          slug?: string;
+          status?: EbookStatus;
+          title?: string;
         };
         Relationships: [];
       };
