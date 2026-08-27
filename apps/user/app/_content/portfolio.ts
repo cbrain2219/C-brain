@@ -308,6 +308,6 @@ export function getPortfolioDetailSeo(detail: PortfolioDetail): PortfolioSeo {
       "디자인 제작 사례",
       "포트폴리오",
     ],
-    title: `${item.title} - ${item.client} | C-Brain`,
+    title: `${item.title} | 씨브레인 포트폴리오`,
   };
 }

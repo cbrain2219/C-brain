@@ -206,6 +206,6 @@ export function getBlogDetailSeo(post: BlogPost): BlogDetailSeo {
   return {
     description: post.detail.seoDescription,
     keywords: [...post.detail.keywords],
-    title: `${post.title} | C-Brain Blog`,
+    title: `${post.title} | 씨브레인 블로그`,
   };
 }

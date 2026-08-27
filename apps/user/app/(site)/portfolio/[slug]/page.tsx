@@ -53,7 +53,7 @@ export async function generateMetadata({
 
   if (!detail) {
     return {
-      title: "포트폴리오 상세 | C-Brain",
+      title: { absolute: "포트폴리오 상세 | 씨브레인 포트폴리오" },
     };
   }
 
@@ -82,7 +82,7 @@ export async function generateMetadata({
       title: seo.title,
       type: "article",
     },
-    title: seo.title,
+    title: { absolute: seo.title },
     twitter: {
       card: "summary",
       description: seo.description,

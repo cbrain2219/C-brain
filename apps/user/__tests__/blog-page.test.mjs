@@ -560,6 +560,8 @@ test("blog pages load DB content while keeping detail route conventions", async 
     /alternates: canonicalUrl \? \{ canonical: canonicalUrl \} : undefined/,
   );
   assert.match(detailPage, /type: "article" as const/);
+  assert.match(posts, /title: `\$\{post\.title\} \| 씨브레인 블로그`/);
+  assert.match(detailPage, /title: \{ absolute: seo\.title \}/);
   assert.match(detailPage, /getPublishedBlogPostSource\(slug\)/);
   assert.match(detailPage, /source\.content/);
   assert.match(detailPage, /<BlogHtmlDocumentFrame/);

@@ -317,9 +317,17 @@ test("portfolio landing, list, and detail use DB content through the server load
 });
 
 test("portfolio detail metadata and related cards reuse representative image semantics", async () => {
-  const detailPage = await readFile(detailPagePath, "utf8");
+  const [detailPage, content] = await Promise.all([
+    readFile(detailPagePath, "utf8"),
+    readFile(contentPath, "utf8"),
+  ]);
 
   assert.match(detailPage, /process\.env\.NEXT_PUBLIC_SITE_URL/);
+  assert.match(
+    content,
+    /title: `\$\{item\.title\} \| 씨브레인 포트폴리오`/,
+  );
+  assert.match(detailPage, /title: \{ absolute: seo\.title \}/);
   assert.match(
     detailPage,
     /new URL\(`\/portfolio\/\$\{item\.slug\}`, siteUrl\)/,

@@ -220,7 +220,7 @@ function createBlogMetadata(post: BlogPost): Metadata {
       type: "article" as const,
       url: canonicalUrl,
     },
-    title: seo.title,
+    title: { absolute: seo.title },
     twitter: {
       card: "summary",
       description: seo.description,
@@ -239,7 +239,7 @@ export async function generateMetadata({
 
   if (!post) {
     return {
-      title: "블로그 상세 | C-Brain",
+      title: { absolute: "블로그 상세 | 씨브레인 블로그" },
     };
   }
 
