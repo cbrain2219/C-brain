@@ -1078,8 +1078,8 @@ test("quantity table total shows print amount without the order total", () => {
     quantitySectionSource,
     /formatOrderUnitPrice\(quantityRow\.unitPrice\)/,
   );
-  assert.match(orderContentSource, /minimumFractionDigits: 1/);
-  assert.match(orderContentSource, /maximumFractionDigits: 1/);
+  assert.doesNotMatch(orderContentSource, /minimumFractionDigits/);
+  assert.match(orderContentSource, /maximumFractionDigits: 20/);
   assert.doesNotMatch(
     quantitySectionSource,
     /formatOrderCurrency\(rowCalculation\.totalPrice\)/,

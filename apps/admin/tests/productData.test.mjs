@@ -4,7 +4,6 @@ import test from 'node:test'
 import {
   filterProductRows,
   formatDecimalNumericValue,
-  formatFixedDecimalNumericValue,
   formatNumericValue,
   toProductListRow,
 } from '../src/pages/productData.ts'
@@ -17,12 +16,10 @@ const productPageSource = await readFile(
 test('numeric form values keep digits and Korean thousands separators', () => {
   assert.equal(formatNumericValue('0012,345원'), '12,345')
   assert.equal(formatNumericValue(''), '')
-  assert.equal(formatDecimalNumericValue('001,633.33원'), '1,633.3')
+  assert.equal(formatDecimalNumericValue('001,633.333원'), '1,633.333')
   assert.equal(formatDecimalNumericValue('22.5'), '22.5')
-  assert.equal(formatDecimalNumericValue('1.2.3'), '1.2')
+  assert.equal(formatDecimalNumericValue('1.2.3'), '1.23')
   assert.equal(formatDecimalNumericValue('.5'), '0.5')
-  assert.equal(formatFixedDecimalNumericValue('2100'), '2,100.0')
-  assert.equal(formatFixedDecimalNumericValue('1,633.3'), '1,633.3')
 })
 
 test('list filtering matches selected status, type, and name query', () => {

@@ -72,7 +72,7 @@ function groupedProductRecord(overrides = {}) {
           },
           priceRowsBySelection: {
             '0:0:0:0': [
-              { quantity: 100, unitPrice: 300, printAmount: 30000 },
+              { quantity: 100, unitPrice: 300.12345, printAmount: 30000 },
             ],
           },
           serviceEstimatesBySelection: {
@@ -160,7 +160,7 @@ test('grouped JSONB round trips every variant and future key', () => {
     { quantity: '100', unitPrice: '2,700.5', printAmount: '270,050' },
   ])
   assert.deepEqual(draft.variants.전단지.priceRowsBySelection['0:0:0:0'], [
-    { quantity: '100', unitPrice: '300.0', printAmount: '30,000' },
+    { quantity: '100', unitPrice: '300.12345', printAmount: '30,000' },
   ])
   assert.deepEqual(input, {
     configuration: record.configuration,

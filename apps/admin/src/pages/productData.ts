@@ -35,22 +35,8 @@ export function formatDecimalNumericValue(value: string) {
   const fraction = numeric
     .slice(decimalIndex + 1)
     .replace(/\D/g, '')
-    .slice(0, 1)
 
   return `${integer}.${fraction}`
-}
-
-export function formatFixedDecimalNumericValue(value: string) {
-  const formatted = formatDecimalNumericValue(value)
-  const normalized = formatted.replaceAll(',', '')
-
-  if (!normalized) return ''
-
-  const number = Number(normalized)
-
-  if (!Number.isFinite(number)) return formatted
-
-  return formatDecimalNumericValue(number.toFixed(1))
 }
 
 export function toProductListRow(product: ProductRecord): ProductListRow {

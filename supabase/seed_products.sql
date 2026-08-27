@@ -654,7 +654,7 @@ $variants$
           "planningEstimate": 50000
         }
       },
-      "priceModel": "service-plus-print-total-v2"
+      "priceModel": "service-plus-print-total-workbook-v3"
     }
   },
   {
@@ -1311,7 +1311,7 @@ $variants$
           "planningEstimate": 30000
         }
       },
-      "priceModel": "service-plus-print-total-v2"
+      "priceModel": "service-plus-print-total-workbook-v3"
     }
   },
   {
@@ -1481,7 +1481,7 @@ $variants$
           "planningEstimate": 200000
         }
       },
-      "priceModel": "service-plus-print-total-v2"
+      "priceModel": "service-plus-print-total-workbook-v3"
     }
   },
   {
@@ -1586,7 +1586,7 @@ $variants$
           "planningEstimate": 40000
         }
       },
-      "priceModel": "service-plus-print-total-v2"
+      "priceModel": "service-plus-print-total-workbook-v3"
     }
   },
   {
@@ -1635,7 +1635,7 @@ $variants$
           "planningEstimate": 50000
         }
       },
-      "priceModel": "service-plus-print-total-v2"
+      "priceModel": "service-plus-print-total-workbook-v3"
     }
   },
   {
@@ -1696,7 +1696,7 @@ $variants$
           "planningEstimate": 50000
         }
       },
-      "priceModel": "service-plus-print-total-v2"
+      "priceModel": "service-plus-print-total-workbook-v3"
     }
   },
   {
@@ -1742,7 +1742,7 @@ $variants$
           "planningEstimate": 30000
         }
       },
-      "priceModel": "service-plus-print-total-v2"
+      "priceModel": "service-plus-print-total-workbook-v3"
     }
   },
   {
@@ -1792,7 +1792,7 @@ $variants$
           "planningEstimate": 20000
         }
       },
-      "priceModel": "service-plus-print-total-v2"
+      "priceModel": "service-plus-print-total-workbook-v3"
     }
   },
   {
@@ -1895,7 +1895,7 @@ $variants$
           "planningEstimate": 20000
         }
       },
-      "priceModel": "service-plus-print-total-v2"
+      "priceModel": "service-plus-print-total-workbook-v3"
     }
   },
   {
@@ -1927,7 +1927,7 @@ $variants$
           "planningEstimate": null
         }
       },
-      "priceModel": "service-plus-print-total-v2"
+      "priceModel": "service-plus-print-total-workbook-v3"
     }
   }
 ]

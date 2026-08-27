@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Let administrators enter decimal print unit prices and exact print totals, then use the entered print total unchanged in the public order price.
+**Goal:** Let administrators enter print unit prices without decimal rounding and exact print totals, then show the unit price and use the print total unchanged on the public order page.
 
 **Architecture:** Extend each quantity row in the existing `products.configuration` JSONB from `{ quantity, unitPrice }` to `{ quantity, unitPrice, printAmount }`. Admin inputs serialize decimal `unitPrice` and integer-won `printAmount`; the shared catalog reads the new value and uses it directly instead of recomputing `quantity × unitPrice`. Existing rows remain readable through a multiplication fallback until they are saved with the new field.
 
@@ -16,6 +16,8 @@
 - Follow `design.md`: Pretendard GOV typography, parent `gap` spacing, no custom focus treatment, and shared SVG icons.
 - Store the exact print total in the existing JSONB configuration; do not add a database column.
 - Quantity and print total are whole non-negative won values; unit price may be a non-negative decimal.
+- Do not round or force a fixed number of decimal places for unit prices.
+- Import unit prices directly from the workbook unit-price column; never derive them from `printAmount / quantity`.
 - Public calculations and display must use the administrator-entered `printAmount` unchanged.
 - Keep legacy rows readable by falling back to `quantity × unitPrice` only when `printAmount` is absent.
 
@@ -37,7 +39,7 @@
 - [ ] **Step 1: Add failing tests for decimal formatting and `printAmount` round trips**
 
 ```js
-assert.equal(formatDecimalNumericValue('001,633.33원'), '1,633.3')
+assert.equal(formatDecimalNumericValue('001,633.333원'), '1,633.333')
 assert.deepEqual(draftRow, {
   quantity: '300',
   unitPrice: '1,633.3',
@@ -130,7 +132,7 @@ Expected: FAIL because `printAmount` is not parsed or used directly.
 
 - [ ] **Step 3: Implement exact-total calculation and decimal unit-price formatting**
 
-Read a safe integer `printAmount` when present; otherwise derive the legacy fallback. Calculate `totalPrice = designPrintAmount + planningAmount + printAmount`. Format unit prices with exactly one decimal place, matching the workbook's `ROUND(..., 1)` formulas, without changing whole-won total formatting.
+Read a safe integer `printAmount` when present; otherwise derive the legacy fallback. Calculate `totalPrice = designPrintAmount + planningAmount + printAmount`. Display the stored unit price without rounding or changing its decimal precision, while leaving whole-won total formatting unchanged.
 
 - [ ] **Step 4: Run the focused tests and confirm they pass**
 
@@ -166,4 +168,4 @@ Expected: no matches.
 
 - [ ] **Step 4: Confirm database impact**
 
-No SQL schema query is required because `printAmount` is nested inside the existing `products.configuration` JSONB value. Saving a product in the admin writes the new nested key.
+No SQL schema query is required because `printAmount` is nested inside the existing `products.configuration` JSONB value. Existing JSONB price rows are migrated to the workbook-source price model and saving a product in the admin preserves the entered decimal unit price.

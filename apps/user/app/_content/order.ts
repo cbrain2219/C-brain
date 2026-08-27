@@ -78,8 +78,7 @@ export const formatOrderCurrency = (amount: number) =>
 
 export const formatOrderUnitPrice = (amount: number) =>
   `${amount.toLocaleString("ko-KR", {
-    minimumFractionDigits: 1,
-    maximumFractionDigits: 1,
+    maximumFractionDigits: 20,
   })}원`;
 
 export type OrderDirectServiceHref =

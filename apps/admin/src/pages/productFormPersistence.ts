@@ -4,10 +4,7 @@ import type {
   ProductRecord,
   ProductStatus,
 } from '@repo/supabase'
-import {
-  formatFixedDecimalNumericValue,
-  formatNumericValue,
-} from './productData.ts'
+import { formatDecimalNumericValue, formatNumericValue } from './productData.ts'
 import { createProductFormDraft } from './productFormGroup.ts'
 import type { ProductFormDraft } from './productFormGroup.ts'
 import {
@@ -102,7 +99,7 @@ function toDraftDecimal(value: Json | undefined) {
     throw new Error('상품 설정 형식을 확인해주세요.')
   }
 
-  return formatFixedDecimalNumericValue(String(value))
+  return formatDecimalNumericValue(String(value))
 }
 
 function toStoredNumber(value: string) {
@@ -126,7 +123,7 @@ function toStoredDecimal(value: string) {
   const normalized = value.replaceAll(',', '').trim()
 
   if (!normalized) return null
-  if (!/^\d+(?:\.\d)?$/.test(normalized)) {
+  if (!/^\d+(?:\.\d+)?$/.test(normalized)) {
     throw new Error('숫자 입력값을 확인해주세요.')
   }
 

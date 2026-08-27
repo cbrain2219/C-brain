@@ -16,7 +16,8 @@ const repoEnvUrl = new URL("../../../.env", import.meta.url);
 const seedUrl = new URL("../../../supabase/seed_products.sql", import.meta.url);
 const seedPayloadPattern = /(\$variants\$\n)([\s\S]*?)(\n\$variants\$::jsonb)/;
 const legacyUnitPriceModel = "service-plus-print-unit-v1";
-export const priceModel = "service-plus-print-total-v2";
+const workbookPrintTotalModel = "service-plus-print-total-v2";
+export const priceModel = "service-plus-print-total-workbook-v3";
 
 function assertSafeAmount(value, label) {
   if (!Number.isSafeInteger(value) || value < 0) {
@@ -40,7 +41,7 @@ function assertSafeUnitPrice(value, label) {
   }
 }
 
-export function calculateUnitPrice(printAmount, quantity) {
+function calculateLegacyUnitPrice(printAmount, quantity) {
   assertSafeAmount(printAmount, "printAmount");
   assertPositiveInteger(quantity, "quantity");
 
@@ -136,6 +137,8 @@ export function transformVariantConfiguration(
   let priceRowCount = 0;
   let changedRowCount = 0;
   const usesPrintTotals = configuration.priceModel === priceModel;
+  const usesWorkbookPrintTotals =
+    configuration.priceModel === workbookPrintTotalModel;
   const usesLegacyUnitPrices =
     configuration.priceModel === legacyUnitPriceModel;
   const priceRowsBySelection = {};
@@ -174,6 +177,11 @@ export function transformVariantConfiguration(
         assertSafeAmount(row.printAmount, `${label} printAmount`);
         unitPrice = row.unitPrice;
         printAmount = row.printAmount;
+      } else if (usesWorkbookPrintTotals) {
+        assertSafeUnitPrice(row.unitPrice, `${label} unitPrice`);
+        assertSafeAmount(row.printAmount, `${label} printAmount`);
+        unitPrice = row.unitPrice;
+        printAmount = row.printAmount;
       } else if (usesLegacyUnitPrices) {
         assertSafeAmount(row.unitPrice, `${label} unitPrice`);
         unitPrice = row.unitPrice;
@@ -188,7 +196,7 @@ export function transformVariantConfiguration(
         }
 
         printAmount = legacyFinalPrice - designAmount;
-        unitPrice = calculateUnitPrice(printAmount, quantity);
+        unitPrice = calculateLegacyUnitPrice(printAmount, quantity);
       }
       priceRowCount += 1;
 

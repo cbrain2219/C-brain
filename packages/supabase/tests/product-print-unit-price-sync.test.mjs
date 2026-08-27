@@ -4,7 +4,6 @@ import test from "node:test";
 import { URL } from "node:url";
 
 import {
-  calculateUnitPrice,
   priceModel,
   transformGroupedProducts,
   transformSeedVariants,
@@ -20,17 +19,9 @@ const payload = seed.match(
 
 assert.ok(payload, "seed_products.sql variant payload is missing");
 
-test("decimal unit prices retain the exact supplied print totals", () => {
-  assert.equal(calculateUnitPrice(90000, 4000), 22.5);
-  assert.equal(calculateUnitPrice(110000, 4000), 27.5);
-  assert.equal(calculateUnitPrice(190000, 4000), 47.5);
-  assert.equal(calculateUnitPrice(210000, 4000), 52.5);
-  assert.equal(calculateUnitPrice(490000, 300), 1633.3);
-  assert.equal(calculateUnitPrice(500000, 300), 1666.7);
-});
-
-test("all seed quantity rows keep decimal unit prices and exact print totals", () => {
-  const result = transformSeedVariants(JSON.parse(payload));
+test("all seed quantity rows keep workbook unit prices and print totals unchanged", () => {
+  const sourceVariants = JSON.parse(payload);
+  const result = transformSeedVariants(sourceVariants);
 
   assert.equal(result.priceRowCount, 272);
 
@@ -47,6 +38,14 @@ test("all seed quantity rows keep decimal unit prices and exact print totals", (
       quantity: 100,
       unitPrice: 2100,
       printAmount: 210000,
+    },
+  );
+  assert.deepEqual(
+    byVariant["브로슈어 · 카탈로그"].priceRowsBySelection["0:0:0:0"][2],
+    {
+      quantity: 300,
+      unitPrice: 1633.3,
+      printAmount: 490000,
     },
   );
   assert.deepEqual(
@@ -72,16 +71,12 @@ test("all seed quantity rows keep decimal unit prices and exact print totals", (
       (configuration) => configuration.priceModel === priceModel,
     ),
   );
-  for (const configuration of Object.values(byVariant)) {
-    for (const rows of Object.values(configuration.priceRowsBySelection)) {
-      for (const row of rows) {
-        assert.equal(
-          row.unitPrice,
-          Number((row.printAmount / row.quantity).toFixed(1)),
-        );
-      }
-    }
-  }
+  result.variants.forEach((variant, index) => {
+    assert.deepEqual(
+      variant.configuration.priceRowsBySelection,
+      sourceVariants[index].configuration.priceRowsBySelection,
+    );
+  });
 
   const secondPass = transformSeedVariants(result.variants);
   assert.equal(secondPass.changedRowCount, 0);

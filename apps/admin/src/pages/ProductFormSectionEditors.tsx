@@ -3,7 +3,6 @@ import type { RefCallback } from 'react'
 import { AdminIcon } from '../components/AdminIcon'
 import {
   formatDecimalNumericValue,
-  formatFixedDecimalNumericValue,
   formatNumericValue,
 } from './productData'
 import type {
@@ -256,11 +255,6 @@ function NumericControl({
         data-product-price-field={field}
         data-row-index={dataRowIndex}
         inputMode={field === 'unitPrice' ? 'decimal' : 'numeric'}
-        onBlur={(event) => {
-          if (field === 'unitPrice') {
-            onChange(formatFixedDecimalNumericValue(event.currentTarget.value))
-          }
-        }}
         onChange={(event) =>
           onChange(
             field === 'unitPrice'
