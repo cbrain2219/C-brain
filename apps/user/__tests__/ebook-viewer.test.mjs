@@ -26,7 +26,7 @@ test("the public E-book slug renders the stored HTTPS embed without the site she
   assert.match(helper, /getPublishedEbook\(client, slug\)/);
 });
 
-test("the public E-book page uses fixed C-Brain copy and an optional custom OG image", async () => {
+test("the public E-book page uses entered title, SEO copy, and an optional custom OG image", async () => {
   const [page, helper, metadata] = await Promise.all([
     readFile(pagePath, "utf8"),
     readFile(helperPath, "utf8"),
@@ -41,8 +41,14 @@ test("the public E-book page uses fixed C-Brain copy and an optional custom OG i
   assert.match(metadata, /title: \{ absolute:/);
   assert.match(metadata, /openGraph:/);
   assert.match(metadata, /twitter:/);
-  assert.match(metadata, /siteSeo\.defaultTitle/);
-  assert.match(metadata, /siteSeo\.defaultDescription/);
+  assert.match(
+    metadata,
+    /openGraph: \{[\s\S]*description: ebook\.seo_description,[\s\S]*title: ebook\.title/,
+  );
+  assert.match(
+    metadata,
+    /twitter: \{[\s\S]*description: ebook\.seo_description,[\s\S]*title: ebook\.title/,
+  );
   assert.match(metadata, /ebook\.og_image_url/);
   assert.match(metadata, /ebook\.og_image_alt/);
   assert.match(metadata, /\/opengraph-image\.png/);

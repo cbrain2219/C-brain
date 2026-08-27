@@ -42,11 +42,11 @@ export function createEbookMetadata(
   return {
     description: ebook.seo_description,
     openGraph: {
-      description: siteSeo.defaultDescription,
+      description: ebook.seo_description,
       images: [socialImage],
       locale: "ko_KR",
       siteName: siteSeo.name,
-      title: siteSeo.defaultTitle,
+      title: ebook.title,
       type: "website",
       ...(options.url ? { url: options.url } : {}),
     },
@@ -54,9 +54,9 @@ export function createEbookMetadata(
     title: { absolute: options.pageTitle || ebook.title },
     twitter: {
       card: "summary_large_image",
-      description: siteSeo.defaultDescription,
+      description: ebook.seo_description,
       images: [socialImage],
-      title: siteSeo.defaultTitle,
+      title: ebook.title,
     },
   };
 }
