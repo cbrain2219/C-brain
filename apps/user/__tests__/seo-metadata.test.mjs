@@ -67,6 +67,75 @@ test("static page metadata is configured from one SEO content module", async () 
 
     assert.equal(siteSeo.name, "C-Brain");
     assert.ok(siteSeo.defaultDescription.length > 20);
+    assert.equal(
+      pageSeo.home.title,
+      "브로슈어·카탈로그·홍보물 디자인·제작 전문 | 씨브레인",
+    );
+    assert.equal(
+      pageSeo.home.description,
+      "2000년 설립 4,000건+ 실적의 홍보물 디자인·제작 전문기업 씨브레인. 브로슈어·카탈로그·리플렛·패키지·포스터 등 기업 홍보물을 기획·디자인·인쇄·이북까지 원스톱 제작합니다.",
+    );
+    assert.equal(
+      pageSeo.about.title,
+      "2000년 설립 홍보물 디자인·제작 전문기업 | 씨브레인",
+    );
+    assert.equal(
+      pageSeo.about.description,
+      "2000년 설립, 누적 4,000건+ 프로젝트를 수행한 홍보물 디자인 전문기업입니다. 코리아 나라장터엑스포 등 다양한 제작 경험을 바탕으로 1:1 전담 디자이너가 기획부터 제작까지 진행합니다.",
+    );
+    assert.equal(
+      pageSeo.blog.title,
+      "홍보물 디자인·제작 노하우 | 씨브레인 블로그",
+    );
+    assert.equal(
+      pageSeo.blog.description,
+      "씨브레인이 직접 전하는 브로슈어·카탈로그 등 홍보물 디자인·제작·인쇄 노하우와 실무 팁을 블로그에서 확인하세요.",
+    );
+    assert.equal(
+      pageSeo.complaint.title,
+      "고객센터·불편 접수 | 씨브레인",
+    );
+    assert.equal(
+      pageSeo.complaint.description,
+      "씨브레인 이용 중 불편사항이나 홍보물 제작 관련 문의를 접수해주세요. 남겨주신 의견 확인 후 신속하게 안내해드립니다.",
+    );
+    assert.equal(
+      pageSeo.faq.title,
+      "홍보물 제작 FAQ·가이드 | 씨브레인",
+    );
+    assert.equal(
+      pageSeo.faq.description,
+      "홍보물 제작 기간, 비용, 최소 수량, 디자인, 인쇄, 결제와 배송까지 제작 전 자주 묻는 질문과 실무 정보를 확인하세요.",
+    );
+    assert.equal(pageSeo.notice.title, "공지사항 | 씨브레인");
+    assert.equal(
+      pageSeo.notice.description,
+      "씨브레인의 서비스 변경, 휴무 안내, 이벤트, 수상 소식 등 주요 공지사항을 확인하세요.",
+    );
+    assert.equal(
+      pageSeo.portfolio.title,
+      "홍보물 디자인·제작 사례 | 씨브레인 포트폴리오",
+    );
+    assert.equal(
+      pageSeo.portfolio.description,
+      "브로슈어, 카탈로그, 리플렛, 패키지 등 다양한 기업·기관 홍보물의 실제 디자인·제작 사례를 확인하세요.",
+    );
+    assert.equal(
+      pageSeo.reviews.title,
+      "홍보물 제작 고객후기·리뷰 | 씨브레인",
+    );
+    assert.equal(
+      pageSeo.reviews.description,
+      "다양한 기업·기관이 남긴 브로슈어·카탈로그 등 홍보물 제작 후기를 확인하세요. 실제 고객의 제작 경험과 만족도를 살펴볼 수 있습니다.",
+    );
+    assert.equal(
+      pageSeo.order.title,
+      "홍보물 제작 견적·비용 안내 | 씨브레인",
+    );
+    assert.equal(
+      pageSeo.order.description,
+      "브로슈어·카탈로그 등 홍보물 디자인부터 인쇄, 견적, 결제, 전국 배송까지 한 번에 진행하세요. 제작 문의부터 1:1 상담까지 빠르게 안내해드립니다.",
+    );
     assert.deepEqual(Object.keys(pageSeo), expectedKeys);
 
     for (const [key, variableName] of expectedEntries) {

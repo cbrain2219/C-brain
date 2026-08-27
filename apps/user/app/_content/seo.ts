@@ -31,15 +31,16 @@ const defaultSocialImage = {
 } as const;
 
 export const homeSeo = {
-  description: siteSeo.defaultDescription,
+  description:
+    "2000년 설립 4,000건+ 실적의 홍보물 디자인·제작 전문기업 씨브레인. 브로슈어·카탈로그·리플렛·패키지·포스터 등 기업 홍보물을 기획·디자인·인쇄·이북까지 원스톱 제작합니다.",
   keywords: siteSeo.defaultKeywords,
   path: "/",
-  title: siteSeo.defaultTitle,
+  title: "브로슈어·카탈로그·홍보물 디자인·제작 전문 | 씨브레인",
 } as const satisfies StaticPageSeoEntry;
 
 export const aboutSeo = {
   description:
-    "2000년 설립 이후 전국 1,200여 곳과 함께해 온 씨브레인의 회사 소개, 연혁, 주요 협력 이력과 위치 정보를 확인하세요.",
+    "2000년 설립, 누적 4,000건+ 프로젝트를 수행한 홍보물 디자인 전문기업입니다. 코리아 나라장터엑스포 등 다양한 제작 경험을 바탕으로 1:1 전담 디자이너가 기획부터 제작까지 진행합니다.",
   keywords: [
     "씨브레인 회사소개",
     "C-Brain",
@@ -48,12 +49,12 @@ export const aboutSeo = {
     "카탈로그 제작 회사",
   ],
   path: "/about",
-  title: "회사소개 | C-Brain",
+  title: "2000년 설립 홍보물 디자인·제작 전문기업 | 씨브레인",
 } as const satisfies StaticPageSeoEntry;
 
 export const portfolioSeo = {
   description:
-    "씨브레인의 브로슈어, 카탈로그, 리플렛, 포스터, 명함 등 실제 디자인 제작 사례를 확인하세요.",
+    "브로슈어, 카탈로그, 리플렛, 패키지 등 다양한 기업·기관 홍보물의 실제 디자인·제작 사례를 확인하세요.",
   keywords: [
     "씨브레인",
     "포트폴리오",
@@ -63,12 +64,12 @@ export const portfolioSeo = {
     "홍보물 디자인",
   ],
   path: "/portfolio",
-  title: "포트폴리오 | C-Brain",
+  title: "홍보물 디자인·제작 사례 | 씨브레인 포트폴리오",
 } as const satisfies StaticPageSeoEntry;
 
 export const reviewsSeo = {
   description:
-    "씨브레인과 함께 브로슈어, 카탈로그, 홍보물 제작을 진행한 고객 인터뷰와 후기를 확인하세요.",
+    "다양한 기업·기관이 남긴 브로슈어·카탈로그 등 홍보물 제작 후기를 확인하세요. 실제 고객의 제작 경험과 만족도를 살펴볼 수 있습니다.",
   keywords: [
     "씨브레인 고객후기",
     "브로슈어 제작 후기",
@@ -77,12 +78,12 @@ export const reviewsSeo = {
     "편집디자인 후기",
   ],
   path: "/reviews",
-  title: "고객 후기 | C-Brain",
+  title: "홍보물 제작 고객후기·리뷰 | 씨브레인",
 } as const satisfies StaticPageSeoEntry;
 
 export const blogSeo = {
   description:
-    "26년 경력 전문가 씨브레인이 직접 작성하는 브로슈어, 카탈로그, 디자인, 인쇄 실무 정보입니다.",
+    "씨브레인이 직접 전하는 브로슈어·카탈로그 등 홍보물 디자인·제작·인쇄 노하우와 실무 팁을 블로그에서 확인하세요.",
   keywords: [
     "브로슈어 제작 팁",
     "카탈로그 제작 가이드",
@@ -91,11 +92,12 @@ export const blogSeo = {
     "씨브레인 블로그",
   ],
   path: "/blog",
-  title: "블로그 | C-Brain",
+  title: "홍보물 디자인·제작 노하우 | 씨브레인 블로그",
 } as const satisfies StaticPageSeoEntry;
 
 export const noticeSeo = {
-  description: "씨브레인의 공식 소식과 안내를 빠르게 확인하세요.",
+  description:
+    "씨브레인의 서비스 변경, 휴무 안내, 이벤트, 수상 소식 등 주요 공지사항을 확인하세요.",
   keywords: [
     "씨브레인 공지사항",
     "C-Brain 공지",
@@ -103,12 +105,12 @@ export const noticeSeo = {
     "인쇄 제작 공지",
   ],
   path: "/notice",
-  title: "공지사항 | C-Brain",
+  title: "공지사항 | 씨브레인",
 } as const satisfies StaticPageSeoEntry;
 
 export const faqSeo = {
   description:
-    "브로슈어, 카탈로그, 리플렛 등 홍보물 제작·주문·결제·납기에 관한 자주 묻는 질문과 가이드를 확인하세요.",
+    "홍보물 제작 기간, 비용, 최소 수량, 디자인, 인쇄, 결제와 배송까지 제작 전 자주 묻는 질문과 실무 정보를 확인하세요.",
   keywords: [
     "씨브레인 FAQ",
     "홍보물 제작 가이드",
@@ -117,12 +119,12 @@ export const faqSeo = {
     "인쇄 납기",
   ],
   path: "/faq",
-  title: "FAQ & 가이드 | C-Brain",
+  title: "홍보물 제작 FAQ·가이드 | 씨브레인",
 } as const satisfies StaticPageSeoEntry;
 
 export const orderSeo = {
   description:
-    "씨브레인 홍보물 제작 가격을 확인하고 브로슈어, 카탈로그, 리플렛 등 필요한 제작물을 주문하세요.",
+    "브로슈어·카탈로그 등 홍보물 디자인부터 인쇄, 견적, 결제, 전국 배송까지 한 번에 진행하세요. 제작 문의부터 1:1 상담까지 빠르게 안내해드립니다.",
   keywords: [
     "홍보물 제작 가격",
     "브로슈어 주문",
@@ -131,12 +133,12 @@ export const orderSeo = {
     "씨브레인 주문 결제",
   ],
   path: "/order",
-  title: "주문·결제 | C-Brain",
+  title: "홍보물 제작 견적·비용 안내 | 씨브레인",
 } as const satisfies StaticPageSeoEntry;
 
 export const complaintSeo = {
   description:
-    "씨브레인 서비스 이용 중 불편했던 점을 접수하고 답변을 받을 수 있는 고객 지원 페이지입니다.",
+    "씨브레인 이용 중 불편사항이나 홍보물 제작 관련 문의를 접수해주세요. 남겨주신 의견 확인 후 신속하게 안내해드립니다.",
   keywords: [
     "씨브레인 불편 접수",
     "고객 지원",
@@ -144,7 +146,7 @@ export const complaintSeo = {
     "서비스 불편 접수",
   ],
   path: "/complaint",
-  title: "불편 접수 | C-Brain",
+  title: "고객센터·불편 접수 | 씨브레인",
 } as const satisfies StaticPageSeoEntry;
 
 export const privacyPolicySeo = {

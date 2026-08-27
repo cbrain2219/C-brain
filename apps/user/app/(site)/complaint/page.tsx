@@ -1,7 +1,10 @@
 import styles from "../../page.module.css";
 import { JsonLdScript } from "../../_components/JsonLdScript";
 import { createPageMetadata } from "../../_content/seo";
-import { createStaticPageStructuredData } from "../../_content/structured-data";
+import {
+  createComplaintBreadcrumbStructuredData,
+  createComplaintPageStructuredData,
+} from "../../_content/structured-data";
 import { ComplaintForm } from "./ComplaintForm";
 
 export const metadata = createPageMetadata("complaint");
@@ -9,11 +12,8 @@ export const metadata = createPageMetadata("complaint");
 export default function ComplaintPage() {
   return (
     <>
-      <JsonLdScript
-        data={createStaticPageStructuredData("complaint", {
-          pageType: "ContactPage",
-        })}
-      />
+      <JsonLdScript data={createComplaintPageStructuredData()} />
+      <JsonLdScript data={createComplaintBreadcrumbStructuredData()} />
       <section className={styles.complaintSection}>
         <div className={styles.complaintInner}>
           <div className={styles.complaintIntro}>

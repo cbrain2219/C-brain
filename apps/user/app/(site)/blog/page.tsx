@@ -2,7 +2,10 @@ import { PageHero } from "../../../components/PageHero";
 
 import { JsonLdScript } from "../../_components/JsonLdScript";
 import { createPageMetadata } from "../../_content/seo";
-import { createStaticPageStructuredData } from "../../_content/structured-data";
+import {
+  createBlogBreadcrumbStructuredData,
+  createBlogPageStructuredData,
+} from "../../_content/structured-data";
 import { getPublishedBlogPosts } from "../../../lib/publicContent";
 import { BlogBoard } from "./_components/BlogBoard";
 import {
@@ -27,11 +30,8 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
 
   return (
     <div className={styles.page}>
-      <JsonLdScript
-        data={createStaticPageStructuredData("blog", {
-          pageType: "Blog",
-        })}
-      />
+      <JsonLdScript data={createBlogPageStructuredData()} />
+      <JsonLdScript data={createBlogBreadcrumbStructuredData()} />
       <PageHero
         backgroundAlt="대전화병원 브로슈어 디자인 및 인쇄 제작 사례, 화이트 톤 표지와 병원 외관 사진을 활용한 내지 구성"
         backgroundClassName={styles.blogHeroBackground}

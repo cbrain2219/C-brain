@@ -11,7 +11,10 @@ import {
   reviewQuoteMarkIcon,
 } from "../../_content/customerReviews";
 import { createPageMetadata } from "../../_content/seo";
-import { createStaticPageStructuredData } from "../../_content/structured-data";
+import {
+  createReviewsBreadcrumbStructuredData,
+  createReviewsPageStructuredData,
+} from "../../_content/structured-data";
 import styles from "../../page.module.css";
 import { CustomerTestimonialList } from "./CustomerTestimonialList";
 
@@ -89,10 +92,7 @@ function FeaturedInterview({
               </p>
             </div>
           </div>
-          <span
-            aria-hidden="true"
-            className={styles.reviewsFeaturedDivider}
-          />
+          <span aria-hidden="true" className={styles.reviewsFeaturedDivider} />
         </div>
         <footer className={styles.reviewsFeaturedMeta}>
           <p>{featuredCustomerInterview.company}</p>
@@ -129,11 +129,8 @@ export default async function CustomerReviewsPage() {
 
   return (
     <>
-      <JsonLdScript
-        data={createStaticPageStructuredData("reviews", {
-          pageType: "CollectionPage",
-        })}
-      />
+      <JsonLdScript data={createReviewsPageStructuredData()} />
+      <JsonLdScript data={createReviewsBreadcrumbStructuredData()} />
       <section className={styles.reviewsPageHero}>
         <Image
           alt="씨브레인 편집디자인 팀이 고객 브로슈어 시안을 함께 검토하는 사무실 장면"

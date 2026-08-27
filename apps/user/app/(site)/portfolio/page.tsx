@@ -8,7 +8,10 @@ import {
   portfolioCategories,
 } from "../../_content/portfolio";
 import { createPageMetadata } from "../../_content/seo";
-import { createStaticPageStructuredData } from "../../_content/structured-data";
+import {
+  createPortfolioBreadcrumbStructuredData,
+  createPortfolioPageStructuredData,
+} from "../../_content/structured-data";
 import { getPublishedPortfolioItems } from "../../../lib/publicContent";
 import { PortfolioGallery } from "./PortfolioGallery";
 import styles from "./page.module.css";
@@ -34,11 +37,8 @@ export default async function PortfolioPage({
 
   return (
     <div className={styles.portfolioPage}>
-      <JsonLdScript
-        data={createStaticPageStructuredData("portfolio", {
-          pageType: "CollectionPage",
-        })}
-      />
+      <JsonLdScript data={createPortfolioPageStructuredData()} />
+      <JsonLdScript data={createPortfolioBreadcrumbStructuredData()} />
       <section className={styles.hero}>
         <Image
           alt="MBC 베이비페어 박람회 포스터 디자인 및 인쇄 제작 사례, 핑크 톤 베이비 일러스트가 돋보이는 행사 홍보물"

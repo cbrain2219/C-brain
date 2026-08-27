@@ -5,7 +5,10 @@ import { CtaSection } from "../../_components/CtaSection";
 import { JsonLdScript } from "../../_components/JsonLdScript";
 import { faqCategories } from "../../_content/faqs";
 import { createPageMetadata } from "../../_content/seo";
-import { createFaqPageStructuredData } from "../../_content/structured-data";
+import {
+  createFaqBreadcrumbStructuredData,
+  createFaqPageStructuredData,
+} from "../../_content/structured-data";
 import { FaqCategoryNavigation } from "./FaqCategoryNavigation";
 import styles from "./page.module.css";
 
@@ -32,13 +35,7 @@ const faqAccordionStyle = {
   "--accordion-divider-background": "var(--faq-page-divider-gradient)",
 } as CSSProperties;
 
-function CategoryLabel({
-  icon,
-  title,
-}: {
-  icon: string;
-  title: string;
-}) {
+function CategoryLabel({ icon, title }: { icon: string; title: string }) {
   return (
     <>
       <span aria-hidden="true">{icon}</span>
@@ -57,6 +54,7 @@ export default function FaqPage() {
   return (
     <div className={styles.faqPage} data-faq-page>
       <JsonLdScript data={createFaqPageStructuredData()} />
+      <JsonLdScript data={createFaqBreadcrumbStructuredData()} />
       <div className={styles.faqLayout}>
         <FaqCategoryNavigation
           categories={categoryNavItems}
@@ -71,8 +69,7 @@ export default function FaqPage() {
                 씨브레인 홍보물 제작 FAQ &amp; 가이드
               </h1>
               <p className={styles.heroDescription}>
-                홍보물 제작·주문·결제·납기에 관한 궁금증을 해결해
-                드립니다.
+                홍보물 제작·주문·결제·납기에 관한 궁금증을 해결해 드립니다.
               </p>
             </div>
           </section>
