@@ -368,7 +368,7 @@ test("structured data helpers centralize site, company, breadcrumb, and FAQ data
       { categoryId: "leaflet-pamphlet", startingPrice: 370000 },
       { categoryId: "poster-flyer", startingPrice: 130000 },
       { categoryId: "banner-display", startingPrice: 80000 },
-      { categoryId: "business-card-envelope", startingPrice: 90000 },
+      { categoryId: "business-card-envelope", startingPrice: 50000 },
       { categoryId: "logo", startingPrice: 50000 },
     ]);
     assert.equal(orderCatalog["@context"], "https://schema.org");
@@ -390,7 +390,7 @@ test("structured data helpers centralize site, company, breadcrumb, and FAQ data
         ["리플렛·팜플렛", 370000, "/order/leaflet"],
         ["포스터·전단지", 130000, "/order/poster"],
         ["배너·족자·현수막", 80000, "/order/banner"],
-        ["명함·봉투", 90000, "/order/business-card"],
+        ["명함·봉투", 50000, "/order/business-card"],
         ["로고", 50000, "/order/logo"],
       ].map(([name, minPrice, path]) => ({
         availability: "https://schema.org/InStock",

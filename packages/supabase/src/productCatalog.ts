@@ -47,6 +47,10 @@ export type OrderProductServiceEstimate = {
 export type OrderProductVariant = {
   estimateUnit: "페이지" | "시안";
   id: ProductVariant;
+  includedPrint: {
+    amount: number;
+    quantityLabel: string;
+  } | null;
   optionSections: readonly OrderProductOptionSection[];
   priceRowsBySelection: Readonly<
     Record<string, readonly OrderProductQuantityPrice[]>
@@ -338,6 +342,8 @@ function readVariant(
   return {
     estimateUnit: profile.estimateUnit,
     id: variantName,
+    includedPrint:
+      "includedPrint" in profile ? profile.includedPrint : null,
     optionSections,
     priceRowsBySelection,
     productSubtype,
@@ -391,7 +397,7 @@ function getStartingPrice(variants: readonly OrderProductVariant[]) {
     }
   }
 
-  const prices = quantityPrices.length > 0 ? quantityPrices : estimatePrices;
+  const prices = [...quantityPrices, ...estimatePrices];
 
   return prices.length > 0 ? Math.min(...prices) : null;
 }
@@ -545,10 +551,13 @@ export function calculateProductSelection(
     return null;
   }
 
-  const estimatedDesignAmount =
-    estimate.designPrintEstimate * estimateMultiplier;
+  const includedPrintEstimate = variant.includedPrint?.amount ?? 0;
+  const designPrintEstimate =
+    estimate.designPrintEstimate - includedPrintEstimate;
+  const estimatedDesignAmount = designPrintEstimate * estimateMultiplier;
   const designPrintAmount = estimatedDesignAmount;
-  const printAmount = quantityRow?.printAmount ?? 0;
+  const includedPrintAmount = includedPrintEstimate * estimateMultiplier;
+  const printAmount = quantityRow?.printAmount ?? includedPrintAmount;
   const planningAmount = selection.hasPlanning
     ? (estimate.planningEstimate ?? 0) * estimateMultiplier
     : 0;
@@ -556,6 +565,8 @@ export function calculateProductSelection(
 
   if (
     !isSafeAmount(estimatedDesignAmount) ||
+    !isSafeAmount(designPrintEstimate) ||
+    !isSafeAmount(includedPrintAmount) ||
     !isSafeAmount(printAmount) ||
     !isSafeAmount(planningAmount) ||
     !isSafeAmount(totalPrice)
@@ -567,12 +578,16 @@ export function calculateProductSelection(
     quantityRow && variant.quantitySection
       ? formatQuantity(quantityRow.quantity, variant.quantitySection)
       : null;
+  const printQuantityLabel =
+    quantityLabel ?? variant.includedPrint?.quantityLabel ?? null;
   const priceRows = [
     { label: "디자인비", value: designPrintAmount },
     ...(printAmount > 0
       ? [
           {
-            label: quantityLabel ? `인쇄비 (${quantityLabel})` : "인쇄비",
+            label: printQuantityLabel
+              ? `인쇄비 (${printQuantityLabel})`
+              : "인쇄비",
             value: printAmount,
           },
         ]
@@ -584,7 +599,7 @@ export function calculateProductSelection(
 
   return {
     designPrintAmount,
-    designPrintEstimate: estimate.designPrintEstimate,
+    designPrintEstimate,
     estimateMultiplier,
     optionRows: variant.optionSections.map((section) => ({
       key: section.key,

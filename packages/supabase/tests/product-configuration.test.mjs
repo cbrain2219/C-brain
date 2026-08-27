@@ -71,6 +71,10 @@ test("shared profiles preserve administrator option order and units", () => {
     ["size", "baseQuantity", "material", "thickness", "people"],
   );
   assert.deepEqual(
+    getProductUiProfile("명함 · 봉투", "명함").includedPrint,
+    { amount: 20000, quantityLabel: "200매" },
+  );
+  assert.deepEqual(
     getProductUiProfile("로고").sections.map((section) => section.key),
     ["logoType", "proposalCount"],
   );

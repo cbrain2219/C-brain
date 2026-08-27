@@ -55,6 +55,10 @@ export type ProductUiSection =
 
 export type ProductUiProfile = {
   estimateUnit: "페이지" | "시안";
+  includedPrint?: {
+    amount: number;
+    quantityLabel: string;
+  };
   sections: readonly ProductUiSection[];
   showPlanningEstimate: boolean;
 };
@@ -228,6 +232,10 @@ const hangingBannerProfile = {
 
 const businessCardProfile = {
   estimateUnit: "페이지",
+  includedPrint: {
+    amount: 20000,
+    quantityLabel: "200매",
+  },
   showPlanningEstimate: true,
   sections: [
     { key: "size", kind: "options", label: "사이즈", inputMode: "text" },

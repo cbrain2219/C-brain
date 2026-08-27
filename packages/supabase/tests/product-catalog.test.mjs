@@ -179,8 +179,48 @@ test("service-only products use people and proposal count multipliers", () => {
 
   assert.equal(
     businessCardEnvelope.startingPrice,
-    90000,
-    "the public card matches the admin list, which prioritizes quantity prices",
+    50000,
+    "the public card uses the lowest price across quantity and estimate variants",
+  );
+
+  assert.deepEqual(
+    calculateProductSelection(businessCard, {
+      hasPlanning: false,
+      optionValues: {
+        baseQuantity: "일반지 500",
+        material: "일반지",
+        people: "1",
+        size: "90x50mm",
+        thickness: "보통",
+      },
+      quantity: null,
+    }),
+    {
+      designPrintAmount: 30000,
+      designPrintEstimate: 30000,
+      estimateMultiplier: 1,
+      optionRows: [
+        { key: "size", label: "사이즈", value: "90x50mm" },
+        {
+          key: "baseQuantity",
+          label: "기본 수량",
+          value: "일반지 500장",
+        },
+        { key: "material", label: "재질", value: "일반지" },
+        { key: "thickness", label: "두께", value: "보통" },
+        { key: "people", label: "인원", value: "1명" },
+      ],
+      planningAmount: 0,
+      planningEstimate: 20000,
+      priceRows: [
+        { label: "디자인비", value: 30000 },
+        { label: "인쇄비 (200매)", value: 20000 },
+      ],
+      printAmount: 20000,
+      quantity: null,
+      quantityLabel: null,
+      totalPrice: 50000,
+    },
   );
 
   assert.equal(

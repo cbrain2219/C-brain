@@ -390,11 +390,11 @@ test("order page route, content, responsive styles, and navigation are wired", (
   assert.match(optionSelectionSource, /quantityTableScroll/);
   assert.match(
     optionSelectionSource,
-    /<span role="columnheader">인쇄 단가\(원\/단위\)<\/span>/,
+    /<span role="columnheader">인쇄단가<\/span>/,
   );
   assert.match(
     optionSelectionSource,
-    /<span role="columnheader">합계\(원\)<\/span>/,
+    /<span role="columnheader">합계<\/span>/,
   );
   assert.match(optionSelectionSource, /주문 요약/);
   assert.match(optionSelectionSource, /mobilePaymentBar/);

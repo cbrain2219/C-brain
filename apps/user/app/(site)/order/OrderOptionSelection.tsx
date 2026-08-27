@@ -344,8 +344,8 @@ export function OrderOptionSelection({
                   <div className={styles.quantityTableHeader} role="row">
                     <span role="columnheader">선택</span>
                     <span role="columnheader">수량</span>
-                    <span role="columnheader">인쇄 단가(원/단위)</span>
-                    <span role="columnheader">합계(원)</span>
+                    <span role="columnheader">인쇄단가</span>
+                    <span role="columnheader">합계</span>
                   </div>
                   <div className={styles.quantityTableBody}>
                     {quantityRows.map((quantityRow) => {
