@@ -1,7 +1,7 @@
 "use client";
 
 import type { OrderProductCatalogItem } from "@repo/supabase/product-catalog";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 
 import { Icon } from "../../../components/Icon";
 import { ServiceCards } from "../../_components/ServiceCards";
@@ -9,6 +9,7 @@ import {
   type OrderSelectionSummary,
   type OrderStepId,
 } from "../../_content/order";
+import type { FixedQuoteService } from "../../_content/quoteServices";
 import type { ServiceItem } from "../../_content/services";
 import { OrderConsultDialog } from "./OrderConsultDialog";
 import {
@@ -21,14 +22,18 @@ import { OrderProgress } from "./OrderProgress";
 import styles from "./page.module.css";
 
 type OrderFlowSectionProps = {
+  isConsultDialogOpen: boolean;
   isPaymentSubmitting: boolean;
   onCategoryReset: () => void;
+  onConsult: () => void;
+  onConsultDialogClose: () => void;
   onCustomerInfoStart: (summary: OrderSelectionSummary) => void;
   onDirectServiceSelect: (service: ServiceItem) => void;
   onOptionBack: () => void;
   onPaymentSubmit?: (
     payload: OrderPaymentSubmitPayload,
   ) => Promise<void> | void;
+  onQuoteServiceSelect: (service: FixedQuoteService) => void;
   orderStep: OrderStepId;
   selectedDirectProduct: OrderProductCatalogItem | null;
   selectedDirectService: ServiceItem | null;
@@ -37,22 +42,24 @@ type OrderFlowSectionProps = {
 };
 
 export function OrderFlowSection({
+  isConsultDialogOpen,
   isPaymentSubmitting,
   onCategoryReset,
+  onConsult,
+  onConsultDialogClose,
   onCustomerInfoStart,
   onDirectServiceSelect,
   onOptionBack,
   onPaymentSubmit,
+  onQuoteServiceSelect,
   orderStep,
   selectedDirectProduct,
   selectedDirectService,
   selectedOrderSummary,
   services,
 }: OrderFlowSectionProps) {
-  const [isConsultDialogOpen, setIsConsultDialogOpen] = useState(false);
   const orderFlowRef = useRef<HTMLElement>(null);
   const optionHeaderRef = useRef<HTMLDivElement>(null);
-  const openConsultDialog = () => setIsConsultDialogOpen(true);
   const isCustomerStep =
     orderStep === "customer" && selectedOrderSummary !== null;
   const activeStepIndex = isCustomerStep ? 2 : selectedDirectService ? 1 : 0;
@@ -136,7 +143,7 @@ export function OrderFlowSection({
           ) : (
             <OrderOptionSelection
               key={selectedDirectService.id}
-              onConsult={openConsultDialog}
+              onConsult={onConsult}
               onPaymentStart={onCustomerInfoStart}
               product={selectedDirectProduct}
               service={selectedDirectService}
@@ -144,7 +151,7 @@ export function OrderFlowSection({
           )
         ) : (
           <div className={styles.categoryStep}>
-            <OrderMethodSelector onQuoteSelect={openConsultDialog} />
+            <OrderMethodSelector onQuoteSelect={onConsult} />
 
             <div className={styles.productSection}>
               <div className={styles.productSectionHeader}>
@@ -153,7 +160,7 @@ export function OrderFlowSection({
 
               <ServiceCards
                 onDirectServiceSelect={onDirectServiceSelect}
-                onQuoteServiceSelect={openConsultDialog}
+                onQuoteServiceSelect={onQuoteServiceSelect}
                 services={services}
               />
             </div>
@@ -163,7 +170,7 @@ export function OrderFlowSection({
 
       <OrderConsultDialog
         isOpen={isConsultDialogOpen}
-        onClose={() => setIsConsultDialogOpen(false)}
+        onClose={onConsultDialogClose}
       />
     </section>
   );

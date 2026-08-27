@@ -2,13 +2,15 @@
 
 import { ButtonLink } from "@repo/ui/button";
 import Link from "next/link";
-import { type CSSProperties, useState } from "react";
+import { type CSSProperties } from "react";
 
 import { Icon } from "../../components/Icon";
 import { SectionLayout } from "../../components/SectionLayout";
-import { OrderConsultDialog } from "../(site)/order/OrderConsultDialog";
 import { KAKAO_CHANNEL_URL } from "../_content/contact";
-import { getOrderDirectServiceHref } from "../_content/order";
+import {
+  getOrderCategoryHref,
+  getOrderDirectServiceHref,
+} from "../_content/order";
 import { fixedQuoteServices } from "../_content/quoteServices";
 import type { ServiceItem } from "../_content/services";
 import styles from "../page.module.css";
@@ -51,8 +53,6 @@ type ServicesSectionProps = {
 };
 
 export function ServicesSection({ services }: ServicesSectionProps) {
-  const [isConsultDialogOpen, setIsConsultDialogOpen] = useState(false);
-
   return (
     <>
       <SectionLayout
@@ -94,12 +94,11 @@ export function ServicesSection({ services }: ServicesSectionProps) {
             ))}
 
             {fixedQuoteServices.map((service) => (
-              <button
-                aria-label={`${service.title} 견적 후 주문 상담 팝업 열기`}
+              <Link
+                aria-label={`${service.title} 견적 후 주문 상담으로 이동`}
                 className={`${styles.serviceCard} ${styles.serviceCardClickable}`}
+                href={getOrderCategoryHref(service.id)}
                 key={service.id}
-                onClick={() => setIsConsultDialogOpen(true)}
-                type="button"
               >
                 <div className={styles.serviceContent}>
                   <span
@@ -120,7 +119,7 @@ export function ServicesSection({ services }: ServicesSectionProps) {
                     <Icon name="arrow-right" size={16} />
                   </span>
                 </div>
-              </button>
+              </Link>
             ))}
 
             <article className={styles.serviceConsultCard}>
@@ -159,10 +158,6 @@ export function ServicesSection({ services }: ServicesSectionProps) {
           </div>
         </div>
       </SectionLayout>
-      <OrderConsultDialog
-        isOpen={isConsultDialogOpen}
-        onClose={() => setIsConsultDialogOpen(false)}
-      />
     </>
   );
 }

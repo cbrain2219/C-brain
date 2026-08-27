@@ -46,6 +46,21 @@ export type PortfolioSeo = {
 
 export const portfolioCategories = sharedPortfolioCategories;
 
+export const portfolioCategorySlugs = {
+  "banner-display": "banner",
+  "brochure-catalog": "brochure",
+  "business-card-envelope": "business-card",
+  "leaflet-pamphlet": "leaflet",
+  logo: "logo",
+  other: "custom",
+  "package-shopping-bag": "package",
+  "photo-shoot": "photo",
+  "poster-flyer": "poster",
+} as const satisfies Record<PortfolioCategoryId, string>;
+
+export type PortfolioCategorySlug =
+  (typeof portfolioCategorySlugs)[PortfolioCategoryId];
+
 export const landingPortfolioCategorySearchParam = "portfolioCategory";
 
 export type PortfolioListHref =
@@ -56,9 +71,12 @@ export type PortfolioListHref =
 
 export type PortfolioDetailSource = "landing";
 
+export type PortfolioDetailPath =
+  `/portfolio/${PortfolioCategorySlug}/${string}`;
+
 export type PortfolioDetailHref =
-  | `/portfolio/${string}?category=${PortfolioCategoryId}`
-  | `/portfolio/${string}?category=${PortfolioCategoryId}&from=${PortfolioDetailSource}`;
+  | PortfolioDetailPath
+  | `${PortfolioDetailPath}?from=${PortfolioDetailSource}`;
 
 type PortfolioAssetUrlResolver = (path: string) => string;
 
@@ -216,6 +234,20 @@ export function getPortfolioCategoryLabel(
   return getSharedPortfolioCategoryLabel(categoryId);
 }
 
+export function getPortfolioCategorySlug(
+  categoryId: PortfolioCategoryId,
+): PortfolioCategorySlug {
+  return portfolioCategorySlugs[categoryId];
+}
+
+export function getPortfolioCategoryIdFromSlug(
+  value: string,
+): PortfolioCategoryId | undefined {
+  return portfolioCategories.find(
+    (category) => portfolioCategorySlugs[category.id] === value,
+  )?.id;
+}
+
 export function getPortfolioDetailSourceFromValue(
   value: string | string[] | undefined,
 ): PortfolioDetailSource | undefined {
@@ -241,14 +273,17 @@ export function getPortfolioListHref(
 
 export function getPortfolioDetailHref(
   item: PortfolioItem,
-  categoryId: PortfolioCategoryId = item.categoryId,
   source?: PortfolioDetailSource,
 ): PortfolioDetailHref {
-  if (source === "landing") {
-    return `/portfolio/${item.slug}?category=${categoryId}&from=${source}`;
-  }
+  const path = getPortfolioDetailPath(item);
 
-  return `/portfolio/${item.slug}?category=${categoryId}`;
+  return source === "landing" ? `${path}?from=${source}` : path;
+}
+
+export function getPortfolioDetailPath(
+  item: Pick<PortfolioItem, "categoryId" | "slug">,
+): PortfolioDetailPath {
+  return `/portfolio/${getPortfolioCategorySlug(item.categoryId)}/${item.slug}`;
 }
 
 export function getPortfolioItemBySlug(

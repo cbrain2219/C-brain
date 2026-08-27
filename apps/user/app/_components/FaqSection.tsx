@@ -44,7 +44,7 @@ export function FaqSection({
   description = "주문 · 납기 · 디자인에 관해 자주 묻는 질문을 모았습니다.",
   id = "faq",
   items,
-  moreHref = "/faq",
+  moreHref = "/faq-guide",
   moreLabel = "더 많은 FAQ 보기",
   title = "홍보물 제작, 궁금한 점이 있으신가요?",
 }: FaqSectionProps) {

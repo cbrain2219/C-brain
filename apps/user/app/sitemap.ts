@@ -3,6 +3,11 @@ import type { MetadataRoute } from "next";
 import { getNoticePageData } from "./(site)/notice/_data/notices";
 import { getCustomerReviewPageData } from "./_content/customerReviews";
 import {
+  getOrderCategoryHref,
+  orderCategories,
+} from "./_content/order";
+import { getPortfolioDetailPath } from "./_content/portfolio";
+import {
   createSitemapEntries,
   type SitemapDynamicRoute,
 } from "./_content/sitemap";
@@ -22,8 +27,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ]);
   const portfolioRoutes = items.map((item) => ({
     changeFrequency: "monthly",
-    path: `/portfolio/${item.slug}`,
+    path: getPortfolioDetailPath(item),
     priority: 0.7,
+  })) satisfies SitemapDynamicRoute[];
+  const orderCategoryRoutes = orderCategories.map((category) => ({
+    changeFrequency: "monthly",
+    path: getOrderCategoryHref(category.id),
+    priority: 0.75,
   })) satisfies SitemapDynamicRoute[];
   const blogRoutes = posts.map((post) => ({
     changeFrequency: "monthly",
@@ -40,11 +50,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const reviewRoutes = reviewPageData.customerInterviews.map((interview) => ({
     changeFrequency: "monthly",
     lastModified: interview.publishedAt,
-    path: `/reviews/${interview.detailSlug}`,
+    path: `/customer-review/${interview.detailSlug}`,
     priority: 0.6,
   })) satisfies SitemapDynamicRoute[];
 
   return createSitemapEntries([
+    ...orderCategoryRoutes,
     ...portfolioRoutes,
     ...blogRoutes,
     ...reviewRoutes,

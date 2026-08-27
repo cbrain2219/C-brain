@@ -7,11 +7,11 @@ const contentPath = new URL(
   import.meta.url,
 );
 const detailPagePath = new URL(
-  "../app/(site)/reviews/[slug]/page.tsx",
+  "../app/(site)/customer-review/[slug]/page.tsx",
   import.meta.url,
 );
 const detailStylesPath = new URL(
-  "../app/(site)/reviews/[slug]/page.module.css",
+  "../app/(site)/customer-review/[slug]/page.module.css",
   import.meta.url,
 );
 const thumbnailPath = new URL(
@@ -138,7 +138,7 @@ test("customer review detail page keeps semantic article markup and admin video 
   );
   assert.match(
     source,
-    /<Link className=\{styles\.backLink\} href="\/reviews">/,
+    /<Link className=\{styles\.backLink\} href="\/customer-review">/,
   );
 });
 

@@ -54,6 +54,10 @@ const countMatches = (source, pattern) => source.match(pattern)?.length ?? 0;
 
 test("order page route, content, responsive styles, and navigation are wired", () => {
   const routePath = "apps/user/app/(site)/order/page.tsx";
+  const categoryRoutePath =
+    "apps/user/app/(site)/order/[category]/page.tsx";
+  const pageContentPath =
+    "apps/user/app/(site)/order/OrderPageContent.tsx";
   const clientPath = "apps/user/app/(site)/order/OrderPageClient.tsx";
   const flowSectionPath = "apps/user/app/(site)/order/OrderFlowSection.tsx";
   const progressPath = "apps/user/app/(site)/order/OrderProgress.tsx";
@@ -69,6 +73,8 @@ test("order page route, content, responsive styles, and navigation are wired", (
   const contactPath = "apps/user/app/_content/contact.ts";
 
   assert.equal(existsSync(path.join(repoRoot, routePath)), true);
+  assert.equal(existsSync(path.join(repoRoot, categoryRoutePath)), true);
+  assert.equal(existsSync(path.join(repoRoot, pageContentPath)), true);
   assert.equal(existsSync(path.join(repoRoot, clientPath)), true);
   assert.equal(existsSync(path.join(repoRoot, flowSectionPath)), true);
   assert.equal(existsSync(path.join(repoRoot, progressPath)), true);
@@ -81,6 +87,8 @@ test("order page route, content, responsive styles, and navigation are wired", (
   assert.equal(existsSync(path.join(repoRoot, contactPath)), true);
 
   const serverRouteSource = read(routePath);
+  const categoryRouteSource = read(categoryRoutePath);
+  const pageContentSource = read(pageContentPath);
   const routeSource = read(clientPath);
   const flowSectionSource = read(flowSectionPath);
   const progressSource = read(progressPath);
@@ -148,9 +156,21 @@ test("order page route, content, responsive styles, and navigation are wired", (
   assert.match(chevronRightIconSource, /strokeWidth="1\.5"/);
   assert.match(iconSource, /"chevron-right": ChevronRightIcon/);
 
-  assert.match(serverRouteSource, /export default async function OrderPage/);
-  assert.match(serverRouteSource, /await getPublishedOrderProducts\(\)/);
-  assert.match(serverRouteSource, /services=\{createServiceItems\(products\)\}/);
+  assert.match(serverRouteSource, /<OrderPageContent \/>/);
+  assert.match(pageContentSource, /export async function OrderPageContent/);
+  assert.match(pageContentSource, /await getPublishedOrderProducts\(\)/);
+  assert.match(
+    pageContentSource,
+    /services=\{createServiceItems\(products\)\}/,
+  );
+  assert.match(categoryRouteSource, /params: Promise<\{/);
+  assert.match(categoryRouteSource, /getOrderCategoryBySlug\(categorySlug\)/);
+  assert.match(categoryRouteSource, /if \(!category\) notFound\(\)/);
+  assert.match(
+    categoryRouteSource,
+    /<OrderPageContent initialCategoryId=\{category\.id\} \/>/,
+  );
+  assert.match(categoryRouteSource, /alternates: \{ canonical: canonicalUrl \}/);
   assert.match(routeSource, /export function OrderPageClient/);
   assert.match(routeSource, /"use client"/);
   assert.match(routeSource, /useEffect/);
@@ -165,13 +185,18 @@ test("order page route, content, responsive styles, and navigation are wired", (
   assert.match(routeSource, /window\.history\.back\(\)/);
   assert.match(routeSource, /restoreOrderHistoryEntry/);
   assert.match(routeSource, /getDirectServiceItemById/);
-  assert.match(routeSource, /orderServiceSearchParam/);
-  assert.doesNotMatch(routeSource, /orderConsultSearchParam/);
-  assert.doesNotMatch(routeSource, /orderQuoteConsultSearchValue/);
-  assert.match(routeSource, /new URLSearchParams\(window\.location\.search\)/);
-  assert.match(routeSource, /searchParams\.get\(orderServiceSearchParam\)/);
-  assert.match(routeSource, /pushOrderHistoryEntry\(optionEntry, initialService\.id\)/);
+  assert.match(routeSource, /getOrderCategoryHref/);
+  assert.match(routeSource, /getFixedQuoteServiceById/);
+  assert.match(routeSource, /initialCategoryId\?: OrderCategoryId/);
+  assert.doesNotMatch(routeSource, /orderServiceSearchParam/);
+  assert.doesNotMatch(routeSource, /new URLSearchParams/);
+  assert.match(
+    routeSource,
+    /replaceOrderHistoryEntry\(optionEntry, initialService\.id\)/,
+  );
+  assert.match(routeSource, /replaceOrderHistoryEntry\(quoteEntry, initialQuoteService\.id\)/);
   assert.match(routeSource, /restoreOrderHistoryEntry\(optionEntry\)/);
+  assert.match(routeSource, /restoreOrderHistoryEntry\(quoteEntry\)/);
   assert.match(routeSource, /setOrderStep\("option"\)/);
   assert.match(routeSource, /OrderPaymentSubmitPayload/);
   assert.match(routeSource, /handlePaymentSubmit/);
@@ -197,9 +222,19 @@ test("order page route, content, responsive styles, and navigation are wired", (
   assert.match(routeSource, /<OrderFlowSection/);
   assert.doesNotMatch(routeSource, /openConsultDialogOnMount=/);
   assert.match(routeSource, /selectedDirectService=\{selectedDirectService\}/);
+  assert.match(routeSource, /isConsultDialogOpen=\{isConsultDialogOpen\}/);
+  assert.match(routeSource, /onConsult=\{handleConsultStart\}/);
+  assert.match(
+    routeSource,
+    /onConsultDialogClose=\{handleConsultDialogClose\}/,
+  );
   assert.match(
     routeSource,
     /onDirectServiceSelect=\{handleDirectServiceSelect\}/,
+  );
+  assert.match(
+    routeSource,
+    /onQuoteServiceSelect=\{handleQuoteServiceSelect\}/,
   );
   assert.match(routeSource, /onCategoryReset=\{handleCategoryReset\}/);
   assert.match(routeSource, /orderStep=\{orderStep\}/);
@@ -237,6 +272,13 @@ test("order page route, content, responsive styles, and navigation are wired", (
     flowSectionSource,
     /onDirectServiceSelect:\s*\(service:\s*ServiceItem\) => void/,
   );
+  assert.match(flowSectionSource, /isConsultDialogOpen:\s*boolean/);
+  assert.match(flowSectionSource, /onConsult:\s*\(\) => void/);
+  assert.match(flowSectionSource, /onConsultDialogClose:\s*\(\) => void/);
+  assert.match(
+    flowSectionSource,
+    /onQuoteServiceSelect:\s*\(service:\s*FixedQuoteService\) => void/,
+  );
   assert.match(flowSectionSource, /onCategoryReset:\s*\(\) => void/);
   assert.match(flowSectionSource, /import \{ OrderMethodSelector \}/);
   assert.match(flowSectionSource, /import \{ OrderOptionSelection \}/);
@@ -260,7 +302,7 @@ test("order page route, content, responsive styles, and navigation are wired", (
   assert.match(flowSectionSource, /<OrderMethodSelector onQuoteSelect=/);
   assert.match(flowSectionSource, /selectedDirectService/);
   assert.doesNotMatch(flowSectionSource, /openConsultDialogOnMount/);
-  assert.match(flowSectionSource, /setIsConsultDialogOpen\(true\)/);
+  assert.doesNotMatch(flowSectionSource, /setIsConsultDialogOpen/);
   assert.match(flowSectionSource, /orderStep === "customer"/);
   assert.match(
     flowSectionSource,
@@ -299,12 +341,12 @@ test("order page route, content, responsive styles, and navigation are wired", (
     flowSectionSource,
     /onDirectServiceSelect=\{onDirectServiceSelect\}/,
   );
-  assert.match(flowSectionSource, /onQuoteServiceSelect=\{openConsultDialog\}/);
-  assert.match(flowSectionSource, /setIsConsultDialogOpen\(true\)/);
+  assert.match(flowSectionSource, /onQuoteServiceSelect=\{onQuoteServiceSelect\}/);
   assert.match(
     flowSectionSource,
-    /onClose=\{\(\) => setIsConsultDialogOpen\(false\)\}/,
+    /onClose=\{onConsultDialogClose\}/,
   );
+  assert.match(flowSectionSource, /<OrderMethodSelector onQuoteSelect=\{onConsult\} \/>/);
   assert.match(methodSelectorSource, /"use client"/);
   assert.match(methodSelectorSource, /useState/);
   assert.match(methodSelectorSource, /onQuoteSelect\?: \(\) => void/);
@@ -1008,17 +1050,29 @@ test("order page route, content, responsive styles, and navigation are wired", (
   assert.match(contentSource, /quotedTotal:\s*number/);
   assert.match(contentSource, /variant:\s*ProductVariant/);
   assert.match(contentSource, /export const formatOrderCurrency/);
-  assert.match(
-    contentSource,
-    /export const orderServiceSearchParam = "service"/,
-  );
-  assert.doesNotMatch(contentSource, /export const orderConsultSearchParam/);
-  assert.doesNotMatch(
-    contentSource,
-    /export const orderQuoteConsultSearchValue/,
-  );
+  assert.doesNotMatch(contentSource, /orderServiceSearchParam/);
+  assert.match(contentSource, /export const orderCategories = \[/);
+  for (const [categoryId, categorySlug] of [
+    ["brochure-catalog", "brochure"],
+    ["leaflet-pamphlet", "leaflet"],
+    ["poster-flyer", "poster"],
+    ["banner-display", "banner"],
+    ["business-card-envelope", "business-card"],
+    ["logo", "logo"],
+    ["package-shopping-bag", "package"],
+    ["photo-shoot", "photo"],
+    ["etc", "custom"],
+  ]) {
+    assert.match(
+      contentSource,
+      new RegExp(
+        `id: "${categoryId}"[\\s\\S]*?slug: "${categorySlug}"`,
+      ),
+    );
+  }
+  assert.match(contentSource, /export function getOrderCategoryBySlug/);
+  assert.match(contentSource, /export function getOrderCategoryHref/);
   assert.match(contentSource, /export const getOrderDirectServiceHref/);
-  assert.doesNotMatch(contentSource, /export const getOrderQuoteConsultHref/);
   assert.doesNotMatch(contentSource, /orderOptionCatalog|unit_prices/);
   assert.match(servicesSource, /export function createServiceItems/);
   assert.match(servicesSource, /products\.map\(\(product\) =>/);
@@ -1034,6 +1088,7 @@ test("order page route, content, responsive styles, and navigation are wired", (
     quoteServicesSource,
     /export const fixedQuoteServices = \[[\s\S]*?title: "패키지 · 쇼핑백"[\s\S]*?title: "촬영"[\s\S]*?title: "기타"/,
   );
+  assert.match(quoteServicesSource, /export function getFixedQuoteServiceById/);
   assert.match(serviceCardsSource, /import \{[\s\S]*fixedQuoteServices/);
   assert.match(
     serviceCardsSource,

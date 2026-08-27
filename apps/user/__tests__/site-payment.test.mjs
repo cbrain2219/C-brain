@@ -8,7 +8,10 @@ const checkoutRoutePath = new URL(
   import.meta.url,
 );
 const paymentPath = new URL("../app/(site)/order/payment.ts", import.meta.url);
-const orderPagePath = new URL("../app/(site)/order/page.tsx", import.meta.url);
+const orderPagePath = new URL(
+  "../app/(site)/order/OrderPageContent.tsx",
+  import.meta.url,
+);
 const orderPageClientPath = new URL(
   "../app/(site)/order/OrderPageClient.tsx",
   import.meta.url,

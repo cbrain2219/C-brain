@@ -10,7 +10,7 @@ import { NextResponse } from "next/server";
 import {
   parseComplaintSubmission,
   toComplaintInput,
-} from "../../(site)/complaint/complaintSubmission";
+} from "../../(site)/report/complaintSubmission";
 import { sendComplaintAlimtalk } from "../../../lib/complaintAlimtalk";
 
 export const runtime = "nodejs";

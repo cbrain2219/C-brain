@@ -69,8 +69,16 @@ test("the server route validates input and records views with the server-only cl
 test("all viewable public detail pages mount the shared tracker", async () => {
   const detailPages = [
     ["../app/(site)/blog/[slug]/page.tsx", "post.id", "blog"],
-    ["../app/(site)/portfolio/[slug]/page.tsx", "item.id", "portfolio"],
-    ["../app/(site)/reviews/[slug]/page.tsx", "detail.id", "interview"],
+    [
+      "../app/(site)/portfolio/[category]/[slug]/page.tsx",
+      "item.id",
+      "portfolio",
+    ],
+    [
+      "../app/(site)/customer-review/[slug]/page.tsx",
+      "detail.id",
+      "interview",
+    ],
   ];
 
   for (const [path, idExpression, contentType] of detailPages) {

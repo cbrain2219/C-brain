@@ -50,7 +50,7 @@ export async function generateMetadata({
   const seo = getCustomerInterviewDetailSeo(detail);
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
   const canonicalUrl = siteUrl
-    ? new URL(`/reviews/${detail.slug}`, siteUrl)
+    ? new URL(`/customer-review/${detail.slug}`, siteUrl)
     : undefined;
   const socialImage = siteUrl
     ? {
@@ -149,7 +149,7 @@ export default async function CustomerReviewDetailPage({
           headline: detail.title,
           imagePath: detail.thumbnail,
           section: detail.category,
-          urlPath: `/reviews/${detail.slug}`,
+          urlPath: `/customer-review/${detail.slug}`,
           video: videoStructuredData,
         })}
       />
@@ -280,7 +280,7 @@ export default async function CustomerReviewDetailPage({
           aria-label="고객후기 상세 페이지 이동"
           className={styles.reviewDetailNavigation}
         >
-          <Link className={styles.backLink} href="/reviews">
+          <Link className={styles.backLink} href="/customer-review">
             목록으로
           </Link>
         </nav>

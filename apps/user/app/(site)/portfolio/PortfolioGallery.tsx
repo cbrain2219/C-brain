@@ -182,7 +182,7 @@ export function PortfolioGallery({
                   <Link
                     aria-label={`${item.client} ${item.title} 상세 보기`}
                     className={styles.portfolioCard}
-                    href={getPortfolioDetailHref(item, activeCategoryId)}
+                    href={getPortfolioDetailHref(item)}
                     onClick={handlePortfolioCardClick}
                   >
                     <figure className={styles.portfolioFigure}>

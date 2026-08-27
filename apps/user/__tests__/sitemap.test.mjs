@@ -30,7 +30,7 @@ test("sitemap helper lists public pages and excludes private payment routes", as
       },
       {
         changeFrequency: "monthly",
-        path: "/portfolio/shinlim-product-catalog",
+        path: "/portfolio/brochure/shinlim-product-catalog",
         priority: 0.7,
       },
       {
@@ -61,12 +61,15 @@ test("sitemap helper lists public pages and excludes private payment routes", as
     assert.equal(entries[0].changeFrequency, "weekly");
     assert.ok(paths.includes("/about"));
     assert.ok(paths.includes("/portfolio"));
+    assert.ok(paths.includes("/customer-review"));
+    assert.ok(paths.includes("/faq-guide"));
+    assert.ok(paths.includes("/report"));
     assert.ok(paths.includes("/order"));
     assert.ok(paths.includes("/privacy-policy"));
     assert.ok(paths.includes("/terms"));
     assert.ok(paths.includes("/refund-policy"));
     assert.ok(paths.includes("/blog/brand-color-printing"));
-    assert.ok(paths.includes("/portfolio/shinlim-product-catalog"));
+    assert.ok(paths.includes("/portfolio/brochure/shinlim-product-catalog"));
     assert.equal(
       paths.filter((path) => path === "/blog/brand-color-printing").length,
       1,
@@ -77,6 +80,9 @@ test("sitemap helper lists public pages and excludes private payment routes", as
     );
     assert.ok(!paths.includes("/order/success"));
     assert.ok(!paths.includes("/order/fail"));
+    assert.ok(!paths.includes("/reviews"));
+    assert.ok(!paths.includes("/faq"));
+    assert.ok(!paths.includes("/complaint"));
     assert.ok(!paths.some((path) => path.startsWith("/linkpay/")));
   `;
 
@@ -102,12 +108,18 @@ test("Next sitemap route assembles public dynamic detail groups", async () => {
   assert.match(source, /getPublishedBlogPosts/);
   assert.match(source, /getPublishedPortfolioItems/);
   assert.match(source, /Promise\.all/);
+  assert.match(source, /orderCategories\.map/);
+  assert.match(source, /path: getOrderCategoryHref\(category\.id\)/);
   assert.match(source, /posts\.map/);
   assert.match(source, /path: `\/blog\/\$\{post\.slug\}`/);
   assert.match(source, /items\.map/);
-  assert.match(source, /path: `\/portfolio\/\$\{item\.slug\}`/);
+  assert.match(source, /getPortfolioDetailPath/);
+  assert.match(source, /path: getPortfolioDetailPath\(item\)/);
   assert.match(source, /customerInterviews\.map/);
-  assert.match(source, /path: `\/reviews\/\$\{interview\.detailSlug\}`/);
+  assert.match(
+    source,
+    /path: `\/customer-review\/\$\{interview\.detailSlug\}`/,
+  );
   assert.match(source, /getNoticePageData\("all"\)/);
   assert.match(source, /path: `\/notice\/\$\{notice\.id\}`/);
   assert.doesNotMatch(source, /@repo\/supabase/);

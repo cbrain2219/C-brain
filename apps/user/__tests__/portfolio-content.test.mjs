@@ -14,12 +14,17 @@ test("portfolio DB rows preserve content, database order, and valid images", asy
     import assert from "node:assert/strict";
     const portfolio = await import(${JSON.stringify(portfolioModuleUrl)});
     const {
+      getPortfolioCategoryIdFromSlug,
       getPortfolioDetailBySlug,
       getPortfolioCategoryIdFromValue,
+      getPortfolioCategorySlug,
+      getPortfolioDetailHref,
+      getPortfolioDetailPath,
       getPortfolioItemBySlug,
       getRelatedPortfolioItems,
       mapPortfolioRows,
       parsePortfolioImages,
+      portfolioCategorySlugs,
     } = portfolio;
 
     assert.equal("portfolioItems" in portfolio, false);
@@ -71,6 +76,36 @@ test("portfolio DB rows preserve content, database order, and valid images", asy
     assert.equal(items[1].showOnLanding, true);
     assert.equal(items[0].categoryId, "leaflet-pamphlet");
     assert.equal(getPortfolioCategoryIdFromValue("banner-book"), "banner-display");
+
+    const expectedCategorySlugs = {
+      "banner-display": "banner",
+      "brochure-catalog": "brochure",
+      "business-card-envelope": "business-card",
+      "leaflet-pamphlet": "leaflet",
+      logo: "logo",
+      other: "custom",
+      "package-shopping-bag": "package",
+      "photo-shoot": "photo",
+      "poster-flyer": "poster",
+    };
+
+    assert.deepEqual(portfolioCategorySlugs, expectedCategorySlugs);
+    for (const [categoryId, categorySlug] of Object.entries(expectedCategorySlugs)) {
+      assert.equal(getPortfolioCategorySlug(categoryId), categorySlug);
+      assert.equal(getPortfolioCategoryIdFromSlug(categorySlug), categoryId);
+      assert.equal(
+        getPortfolioDetailPath({ categoryId, slug: "sample-work" }),
+        "/portfolio/" + categorySlug + "/sample-work",
+      );
+    }
+    assert.equal(getPortfolioCategoryIdFromSlug("unknown"), undefined);
+    assert.equal(
+      getPortfolioDetailHref(
+        { categoryId: "brochure-catalog", slug: "sample-work" },
+        "landing",
+      ),
+      "/portfolio/brochure/sample-work?from=landing",
+    );
     assert.equal(items[0].description, "안전한 & 본문");
     assert.doesNotMatch(items[0].description, /<|alert/);
     assert.equal(items[1].description, "고정 본문\\n\\n강조와 링크\\n\\n목록 항목");
@@ -121,19 +156,20 @@ test("portfolio DB rows preserve content, database order, and valid images", asy
 
     assert.deepEqual(malformed, []);
 
-    const unsupportedCategory = mapPortfolioRows([{
-      client_name: "지원 외 기업",
+    const photoCategory = mapPortfolioRows([{
+      client_name: "촬영 기업",
       content: "본문",
       content_mode: "markdown",
-      images: [{ alt: "", path: "portfolio/unsupported.webp" }],
+      images: [{ alt: "", path: "portfolio/photo.webp" }],
       pinned: false,
       show_on_landing: false,
-      slug: "unsupported-category",
-      title: "지원 외 유형",
+      slug: "photo-work",
+      title: "촬영 작업",
       type: "촬영",
     }], (path) => path);
 
-    assert.deepEqual(unsupportedCategory, []);
+    assert.equal(photoCategory[0].categoryId, "photo-shoot");
+    assert.equal(getPortfolioDetailPath(photoCategory[0]), "/portfolio/photo/photo-work");
 
     const remoteOnly = mapPortfolioRows([{
       client_name: "외부 이미지 기업",

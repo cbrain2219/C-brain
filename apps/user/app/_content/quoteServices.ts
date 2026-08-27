@@ -1,9 +1,10 @@
 import type { IconName } from "../../components/Icon";
+import type { OrderQuoteCategoryId } from "./order";
 
 export type FixedQuoteService = {
   description: string;
   icon: IconName;
-  id: string;
+  id: OrderQuoteCategoryId;
   isQuote: true;
   title: string;
 };
@@ -32,3 +33,11 @@ export const fixedQuoteServices = [
     isQuote: true,
   },
 ] as const satisfies readonly FixedQuoteService[];
+
+export function getFixedQuoteServiceById(
+  serviceId: string | null | undefined,
+): FixedQuoteService | undefined {
+  if (!serviceId) return undefined;
+
+  return fixedQuoteServices.find((service) => service.id === serviceId);
+}

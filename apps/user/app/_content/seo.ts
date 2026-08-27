@@ -77,7 +77,7 @@ export const reviewsSeo = {
     "홍보물 디자인 후기",
     "편집디자인 후기",
   ],
-  path: "/reviews",
+  path: "/customer-review",
   title: "홍보물 제작 고객후기·리뷰 | 씨브레인",
 } as const satisfies StaticPageSeoEntry;
 
@@ -118,7 +118,7 @@ export const faqSeo = {
     "카탈로그 주문",
     "인쇄 납기",
   ],
-  path: "/faq",
+  path: "/faq-guide",
   title: "홍보물 제작 FAQ·가이드 | 씨브레인",
 } as const satisfies StaticPageSeoEntry;
 
@@ -145,7 +145,7 @@ export const complaintSeo = {
     "문의 접수",
     "서비스 불편 접수",
   ],
-  path: "/complaint",
+  path: "/report",
   title: "고객센터·불편 접수 | 씨브레인",
 } as const satisfies StaticPageSeoEntry;
 

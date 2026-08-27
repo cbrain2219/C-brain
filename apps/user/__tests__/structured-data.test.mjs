@@ -22,11 +22,11 @@ const structuredDataPath = new URL(
 const staticPageSources = {
   about: new URL("../app/(site)/about/page.tsx", import.meta.url),
   blog: new URL("../app/(site)/blog/page.tsx", import.meta.url),
-  complaint: new URL("../app/(site)/complaint/page.tsx", import.meta.url),
-  faq: new URL("../app/(site)/faq/page.tsx", import.meta.url),
+  complaint: new URL("../app/(site)/report/page.tsx", import.meta.url),
+  faq: new URL("../app/(site)/faq-guide/page.tsx", import.meta.url),
   home: new URL("../app/(site)/page.tsx", import.meta.url),
   notice: new URL("../app/(site)/notice/page.tsx", import.meta.url),
-  order: new URL("../app/(site)/order/page.tsx", import.meta.url),
+  order: new URL("../app/(site)/order/OrderPageContent.tsx", import.meta.url),
   portfolio: new URL("../app/(site)/portfolio/page.tsx", import.meta.url),
   privacyCollection: new URL(
     "../app/(site)/privacy-collection/page.tsx",
@@ -40,7 +40,7 @@ const staticPageSources = {
     "../app/(site)/refund-policy/page.tsx",
     import.meta.url,
   ),
-  reviews: new URL("../app/(site)/reviews/page.tsx", import.meta.url),
+  reviews: new URL("../app/(site)/customer-review/page.tsx", import.meta.url),
   terms: new URL("../app/(site)/terms/page.tsx", import.meta.url),
 };
 
@@ -48,10 +48,13 @@ const detailPageSources = {
   blog: new URL("../app/(site)/blog/[slug]/page.tsx", import.meta.url),
   notice: new URL("../app/(site)/notice/[id]/page.tsx", import.meta.url),
   portfolio: new URL(
-    "../app/(site)/portfolio/[slug]/page.tsx",
+    "../app/(site)/portfolio/[category]/[slug]/page.tsx",
     import.meta.url,
   ),
-  reviews: new URL("../app/(site)/reviews/[slug]/page.tsx", import.meta.url),
+  reviews: new URL(
+    "../app/(site)/customer-review/[slug]/page.tsx",
+    import.meta.url,
+  ),
 };
 
 const privatePaymentPageSources = [
@@ -203,9 +206,9 @@ test("structured data helpers centralize site, company, breadcrumb, and FAQ data
     assert.equal(complaintPage["@type"], "ContactPage");
     assert.equal(
       complaintPage["@id"],
-      "https://example.com/complaint#contactpage",
+      "https://example.com/report#contactpage",
     );
-    assert.equal(complaintPage.url, "https://example.com/complaint");
+    assert.equal(complaintPage.url, "https://example.com/report");
     assert.equal(complaintPage.name, "고객센터·불편 접수 | 씨브레인");
     assert.equal(
       complaintPage.description,
@@ -230,7 +233,7 @@ test("structured data helpers centralize site, company, breadcrumb, and FAQ data
     assert.equal(complaintBreadcrumb.itemListElement[0].name, "홈");
     assert.equal(
       complaintBreadcrumb.itemListElement[1].item,
-      "https://example.com/complaint",
+      "https://example.com/report",
     );
     assert.equal(complaintBreadcrumb.itemListElement[1].name, "불편 접수");
 
@@ -316,9 +319,9 @@ test("structured data helpers centralize site, company, breadcrumb, and FAQ data
     assert.equal(reviewsPage["@type"], "CollectionPage");
     assert.equal(
       reviewsPage["@id"],
-      "https://example.com/reviews#collectionpage",
+      "https://example.com/customer-review#collectionpage",
     );
-    assert.equal(reviewsPage.url, "https://example.com/reviews");
+    assert.equal(reviewsPage.url, "https://example.com/customer-review");
     assert.equal(
       reviewsPage.name,
       "홍보물 제작 고객후기·리뷰 | 씨브레인",
@@ -337,7 +340,7 @@ test("structured data helpers centralize site, company, breadcrumb, and FAQ data
     assert.equal(reviewsBreadcrumb.itemListElement[0].name, "홈");
     assert.equal(
       reviewsBreadcrumb.itemListElement[1].item,
-      "https://example.com/reviews",
+      "https://example.com/customer-review",
     );
     assert.equal(reviewsBreadcrumb.itemListElement[1].name, "고객 후기");
 
@@ -383,18 +386,18 @@ test("structured data helpers centralize site, company, breadcrumb, and FAQ data
         url: offer.url,
       })),
       [
-        ["브로슈어·카탈로그", 850000, "brochure-catalog"],
-        ["리플렛·팜플렛", 370000, "leaflet-pamphlet"],
-        ["포스터·전단지", 130000, "poster-flyer"],
-        ["배너·족자·현수막", 80000, "banner-display"],
-        ["명함·봉투", 90000, "business-card-envelope"],
-        ["로고", 50000, "logo"],
-      ].map(([name, minPrice, service]) => ({
+        ["브로슈어·카탈로그", 850000, "/order/brochure"],
+        ["리플렛·팜플렛", 370000, "/order/leaflet"],
+        ["포스터·전단지", 130000, "/order/poster"],
+        ["배너·족자·현수막", 80000, "/order/banner"],
+        ["명함·봉투", 90000, "/order/business-card"],
+        ["로고", 50000, "/order/logo"],
+      ].map(([name, minPrice, path]) => ({
         availability: "https://schema.org/InStock",
         minPrice,
         name,
         priceCurrency: "KRW",
-        url: "https://example.com/order?service=" + service,
+        url: "https://example.com" + path,
       })),
     );
     assert.deepEqual(
@@ -405,14 +408,18 @@ test("structured data helpers centralize site, company, breadcrumb, and FAQ data
         url: offer.url,
       })),
       [
-        ["패키지·쇼핑백", "견적 후 카카오톡으로 주문 진행"],
-        ["촬영", "견적 후 진행"],
-        ["기타", "카카오톡 1:1 문의"],
-      ].map(([name, description]) => ({
+        [
+          "패키지·쇼핑백",
+          "견적 후 카카오톡으로 주문 진행",
+          "/order/package",
+        ],
+        ["촬영", "견적 후 진행", "/order/photo"],
+        ["기타", "카카오톡 1:1 문의", "/order/custom"],
+      ].map(([name, description, path]) => ({
         description,
         name,
         priceCurrency: undefined,
-        url: "https://example.com/order",
+        url: "https://example.com" + path,
       })),
     );
     assert.ok(
@@ -438,8 +445,8 @@ test("structured data helpers centralize site, company, breadcrumb, and FAQ data
     const faqPage = createFaqPageStructuredData();
     assert.equal(faqPage["@context"], "https://schema.org");
     assert.equal(faqPage["@type"], "FAQPage");
-    assert.equal(faqPage["@id"], "https://example.com/faq#faqpage");
-    assert.equal(faqPage.url, "https://example.com/faq");
+    assert.equal(faqPage["@id"], "https://example.com/faq-guide#faqpage");
+    assert.equal(faqPage.url, "https://example.com/faq-guide");
     assert.equal(faqPage.name, "홍보물 제작 FAQ·가이드 | 씨브레인");
     assert.equal(
       faqPage.description,
@@ -460,7 +467,7 @@ test("structured data helpers centralize site, company, breadcrumb, and FAQ data
     assert.equal(faqBreadcrumb.itemListElement[0].name, "홈");
     assert.equal(
       faqBreadcrumb.itemListElement[1].item,
-      "https://example.com/faq",
+      "https://example.com/faq-guide",
     );
     assert.equal(faqBreadcrumb.itemListElement[1].name, "FAQ & 가이드");
   `;
@@ -553,7 +560,7 @@ test("detail structured data helpers create dynamic article and creative work no
       description: "인터뷰 영상입니다.",
       headline: "고객 인터뷰",
       section: "고객 인터뷰",
-      urlPath: "/reviews/youtube-interview",
+      urlPath: "/customer-review/youtube-interview",
       video: {
         description: "고객 인터뷰 영상",
         embedUrl: "https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ",
@@ -575,7 +582,7 @@ test("detail structured data helpers create dynamic article and creative work no
       description: "포트폴리오 설명입니다.",
       imagePath: "/figma-assets/portfolio-shinlim.png",
       name: "신림산업㈜ 제품 카탈로그 A4 16P",
-      urlPath: "/portfolio/shinlim-product-catalog",
+      urlPath: "/portfolio/brochure/shinlim-product-catalog",
     });
 
     assert.equal(creativeWork["@graph"][0]["@type"], "CreativeWork");

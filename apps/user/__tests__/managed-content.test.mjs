@@ -37,7 +37,7 @@ const componentUrl = new URL("../components/ManagedContent.tsx", import.meta.url
 const publicContentUrl = new URL("../lib/publicContent.ts", import.meta.url);
 const blogUrl = new URL("../app/(site)/blog/[slug]/page.tsx", import.meta.url);
 const portfolioUrl = new URL(
-  "../app/(site)/portfolio/[slug]/page.tsx",
+  "../app/(site)/portfolio/[category]/[slug]/page.tsx",
   import.meta.url,
 );
 const noticeUrl = new URL(
@@ -45,7 +45,7 @@ const noticeUrl = new URL(
   import.meta.url,
 );
 const reviewUrl = new URL(
-  "../app/(site)/reviews/[slug]/page.tsx",
+  "../app/(site)/customer-review/[slug]/page.tsx",
   import.meta.url,
 );
 

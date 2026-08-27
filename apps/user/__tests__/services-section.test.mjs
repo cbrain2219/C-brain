@@ -24,9 +24,10 @@ test("landing services render the published admin product collection", async () 
   assert.match(source, /import Link from "next\/link"/);
   assert.match(source, /import type \{ ServiceItem \}/);
   assert.match(source, /services: readonly ServiceItem\[\]/);
+  assert.match(source, /getOrderCategoryHref/);
   assert.match(source, /getOrderDirectServiceHref/);
-  assert.match(source, /useState/);
-  assert.match(source, /OrderConsultDialog/);
+  assert.doesNotMatch(source, /useState/);
+  assert.doesNotMatch(source, /OrderConsultDialog/);
   assert.doesNotMatch(source, /@repo\/supabase/);
   assert.doesNotMatch(source, /createUserSupabaseClient/);
   assert.doesNotMatch(source, /listPublishedProducts/);
@@ -45,6 +46,7 @@ test("landing services render the published admin product collection", async () 
   );
   assert.match(source, /import \{ fixedQuoteServices \}/);
   assert.match(source, /\{fixedQuoteServices\.map\(\(service\) =>/);
+  assert.match(source, /href=\{getOrderCategoryHref\(service\.id\)\}/);
   assert.match(
     quoteServicesSource,
     /const fixedQuoteServices = \[[\s\S]*?title: "패키지 · 쇼핑백"[\s\S]*?title: "촬영"[\s\S]*?title: "기타"/,
@@ -56,7 +58,10 @@ test("landing services render the published admin product collection", async () 
   assert.match(source, /styles\.serviceQuoteIcon/);
   assert.match(source, /styles\.serviceMetaQuote/);
   assert.match(source, /견적 후 주문\(카카오톡\)/);
-  assert.match(source, /setIsConsultDialogOpen\(true\)/);
+  assert.match(
+    source,
+    /aria-label=\{`\$\{service\.title\} 견적 후 주문 상담으로 이동`\}/,
+  );
   assert.match(source, /className=\{styles\.serviceConsultCard\}/);
 });
 

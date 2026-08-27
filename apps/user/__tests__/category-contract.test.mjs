@@ -9,7 +9,7 @@ const paths = {
   ),
   blogTypes: new URL("../app/(site)/blog/_types/blog.ts", import.meta.url),
   complaintSubmission: new URL(
-    "../app/(site)/complaint/complaintSubmission.ts",
+    "../app/(site)/report/complaintSubmission.ts",
     import.meta.url,
   ),
   landingServices: new URL(
@@ -64,7 +64,12 @@ test("portfolio uses shared portfolio-only categories without changing the produ
     /services: readonly ServiceItem\[\]/,
   );
   assert.doesNotMatch(
-    [sources.order, sources.services, sources.portfolio].join("\n"),
+    sources.services,
     /package-shopping-bag|photo-shoot|id: "etc"/,
   );
+  assert.match(sources.order, /id: "package-shopping-bag"/);
+  assert.match(sources.order, /id: "photo-shoot"/);
+  assert.match(sources.order, /id: "etc"/);
+  assert.match(sources.portfolio, /"package-shopping-bag": "package"/);
+  assert.match(sources.portfolio, /"photo-shoot": "photo"/);
 });

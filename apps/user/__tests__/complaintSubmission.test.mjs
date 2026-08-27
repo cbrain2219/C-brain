@@ -35,15 +35,15 @@ const { createStoragePath } =
   await import("../../../packages/supabase/src/files.ts");
 
 const submissionPath = new URL(
-  "../app/(site)/complaint/complaintSubmission.ts",
+  "../app/(site)/report/complaintSubmission.ts",
   import.meta.url,
 );
 const validationPath = new URL(
-  "../app/(site)/complaint/validation.ts",
+  "../app/(site)/report/validation.ts",
   import.meta.url,
 );
 const complaintTypesPath = new URL(
-  "../app/(site)/complaint/complaintTypes.ts",
+  "../app/(site)/report/complaintTypes.ts",
   import.meta.url,
 );
 const constantsPath = new URL("../constants/complaint.ts", import.meta.url);
@@ -52,7 +52,7 @@ const categoriesPath = new URL(
   import.meta.url,
 );
 const formPath = new URL(
-  "../app/(site)/complaint/ComplaintForm.tsx",
+  "../app/(site)/report/ComplaintForm.tsx",
   import.meta.url,
 );
 const complaintRoutePath = new URL(

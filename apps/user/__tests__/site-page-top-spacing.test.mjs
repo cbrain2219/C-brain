@@ -9,7 +9,7 @@ const fileUrls = {
     "../app/(site)/blog/[slug]/page.module.css",
     import.meta.url,
   ),
-  faq: new URL("../app/(site)/faq/page.module.css", import.meta.url),
+  faq: new URL("../app/(site)/faq-guide/page.module.css", import.meta.url),
   linkPay: new URL(
     "../app/(site)/linkpay/[id]/page.module.css",
     import.meta.url,
@@ -25,7 +25,7 @@ const fileUrls = {
     import.meta.url,
   ),
   portfolioDetail: new URL(
-    "../app/(site)/portfolio/[slug]/page.module.css",
+    "../app/(site)/portfolio/[category]/[slug]/page.module.css",
     import.meta.url,
   ),
   legal: new URL(
@@ -33,7 +33,7 @@ const fileUrls = {
     import.meta.url,
   ),
   reviewDetail: new URL(
-    "../app/(site)/reviews/[slug]/page.module.css",
+    "../app/(site)/customer-review/[slug]/page.module.css",
     import.meta.url,
   ),
 };

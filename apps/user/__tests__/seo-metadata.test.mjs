@@ -12,8 +12,8 @@ const seoModuleUrl = new URL("../app/_content/seo.ts", import.meta.url).href;
 const pageSources = {
   about: new URL("../app/(site)/about/page.tsx", import.meta.url),
   blog: new URL("../app/(site)/blog/page.tsx", import.meta.url),
-  complaint: new URL("../app/(site)/complaint/page.tsx", import.meta.url),
-  faq: new URL("../app/(site)/faq/page.tsx", import.meta.url),
+  complaint: new URL("../app/(site)/report/page.tsx", import.meta.url),
+  faq: new URL("../app/(site)/faq-guide/page.tsx", import.meta.url),
   home: new URL("../app/(site)/page.tsx", import.meta.url),
   notice: new URL("../app/(site)/notice/page.tsx", import.meta.url),
   orderLayout: new URL("../app/(site)/order/layout.tsx", import.meta.url),
@@ -30,7 +30,7 @@ const pageSources = {
     "../app/(site)/refund-policy/page.tsx",
     import.meta.url,
   ),
-  reviews: new URL("../app/(site)/reviews/page.tsx", import.meta.url),
+  reviews: new URL("../app/(site)/customer-review/page.tsx", import.meta.url),
   terms: new URL("../app/(site)/terms/page.tsx", import.meta.url),
 };
 

@@ -6,10 +6,15 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 import { CtaSection } from "../../_components/CtaSection";
 import {
+  getOrderCategoryHref,
+  type OrderCategoryId,
   type OrderSelectionSummary,
   type OrderStepId,
-  orderServiceSearchParam,
 } from "../../_content/order";
+import {
+  getFixedQuoteServiceById,
+  type FixedQuoteService,
+} from "../../_content/quoteServices";
 import {
   getDirectServiceItemById,
   type ServiceItem,
@@ -20,6 +25,7 @@ import { getOrderCheckoutPayloadKey, submitOrderPayment } from "./payment";
 import styles from "./page.module.css";
 
 type OrderPageClientProps = {
+  initialCategoryId?: OrderCategoryId;
   products: readonly OrderProductCatalogItem[];
   services: readonly ServiceItem[];
 };
@@ -28,7 +34,16 @@ const ORDER_HISTORY_STATE_KEY = "__cbrainOrderStep";
 
 type OrderHistoryEntry =
   | { step: "category" }
-  | { serviceId: string; step: "option" }
+  | {
+      hasCategoryHistory: boolean;
+      quoteServiceId: string;
+      step: "quote";
+    }
+  | {
+      hasCategoryHistory: boolean;
+      serviceId: string;
+      step: "option";
+    }
   | {
       serviceId: string;
       step: "customer";
@@ -56,10 +71,23 @@ const getOrderHistoryEntry = (state: unknown): OrderHistoryEntry | null => {
 
   if (!isRecord(entry) || typeof entry.step !== "string") return null;
   if (entry.step === "category") return { step: "category" };
+
+  if (entry.step === "quote" && typeof entry.quoteServiceId === "string") {
+    return {
+      hasCategoryHistory: entry.hasCategoryHistory === true,
+      quoteServiceId: entry.quoteServiceId,
+      step: "quote",
+    };
+  }
+
   if (typeof entry.serviceId !== "string") return null;
 
   if (entry.step === "option") {
-    return { serviceId: entry.serviceId, step: "option" };
+    return {
+      hasCategoryHistory: entry.hasCategoryHistory === true,
+      serviceId: entry.serviceId,
+      step: "option",
+    };
   }
 
   if (entry.step === "customer" && isOrderSelectionSummary(entry.summary)) {
@@ -78,38 +106,33 @@ const createOrderHistoryState = (entry: OrderHistoryEntry) => ({
   [ORDER_HISTORY_STATE_KEY]: entry,
 });
 
-const getOrderHistoryUrl = (serviceId?: string) => {
-  const url = new URL(window.location.href);
+const getOrderHistoryUrl = (categoryId?: OrderCategoryId) =>
+  `${categoryId ? getOrderCategoryHref(categoryId) : "/order"}${window.location.hash}`;
 
-  if (serviceId) {
-    url.searchParams.set(orderServiceSearchParam, serviceId);
-  } else {
-    url.searchParams.delete(orderServiceSearchParam);
-  }
-
-  return `${url.pathname}${url.search}${url.hash}`;
-};
-
-const pushOrderHistoryEntry = (entry: OrderHistoryEntry, serviceId?: string) => {
+const pushOrderHistoryEntry = (
+  entry: OrderHistoryEntry,
+  categoryId?: OrderCategoryId,
+) => {
   window.history.pushState(
     createOrderHistoryState(entry),
     "",
-    getOrderHistoryUrl(serviceId),
+    getOrderHistoryUrl(categoryId),
   );
 };
 
 const replaceOrderHistoryEntry = (
   entry: OrderHistoryEntry,
-  serviceId?: string,
+  categoryId?: OrderCategoryId,
 ) => {
   window.history.replaceState(
     createOrderHistoryState(entry),
     "",
-    getOrderHistoryUrl(serviceId),
+    getOrderHistoryUrl(categoryId),
   );
 };
 
 export function OrderPageClient({
+  initialCategoryId,
   products,
   services,
 }: OrderPageClientProps) {
@@ -124,6 +147,7 @@ export function OrderPageClient({
     useState<ServiceItem | null>(null);
   const [selectedOrderSummary, setSelectedOrderSummary] =
     useState<OrderSelectionSummary | null>(null);
+  const [isConsultDialogOpen, setIsConsultDialogOpen] = useState(false);
   const selectedDirectProduct = selectedDirectService
     ? (products.find(
         (product) => product.id === selectedDirectService.productId,
@@ -136,6 +160,17 @@ export function OrderPageClient({
         setOrderStep("category");
         setSelectedDirectService(null);
         setSelectedOrderSummary(null);
+        setIsConsultDialogOpen(false);
+        return;
+      }
+
+      if (entry.step === "quote") {
+        const quoteService = getFixedQuoteServiceById(entry.quoteServiceId);
+
+        setOrderStep("category");
+        setSelectedDirectService(null);
+        setSelectedOrderSummary(null);
+        setIsConsultDialogOpen(Boolean(quoteService));
         return;
       }
 
@@ -145,10 +180,12 @@ export function OrderPageClient({
         setOrderStep("category");
         setSelectedDirectService(null);
         setSelectedOrderSummary(null);
+        setIsConsultDialogOpen(false);
         return;
       }
 
       setSelectedDirectService(service);
+      setIsConsultDialogOpen(false);
 
       if (entry.step === "customer") {
         setSelectedOrderSummary(entry.summary);
@@ -165,7 +202,10 @@ export function OrderPageClient({
   const handleCategoryReset = () => {
     const currentEntry = getOrderHistoryEntry(window.history.state);
 
-    if (currentEntry?.step === "option") {
+    if (
+      currentEntry?.step === "option" &&
+      currentEntry.hasCategoryHistory
+    ) {
       window.history.back();
       return;
     }
@@ -177,13 +217,47 @@ export function OrderPageClient({
   };
 
   const handleDirectServiceSelect = (service: ServiceItem) => {
+    const currentEntry = getOrderHistoryEntry(window.history.state);
     const optionEntry = {
+      hasCategoryHistory: currentEntry?.step === "category",
       serviceId: service.id,
       step: "option",
     } as const;
 
     pushOrderHistoryEntry(optionEntry, service.id);
     restoreOrderHistoryEntry(optionEntry);
+  };
+
+  const handleQuoteServiceSelect = (service: FixedQuoteService) => {
+    const currentEntry = getOrderHistoryEntry(window.history.state);
+    const quoteEntry = {
+      hasCategoryHistory: currentEntry?.step === "category",
+      quoteServiceId: service.id,
+      step: "quote",
+    } as const;
+
+    pushOrderHistoryEntry(quoteEntry, service.id);
+    restoreOrderHistoryEntry(quoteEntry);
+  };
+
+  const handleConsultStart = () => setIsConsultDialogOpen(true);
+
+  const handleConsultDialogClose = () => {
+    setIsConsultDialogOpen(false);
+
+    const currentEntry = getOrderHistoryEntry(window.history.state);
+
+    if (currentEntry?.step !== "quote") return;
+
+    if (currentEntry.hasCategoryHistory) {
+      window.history.back();
+      return;
+    }
+
+    const categoryEntry = { step: "category" } as const;
+
+    replaceOrderHistoryEntry(categoryEntry);
+    restoreOrderHistoryEntry(categoryEntry);
   };
 
   const handleCustomerInfoStart = (summary: OrderSelectionSummary) => {
@@ -210,6 +284,10 @@ export function OrderPageClient({
     if (!selectedDirectService) return;
 
     const optionEntry = {
+      hasCategoryHistory:
+        currentEntry?.step === "option"
+          ? currentEntry.hasCategoryHistory
+          : false,
       serviceId: selectedDirectService.id,
       step: "option",
     } as const;
@@ -275,24 +353,33 @@ export function OrderPageClient({
     if (existingEntry) {
       restoreOrderHistoryEntry(existingEntry);
     } else {
-      const searchParams = new URLSearchParams(window.location.search);
       const initialService = getDirectServiceItemById(
         services,
-        searchParams.get(orderServiceSearchParam),
+        initialCategoryId,
       );
+      const initialQuoteService = getFixedQuoteServiceById(initialCategoryId);
       const categoryEntry = { step: "category" } as const;
-
-      replaceOrderHistoryEntry(categoryEntry);
 
       if (initialService) {
         const optionEntry = {
+          hasCategoryHistory: false,
           serviceId: initialService.id,
           step: "option",
         } as const;
 
-        pushOrderHistoryEntry(optionEntry, initialService.id);
+        replaceOrderHistoryEntry(optionEntry, initialService.id);
         restoreOrderHistoryEntry(optionEntry);
+      } else if (initialQuoteService) {
+        const quoteEntry = {
+          hasCategoryHistory: false,
+          quoteServiceId: initialQuoteService.id,
+          step: "quote",
+        } as const;
+
+        replaceOrderHistoryEntry(quoteEntry, initialQuoteService.id);
+        restoreOrderHistoryEntry(quoteEntry);
       } else {
+        replaceOrderHistoryEntry(categoryEntry);
         restoreOrderHistoryEntry(categoryEntry);
       }
     }
@@ -300,7 +387,7 @@ export function OrderPageClient({
     return () => {
       window.removeEventListener("popstate", handlePopState);
     };
-  }, [restoreOrderHistoryEntry, services]);
+  }, [initialCategoryId, restoreOrderHistoryEntry, services]);
 
   useEffect(() => {
     if (!selectedDirectService) return;
@@ -356,11 +443,15 @@ export function OrderPageClient({
 
       <OrderFlowSection
         isPaymentSubmitting={isPaymentSubmitting}
+        isConsultDialogOpen={isConsultDialogOpen}
         onCategoryReset={handleCategoryReset}
+        onConsult={handleConsultStart}
+        onConsultDialogClose={handleConsultDialogClose}
         onCustomerInfoStart={handleCustomerInfoStart}
         onDirectServiceSelect={handleDirectServiceSelect}
         onOptionBack={handleOptionBack}
         onPaymentSubmit={handlePaymentSubmit}
+        onQuoteServiceSelect={handleQuoteServiceSelect}
         orderStep={orderStep}
         selectedDirectProduct={selectedDirectProduct}
         selectedDirectService={selectedDirectService}
@@ -372,7 +463,7 @@ export function OrderPageClient({
         <CtaSection
           description="규격·수량·사양이 정해지지 않아도 괜찮습니다. 카카오톡으로 편하게 문의해 주세요."
           id="contact"
-          secondaryAction={{ label: "FAQ 보기", href: "/faq" }}
+          secondaryAction={{ label: "FAQ 보기", href: "/faq-guide" }}
           titleLines={["원하는 홍보물이 따로 있으신가요?"]}
         />
       ) : null}

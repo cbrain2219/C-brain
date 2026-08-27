@@ -4,13 +4,13 @@ import test from "node:test";
 
 const ctaPath = new URL("../app/_components/CtaSection.tsx", import.meta.url);
 const landingPagePath = new URL("../app/(site)/page.tsx", import.meta.url);
-const faqPagePath = new URL("../app/(site)/faq/page.tsx", import.meta.url);
+const faqPagePath = new URL("../app/(site)/faq-guide/page.tsx", import.meta.url);
 const portfolioPagePath = new URL(
   "../app/(site)/portfolio/page.tsx",
   import.meta.url,
 );
 const reviewsPagePath = new URL(
-  "../app/(site)/reviews/page.tsx",
+  "../app/(site)/customer-review/page.tsx",
   import.meta.url,
 );
 const stylesPath = new URL(

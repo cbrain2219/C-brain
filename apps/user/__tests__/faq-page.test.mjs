@@ -3,13 +3,13 @@ import { readFile } from "node:fs/promises";
 import test from "node:test";
 
 const stylesUrl = new URL(
-  "../app/(site)/faq/page.module.css",
+  "../app/(site)/faq-guide/page.module.css",
   import.meta.url,
 );
 const siteStylesUrl = new URL("../app/page.module.css", import.meta.url);
 const globalStylesUrl = new URL("../app/globals.css", import.meta.url);
 const navigationUrl = new URL(
-  "../app/(site)/faq/FaqCategoryNavigation.tsx",
+  "../app/(site)/faq-guide/FaqCategoryNavigation.tsx",
   import.meta.url,
 );
 const accordionUrl = new URL(

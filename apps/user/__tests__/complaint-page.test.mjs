@@ -3,17 +3,17 @@ import { readFile } from "node:fs/promises";
 import test from "node:test";
 import assert from "node:assert/strict";
 
-const pagePath = new URL("../app/(site)/complaint/page.tsx", import.meta.url);
+const pagePath = new URL("../app/(site)/report/page.tsx", import.meta.url);
 const formPath = new URL(
-  "../app/(site)/complaint/ComplaintForm.tsx",
+  "../app/(site)/report/ComplaintForm.tsx",
   import.meta.url,
 );
 const validationPath = new URL(
-  "../app/(site)/complaint/validation.ts",
+  "../app/(site)/report/validation.ts",
   import.meta.url,
 );
 const phoneVerificationPath = new URL(
-  "../app/(site)/complaint/phoneVerification.ts",
+  "../app/(site)/report/phoneVerification.ts",
   import.meta.url,
 );
 const phoneVerificationRoutePath = new URL(
@@ -21,7 +21,7 @@ const phoneVerificationRoutePath = new URL(
   import.meta.url,
 );
 const complaintTypesPath = new URL(
-  "../app/(site)/complaint/complaintTypes.ts",
+  "../app/(site)/report/complaintTypes.ts",
   import.meta.url,
 );
 const footerPath = new URL("../app/_components/Footer.tsx", import.meta.url);
@@ -34,11 +34,11 @@ const contactContentPath = new URL(
   import.meta.url,
 );
 const attachmentsPath = new URL(
-  "../app/(site)/complaint/attachments.ts",
+  "../app/(site)/report/attachments.ts",
   import.meta.url,
 );
 const complaintSubmissionPath = new URL(
-  "../app/(site)/complaint/complaintSubmission.ts",
+  "../app/(site)/report/complaintSubmission.ts",
   import.meta.url,
 );
 const complaintConstantsPath = new URL(

@@ -3,33 +3,34 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-import { LightHeroBadge } from "../../../../components/LightHeroBadge";
-import { ManagedContent } from "../../../../components/ManagedContent";
-import { RawHtmlDocumentFrame } from "../../../../components/RawHtmlDocumentFrame";
-import { JsonLdScript } from "../../../_components/JsonLdScript";
-import { ContentViewTracker } from "../../../_components/ContentViewTracker";
+import { LightHeroBadge } from "../../../../../components/LightHeroBadge";
+import { ManagedContent } from "../../../../../components/ManagedContent";
+import { RawHtmlDocumentFrame } from "../../../../../components/RawHtmlDocumentFrame";
+import { JsonLdScript } from "../../../../_components/JsonLdScript";
+import { ContentViewTracker } from "../../../../_components/ContentViewTracker";
 import {
-  getPortfolioCategoryIdFromValue,
+  getPortfolioCategoryIdFromSlug,
   getPortfolioCategoryLabel,
   getPortfolioDetailBySlug,
   getPortfolioDetailHref,
+  getPortfolioDetailPath,
   getPortfolioDetailSourceFromValue,
   getPortfolioDetailSeo,
   getPortfolioListHref,
-} from "../../../_content/portfolio";
-import { createCreativeWorkStructuredData } from "../../../_content/structured-data";
+} from "../../../../_content/portfolio";
+import { createCreativeWorkStructuredData } from "../../../../_content/structured-data";
 import {
   getPublishedPortfolioItems,
   getPublishedPortfolioItemSource,
-} from "../../../../lib/publicContent";
+} from "../../../../../lib/publicContent";
 import styles from "./page.module.css";
 
 type PortfolioDetailPageProps = {
   params: Promise<{
+    category: string;
     slug: string;
   }>;
   searchParams?: Promise<{
-    category?: string | string[];
     from?: string | string[];
   }>;
 };
@@ -45,13 +46,14 @@ export const revalidate = 0;
 export async function generateMetadata({
   params,
 }: PortfolioDetailPageProps): Promise<Metadata> {
-  const [{ slug }, items] = await Promise.all([
+  const [{ category, slug }, items] = await Promise.all([
     params,
     getPublishedPortfolioItems(),
   ]);
   const detail = getPortfolioDetailBySlug(slug, items);
+  const categoryId = getPortfolioCategoryIdFromSlug(category);
 
-  if (!detail) {
+  if (!detail || detail.item.categoryId !== categoryId) {
     return {
       title: { absolute: "포트폴리오 상세 | 씨브레인 포트폴리오" },
     };
@@ -61,7 +63,7 @@ export async function generateMetadata({
   const { item } = detail;
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
   const canonicalUrl = siteUrl
-    ? new URL(`/portfolio/${item.slug}`, siteUrl)
+    ? new URL(getPortfolioDetailPath(item), siteUrl)
     : undefined;
   const socialImage = siteUrl
     ? {
@@ -97,7 +99,7 @@ export default async function PortfolioDetailPage({
   searchParams,
 }: PortfolioDetailPageProps) {
   const itemsPromise = getPublishedPortfolioItems();
-  const [{ slug }, resolvedSearchParams] = await Promise.all([
+  const [{ category, slug }, resolvedSearchParams] = await Promise.all([
     params,
     searchParams,
   ]);
@@ -106,19 +108,17 @@ export default async function PortfolioDetailPage({
     getPublishedPortfolioItemSource(slug),
   ]);
   const detail = getPortfolioDetailBySlug(slug, items);
+  const categoryId = getPortfolioCategoryIdFromSlug(category);
 
-  if (!detail) {
+  if (!detail || detail.item.categoryId !== categoryId) {
     notFound();
   }
 
   const { categoryLabel, item, relatedItems } = detail;
-  const listCategoryId =
-    getPortfolioCategoryIdFromValue(resolvedSearchParams?.category) ??
-    item.categoryId;
   const detailSource = getPortfolioDetailSourceFromValue(
     resolvedSearchParams?.from,
   );
-  const listHref = getPortfolioListHref(listCategoryId, detailSource);
+  const listHref = getPortfolioListHref(item.categoryId, detailSource);
   const rawHtmlSource =
     source?.contentMode === "html" &&
     source.contentAuthoringMode === "raw_html" &&
@@ -136,7 +136,7 @@ export default async function PortfolioDetailPage({
           description: item.description,
           imagePath: item.image,
           name: `${item.client} ${item.title}`,
-          urlPath: `/portfolio/${item.slug}`,
+          urlPath: getPortfolioDetailPath(item),
         })}
       />
       <div className={styles.detailInner}>
@@ -212,11 +212,7 @@ export default async function PortfolioDetailPage({
                   <Link
                     aria-label={`${relatedItem.client} ${relatedItem.title} 상세 보기`}
                     className={styles.relatedCard}
-                    href={getPortfolioDetailHref(
-                      relatedItem,
-                      listCategoryId,
-                      detailSource,
-                    )}
+                    href={getPortfolioDetailHref(relatedItem, detailSource)}
                   >
                     <figure className={styles.relatedFigure}>
                       <div className={styles.relatedImageFrame}>

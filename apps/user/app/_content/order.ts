@@ -9,7 +9,30 @@ type OrderMethodTone = "brand" | "quote";
 
 export type OrderStepId = "category" | "option" | "customer";
 
-export const orderServiceSearchParam = "service";
+export const orderCategories = [
+  { id: "brochure-catalog", kind: "direct", slug: "brochure" },
+  { id: "leaflet-pamphlet", kind: "direct", slug: "leaflet" },
+  { id: "poster-flyer", kind: "direct", slug: "poster" },
+  { id: "banner-display", kind: "direct", slug: "banner" },
+  {
+    id: "business-card-envelope",
+    kind: "direct",
+    slug: "business-card",
+  },
+  { id: "logo", kind: "direct", slug: "logo" },
+  { id: "package-shopping-bag", kind: "quote", slug: "package" },
+  { id: "photo-shoot", kind: "quote", slug: "photo" },
+  { id: "etc", kind: "quote", slug: "custom" },
+] as const;
+
+export type OrderCategory = (typeof orderCategories)[number];
+export type OrderCategoryId = OrderCategory["id"];
+export type OrderCategorySlug = OrderCategory["slug"];
+export type OrderQuoteCategoryId = Extract<
+  OrderCategory,
+  { kind: "quote" }
+>["id"];
+export type OrderCategoryHref = `/order/${OrderCategorySlug}`;
 
 export type OrderMethod = {
   description: string;
@@ -81,9 +104,24 @@ export const formatOrderUnitPrice = (amount: number) =>
     maximumFractionDigits: 20,
   })}원`;
 
-export type OrderDirectServiceHref =
-  `/order?${typeof orderServiceSearchParam}=${ProductCategoryId}`;
+export function getOrderCategoryById(
+  categoryId: OrderCategoryId,
+): OrderCategory {
+  return orderCategories.find((category) => category.id === categoryId)!;
+}
+
+export function getOrderCategoryBySlug(
+  slug: string,
+): OrderCategory | undefined {
+  return orderCategories.find((category) => category.slug === slug);
+}
+
+export function getOrderCategoryHref(
+  categoryId: OrderCategoryId,
+): OrderCategoryHref {
+  return `/order/${getOrderCategoryById(categoryId).slug}`;
+}
 
 export const getOrderDirectServiceHref = (
   serviceId: ProductCategoryId,
-): OrderDirectServiceHref => `/order?${orderServiceSearchParam}=${serviceId}`;
+): OrderCategoryHref => getOrderCategoryHref(serviceId);

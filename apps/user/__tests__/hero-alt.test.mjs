@@ -20,11 +20,11 @@ const paths = {
     import.meta.url,
   ),
   portfolioDetail: new URL(
-    "../app/(site)/portfolio/[slug]/page.tsx",
+    "../app/(site)/portfolio/[category]/[slug]/page.tsx",
     import.meta.url,
   ),
   reviewDetail: new URL(
-    "../app/(site)/reviews/[slug]/page.tsx",
+    "../app/(site)/customer-review/[slug]/page.tsx",
     import.meta.url,
   ),
   pageHeroStyles: new URL("../components/PageHero.module.css", import.meta.url),
@@ -33,7 +33,10 @@ const paths = {
   pageHero: new URL("../components/PageHero.tsx", import.meta.url),
   portfolio: new URL("../app/(site)/portfolio/page.tsx", import.meta.url),
   about: new URL("../app/(site)/about/page.tsx", import.meta.url),
-  reviews: new URL("../app/(site)/reviews/page.tsx", import.meta.url),
+  reviews: new URL(
+    "../app/(site)/customer-review/page.tsx",
+    import.meta.url,
+  ),
   order: new URL(
     "../app/(site)/order/OrderPageClient.tsx",
     import.meta.url,

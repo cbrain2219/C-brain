@@ -21,11 +21,11 @@ import {
 const navItems = [
   { label: "회사소개", href: "/about" },
   { label: "포트폴리오", href: "/portfolio" },
-  { label: "고객 후기", href: "/reviews" },
+  { label: "고객 후기", href: "/customer-review" },
   { label: "주문 · 결제", href: "/order" },
-  { label: "FAQ & 가이드", href: "/faq" },
+  { label: "FAQ & 가이드", href: "/faq-guide" },
   { label: "블로그", href: "/blog" },
-  { label: "불편 접수", href: "/complaint" },
+  { label: "불편 접수", href: "/report" },
   { label: "공지사항", href: "/notice" },
 ];
 
@@ -117,7 +117,10 @@ export function Header() {
   const isNavItemCurrentPage = (href: string) => {
     if (href === "/notice") return isNoticePage;
     if (href === "/portfolio") return pathname.startsWith("/portfolio");
-    if (href === "/reviews") return pathname.startsWith("/reviews");
+    if (href === "/customer-review") {
+      return pathname.startsWith("/customer-review");
+    }
+    if (href === "/order") return pathname.startsWith("/order");
     if (href === "/blog") return pathname.startsWith("/blog");
     return pathname === href;
   };

@@ -142,7 +142,7 @@ export function PortfolioSection({
             <Link
               aria-label={`${item.client} ${item.title} 상세 보기`}
               className={styles.portfolioCard}
-              href={getPortfolioDetailHref(item, activeCategoryId, "landing")}
+              href={getPortfolioDetailHref(item, "landing")}
               key={item.slug}
               onClick={saveLandingPortfolioScroll}
             >

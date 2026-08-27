@@ -103,7 +103,7 @@ function FeaturedInterview({
         <Link
           aria-label={`${featuredCustomerInterview.title} 상세 보기`}
           className={styles.reviewsFeaturedMediaLink}
-          href={`/reviews/${featuredCustomerInterview.detailSlug}`}
+          href={`/customer-review/${featuredCustomerInterview.detailSlug}`}
         >
           <InterviewThumbnail
             alt={featuredCustomerInterview.videoAlt}
@@ -202,7 +202,7 @@ export default async function CustomerReviewsPage() {
                         <Link
                           aria-label={`${interview.company} - ${interview.title} 상세 보기`}
                           className={styles.reviewsInterviewLink}
-                          href={`/reviews/${interview.detailSlug}`}
+                          href={`/customer-review/${interview.detailSlug}`}
                         >
                           <figure className={styles.reviewsInterviewMedia}>
                             <InterviewThumbnail

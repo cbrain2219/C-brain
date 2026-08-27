@@ -10,7 +10,7 @@ import {
   getComplaintUploadPrefix,
   parseComplaintCleanupRequest,
   parseComplaintUploadRequest,
-} from "../../../(site)/complaint/complaintSubmission";
+} from "../../../(site)/report/complaintSubmission";
 
 export const runtime = "nodejs";
 

@@ -7,7 +7,7 @@ const actionPaths = [
   "../app/_components/ServicesSection.tsx",
   "../app/_components/ServiceCards.tsx",
   "../app/(site)/blog/_components/BlogConsultCard.tsx",
-  "../app/(site)/faq/FaqCategoryNavigation.tsx",
+  "../app/(site)/faq-guide/FaqCategoryNavigation.tsx",
   "../app/(site)/order/OrderConsultDialog.tsx",
   "../app/(site)/order/OrderPaymentResult.tsx",
 ];

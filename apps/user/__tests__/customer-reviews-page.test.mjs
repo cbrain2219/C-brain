@@ -3,14 +3,17 @@ import { Buffer } from "node:buffer";
 import { stat, readFile } from "node:fs/promises";
 import test from "node:test";
 
-const pagePath = new URL("../app/(site)/reviews/page.tsx", import.meta.url);
+const pagePath = new URL(
+  "../app/(site)/customer-review/page.tsx",
+  import.meta.url,
+);
 const detailPagePath = new URL(
-  "../app/(site)/reviews/[slug]/page.tsx",
+  "../app/(site)/customer-review/[slug]/page.tsx",
   import.meta.url,
 );
 const homePagePath = new URL("../app/(site)/page.tsx", import.meta.url);
 const testimonialListPath = new URL(
-  "../app/(site)/reviews/CustomerTestimonialList.tsx",
+  "../app/(site)/customer-review/CustomerTestimonialList.tsx",
   import.meta.url,
 );
 const contentPath = new URL(
@@ -565,10 +568,13 @@ test("customer reviews page uses shared navigation and CTA", async () => {
     /export const metadata = createPageMetadata\("reviews"\)/,
   );
   assert.doesNotMatch(pageSource, /siteName: "C-Brain"/);
-  assert.match(headerSource, /label: "고객 후기", href: "\/reviews"/);
   assert.match(
     headerSource,
-    /if \(href === "\/reviews"\) return pathname\.startsWith\("\/reviews"\);/,
+    /label: "고객 후기", href: "\/customer-review"/,
+  );
+  assert.match(
+    headerSource,
+    /if \(href === "\/customer-review"\)[\s\S]*?pathname\.startsWith\("\/customer-review"\);/,
   );
   assert.match(pageSource, /import \{ CtaSection \}/);
   assert.match(pageSource, /<CtaSection/);
@@ -877,7 +883,7 @@ test("customer interview markup stays semantic and uses admin video alt text", a
   );
   assert.match(
     pageSource,
-    /href=\{`\/reviews\/\$\{featuredCustomerInterview\.detailSlug\}`\}/,
+    /href=\{`\/customer-review\/\$\{featuredCustomerInterview\.detailSlug\}`\}/,
   );
   assert.match(
     pageSource,
@@ -889,7 +895,10 @@ test("customer interview markup stays semantic and uses admin video alt text", a
     /<figure className=\{styles\.reviewsFeaturedMedia\}>/,
   );
   assert.match(pageSource, /className=\{styles\.reviewsFeaturedMediaLink\}/);
-  assert.match(pageSource, /href=\{`\/reviews\/\$\{interview\.detailSlug\}`\}/);
+  assert.match(
+    pageSource,
+    /href=\{`\/customer-review\/\$\{interview\.detailSlug\}`\}/,
+  );
   assert.match(
     pageSource,
     /aria-label=\{`\$\{interview\.company\} - \$\{interview\.title\} 상세 보기`\}/,

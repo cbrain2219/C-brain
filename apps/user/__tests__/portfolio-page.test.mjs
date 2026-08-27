@@ -18,11 +18,11 @@ const landingPortfolioPath = new URL(
 );
 const landingStylesPath = new URL("../app/page.module.css", import.meta.url);
 const detailPagePath = new URL(
-  "../app/(site)/portfolio/[slug]/page.tsx",
+  "../app/(site)/portfolio/[category]/[slug]/page.tsx",
   import.meta.url,
 );
 const detailStylesPath = new URL(
-  "../app/(site)/portfolio/[slug]/page.module.css",
+  "../app/(site)/portfolio/[category]/[slug]/page.module.css",
   import.meta.url,
 );
 const iconPath = new URL("../components/Icon.tsx", import.meta.url);
@@ -219,7 +219,7 @@ test("portfolio detail returns to the landing section when opened from the landi
   );
   assert.match(
     landingPortfolio,
-    /getPortfolioDetailHref\(item, activeCategoryId, "landing"\)/,
+    /getPortfolioDetailHref\(item, "landing"\)/,
   );
   assert.match(homePage, /getPortfolioCategoryIdFromValue/);
   assert.match(homePage, /landingPortfolioCategorySearchParam/);
@@ -252,8 +252,24 @@ test("portfolio detail returns to the landing section when opened from the landi
   );
   assert.match(
     detailPage,
-    /getPortfolioListHref\(listCategoryId, detailSource\)/,
+    /getPortfolioListHref\(item\.categoryId, detailSource\)/,
   );
+});
+
+test("portfolio detail route validates the category segment", async () => {
+  const [content, detailPage, gallery] = await Promise.all([
+    readFile(contentPath, "utf8"),
+    readFile(detailPagePath, "utf8"),
+    readFile(galleryPath, "utf8"),
+  ]);
+
+  assert.match(content, /export const portfolioCategorySlugs = \{/);
+  assert.match(content, /export function getPortfolioCategoryIdFromSlug/);
+  assert.match(content, /export function getPortfolioDetailPath/);
+  assert.match(detailPage, /category: string/);
+  assert.match(detailPage, /getPortfolioCategoryIdFromSlug\(category\)/);
+  assert.match(detailPage, /detail\.item\.categoryId !== categoryId/);
+  assert.match(gallery, /getPortfolioDetailHref\(item\)/);
 });
 
 test("portfolio cards expose semantic project markup and descriptive alt text", async () => {
@@ -330,7 +346,7 @@ test("portfolio detail metadata and related cards reuse representative image sem
   assert.match(detailPage, /title: \{ absolute: seo\.title \}/);
   assert.match(
     detailPage,
-    /new URL\(`\/portfolio\/\$\{item\.slug\}`, siteUrl\)/,
+    /new URL\(getPortfolioDetailPath\(item\), siteUrl\)/,
   );
   assert.match(detailPage, /alternates:/);
   assert.match(detailPage, /canonical: canonicalUrl/);
