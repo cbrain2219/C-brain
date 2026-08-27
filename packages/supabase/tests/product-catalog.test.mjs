@@ -32,11 +32,13 @@ function brochureProduct() {
       },
       priceRowsBySelection: {
         "0:0:0:0": [
-          { quantity: 100, unitPrice: 2100 },
-          { quantity: 200, unitPrice: 1850 },
-          { quantity: 300, unitPrice: 1633 },
+          { quantity: 100, unitPrice: 2100, printAmount: 210000 },
+          { quantity: 200, unitPrice: 1850, printAmount: 370000 },
+          { quantity: 300, unitPrice: 1633.3, printAmount: 490000 },
         ],
-        "1:0:0:0": [{ quantity: 100, unitPrice: 2800 }],
+        "1:0:0:0": [
+          { quantity: 100, unitPrice: 2800, printAmount: 280000 },
+        ],
       },
       serviceEstimatesBySelection: {
         "": { designPrintEstimate: 80000, planningEstimate: 50000 },
@@ -72,7 +74,9 @@ function businessCardEnvelopeProduct() {
         thickness: ["보통"],
       },
       priceRowsBySelection: {
-        "0:0:0": [{ quantity: 500, unitPrice: 120 }],
+        "0:0:0": [
+          { quantity: 500, unitPrice: 120, printAmount: 60000 },
+        ],
       },
       serviceEstimatesBySelection: {
         "": { designPrintEstimate: 30000, planningEstimate: 20000 },
@@ -117,7 +121,7 @@ test("grouped products parse into profile-ordered public catalog items", () => {
   });
 });
 
-test("service estimates plus quantity unit prices drive calculated totals", () => {
+test("service estimates plus entered print totals drive calculated totals", () => {
   const variant = createOrderProductCatalogItem(brochureProduct()).variants[0];
   const eightPages = {
     coverCoating: "무광",
@@ -127,9 +131,9 @@ test("service estimates plus quantity unit prices drive calculated totals", () =
   };
 
   assert.deepEqual(getProductPriceRows(variant, eightPages), [
-    { quantity: 100, unitPrice: 2100 },
-    { quantity: 200, unitPrice: 1850 },
-    { quantity: 300, unitPrice: 1633 },
+    { quantity: 100, unitPrice: 2100, printAmount: 210000 },
+    { quantity: 200, unitPrice: 1850, printAmount: 370000 },
+    { quantity: 300, unitPrice: 1633.3, printAmount: 490000 },
   ]);
   const calculated = calculateProductSelection(variant, {
     hasPlanning: false,
@@ -146,7 +150,7 @@ test("service estimates plus quantity unit prices drive calculated totals", () =
       optionValues: eightPages,
       quantity: 300,
     }).totalPrice,
-    1129900,
+    1130000,
   );
   assert.equal(
     calculateProductSelection(variant, {
@@ -272,6 +276,7 @@ test("sparse administrator prices fail closed per selection", () => {
   ].priceRowsBySelection["0:0:0:0"].push({
     quantity: 100,
     unitPrice: 2600,
+    printAmount: 260000,
   });
 
   const invalidEstimate = clone(logoProduct());
@@ -302,6 +307,17 @@ test("sparse administrator prices fail closed per selection", () => {
     ]).map((product) => product.categoryId),
     ["logo"],
   );
+});
+
+test("legacy rows without a print total keep the multiplication fallback", () => {
+  const source = brochureProduct();
+  delete source.configuration.variants["브로슈어 · 카탈로그"]
+    .priceRowsBySelection["0:0:0:0"][0].printAmount;
+
+  const variant = createOrderProductCatalogItem(source).variants[0];
+  const selection = createDefaultProductSelection(variant);
+
+  assert.equal(calculateProductSelection(variant, selection).printAmount, 210000);
 });
 
 test("stale or unknown selections are rejected", () => {

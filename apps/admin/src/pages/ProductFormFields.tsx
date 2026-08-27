@@ -217,7 +217,12 @@ function renderProductUiSection({
     <QuantityPriceEditor
       heading={heading}
       key={section.key}
-      onAdd={() => updateRows([...rows, { quantity: '', unitPrice: '' }])}
+      onAdd={() =>
+        updateRows([
+          ...rows,
+          { quantity: '', unitPrice: '', printAmount: '' },
+        ])
+      }
       onRemove={(removeIndex) =>
         updateRows(rows.filter((_, rowIndex) => rowIndex !== removeIndex))
       }

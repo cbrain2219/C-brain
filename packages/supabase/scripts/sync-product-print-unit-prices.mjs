@@ -15,7 +15,8 @@ import { productTypes } from "../src/categories.ts";
 const repoEnvUrl = new URL("../../../.env", import.meta.url);
 const seedUrl = new URL("../../../supabase/seed_products.sql", import.meta.url);
 const seedPayloadPattern = /(\$variants\$\n)([\s\S]*?)(\n\$variants\$::jsonb)/;
-export const priceModel = "service-plus-print-unit-v1";
+const legacyUnitPriceModel = "service-plus-print-unit-v1";
+export const priceModel = "service-plus-print-total-v2";
 
 function assertSafeAmount(value, label) {
   if (!Number.isSafeInteger(value) || value < 0) {
@@ -28,17 +29,22 @@ function assertPositiveInteger(value, label) {
   if (value === 0) throw new Error(`${label} must be greater than zero.`);
 }
 
-export function roundHalfToEven(numerator, denominator) {
-  assertSafeAmount(numerator, "numerator");
-  assertPositiveInteger(denominator, "denominator");
+function assertSafeUnitPrice(value, label) {
+  if (
+    typeof value !== "number" ||
+    !Number.isFinite(value) ||
+    value < 0 ||
+    value > Number.MAX_SAFE_INTEGER
+  ) {
+    throw new Error(`${label} must be a non-negative finite number.`);
+  }
+}
 
-  const quotient = Math.floor(numerator / denominator);
-  const doubledRemainder = (numerator % denominator) * 2;
+export function calculateUnitPrice(printAmount, quantity) {
+  assertSafeAmount(printAmount, "printAmount");
+  assertPositiveInteger(quantity, "quantity");
 
-  if (doubledRemainder < denominator) return quotient;
-  if (doubledRemainder > denominator) return quotient + 1;
-
-  return quotient % 2 === 0 ? quotient : quotient + 1;
+  return Number((printAmount / quantity).toFixed(1));
 }
 
 function getSelectionContext(configuration, optionKeys, selectionKey, label) {
@@ -129,7 +135,9 @@ export function transformVariantConfiguration(
 
   let priceRowCount = 0;
   let changedRowCount = 0;
-  const usesPrintUnitPrices = configuration.priceModel === priceModel;
+  const usesPrintTotals = configuration.priceModel === priceModel;
+  const usesLegacyUnitPrices =
+    configuration.priceModel === legacyUnitPriceModel;
   const priceRowsBySelection = {};
 
   for (const [selectionKey, rows] of Object.entries(sourceRowsBySelection)) {
@@ -158,11 +166,19 @@ export function transformVariantConfiguration(
 
       assertPositiveInteger(quantity, `${label} quantity`);
 
+      let printAmount;
       let unitPrice;
 
-      if (usesPrintUnitPrices) {
+      if (usesPrintTotals) {
+        assertSafeUnitPrice(row.unitPrice, `${label} unitPrice`);
+        assertSafeAmount(row.printAmount, `${label} printAmount`);
+        unitPrice = row.unitPrice;
+        printAmount = row.printAmount;
+      } else if (usesLegacyUnitPrices) {
         assertSafeAmount(row.unitPrice, `${label} unitPrice`);
         unitPrice = row.unitPrice;
+        printAmount = row.printAmount ?? quantity * unitPrice;
+        assertSafeAmount(printAmount, `${label} printAmount`);
       } else {
         const legacyFinalPrice = storedFinalPrice ?? row.unitPrice;
         assertSafeAmount(legacyFinalPrice, `${label} legacy final price`);
@@ -171,19 +187,22 @@ export function transformVariantConfiguration(
           throw new Error(`${label} final price is below its design amount.`);
         }
 
-        unitPrice = roundHalfToEven(
-          legacyFinalPrice - designAmount,
-          quantity,
-        );
+        printAmount = legacyFinalPrice - designAmount;
+        unitPrice = calculateUnitPrice(printAmount, quantity);
       }
       priceRowCount += 1;
 
-      if (row.unitPrice !== unitPrice || storedFinalPrice !== undefined) {
+      if (
+        row.unitPrice !== unitPrice ||
+        row.printAmount !== printAmount ||
+        storedFinalPrice !== undefined
+      ) {
         changedRowCount += 1;
       }
 
       return {
         ...storedRow,
+        printAmount,
         quantity,
         unitPrice,
       };
@@ -221,9 +240,22 @@ export function transformSeedVariants(variants) {
   return { changedRowCount, priceRowCount, variants: transformed };
 }
 
-function transformGroupedProducts(products) {
+function getSeedVariantKey(productType, productSubtype) {
+  return `${productType}\u0000${productSubtype}`;
+}
+
+export function transformGroupedProducts(products, seedVariants = []) {
   const expectedProductTypes = [...productTypes];
   const actualProductTypes = products.map((product) => product.product_type);
+  const seedVariantsByKey = new Map(
+    seedVariants.map((variant) => [
+      getSeedVariantKey(
+        variant.product_type,
+        variant.product_subtype || "",
+      ),
+      variant,
+    ]),
+  );
 
   if (
     products.length !== expectedProductTypes.length ||
@@ -257,15 +289,31 @@ function transformGroupedProducts(products) {
 
     for (const variantName of expectedVariants) {
       const subtype = variantName === product.product_type ? "" : variantName;
+      const sourceConfiguration = variants[variantName];
+      const seedVariant = seedVariantsByKey.get(
+        getSeedVariantKey(product.product_type, subtype),
+      );
+      const needsExactSeedTotals =
+        sourceConfiguration.priceModel !== priceModel && seedVariant;
+      const configuration = needsExactSeedTotals
+        ? {
+            ...sourceConfiguration,
+            priceModel,
+            priceRowsBySelection:
+              seedVariant.configuration.priceRowsBySelection,
+          }
+        : sourceConfiguration;
       const result = transformVariantConfiguration(
         product.product_type,
         subtype,
-        variants[variantName],
+        configuration,
       );
 
       nextVariants[variantName] = result.configuration;
       priceRowCount += result.priceRowCount;
-      changedRowCount += result.changedRowCount;
+      changedRowCount += needsExactSeedTotals
+        ? result.priceRowCount
+        : result.changedRowCount;
     }
 
     return {
@@ -346,6 +394,15 @@ async function readPublishedProducts(client) {
   return data ?? [];
 }
 
+async function readSeedVariants() {
+  const seed = await readFile(seedUrl, "utf8");
+  const match = seed.match(seedPayloadPattern);
+
+  if (!match) throw new Error("seed_products.sql variant payload is missing.");
+
+  return transformSeedVariants(JSON.parse(match[2])).variants;
+}
+
 async function syncDatabase({ apply }) {
   const environment = await readLocalEnv();
 
@@ -361,7 +418,8 @@ async function syncDatabase({ apply }) {
     auth: { persistSession: false },
   });
   const sourceProducts = await readPublishedProducts(client);
-  const result = transformGroupedProducts(sourceProducts);
+  const seedVariants = await readSeedVariants();
+  const result = transformGroupedProducts(sourceProducts, seedVariants);
 
   if (apply) {
     for (const product of result.products) {
@@ -374,7 +432,7 @@ async function syncDatabase({ apply }) {
     }
 
     const storedProducts = await readPublishedProducts(client);
-    const verification = transformGroupedProducts(storedProducts);
+    const verification = transformGroupedProducts(storedProducts, seedVariants);
 
     if (verification.changedRowCount !== 0) {
       throw new Error(

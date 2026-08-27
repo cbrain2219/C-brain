@@ -36,6 +36,7 @@ export type {
 }
 
 export type QuantityPriceDraft = {
+  printAmount: string
   quantity: string
   unitPrice: string
 }

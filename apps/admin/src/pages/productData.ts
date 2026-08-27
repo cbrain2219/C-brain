@@ -19,6 +19,40 @@ export function formatNumericValue(value: string) {
   return digits.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
 }
 
+export function formatDecimalNumericValue(value: string) {
+  const numeric = value.replace(/[^\d.]/g, '')
+  const decimalIndex = numeric.indexOf('.')
+  const integerSource =
+    decimalIndex >= 0 ? numeric.slice(0, decimalIndex) : numeric
+  const integerDigits = integerSource.replace(/^0+(?=\d)/, '')
+  const integer = (integerDigits || (decimalIndex >= 0 ? '0' : '')).replace(
+    /\B(?=(\d{3})+(?!\d))/g,
+    ',',
+  )
+
+  if (decimalIndex < 0) return integer
+
+  const fraction = numeric
+    .slice(decimalIndex + 1)
+    .replace(/\D/g, '')
+    .slice(0, 1)
+
+  return `${integer}.${fraction}`
+}
+
+export function formatFixedDecimalNumericValue(value: string) {
+  const formatted = formatDecimalNumericValue(value)
+  const normalized = formatted.replaceAll(',', '')
+
+  if (!normalized) return ''
+
+  const number = Number(normalized)
+
+  if (!Number.isFinite(number)) return formatted
+
+  return formatDecimalNumericValue(number.toFixed(1))
+}
+
 export function toProductListRow(product: ProductRecord): ProductListRow {
   const lowestPrice = getLowestProductPrice(
     product.configuration,

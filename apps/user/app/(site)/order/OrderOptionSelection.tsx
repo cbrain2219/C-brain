@@ -19,6 +19,7 @@ import { Icon } from "../../../components/Icon";
 import {
   type OrderSelectionSummary,
   formatOrderCurrency,
+  formatOrderUnitPrice,
 } from "../../_content/order";
 import type { ServiceItem } from "../../_content/services";
 import styles from "./page.module.css";
@@ -343,8 +344,8 @@ export function OrderOptionSelection({
                   <div className={styles.quantityTableHeader} role="row">
                     <span role="columnheader">선택</span>
                     <span role="columnheader">수량</span>
-                    <span role="columnheader">인쇄 단가</span>
-                    <span role="columnheader">합계</span>
+                    <span role="columnheader">인쇄 단가(원/단위)</span>
+                    <span role="columnheader">합계(원)</span>
                   </div>
                   <div className={styles.quantityTableBody}>
                     {quantityRows.map((quantityRow) => {
@@ -387,10 +388,10 @@ export function OrderOptionSelection({
                             className={styles.quantityUnitPrice}
                             role="cell"
                           >
-                            {formatOrderCurrency(quantityRow.unitPrice)}
+                            {formatOrderUnitPrice(quantityRow.unitPrice)}
                           </span>
                           <strong role="cell">
-                            {formatOrderCurrency(rowCalculation.totalPrice)}
+                            {formatOrderCurrency(rowCalculation.printAmount)}
                           </strong>
                         </button>
                       );

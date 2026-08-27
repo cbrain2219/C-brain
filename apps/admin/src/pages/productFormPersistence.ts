@@ -4,7 +4,10 @@ import type {
   ProductRecord,
   ProductStatus,
 } from '@repo/supabase'
-import { formatNumericValue } from './productData.ts'
+import {
+  formatFixedDecimalNumericValue,
+  formatNumericValue,
+} from './productData.ts'
 import { createProductFormDraft } from './productFormGroup.ts'
 import type { ProductFormDraft } from './productFormGroup.ts'
 import {
@@ -77,7 +80,7 @@ function requireJsonObject(value: Json | undefined) {
   return value
 }
 
-function toDraftNumber(value: Json | undefined) {
+function toDraftInteger(value: Json | undefined) {
   if (value === null || value === undefined) return ''
 
   if (typeof value !== 'number' || !Number.isSafeInteger(value) || value < 0) {
@@ -85,6 +88,21 @@ function toDraftNumber(value: Json | undefined) {
   }
 
   return formatNumericValue(String(value))
+}
+
+function toDraftDecimal(value: Json | undefined) {
+  if (value === null || value === undefined) return ''
+
+  if (
+    typeof value !== 'number' ||
+    !Number.isFinite(value) ||
+    value < 0 ||
+    value > Number.MAX_SAFE_INTEGER
+  ) {
+    throw new Error('상품 설정 형식을 확인해주세요.')
+  }
+
+  return formatFixedDecimalNumericValue(String(value))
 }
 
 function toStoredNumber(value: string) {
@@ -102,6 +120,51 @@ function toStoredNumber(value: string) {
   }
 
   return number
+}
+
+function toStoredDecimal(value: string) {
+  const normalized = value.replaceAll(',', '').trim()
+
+  if (!normalized) return null
+  if (!/^\d+(?:\.\d)?$/.test(normalized)) {
+    throw new Error('숫자 입력값을 확인해주세요.')
+  }
+
+  const number = Number(normalized)
+
+  if (
+    !Number.isFinite(number) ||
+    number < 0 ||
+    number > Number.MAX_SAFE_INTEGER
+  ) {
+    throw new Error('숫자 입력값을 확인해주세요.')
+  }
+
+  return number
+}
+
+function readPrintAmount(row: JsonObject) {
+  if (row.printAmount !== undefined) return toDraftInteger(row.printAmount)
+
+  const quantity = row.quantity
+  const unitPrice = row.unitPrice
+
+  if (
+    typeof quantity !== 'number' ||
+    !Number.isSafeInteger(quantity) ||
+    quantity < 0 ||
+    typeof unitPrice !== 'number' ||
+    !Number.isFinite(unitPrice) ||
+    unitPrice < 0
+  ) {
+    return ''
+  }
+
+  const legacyPrintAmount = quantity * unitPrice
+
+  return Number.isSafeInteger(legacyPrintAmount)
+    ? formatNumericValue(String(legacyPrintAmount))
+    : ''
 }
 
 function readOptionValues(value: Json | undefined) {
@@ -133,8 +196,9 @@ function readPriceRows(value: Json | undefined) {
       const objectRow = requireJsonObject(row)
 
       return {
-        quantity: toDraftNumber(objectRow.quantity),
-        unitPrice: toDraftNumber(objectRow.unitPrice),
+        printAmount: readPrintAmount(objectRow),
+        quantity: toDraftInteger(objectRow.quantity),
+        unitPrice: toDraftDecimal(objectRow.unitPrice),
       }
     })
   }
@@ -150,8 +214,8 @@ function readServiceEstimates(value: Json | undefined) {
     const objectEstimate = requireJsonObject(estimate)
 
     estimatesBySelection[key] = {
-      designPrintEstimate: toDraftNumber(objectEstimate.designPrintEstimate),
-      planningEstimate: toDraftNumber(objectEstimate.planningEstimate),
+      designPrintEstimate: toDraftInteger(objectEstimate.designPrintEstimate),
+      planningEstimate: toDraftInteger(objectEstimate.planningEstimate),
     }
   }
 
@@ -229,8 +293,9 @@ function serializePriceRows(
     Object.entries(rowsBySelection).map(([key, rows]) => [
       key,
       rows.map((row) => ({
+        printAmount: toStoredNumber(row.printAmount),
         quantity: toStoredNumber(row.quantity),
-        unitPrice: toStoredNumber(row.unitPrice),
+        unitPrice: toStoredDecimal(row.unitPrice),
       })),
     ]),
   ) as JsonObject
@@ -347,7 +412,7 @@ function getPriceValidationIssue(
     if (!rows || rows.length === 0) {
       return {
         focusTarget: { kind: 'price-add' },
-        message: '모든 수량과 인쇄 단가를 입력해주세요.',
+        message: '모든 수량, 인쇄 단가와 합계를 입력해주세요.',
         selectedOptionIndexes,
       }
     }
@@ -358,15 +423,23 @@ function getPriceValidationIssue(
       if (quantity === null || quantity <= 0) {
         return {
           focusTarget: { field: 'quantity', kind: 'price-row', rowIndex },
-          message: '모든 수량과 인쇄 단가를 입력해주세요.',
+          message: '모든 수량, 인쇄 단가와 합계를 입력해주세요.',
           selectedOptionIndexes,
         }
       }
 
-      if (toStoredNumber(row.unitPrice) === null) {
+      if (toStoredDecimal(row.unitPrice) === null) {
         return {
           focusTarget: { field: 'unitPrice', kind: 'price-row', rowIndex },
-          message: '모든 수량과 인쇄 단가를 입력해주세요.',
+          message: '모든 수량, 인쇄 단가와 합계를 입력해주세요.',
+          selectedOptionIndexes,
+        }
+      }
+
+      if (toStoredNumber(row.printAmount) === null) {
+        return {
+          focusTarget: { field: 'printAmount', kind: 'price-row', rowIndex },
+          message: '모든 수량, 인쇄 단가와 합계를 입력해주세요.',
           selectedOptionIndexes,
         }
       }

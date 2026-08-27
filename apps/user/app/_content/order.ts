@@ -76,6 +76,12 @@ export type OrderSelectionSummary = {
 export const formatOrderCurrency = (amount: number) =>
   `${amount.toLocaleString("ko-KR")}원`;
 
+export const formatOrderUnitPrice = (amount: number) =>
+  `${amount.toLocaleString("ko-KR", {
+    minimumFractionDigits: 1,
+    maximumFractionDigits: 1,
+  })}원`;
+
 export type OrderDirectServiceHref =
   `/order?${typeof orderServiceSearchParam}=${ProductCategoryId}`;
 

@@ -348,11 +348,11 @@ test("order page route, content, responsive styles, and navigation are wired", (
   assert.match(optionSelectionSource, /quantityTableScroll/);
   assert.match(
     optionSelectionSource,
-    /<span role="columnheader">인쇄 단가<\/span>/,
+    /<span role="columnheader">인쇄 단가\(원\/단위\)<\/span>/,
   );
   assert.match(
     optionSelectionSource,
-    /<span role="columnheader">합계<\/span>/,
+    /<span role="columnheader">합계\(원\)<\/span>/,
   );
   assert.match(optionSelectionSource, /주문 요약/);
   assert.match(optionSelectionSource, /mobilePaymentBar/);
@@ -1056,6 +1056,33 @@ test("order page route, content, responsive styles, and navigation are wired", (
   assert.doesNotMatch(
     [routeSource, stylesSource, contentSource, headerSource].join("\n"),
     /figma\.com\/api\/mcp\/asset|https:\/\/www\.figma\.com\/api/,
+  );
+});
+
+test("quantity table total shows print amount without the order total", () => {
+  const optionSelectionSource = read(
+    "apps/user/app/(site)/order/OrderOptionSelection.tsx",
+  );
+  const orderContentSource = read("apps/user/app/_content/order.ts");
+  const quantitySectionSource = extractBetween(
+    optionSelectionSource,
+    "{selectedVariant.quantitySection ?",
+    "</section>",
+  );
+
+  assert.match(
+    quantitySectionSource,
+    /formatOrderCurrency\(rowCalculation\.printAmount\)/,
+  );
+  assert.match(
+    quantitySectionSource,
+    /formatOrderUnitPrice\(quantityRow\.unitPrice\)/,
+  );
+  assert.match(orderContentSource, /minimumFractionDigits: 1/);
+  assert.match(orderContentSource, /maximumFractionDigits: 1/);
+  assert.doesNotMatch(
+    quantitySectionSource,
+    /formatOrderCurrency\(rowCalculation\.totalPrice\)/,
   );
 });
 

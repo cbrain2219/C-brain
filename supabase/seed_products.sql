@@ -38,505 +38,613 @@ $variants$
         "0:0:0:0": [
           {
             "quantity": 100,
-            "unitPrice": 2100
+            "unitPrice": 2100,
+            "printAmount": 210000
           },
           {
             "quantity": 200,
-            "unitPrice": 1850
+            "unitPrice": 1850,
+            "printAmount": 370000
           },
           {
             "quantity": 300,
-            "unitPrice": 1633
+            "unitPrice": 1633.3,
+            "printAmount": 490000
           }
         ],
         "0:0:0:1": [
           {
             "quantity": 100,
-            "unitPrice": 2100
+            "unitPrice": 2100,
+            "printAmount": 210000
           },
           {
             "quantity": 200,
-            "unitPrice": 1850
+            "unitPrice": 1850,
+            "printAmount": 370000
           },
           {
             "quantity": 300,
-            "unitPrice": 1633
+            "unitPrice": 1633.3,
+            "printAmount": 490000
           }
         ],
         "1:0:0:0": [
           {
             "quantity": 100,
-            "unitPrice": 2800
+            "unitPrice": 2800,
+            "printAmount": 280000
           },
           {
             "quantity": 200,
-            "unitPrice": 2400
+            "unitPrice": 2400,
+            "printAmount": 480000
           },
           {
             "quantity": 300,
-            "unitPrice": 2200
+            "unitPrice": 2200,
+            "printAmount": 660000
           }
         ],
         "1:0:0:1": [
           {
             "quantity": 100,
-            "unitPrice": 2800
+            "unitPrice": 2800,
+            "printAmount": 280000
           },
           {
             "quantity": 200,
-            "unitPrice": 2400
+            "unitPrice": 2400,
+            "printAmount": 480000
           },
           {
             "quantity": 300,
-            "unitPrice": 2200
+            "unitPrice": 2200,
+            "printAmount": 660000
           }
         ],
         "2:0:0:0": [
           {
             "quantity": 100,
-            "unitPrice": 3300
+            "unitPrice": 3300,
+            "printAmount": 330000
           },
           {
             "quantity": 200,
-            "unitPrice": 2950
+            "unitPrice": 2950,
+            "printAmount": 590000
           },
           {
             "quantity": 300,
-            "unitPrice": 2100
+            "unitPrice": 2100,
+            "printAmount": 630000
           }
         ],
         "2:0:0:1": [
           {
             "quantity": 100,
-            "unitPrice": 3300
+            "unitPrice": 3300,
+            "printAmount": 330000
           },
           {
             "quantity": 200,
-            "unitPrice": 2950
+            "unitPrice": 2950,
+            "printAmount": 590000
           },
           {
             "quantity": 300,
-            "unitPrice": 2100
+            "unitPrice": 2100,
+            "printAmount": 630000
           }
         ],
         "0:0:1:0": [
           {
             "quantity": 100,
-            "unitPrice": 2200
+            "unitPrice": 2200,
+            "printAmount": 220000
           },
           {
             "quantity": 200,
-            "unitPrice": 1900
+            "unitPrice": 1900,
+            "printAmount": 380000
           },
           {
             "quantity": 300,
-            "unitPrice": 1667
+            "unitPrice": 1666.7,
+            "printAmount": 500000
           }
         ],
         "0:0:1:1": [
           {
             "quantity": 100,
-            "unitPrice": 2200
+            "unitPrice": 2200,
+            "printAmount": 220000
           },
           {
             "quantity": 200,
-            "unitPrice": 1900
+            "unitPrice": 1900,
+            "printAmount": 380000
           },
           {
             "quantity": 300,
-            "unitPrice": 1667
+            "unitPrice": 1666.7,
+            "printAmount": 500000
           }
         ],
         "1:0:1:0": [
           {
             "quantity": 100,
-            "unitPrice": 2900
+            "unitPrice": 2900,
+            "printAmount": 290000
           },
           {
             "quantity": 200,
-            "unitPrice": 2450
+            "unitPrice": 2450,
+            "printAmount": 490000
           },
           {
             "quantity": 300,
-            "unitPrice": 2233
+            "unitPrice": 2233.3,
+            "printAmount": 670000
           }
         ],
         "1:0:1:1": [
           {
             "quantity": 100,
-            "unitPrice": 2900
+            "unitPrice": 2900,
+            "printAmount": 290000
           },
           {
             "quantity": 200,
-            "unitPrice": 2450
+            "unitPrice": 2450,
+            "printAmount": 490000
           },
           {
             "quantity": 300,
-            "unitPrice": 2233
+            "unitPrice": 2233.3,
+            "printAmount": 670000
           }
         ],
         "2:0:1:0": [
           {
             "quantity": 100,
-            "unitPrice": 3400
+            "unitPrice": 3400,
+            "printAmount": 340000
           },
           {
             "quantity": 200,
-            "unitPrice": 3100
+            "unitPrice": 3100,
+            "printAmount": 620000
           },
           {
             "quantity": 300,
-            "unitPrice": 2200
+            "unitPrice": 2200,
+            "printAmount": 660000
           }
         ],
         "2:0:1:1": [
           {
             "quantity": 100,
-            "unitPrice": 3400
+            "unitPrice": 3400,
+            "printAmount": 340000
           },
           {
             "quantity": 200,
-            "unitPrice": 3100
+            "unitPrice": 3100,
+            "printAmount": 620000
           },
           {
             "quantity": 300,
-            "unitPrice": 2200
+            "unitPrice": 2200,
+            "printAmount": 660000
           }
         ],
         "0:0:2:0": [
           {
             "quantity": 100,
-            "unitPrice": 2200
+            "unitPrice": 2200,
+            "printAmount": 220000
           },
           {
             "quantity": 200,
-            "unitPrice": 1950
+            "unitPrice": 1950,
+            "printAmount": 390000
           },
           {
             "quantity": 300,
-            "unitPrice": 1733
+            "unitPrice": 1733.3,
+            "printAmount": 520000
           }
         ],
         "0:0:2:1": [
           {
             "quantity": 100,
-            "unitPrice": 2200
+            "unitPrice": 2200,
+            "printAmount": 220000
           },
           {
             "quantity": 200,
-            "unitPrice": 1950
+            "unitPrice": 1950,
+            "printAmount": 390000
           },
           {
             "quantity": 300,
-            "unitPrice": 1733
+            "unitPrice": 1733.3,
+            "printAmount": 520000
           }
         ],
         "1:0:2:0": [
           {
             "quantity": 100,
-            "unitPrice": 2900
+            "unitPrice": 2900,
+            "printAmount": 290000
           },
           {
             "quantity": 200,
-            "unitPrice": 2550
+            "unitPrice": 2550,
+            "printAmount": 510000
           },
           {
             "quantity": 300,
-            "unitPrice": 2333
+            "unitPrice": 2333.3,
+            "printAmount": 700000
           }
         ],
         "1:0:2:1": [
           {
             "quantity": 100,
-            "unitPrice": 2900
+            "unitPrice": 2900,
+            "printAmount": 290000
           },
           {
             "quantity": 200,
-            "unitPrice": 2550
+            "unitPrice": 2550,
+            "printAmount": 510000
           },
           {
             "quantity": 300,
-            "unitPrice": 2333
+            "unitPrice": 2333.3,
+            "printAmount": 700000
           }
         ],
         "2:0:2:0": [
           {
             "quantity": 100,
-            "unitPrice": 3400
+            "unitPrice": 3400,
+            "printAmount": 340000
           },
           {
             "quantity": 200,
-            "unitPrice": 3100
+            "unitPrice": 3100,
+            "printAmount": 620000
           },
           {
             "quantity": 300,
-            "unitPrice": 2400
+            "unitPrice": 2400,
+            "printAmount": 720000
           }
         ],
         "2:0:2:1": [
           {
             "quantity": 100,
-            "unitPrice": 3400
+            "unitPrice": 3400,
+            "printAmount": 340000
           },
           {
             "quantity": 200,
-            "unitPrice": 3100
+            "unitPrice": 3100,
+            "printAmount": 620000
           },
           {
             "quantity": 300,
-            "unitPrice": 2400
+            "unitPrice": 2400,
+            "printAmount": 720000
           }
         ],
         "0:1:0:0": [
           {
             "quantity": 100,
-            "unitPrice": 2400
+            "unitPrice": 2400,
+            "printAmount": 240000
           },
           {
             "quantity": 200,
-            "unitPrice": 2100
+            "unitPrice": 2100,
+            "printAmount": 420000
           },
           {
             "quantity": 300,
-            "unitPrice": 1900
+            "unitPrice": 1900,
+            "printAmount": 570000
           }
         ],
         "0:1:0:1": [
           {
             "quantity": 100,
-            "unitPrice": 2400
+            "unitPrice": 2400,
+            "printAmount": 240000
           },
           {
             "quantity": 200,
-            "unitPrice": 2100
+            "unitPrice": 2100,
+            "printAmount": 420000
           },
           {
             "quantity": 300,
-            "unitPrice": 1900
+            "unitPrice": 1900,
+            "printAmount": 570000
           }
         ],
         "1:1:0:0": [
           {
             "quantity": 100,
-            "unitPrice": 3200
+            "unitPrice": 3200,
+            "printAmount": 320000
           },
           {
             "quantity": 200,
-            "unitPrice": 2750
+            "unitPrice": 2750,
+            "printAmount": 550000
           },
           {
             "quantity": 300,
-            "unitPrice": 2533
+            "unitPrice": 2533.3,
+            "printAmount": 760000
           }
         ],
         "1:1:0:1": [
           {
             "quantity": 100,
-            "unitPrice": 3200
+            "unitPrice": 3200,
+            "printAmount": 320000
           },
           {
             "quantity": 200,
-            "unitPrice": 2750
+            "unitPrice": 2750,
+            "printAmount": 550000
           },
           {
             "quantity": 300,
-            "unitPrice": 2533
+            "unitPrice": 2533.3,
+            "printAmount": 760000
           }
         ],
         "2:1:0:0": [
           {
             "quantity": 100,
-            "unitPrice": 3700
+            "unitPrice": 3700,
+            "printAmount": 370000
           },
           {
             "quantity": 200,
-            "unitPrice": 3400
+            "unitPrice": 3400,
+            "printAmount": 680000
           },
           {
             "quantity": 300,
-            "unitPrice": 2700
+            "unitPrice": 2700,
+            "printAmount": 810000
           }
         ],
         "2:1:0:1": [
           {
             "quantity": 100,
-            "unitPrice": 3700
+            "unitPrice": 3700,
+            "printAmount": 370000
           },
           {
             "quantity": 200,
-            "unitPrice": 3400
+            "unitPrice": 3400,
+            "printAmount": 680000
           },
           {
             "quantity": 300,
-            "unitPrice": 2700
+            "unitPrice": 2700,
+            "printAmount": 810000
           }
         ],
         "0:1:1:0": [
           {
             "quantity": 100,
-            "unitPrice": 2500
+            "unitPrice": 2500,
+            "printAmount": 250000
           },
           {
             "quantity": 200,
-            "unitPrice": 2200
+            "unitPrice": 2200,
+            "printAmount": 440000
           },
           {
             "quantity": 300,
-            "unitPrice": 1967
+            "unitPrice": 1966.7,
+            "printAmount": 590000
           }
         ],
         "0:1:1:1": [
           {
             "quantity": 100,
-            "unitPrice": 2500
+            "unitPrice": 2500,
+            "printAmount": 250000
           },
           {
             "quantity": 200,
-            "unitPrice": 2200
+            "unitPrice": 2200,
+            "printAmount": 440000
           },
           {
             "quantity": 300,
-            "unitPrice": 1967
+            "unitPrice": 1966.7,
+            "printAmount": 590000
           }
         ],
         "1:1:1:0": [
           {
             "quantity": 100,
-            "unitPrice": 3300
+            "unitPrice": 3300,
+            "printAmount": 330000
           },
           {
             "quantity": 200,
-            "unitPrice": 2900
+            "unitPrice": 2900,
+            "printAmount": 580000
           },
           {
             "quantity": 300,
-            "unitPrice": 2667
+            "unitPrice": 2666.7,
+            "printAmount": 800000
           }
         ],
         "1:1:1:1": [
           {
             "quantity": 100,
-            "unitPrice": 3300
+            "unitPrice": 3300,
+            "printAmount": 330000
           },
           {
             "quantity": 200,
-            "unitPrice": 2900
+            "unitPrice": 2900,
+            "printAmount": 580000
           },
           {
             "quantity": 300,
-            "unitPrice": 2667
+            "unitPrice": 2666.7,
+            "printAmount": 800000
           }
         ],
         "2:1:1:0": [
           {
             "quantity": 100,
-            "unitPrice": 3900
+            "unitPrice": 3900,
+            "printAmount": 390000
           },
           {
             "quantity": 200,
-            "unitPrice": 3550
+            "unitPrice": 3550,
+            "printAmount": 710000
           },
           {
             "quantity": 300,
-            "unitPrice": 2900
+            "unitPrice": 2900,
+            "printAmount": 870000
           }
         ],
         "2:1:1:1": [
           {
             "quantity": 100,
-            "unitPrice": 3900
+            "unitPrice": 3900,
+            "printAmount": 390000
           },
           {
             "quantity": 200,
-            "unitPrice": 3550
+            "unitPrice": 3550,
+            "printAmount": 710000
           },
           {
             "quantity": 300,
-            "unitPrice": 2900
+            "unitPrice": 2900,
+            "printAmount": 870000
           }
         ],
         "0:1:2:0": [
           {
             "quantity": 100,
-            "unitPrice": 2600
+            "unitPrice": 2600,
+            "printAmount": 260000
           },
           {
             "quantity": 200,
-            "unitPrice": 2300
+            "unitPrice": 2300,
+            "printAmount": 460000
           },
           {
             "quantity": 300,
-            "unitPrice": 2067
+            "unitPrice": 2066.7,
+            "printAmount": 620000
           }
         ],
         "0:1:2:1": [
           {
             "quantity": 100,
-            "unitPrice": 2600
+            "unitPrice": 2600,
+            "printAmount": 260000
           },
           {
             "quantity": 200,
-            "unitPrice": 2300
+            "unitPrice": 2300,
+            "printAmount": 460000
           },
           {
             "quantity": 300,
-            "unitPrice": 2067
+            "unitPrice": 2066.7,
+            "printAmount": 620000
           }
         ],
         "1:1:2:0": [
           {
             "quantity": 100,
-            "unitPrice": 3400
+            "unitPrice": 3400,
+            "printAmount": 340000
           },
           {
             "quantity": 200,
-            "unitPrice": 3000
+            "unitPrice": 3000,
+            "printAmount": 600000
           },
           {
             "quantity": 300,
-            "unitPrice": 2767
+            "unitPrice": 2766.7,
+            "printAmount": 830000
           }
         ],
         "1:1:2:1": [
           {
             "quantity": 100,
-            "unitPrice": 3400
+            "unitPrice": 3400,
+            "printAmount": 340000
           },
           {
             "quantity": 200,
-            "unitPrice": 3000
+            "unitPrice": 3000,
+            "printAmount": 600000
           },
           {
             "quantity": 300,
-            "unitPrice": 2767
+            "unitPrice": 2766.7,
+            "printAmount": 830000
           }
         ],
         "2:1:2:0": [
           {
             "quantity": 100,
-            "unitPrice": 4000
+            "unitPrice": 4000,
+            "printAmount": 400000
           },
           {
             "quantity": 200,
-            "unitPrice": 3650
+            "unitPrice": 3650,
+            "printAmount": 730000
           },
           {
             "quantity": 300,
-            "unitPrice": 3200
+            "unitPrice": 3200,
+            "printAmount": 960000
           }
         ],
         "2:1:2:1": [
           {
             "quantity": 100,
-            "unitPrice": 4000
+            "unitPrice": 4000,
+            "printAmount": 400000
           },
           {
             "quantity": 200,
-            "unitPrice": 3650
+            "unitPrice": 3650,
+            "printAmount": 730000
           },
           {
             "quantity": 300,
-            "unitPrice": 3200
+            "unitPrice": 3200,
+            "printAmount": 960000
           }
         ]
       },
@@ -546,7 +654,7 @@ $variants$
           "planningEstimate": 50000
         }
       },
-      "priceModel": "service-plus-print-unit-v1"
+      "priceModel": "service-plus-print-total-v2"
     }
   },
   {
@@ -579,505 +687,613 @@ $variants$
         "0:0:0:0": [
           {
             "quantity": 100,
-            "unitPrice": 3000
+            "unitPrice": 3000,
+            "printAmount": 300000
           },
           {
             "quantity": 200,
-            "unitPrice": 2450
+            "unitPrice": 2450,
+            "printAmount": 490000
           },
           {
             "quantity": 750,
-            "unitPrice": 720
+            "unitPrice": 720,
+            "printAmount": 540000
           }
         ],
         "0:0:0:1": [
           {
             "quantity": 100,
-            "unitPrice": 3000
+            "unitPrice": 3000,
+            "printAmount": 300000
           },
           {
             "quantity": 200,
-            "unitPrice": 2450
+            "unitPrice": 2450,
+            "printAmount": 490000
           },
           {
             "quantity": 750,
-            "unitPrice": 720
+            "unitPrice": 720,
+            "printAmount": 540000
           }
         ],
         "0:0:1:0": [
           {
             "quantity": 100,
-            "unitPrice": 3000
+            "unitPrice": 3000,
+            "printAmount": 300000
           },
           {
             "quantity": 200,
-            "unitPrice": 2450
+            "unitPrice": 2450,
+            "printAmount": 490000
           },
           {
             "quantity": 750,
-            "unitPrice": 747
+            "unitPrice": 746.7,
+            "printAmount": 560000
           }
         ],
         "0:0:1:1": [
           {
             "quantity": 100,
-            "unitPrice": 3000
+            "unitPrice": 3000,
+            "printAmount": 300000
           },
           {
             "quantity": 200,
-            "unitPrice": 2450
+            "unitPrice": 2450,
+            "printAmount": 490000
           },
           {
             "quantity": 750,
-            "unitPrice": 747
+            "unitPrice": 746.7,
+            "printAmount": 560000
           }
         ],
         "0:0:2:0": [
           {
             "quantity": 100,
-            "unitPrice": 3100
+            "unitPrice": 3100,
+            "printAmount": 310000
           },
           {
             "quantity": 200,
-            "unitPrice": 2500
+            "unitPrice": 2500,
+            "printAmount": 500000
           },
           {
             "quantity": 750,
-            "unitPrice": 800
+            "unitPrice": 800,
+            "printAmount": 600000
           }
         ],
         "0:0:2:1": [
           {
             "quantity": 100,
-            "unitPrice": 3100
+            "unitPrice": 3100,
+            "printAmount": 310000
           },
           {
             "quantity": 200,
-            "unitPrice": 2500
+            "unitPrice": 2500,
+            "printAmount": 500000
           },
           {
             "quantity": 750,
-            "unitPrice": 800
+            "unitPrice": 800,
+            "printAmount": 600000
           }
         ],
         "0:1:0:0": [
           {
             "quantity": 100,
-            "unitPrice": 3000
+            "unitPrice": 3000,
+            "printAmount": 300000
           },
           {
             "quantity": 200,
-            "unitPrice": 2600
+            "unitPrice": 2600,
+            "printAmount": 520000
           },
           {
             "quantity": 750,
-            "unitPrice": 1000
+            "unitPrice": 1000,
+            "printAmount": 750000
           }
         ],
         "0:1:0:1": [
           {
             "quantity": 100,
-            "unitPrice": 3000
+            "unitPrice": 3000,
+            "printAmount": 300000
           },
           {
             "quantity": 200,
-            "unitPrice": 2600
+            "unitPrice": 2600,
+            "printAmount": 520000
           },
           {
             "quantity": 750,
-            "unitPrice": 1000
+            "unitPrice": 1000,
+            "printAmount": 750000
           }
         ],
         "0:1:1:0": [
           {
             "quantity": 100,
-            "unitPrice": 3200
+            "unitPrice": 3200,
+            "printAmount": 320000
           },
           {
             "quantity": 200,
-            "unitPrice": 2700
+            "unitPrice": 2700,
+            "printAmount": 540000
           },
           {
             "quantity": 750,
-            "unitPrice": 1027
+            "unitPrice": 1026.7,
+            "printAmount": 770000
           }
         ],
         "0:1:1:1": [
           {
             "quantity": 100,
-            "unitPrice": 3200
+            "unitPrice": 3200,
+            "printAmount": 320000
           },
           {
             "quantity": 200,
-            "unitPrice": 2700
+            "unitPrice": 2700,
+            "printAmount": 540000
           },
           {
             "quantity": 750,
-            "unitPrice": 1027
+            "unitPrice": 1026.7,
+            "printAmount": 770000
           }
         ],
         "0:1:2:0": [
           {
             "quantity": 100,
-            "unitPrice": 3600
+            "unitPrice": 3600,
+            "printAmount": 360000
           },
           {
             "quantity": 200,
-            "unitPrice": 2900
+            "unitPrice": 2900,
+            "printAmount": 580000
           },
           {
             "quantity": 750,
-            "unitPrice": 1080
+            "unitPrice": 1080,
+            "printAmount": 810000
           }
         ],
         "0:1:2:1": [
           {
             "quantity": 100,
-            "unitPrice": 3600
+            "unitPrice": 3600,
+            "printAmount": 360000
           },
           {
             "quantity": 200,
-            "unitPrice": 2900
+            "unitPrice": 2900,
+            "printAmount": 580000
           },
           {
             "quantity": 750,
-            "unitPrice": 1080
+            "unitPrice": 1080,
+            "printAmount": 810000
           }
         ],
         "1:0:0:0": [
           {
             "quantity": 100,
-            "unitPrice": 1600
+            "unitPrice": 1600,
+            "printAmount": 160000
           },
           {
             "quantity": 300,
-            "unitPrice": 1033
+            "unitPrice": 1033.3,
+            "printAmount": 310000
           },
           {
             "quantity": 500,
-            "unitPrice": 860
+            "unitPrice": 860,
+            "printAmount": 430000
           }
         ],
         "1:0:0:1": [
           {
             "quantity": 100,
-            "unitPrice": 1600
+            "unitPrice": 1600,
+            "printAmount": 160000
           },
           {
             "quantity": 300,
-            "unitPrice": 1033
+            "unitPrice": 1033.3,
+            "printAmount": 310000
           },
           {
             "quantity": 500,
-            "unitPrice": 860
+            "unitPrice": 860,
+            "printAmount": 430000
           }
         ],
         "1:0:1:0": [
           {
             "quantity": 100,
-            "unitPrice": 1600
+            "unitPrice": 1600,
+            "printAmount": 160000
           },
           {
             "quantity": 300,
-            "unitPrice": 1033
+            "unitPrice": 1033.3,
+            "printAmount": 310000
           },
           {
             "quantity": 500,
-            "unitPrice": 900
+            "unitPrice": 900,
+            "printAmount": 450000
           }
         ],
         "1:0:1:1": [
           {
             "quantity": 100,
-            "unitPrice": 1600
+            "unitPrice": 1600,
+            "printAmount": 160000
           },
           {
             "quantity": 300,
-            "unitPrice": 1033
+            "unitPrice": 1033.3,
+            "printAmount": 310000
           },
           {
             "quantity": 500,
-            "unitPrice": 900
+            "unitPrice": 900,
+            "printAmount": 450000
           }
         ],
         "1:0:2:0": [
           {
             "quantity": 100,
-            "unitPrice": 1600
+            "unitPrice": 1600,
+            "printAmount": 160000
           },
           {
             "quantity": 300,
-            "unitPrice": 1067
+            "unitPrice": 1066.7,
+            "printAmount": 320000
           },
           {
             "quantity": 500,
-            "unitPrice": 940
+            "unitPrice": 940,
+            "printAmount": 470000
           }
         ],
         "1:0:2:1": [
           {
             "quantity": 100,
-            "unitPrice": 1600
+            "unitPrice": 1600,
+            "printAmount": 160000
           },
           {
             "quantity": 300,
-            "unitPrice": 1067
+            "unitPrice": 1066.7,
+            "printAmount": 320000
           },
           {
             "quantity": 500,
-            "unitPrice": 940
+            "unitPrice": 940,
+            "printAmount": 470000
           }
         ],
         "1:1:0:0": [
           {
             "quantity": 100,
-            "unitPrice": 1800
+            "unitPrice": 1800,
+            "printAmount": 180000
           },
           {
             "quantity": 300,
-            "unitPrice": 900
+            "unitPrice": 900,
+            "printAmount": 270000
           },
           {
             "quantity": 500,
-            "unitPrice": 1060
+            "unitPrice": 1060,
+            "printAmount": 530000
           }
         ],
         "1:1:0:1": [
           {
             "quantity": 100,
-            "unitPrice": 1800
+            "unitPrice": 1800,
+            "printAmount": 180000
           },
           {
             "quantity": 300,
-            "unitPrice": 900
+            "unitPrice": 900,
+            "printAmount": 270000
           },
           {
             "quantity": 500,
-            "unitPrice": 1060
+            "unitPrice": 1060,
+            "printAmount": 530000
           }
         ],
         "1:1:1:0": [
           {
             "quantity": 100,
-            "unitPrice": 1800
+            "unitPrice": 1800,
+            "printAmount": 180000
           },
           {
             "quantity": 300,
-            "unitPrice": 1233
+            "unitPrice": 1233.3,
+            "printAmount": 370000
           },
           {
             "quantity": 500,
-            "unitPrice": 1100
+            "unitPrice": 1100,
+            "printAmount": 550000
           }
         ],
         "1:1:1:1": [
           {
             "quantity": 100,
-            "unitPrice": 1800
+            "unitPrice": 1800,
+            "printAmount": 180000
           },
           {
             "quantity": 300,
-            "unitPrice": 1233
+            "unitPrice": 1233.3,
+            "printAmount": 370000
           },
           {
             "quantity": 500,
-            "unitPrice": 1100
+            "unitPrice": 1100,
+            "printAmount": 550000
           }
         ],
         "1:1:2:0": [
           {
             "quantity": 100,
-            "unitPrice": 1800
+            "unitPrice": 1800,
+            "printAmount": 180000
           },
           {
             "quantity": 300,
-            "unitPrice": 1200
+            "unitPrice": 1200,
+            "printAmount": 360000
           },
           {
             "quantity": 500,
-            "unitPrice": 1060
+            "unitPrice": 1060,
+            "printAmount": 530000
           }
         ],
         "1:1:2:1": [
           {
             "quantity": 100,
-            "unitPrice": 1800
+            "unitPrice": 1800,
+            "printAmount": 180000
           },
           {
             "quantity": 300,
-            "unitPrice": 1200
+            "unitPrice": 1200,
+            "printAmount": 360000
           },
           {
             "quantity": 500,
-            "unitPrice": 1060
+            "unitPrice": 1060,
+            "printAmount": 530000
           }
         ],
         "2:0:0:0": [
           {
             "quantity": 100,
-            "unitPrice": 1300
+            "unitPrice": 1300,
+            "printAmount": 130000
           },
           {
             "quantity": 500,
-            "unitPrice": 560
+            "unitPrice": 560,
+            "printAmount": 280000
           },
           {
             "quantity": 1000,
-            "unitPrice": 430
+            "unitPrice": 430,
+            "printAmount": 430000
           }
         ],
         "2:0:0:1": [
           {
             "quantity": 100,
-            "unitPrice": 1300
+            "unitPrice": 1300,
+            "printAmount": 130000
           },
           {
             "quantity": 500,
-            "unitPrice": 560
+            "unitPrice": 560,
+            "printAmount": 280000
           },
           {
             "quantity": 1000,
-            "unitPrice": 430
+            "unitPrice": 430,
+            "printAmount": 430000
           }
         ],
         "2:0:1:0": [
           {
             "quantity": 100,
-            "unitPrice": 1300
+            "unitPrice": 1300,
+            "printAmount": 130000
           },
           {
             "quantity": 500,
-            "unitPrice": 560
+            "unitPrice": 560,
+            "printAmount": 280000
           },
           {
             "quantity": 1000,
-            "unitPrice": 450
+            "unitPrice": 450,
+            "printAmount": 450000
           }
         ],
         "2:0:1:1": [
           {
             "quantity": 100,
-            "unitPrice": 1300
+            "unitPrice": 1300,
+            "printAmount": 130000
           },
           {
             "quantity": 500,
-            "unitPrice": 560
+            "unitPrice": 560,
+            "printAmount": 280000
           },
           {
             "quantity": 1000,
-            "unitPrice": 450
+            "unitPrice": 450,
+            "printAmount": 450000
           }
         ],
         "2:0:2:0": [
           {
             "quantity": 100,
-            "unitPrice": 1300
+            "unitPrice": 1300,
+            "printAmount": 130000
           },
           {
             "quantity": 500,
-            "unitPrice": 580
+            "unitPrice": 580,
+            "printAmount": 290000
           },
           {
             "quantity": 1000,
-            "unitPrice": 470
+            "unitPrice": 470,
+            "printAmount": 470000
           }
         ],
         "2:0:2:1": [
           {
             "quantity": 100,
-            "unitPrice": 1300
+            "unitPrice": 1300,
+            "printAmount": 130000
           },
           {
             "quantity": 500,
-            "unitPrice": 580
+            "unitPrice": 580,
+            "printAmount": 290000
           },
           {
             "quantity": 1000,
-            "unitPrice": 470
+            "unitPrice": 470,
+            "printAmount": 470000
           }
         ],
         "2:1:0:0": [
           {
             "quantity": 100,
-            "unitPrice": 1400
+            "unitPrice": 1400,
+            "printAmount": 140000
           },
           {
             "quantity": 500,
-            "unitPrice": 640
+            "unitPrice": 640,
+            "printAmount": 320000
           },
           {
             "quantity": 1000,
-            "unitPrice": 540
+            "unitPrice": 540,
+            "printAmount": 540000
           }
         ],
         "2:1:0:1": [
           {
             "quantity": 100,
-            "unitPrice": 1400
+            "unitPrice": 1400,
+            "printAmount": 140000
           },
           {
             "quantity": 500,
-            "unitPrice": 640
+            "unitPrice": 640,
+            "printAmount": 320000
           },
           {
             "quantity": 1000,
-            "unitPrice": 540
+            "unitPrice": 540,
+            "printAmount": 540000
           }
         ],
         "2:1:1:0": [
           {
             "quantity": 100,
-            "unitPrice": 1400
+            "unitPrice": 1400,
+            "printAmount": 140000
           },
           {
             "quantity": 500,
-            "unitPrice": 660
+            "unitPrice": 660,
+            "printAmount": 330000
           },
           {
             "quantity": 1000,
-            "unitPrice": 550
+            "unitPrice": 550,
+            "printAmount": 550000
           }
         ],
         "2:1:1:1": [
           {
             "quantity": 100,
-            "unitPrice": 1400
+            "unitPrice": 1400,
+            "printAmount": 140000
           },
           {
             "quantity": 500,
-            "unitPrice": 660
+            "unitPrice": 660,
+            "printAmount": 330000
           },
           {
             "quantity": 1000,
-            "unitPrice": 550
+            "unitPrice": 550,
+            "printAmount": 550000
           }
         ],
         "2:1:2:0": [
           {
             "quantity": 100,
-            "unitPrice": 1400
+            "unitPrice": 1400,
+            "printAmount": 140000
           },
           {
             "quantity": 500,
-            "unitPrice": 640
+            "unitPrice": 640,
+            "printAmount": 320000
           },
           {
             "quantity": 1000,
-            "unitPrice": 540
+            "unitPrice": 540,
+            "printAmount": 540000
           }
         ],
         "2:1:2:1": [
           {
             "quantity": 100,
-            "unitPrice": 1400
+            "unitPrice": 1400,
+            "printAmount": 140000
           },
           {
             "quantity": 500,
-            "unitPrice": 640
+            "unitPrice": 640,
+            "printAmount": 320000
           },
           {
             "quantity": 1000,
-            "unitPrice": 540
+            "unitPrice": 540,
+            "printAmount": 540000
           }
         ]
       },
@@ -1095,7 +1311,7 @@ $variants$
           "planningEstimate": 30000
         }
       },
-      "priceModel": "service-plus-print-unit-v1"
+      "priceModel": "service-plus-print-total-v2"
     }
   },
   {
@@ -1125,113 +1341,137 @@ $variants$
         "0:0:0:0": [
           {
             "quantity": 100,
-            "unitPrice": 2700
+            "unitPrice": 2700,
+            "printAmount": 270000
           },
           {
             "quantity": 300,
-            "unitPrice": 1133
+            "unitPrice": 1133.3,
+            "printAmount": 340000
           },
           {
             "quantity": 500,
-            "unitPrice": 800
+            "unitPrice": 800,
+            "printAmount": 400000
           }
         ],
         "0:0:0:1": [
           {
             "quantity": 100,
-            "unitPrice": 2700
+            "unitPrice": 2700,
+            "printAmount": 270000
           },
           {
             "quantity": 300,
-            "unitPrice": 1133
+            "unitPrice": 1133.3,
+            "printAmount": 340000
           },
           {
             "quantity": 500,
-            "unitPrice": 800
+            "unitPrice": 800,
+            "printAmount": 400000
           }
         ],
         "0:0:1:0": [
           {
             "quantity": 100,
-            "unitPrice": 3000
+            "unitPrice": 3000,
+            "printAmount": 300000
           },
           {
             "quantity": 300,
-            "unitPrice": 1367
+            "unitPrice": 1366.7,
+            "printAmount": 410000
           },
           {
             "quantity": 500,
-            "unitPrice": 980
+            "unitPrice": 980,
+            "printAmount": 490000
           }
         ],
         "0:0:1:1": [
           {
             "quantity": 100,
-            "unitPrice": 3000
+            "unitPrice": 3000,
+            "printAmount": 300000
           },
           {
             "quantity": 300,
-            "unitPrice": 1367
+            "unitPrice": 1366.7,
+            "printAmount": 410000
           },
           {
             "quantity": 500,
-            "unitPrice": 980
+            "unitPrice": 980,
+            "printAmount": 490000
           }
         ],
         "1:0:0:0": [
           {
             "quantity": 100,
-            "unitPrice": 1900
+            "unitPrice": 1900,
+            "printAmount": 190000
           },
           {
             "quantity": 300,
-            "unitPrice": 967
+            "unitPrice": 966.7,
+            "printAmount": 290000
           },
           {
             "quantity": 500,
-            "unitPrice": 620
+            "unitPrice": 620,
+            "printAmount": 310000
           }
         ],
         "1:0:0:1": [
           {
             "quantity": 100,
-            "unitPrice": 1900
+            "unitPrice": 1900,
+            "printAmount": 190000
           },
           {
             "quantity": 300,
-            "unitPrice": 967
+            "unitPrice": 966.7,
+            "printAmount": 290000
           },
           {
             "quantity": 500,
-            "unitPrice": 620
+            "unitPrice": 620,
+            "printAmount": 310000
           }
         ],
         "1:0:1:0": [
           {
             "quantity": 100,
-            "unitPrice": 2000
+            "unitPrice": 2000,
+            "printAmount": 200000
           },
           {
             "quantity": 300,
-            "unitPrice": 1067
+            "unitPrice": 1066.7,
+            "printAmount": 320000
           },
           {
             "quantity": 500,
-            "unitPrice": 720
+            "unitPrice": 720,
+            "printAmount": 360000
           }
         ],
         "1:0:1:1": [
           {
             "quantity": 100,
-            "unitPrice": 2000
+            "unitPrice": 2000,
+            "printAmount": 200000
           },
           {
             "quantity": 300,
-            "unitPrice": 1067
+            "unitPrice": 1066.7,
+            "printAmount": 320000
           },
           {
             "quantity": 500,
-            "unitPrice": 720
+            "unitPrice": 720,
+            "printAmount": 360000
           }
         ]
       },
@@ -1241,7 +1481,7 @@ $variants$
           "planningEstimate": 200000
         }
       },
-      "priceModel": "service-plus-print-unit-v1"
+      "priceModel": "service-plus-print-total-v2"
     }
   },
   {
@@ -1270,57 +1510,69 @@ $variants$
         "0:0:0:0": [
           {
             "quantity": 100,
-            "unitPrice": 300
+            "unitPrice": 300,
+            "printAmount": 30000
           },
           {
             "quantity": 300,
-            "unitPrice": 200
+            "unitPrice": 200,
+            "printAmount": 60000
           },
           {
             "quantity": 4000,
-            "unitPrice": 22
+            "unitPrice": 22.5,
+            "printAmount": 90000
           }
         ],
         "0:0:0:1": [
           {
             "quantity": 100,
-            "unitPrice": 400
+            "unitPrice": 400,
+            "printAmount": 40000
           },
           {
             "quantity": 300,
-            "unitPrice": 333
+            "unitPrice": 333.3,
+            "printAmount": 100000
           },
           {
             "quantity": 4000,
-            "unitPrice": 28
+            "unitPrice": 27.5,
+            "printAmount": 110000
           }
         ],
         "0:0:1:0": [
           {
             "quantity": 100,
-            "unitPrice": 300
+            "unitPrice": 300,
+            "printAmount": 30000
           },
           {
             "quantity": 300,
-            "unitPrice": 233
+            "unitPrice": 233.3,
+            "printAmount": 70000
           },
           {
             "quantity": 4000,
-            "unitPrice": 48
+            "unitPrice": 47.5,
+            "printAmount": 190000
           }
         ],
         "0:0:1:1": [
           {
             "quantity": 100,
-            "unitPrice": 500
+            "unitPrice": 500,
+            "printAmount": 50000
           },
           {
             "quantity": 300,
-            "unitPrice": 367
+            "unitPrice": 366.7,
+            "printAmount": 110000
           },
           {
             "quantity": 4000,
-            "unitPrice": 52
+            "unitPrice": 52.5,
+            "printAmount": 210000
           }
         ]
       },
@@ -1334,7 +1586,7 @@ $variants$
           "planningEstimate": 40000
         }
       },
-      "priceModel": "service-plus-print-unit-v1"
+      "priceModel": "service-plus-print-total-v2"
     }
   },
   {
@@ -1365,13 +1617,15 @@ $variants$
         "0:0:0:0:0": [
           {
             "quantity": 1,
-            "unitPrice": 30000
+            "unitPrice": 30000,
+            "printAmount": 30000
           }
         ],
         "0:1:0:0:0": [
           {
             "quantity": 1,
-            "unitPrice": 50000
+            "unitPrice": 50000,
+            "printAmount": 50000
           }
         ]
       },
@@ -1381,7 +1635,7 @@ $variants$
           "planningEstimate": 50000
         }
       },
-      "priceModel": "service-plus-print-unit-v1"
+      "priceModel": "service-plus-print-total-v2"
     }
   },
   {
@@ -1410,25 +1664,29 @@ $variants$
         "0:0:0:0": [
           {
             "quantity": 1,
-            "unitPrice": 50000
+            "unitPrice": 50000,
+            "printAmount": 50000
           }
         ],
         "0:1:0:0": [
           {
             "quantity": 1,
-            "unitPrice": 60000
+            "unitPrice": 60000,
+            "printAmount": 60000
           }
         ],
         "1:0:0:0": [
           {
             "quantity": 1,
-            "unitPrice": 50000
+            "unitPrice": 50000,
+            "printAmount": 50000
           }
         ],
         "1:1:0:0": [
           {
             "quantity": 1,
-            "unitPrice": 80000
+            "unitPrice": 80000,
+            "printAmount": 80000
           }
         ]
       },
@@ -1438,7 +1696,7 @@ $variants$
           "planningEstimate": 50000
         }
       },
-      "priceModel": "service-plus-print-unit-v1"
+      "priceModel": "service-plus-print-total-v2"
     }
   },
   {
@@ -1466,13 +1724,15 @@ $variants$
         "0:0:0:0": [
           {
             "quantity": 1,
-            "unitPrice": 30000
+            "unitPrice": 30000,
+            "printAmount": 30000
           }
         ],
         "0:0:0:1": [
           {
             "quantity": 1,
-            "unitPrice": 50000
+            "unitPrice": 50000,
+            "printAmount": 50000
           }
         ]
       },
@@ -1482,7 +1742,7 @@ $variants$
           "planningEstimate": 30000
         }
       },
-      "priceModel": "service-plus-print-unit-v1"
+      "priceModel": "service-plus-print-total-v2"
     }
   },
   {
@@ -1532,7 +1792,7 @@ $variants$
           "planningEstimate": 20000
         }
       },
-      "priceModel": "service-plus-print-unit-v1"
+      "priceModel": "service-plus-print-total-v2"
     }
   },
   {
@@ -1559,61 +1819,73 @@ $variants$
         "0:0:0": [
           {
             "quantity": 500,
-            "unitPrice": 120
+            "unitPrice": 120,
+            "printAmount": 60000
           },
           {
             "quantity": 1000,
-            "unitPrice": 90
+            "unitPrice": 90,
+            "printAmount": 90000
           }
         ],
         "0:0:1": [
           {
             "quantity": 500,
-            "unitPrice": 880
+            "unitPrice": 880,
+            "printAmount": 440000
           },
           {
             "quantity": 1000,
-            "unitPrice": 530
+            "unitPrice": 530,
+            "printAmount": 530000
           }
         ],
         "1:0:0": [
           {
             "quantity": 500,
-            "unitPrice": 120
+            "unitPrice": 120,
+            "printAmount": 60000
           },
           {
             "quantity": 1000,
-            "unitPrice": 90
+            "unitPrice": 90,
+            "printAmount": 90000
           }
         ],
         "1:0:1": [
           {
             "quantity": 500,
-            "unitPrice": 880
+            "unitPrice": 880,
+            "printAmount": 440000
           },
           {
             "quantity": 1000,
-            "unitPrice": 530
+            "unitPrice": 530,
+            "printAmount": 530000
           }
         ],
         "2:0:0": [
           {
             "quantity": 500,
-            "unitPrice": 380
+            "unitPrice": 380,
+            "printAmount": 190000
           },
           {
             "quantity": 1000,
-            "unitPrice": 230
+            "unitPrice": 230,
+            "printAmount": 230000
           }
         ],
         "2:0:1": [
           {
             "quantity": 500,
-            "unitPrice": 1060
+            "unitPrice": 1060,
+            "printAmount": 530000
           },
           {
             "quantity": 1000,
-            "unitPrice": 690
+            "unitPrice": 690,
+            "printAmount": 690000
           }
         ]
       },
@@ -1623,7 +1895,7 @@ $variants$
           "planningEstimate": 20000
         }
       },
-      "priceModel": "service-plus-print-unit-v1"
+      "priceModel": "service-plus-print-total-v2"
     }
   },
   {
@@ -1655,7 +1927,7 @@ $variants$
           "planningEstimate": null
         }
       },
-      "priceModel": "service-plus-print-unit-v1"
+      "priceModel": "service-plus-print-total-v2"
     }
   }
 ]

@@ -55,7 +55,9 @@ function groupedProductRecord(overrides = {}) {
             thickness: ['얇은'],
           },
           priceRowsBySelection: {
-            '0:0:0:0': [{ quantity: 100, unitPrice: 2700 }],
+            '0:0:0:0': [
+              { quantity: 100, unitPrice: 2700.5, printAmount: 270050 },
+            ],
           },
           serviceEstimatesBySelection: {
             '': { designPrintEstimate: 250000, planningEstimate: 200000 },
@@ -69,7 +71,9 @@ function groupedProductRecord(overrides = {}) {
             thickness: ['얇은'],
           },
           priceRowsBySelection: {
-            '0:0:0:0': [{ quantity: 100, unitPrice: 300 }],
+            '0:0:0:0': [
+              { quantity: 100, unitPrice: 300, printAmount: 30000 },
+            ],
           },
           serviceEstimatesBySelection: {
             0: { designPrintEstimate: 100000, planningEstimate: 60000 },
@@ -153,7 +157,10 @@ test('grouped JSONB round trips every variant and future key', () => {
   assert.equal(draft.productType, '포스터 · 전단지')
   assert.deepEqual(Object.keys(draft.variants), ['포스터', '전단지'])
   assert.deepEqual(draft.variants.포스터.priceRowsBySelection['0:0:0:0'], [
-    { quantity: '100', unitPrice: '2,700' },
+    { quantity: '100', unitPrice: '2,700.5', printAmount: '270,050' },
+  ])
+  assert.deepEqual(draft.variants.전단지.priceRowsBySelection['0:0:0:0'], [
+    { quantity: '100', unitPrice: '300.0', printAmount: '30,000' },
   ])
   assert.deepEqual(input, {
     configuration: record.configuration,
@@ -223,7 +230,9 @@ test('drafts store blank numbers as null in the grouped configuration', () => {
   const draft = createProductFormDraft('브로슈어 · 카탈로그')
   const brochure = draft.variants['브로슈어 · 카탈로그']
 
-  brochure.priceRowsBySelection['0:0:0:0'] = [{ quantity: '', unitPrice: '' }]
+  brochure.priceRowsBySelection['0:0:0:0'] = [
+    { quantity: '', unitPrice: '', printAmount: '' },
+  ]
 
   const input = toProductWriteInput(draft, 'draft')
   const configuration = input.configuration
@@ -232,6 +241,10 @@ test('drafts store blank numbers as null in the grouped configuration', () => {
   assert.equal(storedBrochure.priceRowsBySelection['0:0:0:0'][0].quantity, null)
   assert.equal(
     storedBrochure.priceRowsBySelection['0:0:0:0'][0].unitPrice,
+    null,
+  )
+  assert.equal(
+    storedBrochure.priceRowsBySelection['0:0:0:0'][0].printAmount,
     null,
   )
   brochure.optionValues.pageCount[0] = ''
@@ -252,7 +265,7 @@ test('blank frontend drafts cannot be published without DB-backed values', () =>
 
   assert.equal(
     getProductValidationMessage(draft, 'published'),
-    '브로슈어 · 카탈로그: 모든 수량과 인쇄 단가를 입력해주세요.',
+    '브로슈어 · 카탈로그: 모든 수량, 인쇄 단가와 합계를 입력해주세요.',
   )
 })
 
@@ -266,7 +279,7 @@ test('drafts allow blank added inputs while publishing targets the blank field',
   assert.equal(getProductValidationIssue(draft, 'draft'), null)
   assert.deepEqual(getProductValidationIssue(draft, 'published'), {
     focusTarget: { field: 'unitPrice', kind: 'price-row', rowIndex: 0 },
-    message: '포스터: 모든 수량과 인쇄 단가를 입력해주세요.',
+    message: '포스터: 모든 수량, 인쇄 단가와 합계를 입력해주세요.',
     selectedOptionIndexes: {
       coating: 0,
       paper: 0,
@@ -285,7 +298,7 @@ test('publishing requires price rows for every selectable price combination', ()
 
   assert.deepEqual(getProductValidationIssue(draft, 'published'), {
     focusTarget: { kind: 'price-add' },
-    message: '포스터: 모든 수량과 인쇄 단가를 입력해주세요.',
+    message: '포스터: 모든 수량, 인쇄 단가와 합계를 입력해주세요.',
     selectedOptionIndexes: {
       coating: 0,
       paper: 0,
@@ -302,7 +315,7 @@ test('publishing requires service estimates for every selectable service combina
 
   flyer.optionValues.side.push('양면')
   flyer.priceRowsBySelection['0:0:0:1'] = [
-    { quantity: '100', unitPrice: '400' },
+    { quantity: '100', unitPrice: '400', printAmount: '40,000' },
   ]
 
   assert.deepEqual(getProductValidationIssue(draft, 'published'), {
@@ -316,4 +329,17 @@ test('publishing requires service estimates for every selectable service combina
     },
     variant: '전단지',
   })
+})
+
+test('legacy rows derive an editable print total until the product is saved', () => {
+  const record = groupedProductRecord()
+  delete record.configuration.variants.포스터.priceRowsBySelection[
+    '0:0:0:0'
+  ][0].printAmount
+
+  const draft = toProductFormDraft(record)
+
+  assert.deepEqual(draft.variants.포스터.priceRowsBySelection['0:0:0:0'], [
+    { quantity: '100', unitPrice: '2,700.5', printAmount: '270,050' },
+  ])
 })

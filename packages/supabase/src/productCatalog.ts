@@ -34,6 +34,7 @@ export type OrderProductQuantitySection = Extract<
 >;
 
 export type OrderProductQuantityPrice = {
+  printAmount: number;
   quantity: number;
   unitPrice: number;
 };
@@ -113,6 +114,15 @@ function isSafeAmount(value: Json | undefined): value is number {
 
 function isPositiveInteger(value: Json | undefined): value is number {
   return isSafeAmount(value) && value > 0;
+}
+
+function isSafeUnitPrice(value: Json | undefined): value is number {
+  return (
+    typeof value === "number" &&
+    Number.isFinite(value) &&
+    value >= 0 &&
+    value <= Number.MAX_SAFE_INTEGER
+  );
 }
 
 function hasUniqueStrings(values: readonly string[]) {
@@ -218,14 +228,20 @@ function readPriceRows(
 
       if (
         !isPositiveInteger(quantity) ||
-        !isSafeAmount(unitPrice) ||
+        !isSafeUnitPrice(unitPrice) ||
         quantities.has(quantity)
       ) {
         return null;
       }
 
+      const legacyPrintAmount = quantity * unitPrice;
+      const printAmount =
+        row.printAmount === undefined ? legacyPrintAmount : row.printAmount;
+
+      if (!isSafeAmount(printAmount)) return null;
+
       quantities.add(quantity);
-      parsedRows.push({ quantity, unitPrice });
+      parsedRows.push({ printAmount, quantity, unitPrice });
     }
 
     rowsBySelection[selectionKey] = parsedRows;
@@ -532,9 +548,7 @@ export function calculateProductSelection(
   const estimatedDesignAmount =
     estimate.designPrintEstimate * estimateMultiplier;
   const designPrintAmount = estimatedDesignAmount;
-  const printAmount = quantityRow
-    ? quantityRow.quantity * quantityRow.unitPrice
-    : 0;
+  const printAmount = quantityRow?.printAmount ?? 0;
   const planningAmount = selection.hasPlanning
     ? (estimate.planningEstimate ?? 0) * estimateMultiplier
     : 0;

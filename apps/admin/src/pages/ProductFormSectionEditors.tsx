@@ -1,7 +1,11 @@
 import { useEffect, useRef } from 'react'
 import type { RefCallback } from 'react'
 import { AdminIcon } from '../components/AdminIcon'
-import { formatNumericValue } from './productData'
+import {
+  formatDecimalNumericValue,
+  formatFixedDecimalNumericValue,
+  formatNumericValue,
+} from './productData'
 import type {
   ProductOptionSectionKey,
   QuantityPriceDraft,
@@ -251,9 +255,18 @@ function NumericControl({
         className="product-ui-control__input product-ui-control__input--center"
         data-product-price-field={field}
         data-row-index={dataRowIndex}
-        inputMode="numeric"
+        inputMode={field === 'unitPrice' ? 'decimal' : 'numeric'}
+        onBlur={(event) => {
+          if (field === 'unitPrice') {
+            onChange(formatFixedDecimalNumericValue(event.currentTarget.value))
+          }
+        }}
         onChange={(event) =>
-          onChange(formatNumericValue(event.currentTarget.value))
+          onChange(
+            field === 'unitPrice'
+              ? formatDecimalNumericValue(event.currentTarget.value)
+              : formatNumericValue(event.currentTarget.value),
+          )
         }
         placeholder={placeholder}
         ref={inputRef}
@@ -291,7 +304,8 @@ export function QuantityPriceEditor({
       <div className="product-ui-price-table">
         <div className="product-ui-price-header" aria-hidden="true">
           <span>수량</span>
-          <span>인쇄 단가</span>
+          <span>인쇄 단가(원/단위)</span>
+          <span>합계(원)</span>
         </div>
         <div className="product-ui-price-list">
           {rows.map((row, index) => (
@@ -319,6 +333,17 @@ export function QuantityPriceEditor({
                   placeholder="인쇄 단가를 입력해주세요."
                   suffix="원"
                   value={row.unitPrice}
+                />
+                <NumericControl
+                  ariaLabel={`${heading} ${index + 1} 인쇄비 합계`}
+                  dataRowIndex={index}
+                  field="printAmount"
+                  onChange={(printAmount) =>
+                    onRowChange(index, { ...row, printAmount })
+                  }
+                  placeholder="인쇄비 합계를 입력해주세요."
+                  suffix="원"
+                  value={row.printAmount}
                 />
               </div>
               <button

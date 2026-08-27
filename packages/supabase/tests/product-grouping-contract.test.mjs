@@ -85,6 +85,7 @@ test('spreadsheet seed contains only complete price rows', () => {
         for (const row of rows) {
           assert.equal(typeof row.quantity, 'number')
           assert.equal(typeof row.unitPrice, 'number')
+          assert.equal(typeof row.printAmount, 'number')
         }
       }
 

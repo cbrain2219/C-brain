@@ -25,6 +25,10 @@ test('product form composes fixed common and conditional sections', () => {
   assert.match(source, /formatProductSectionHeading\(index, section\.label\)/)
   assert.match(source, /<OptionValuesEditor/)
   assert.match(source, /<QuantityPriceEditor/)
+  assert.match(
+    source,
+    /\{ quantity: '', unitPrice: '', printAmount: '' \}/,
+  )
   assert.match(source, /ProductFormDraft/)
   assert.match(source, /onProductTypeChange\(value\)/)
   assert.match(source, /getActiveProductUiDraft\(draft\)/)
