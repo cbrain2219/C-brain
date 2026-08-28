@@ -3,7 +3,6 @@ import test from 'node:test'
 
 import {
   createEbookPublicUrl,
-  createEbookPreviewUrl,
   createInitialEbookForm,
   getEbookOgImageDisplayName,
   isValidEbookSlug,
@@ -66,24 +65,19 @@ test('E-book URL and slug validation accept only supported public formats', () =
     'https://my.ebook36524.com/books/vzqq/',
   )
   assert.equal(
-    createEbookPublicUrl('fluonics', 'https://ebook.cbrain.kr'),
-    'https://ebook.cbrain.kr/fluonics',
-  )
-  assert.equal(
-    createEbookPreviewUrl('fluonics', 'http://localhost:3000'),
-    'http://localhost:3000/ebook-preview/fluonics',
+    createEbookPublicUrl('fluonics', 'https://www.cbrain.kr'),
+    'https://www.cbrain.kr/fluonics',
   )
 })
 
 test('E-book rows map to list and form values', () => {
   assert.deepEqual(
-    toEbookListRow(ebook, 'https://ebook.cbrain.kr', 'http://localhost:3000'),
+    toEbookListRow(ebook, 'https://www.cbrain.kr'),
     {
       createdAt: '26. 03. 16',
       detailHref: '/ebook/ebook-1',
       id: 'ebook-1',
-      previewUrl: 'http://localhost:3000/ebook-preview/design-system-guide',
-      publicUrl: 'https://ebook.cbrain.kr/design-system-guide',
+      publicUrl: 'https://www.cbrain.kr/design-system-guide',
       status: 'published',
       title: '디자인 시스템 구축을 위한 실전 가이드북',
     },

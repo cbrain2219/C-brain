@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 
-import { siteSeo } from "../app/_content/seo";
+import { getSiteUrl, siteSeo } from "../app/_content/seo";
 
 type EbookMetadataRecord = {
   og_image_alt: string | null;
@@ -15,7 +15,7 @@ type EbookMetadataOptions = {
   url?: URL;
 };
 
-const siteOrigin = process.env.NEXT_PUBLIC_SITE_URL || "https://cbrain.kr";
+const siteOrigin = getSiteUrl();
 
 function createSocialImage(ebook: EbookMetadataRecord) {
   if (ebook.og_image_url) {

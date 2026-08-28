@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
+import { getPageUrl } from "../../_content/seo";
 import { createEbookMetadata } from "../../../lib/ebookMetadata";
 import { getPublicEbook } from "../../../lib/publicEbooks";
 import styles from "./page.module.css";
@@ -9,13 +10,10 @@ type EbookViewerPageProps = {
   params: Promise<{ slug: string }>;
 };
 
-const ebookOrigin =
-  process.env.NEXT_PUBLIC_EBOOK_URL || "https://ebook.cbrain.kr";
-
 export const revalidate = 0;
 
 function createPublicUrl(slug: string) {
-  return new URL(`/${slug}`, ebookOrigin);
+  return getPageUrl(`/${slug}`);
 }
 
 export async function generateMetadata({

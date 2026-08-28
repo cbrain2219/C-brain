@@ -16,8 +16,9 @@ test("the public E-book slug renders the stored HTTPS embed without the site she
     readFile(helperPath, "utf8"),
   ]);
 
-  assert.match(page, /process\.env\.NEXT_PUBLIC_EBOOK_URL/);
-  assert.match(page, /https:\/\/ebook\.cbrain\.kr/);
+  assert.match(page, /getPageUrl\(`\/\$\{slug\}`\)/);
+  assert.doesNotMatch(page, /NEXT_PUBLIC_EBOOK_URL/);
+  assert.doesNotMatch(page, /ebook\.cbrain\.kr/);
   assert.match(page, /src=\{ebook\.embed_url\}/);
   assert.match(page, /<iframe/);
   assert.match(page, /allowFullScreen/);

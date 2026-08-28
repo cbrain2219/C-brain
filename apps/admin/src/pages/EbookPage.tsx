@@ -11,6 +11,8 @@ import type { EbookListRow } from './ebookData'
 import './EbookPage.css'
 import './PortfolioPage.css'
 
+const ebookPublicOrigin = 'https://www.cbrain.kr'
+
 function EbookCopyButton({ publicUrl }: { readonly publicUrl: string }) {
   async function handleCopy() {
     try {
@@ -32,28 +34,6 @@ function EbookCopyButton({ publicUrl }: { readonly publicUrl: string }) {
   )
 }
 
-function EbookLinkActions({
-  previewUrl,
-  publicUrl,
-}: {
-  readonly previewUrl: string
-  readonly publicUrl: string
-}) {
-  return (
-    <span className="ebook-page__link-actions">
-      <a
-        className="ebook-page__preview-link"
-        href={previewUrl}
-        rel="noreferrer"
-        target="_blank"
-      >
-        미리보기
-      </a>
-      <EbookCopyButton publicUrl={publicUrl} />
-    </span>
-  )
-}
-
 const ebookColumns = [
   {
     header: '상태',
@@ -72,9 +52,7 @@ const ebookColumns = [
   {
     header: '링크',
     id: 'link',
-    renderCell: (row) => (
-      <EbookLinkActions previewUrl={row.previewUrl} publicUrl={row.publicUrl} />
-    ),
+    renderCell: (row) => <EbookCopyButton publicUrl={row.publicUrl} />,
     track: '120fr',
   },
   {
@@ -100,10 +78,6 @@ const ebookColumns = [
 ] satisfies readonly AdminTableColumn<EbookListRow>[]
 
 export function EbookPage() {
-  const publicOrigin =
-    import.meta.env.VITE_EBOOK_PUBLIC_URL || 'https://ebook.cbrain.kr'
-  const userAppOrigin =
-    import.meta.env.VITE_USER_APP_URL || 'http://localhost:3000'
   const [rows, setRows] = useState<readonly EbookListRow[]>([])
   const [query, setQuery] = useState('')
   const [isLoading, setIsLoading] = useState(true)
@@ -125,9 +99,7 @@ export function EbookPage() {
       .then((ebooks) => {
         if (isCurrent) {
           setRows(
-            ebooks.map((ebook) =>
-              toEbookListRow(ebook, publicOrigin, userAppOrigin),
-            ),
+            ebooks.map((ebook) => toEbookListRow(ebook, ebookPublicOrigin)),
           )
         }
       })
@@ -143,7 +115,7 @@ export function EbookPage() {
     return () => {
       isCurrent = false
     }
-  }, [publicOrigin, userAppOrigin])
+  }, [])
 
   return (
     <main className="portfolio-page" aria-label="E-book 관리">

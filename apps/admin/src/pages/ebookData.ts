@@ -18,7 +18,6 @@ export type EbookListRow = {
   createdAt: string
   detailHref: string
   id: string
-  previewUrl: string
   publicUrl: string
   status: AdminContentStatus
   title: string
@@ -102,23 +101,14 @@ export function createEbookPublicUrl(slug: string, publicOrigin: string) {
   return new URL(slug, originWithSlash).toString()
 }
 
-export function createEbookPreviewUrl(slug: string, userAppOrigin: string) {
-  const originWithSlash = userAppOrigin.endsWith('/')
-    ? userAppOrigin
-    : `${userAppOrigin}/`
-  return new URL(`ebook-preview/${slug}`, originWithSlash).toString()
-}
-
 export function toEbookListRow(
   ebook: TableRow<'ebooks'>,
   publicOrigin: string,
-  userAppOrigin: string,
 ): EbookListRow {
   return {
     createdAt: formatAdminDate(ebook.created_at),
     detailHref: `/ebook/${ebook.id}`,
     id: ebook.id,
-    previewUrl: createEbookPreviewUrl(ebook.slug, userAppOrigin),
     publicUrl: createEbookPublicUrl(ebook.slug, publicOrigin),
     status: ebook.status === 'published' ? 'published' : 'draft',
     title: ebook.title,

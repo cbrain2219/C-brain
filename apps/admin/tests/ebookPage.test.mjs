@@ -45,9 +45,10 @@ test('E-book list follows the designed table, search, copy, and create actions',
 
   assert.match(source, /listAdminEbooks\(supabase\)/)
   assert.match(source, /navigator\.clipboard\.writeText\(publicUrl\)/)
-  assert.match(source, /VITE_USER_APP_URL/)
-  assert.match(source, />\s*미리보기\s*</)
-  assert.match(source, /https:\/\/ebook\.cbrain\.kr/)
+  assert.match(source, /https:\/\/www\.cbrain\.kr/)
+  assert.doesNotMatch(source, />\s*미리보기\s*</)
+  assert.doesNotMatch(source, /VITE_EBOOK_PUBLIC_URL/)
+  assert.doesNotMatch(source, /VITE_USER_APP_URL/)
   assert.match(source, /href: '\/ebook\/new'/)
 })
 

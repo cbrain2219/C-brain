@@ -1,12 +1,4 @@
-.ebook-page__link-actions {
-  display: inline-flex;
-  align-items: center;
-  gap: 12px;
-  white-space: nowrap;
-}
-
-.ebook-page__copy-button,
-.ebook-page__preview-link {
+.ebook-page__copy-button {
   padding: 0;
   border: 0;
   background: transparent;
@@ -16,13 +8,11 @@
   text-decoration: none;
 }
 
-.ebook-page__copy-button:hover,
-.ebook-page__preview-link:hover {
+.ebook-page__copy-button:hover {
   color: var(--admin-brand-600);
 }
 
-.ebook-page__copy-button:focus-visible,
-.ebook-page__preview-link:focus-visible {
+.ebook-page__copy-button:focus-visible {
   outline: 2px solid var(--admin-brand-500);
   outline-offset: 4px;
 }
