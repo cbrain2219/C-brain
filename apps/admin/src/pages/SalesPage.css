@@ -327,7 +327,7 @@
 .admin-sales-chart__point {
   stroke: var(--admin-gray-50);
   stroke-width: 2;
-  cursor: pointer;
+  pointer-events: none;
 }
 
 .admin-sales-chart__point--brand {
@@ -338,9 +338,21 @@
   fill: var(--admin-sales-series-color);
 }
 
+.admin-sales-chart__point-hit-area {
+  fill: transparent;
+  stroke: none;
+  outline: none;
+  cursor: pointer;
+  pointer-events: all;
+}
+
 .admin-sales-chart__axis-label {
   fill: var(--admin-gray-600);
   opacity: 0.8;
+}
+
+.admin-sales-chart-tooltip {
+  pointer-events: none;
 }
 
 .admin-sales-chart-tooltip rect {

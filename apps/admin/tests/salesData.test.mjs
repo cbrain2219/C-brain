@@ -401,6 +401,14 @@ test('consolidated sales data keeps the exact eight-column payment table', async
     cssSource,
     /\.admin-sales-chart-tooltip--product rect\s*{[^}]*fill: var\(--admin-sales-series-color\)/,
   )
+  assert.match(
+    cssSource,
+    /\.admin-sales-chart__point-hit-area\s*{[^}]*outline: none;[^}]*pointer-events: all;/,
+  )
+  assert.match(
+    cssSource,
+    /\.admin-sales-chart-tooltip\s*{[^}]*pointer-events: none;/,
+  )
   for (const color of salesChartProductColors) {
     assert.match(
       cssSource,

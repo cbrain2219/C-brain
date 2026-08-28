@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useLayoutEffect, useMemo, useRef, useState } from 'react'
 import type { ChangeEvent } from 'react'
 import { AdminIcon } from '../AdminIcon'
 import {
@@ -20,8 +20,10 @@ const CHART_WIDTH = 1296
 const CHART_HEIGHT = 436
 const PLOT_TOP = 40
 const PLOT_HEIGHT = 360
-const DEFAULT_POINT_INDEX = 8
 const GRID_LINE_COUNT = 19
+const POINT_HIT_RADIUS = 16
+const TOOLTIP_MIN_WIDTH = 124
+const TOOLTIP_HORIZONTAL_PADDING = 12
 
 type SalesTrendChartProps = {
   readonly filters: SalesFilters
@@ -56,21 +58,6 @@ function getAreaPath(points: readonly ChartPoint[]) {
     .join(' ')
 
   return `M ${points[0].x} ${baseline} ${line} L ${points.at(-1)?.x ?? 0} ${baseline} Z`
-}
-
-function getDefaultPointKey(visibleSeries: readonly SalesTrendSeries[]) {
-  const preferredSeries =
-    visibleSeries.find(
-      (item) =>
-        item.productId !== null && item.points.some((point) => point.value > 0),
-    ) ?? visibleSeries.find((item) => item.points.length > 0)
-
-  if (!preferredSeries) return null
-
-  return getPointKey(
-    preferredSeries.id,
-    Math.min(DEFAULT_POINT_INDEX, preferredSeries.points.length - 1),
-  )
 }
 
 function getChannelLabel(channel: SalesFilters['channel']) {
@@ -158,14 +145,9 @@ export function SalesTrendChart({
         visualColor,
       })),
   )
-  const defaultPointKey = getDefaultPointKey(visibleSeries)
   const activePoint = renderedPoints.find(
     (item) => getPointKey(item.series.id, item.pointIndex) === activePointKey,
   )
-  const fallbackPoint = renderedPoints.find(
-    (item) => getPointKey(item.series.id, item.pointIndex) === defaultPointKey,
-  )
-  const tooltipPoint = activePoint ?? fallbackPoint
   const axisPoints =
     series.find((item) => item.productId === null)?.points ?? []
   const axisLabels =
@@ -290,7 +272,7 @@ export function SalesTrendChart({
 
         <figure
           className="admin-sales-chart"
-          onPointerLeave={() => setActivePointKey(defaultPointKey)}
+          onPointerLeave={() => setActivePointKey(null)}
         >
           <svg
             aria-label={
@@ -365,18 +347,35 @@ export function SalesTrendChart({
                           pointIndex,
                         )
 
+                        const clearActivePoint = () =>
+                          setActivePointKey((currentPointKey) =>
+                            currentPointKey === pointKey
+                              ? null
+                              : currentPointKey,
+                          )
+
                         return (
-                          <circle
-                            aria-label={`${renderedItem.label}, ${point.tooltipLabel}, ${formatSalesNumber(point.value)}원`}
-                            className={`admin-sales-chart__point admin-sales-chart__point--${renderedItem.productId === null ? 'brand' : 'product'}`}
-                            cx={chartPoint.x}
-                            cy={chartPoint.y + PLOT_TOP}
-                            key={pointKey}
-                            onFocus={() => setActivePointKey(pointKey)}
-                            onPointerEnter={() => setActivePointKey(pointKey)}
-                            r="4"
-                            tabIndex={0}
-                          />
+                          <g key={pointKey}>
+                            <circle
+                              aria-hidden="true"
+                              className={`admin-sales-chart__point admin-sales-chart__point--${renderedItem.productId === null ? 'brand' : 'product'}`}
+                              cx={chartPoint.x}
+                              cy={chartPoint.y + PLOT_TOP}
+                              r={activePointKey === pointKey ? 6 : 4}
+                            />
+                            <circle
+                              aria-label={`${renderedItem.label}, ${point.tooltipLabel}, ${formatSalesNumber(point.value)}원`}
+                              className="admin-sales-chart__point-hit-area"
+                              cx={chartPoint.x}
+                              cy={chartPoint.y + PLOT_TOP}
+                              onBlur={clearActivePoint}
+                              onFocus={() => setActivePointKey(pointKey)}
+                              onPointerEnter={() => setActivePointKey(pointKey)}
+                              onPointerLeave={clearActivePoint}
+                              r={POINT_HIT_RADIUS}
+                              tabIndex={0}
+                            />
+                          </g>
                         )
                       })}
                     </g>
@@ -396,8 +395,8 @@ export function SalesTrendChart({
               </text>
             ))}
 
-            {hasData && tooltipPoint ? (
-              <ChartTooltip point={tooltipPoint} />
+            {hasData && activePoint ? (
+              <ChartTooltip point={activePoint} />
             ) : null}
           </svg>
 
@@ -429,10 +428,26 @@ export function SalesTrendChart({
 }
 
 function ChartTooltip({ point }: { readonly point: RenderedPoint }) {
-  const width = 124
+  const label = point.point.tooltipLabel
+  const value = `${formatSalesNumber(point.point.value)}원`
+  const labelRef = useRef<SVGTextElement>(null)
+  const valueRef = useRef<SVGTextElement>(null)
+  const [width, setWidth] = useState(TOOLTIP_MIN_WIDTH)
   const height = 54
   const x = Math.min(Math.max(point.chartPoint.x + 10, 0), CHART_WIDTH - width)
   const y = Math.max(point.chartPoint.y + PLOT_TOP - height - 12, 0)
+
+  useLayoutEffect(() => {
+    const labelWidth = labelRef.current?.getComputedTextLength?.() ?? 0
+    const valueWidth = valueRef.current?.getComputedTextLength?.() ?? 0
+    const measuredWidth =
+      Math.ceil(Math.max(labelWidth, valueWidth)) +
+      TOOLTIP_HORIZONTAL_PADDING * 2
+
+    setWidth(
+      Math.min(CHART_WIDTH, Math.max(TOOLTIP_MIN_WIDTH, measuredWidth)),
+    )
+  }, [label, value])
 
   return (
     <g
@@ -440,11 +455,21 @@ function ChartTooltip({ point }: { readonly point: RenderedPoint }) {
       transform={`translate(${x} ${y})`}
     >
       <rect height={height} rx="12" width={width} />
-      <text className="admin-sales-chart-tooltip__label" x="12" y="20">
-        {point.point.tooltipLabel}
+      <text
+        className="admin-sales-chart-tooltip__label"
+        ref={labelRef}
+        x={TOOLTIP_HORIZONTAL_PADDING}
+        y="20"
+      >
+        {label}
       </text>
-      <text className="admin-sales-chart-tooltip__value" x="12" y="40">
-        {formatSalesNumber(point.point.value)}원
+      <text
+        className="admin-sales-chart-tooltip__value"
+        ref={valueRef}
+        x={TOOLTIP_HORIZONTAL_PADDING}
+        y="40"
+      >
+        {value}
       </text>
     </g>
   )
