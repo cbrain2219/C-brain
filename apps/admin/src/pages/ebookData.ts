@@ -98,7 +98,7 @@ export function createEbookPublicUrl(slug: string, publicOrigin: string) {
   const originWithSlash = publicOrigin.endsWith('/')
     ? publicOrigin
     : `${publicOrigin}/`
-  return new URL(slug, originWithSlash).toString()
+  return new URL(`ebook/${slug}`, originWithSlash).toString()
 }
 
 export function toEbookListRow(

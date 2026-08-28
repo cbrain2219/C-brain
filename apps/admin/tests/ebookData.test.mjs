@@ -66,7 +66,7 @@ test('E-book URL and slug validation accept only supported public formats', () =
   )
   assert.equal(
     createEbookPublicUrl('fluonics', 'https://www.cbrain.kr'),
-    'https://www.cbrain.kr/fluonics',
+    'https://www.cbrain.kr/ebook/fluonics',
   )
 })
 
@@ -77,7 +77,7 @@ test('E-book rows map to list and form values', () => {
       createdAt: '26. 03. 16',
       detailHref: '/ebook/ebook-1',
       id: 'ebook-1',
-      publicUrl: 'https://www.cbrain.kr/design-system-guide',
+      publicUrl: 'https://www.cbrain.kr/ebook/design-system-guide',
       status: 'published',
       title: '디자인 시스템 구축을 위한 실전 가이드북',
     },

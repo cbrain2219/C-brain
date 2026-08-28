@@ -2,7 +2,14 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 
-const pagePath = new URL("../app/(ebook)/[slug]/page.tsx", import.meta.url);
+const pagePath = new URL(
+  "../app/(ebook)/ebook/[slug]/page.tsx",
+  import.meta.url,
+);
+const legacyPagePath = new URL(
+  "../app/(ebook)/[slug]/page.tsx",
+  import.meta.url,
+);
 const previewPath = new URL(
   "../app/(ebook)/ebook-preview/[slug]/page.tsx",
   import.meta.url,
@@ -10,13 +17,13 @@ const previewPath = new URL(
 const helperPath = new URL("../lib/publicEbooks.ts", import.meta.url);
 const metadataPath = new URL("../lib/ebookMetadata.ts", import.meta.url);
 
-test("the public E-book slug renders the stored HTTPS embed without the site shell", async () => {
+test("the public E-book route renders the stored HTTPS embed without the site shell", async () => {
   const [page, helper] = await Promise.all([
     readFile(pagePath, "utf8"),
     readFile(helperPath, "utf8"),
   ]);
 
-  assert.match(page, /getPageUrl\(`\/\$\{slug\}`\)/);
+  assert.match(page, /getPageUrl\(`\/ebook\/\$\{slug\}`\)/);
   assert.doesNotMatch(page, /NEXT_PUBLIC_EBOOK_URL/);
   assert.doesNotMatch(page, /ebook\.cbrain\.kr/);
   assert.match(page, /src=\{ebook\.embed_url\}/);
@@ -25,6 +32,14 @@ test("the public E-book slug renders the stored HTTPS embed without the site she
   assert.match(page, /notFound\(\)/);
   assert.doesNotMatch(page, /<Header|<Footer/);
   assert.match(helper, /getPublishedEbook\(client, slug\)/);
+});
+
+test("legacy root E-book links permanently redirect to the namespaced route", async () => {
+  const legacyPage = await readFile(legacyPagePath, "utf8");
+
+  assert.match(legacyPage, /getPublicEbook\(slug\)/);
+  assert.match(legacyPage, /if \(!ebook\) notFound\(\)/);
+  assert.match(legacyPage, /permanentRedirect\(`\/ebook\/\$\{slug\}`\)/);
 });
 
 test("the public E-book page uses entered title, SEO copy, and an optional custom OG image", async () => {

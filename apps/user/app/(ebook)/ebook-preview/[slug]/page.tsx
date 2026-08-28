@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 
 import { createEbookMetadata } from "../../../../lib/ebookMetadata";
 import { getPublicEbook } from "../../../../lib/publicEbooks";
-import styles from "../../[slug]/page.module.css";
+import styles from "../../ebook/[slug]/page.module.css";
 
 type EbookPreviewPageProps = {
   params: Promise<{ slug: string }>;

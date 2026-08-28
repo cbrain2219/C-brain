@@ -1,53 +1,20 @@
-import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 
-import { getPageUrl } from "../../_content/seo";
-import { createEbookMetadata } from "../../../lib/ebookMetadata";
 import { getPublicEbook } from "../../../lib/publicEbooks";
-import styles from "./page.module.css";
 
-type EbookViewerPageProps = {
+type LegacyEbookPageProps = {
   params: Promise<{ slug: string }>;
 };
 
 export const revalidate = 0;
 
-function createPublicUrl(slug: string) {
-  return getPageUrl(`/${slug}`);
-}
-
-export async function generateMetadata({
+export default async function LegacyEbookPage({
   params,
-}: EbookViewerPageProps): Promise<Metadata> {
-  const { slug } = await params;
-  const ebook = await getPublicEbook(slug);
-
-  if (!ebook) return { title: "E-book | C-Brain" };
-
-  const pageUrl = createPublicUrl(slug);
-
-  return {
-    ...createEbookMetadata(ebook, { url: pageUrl }),
-    alternates: { canonical: pageUrl },
-  };
-}
-
-export default async function EbookViewerPage({
-  params,
-}: EbookViewerPageProps) {
+}: LegacyEbookPageProps) {
   const { slug } = await params;
   const ebook = await getPublicEbook(slug);
 
   if (!ebook) notFound();
 
-  return (
-    <main aria-label={`${ebook.title} E-book`} className={styles.viewer}>
-      <iframe
-        allowFullScreen
-        className={styles.frame}
-        src={ebook.embed_url}
-        title={ebook.title}
-      />
-    </main>
-  );
+  permanentRedirect(`/ebook/${slug}`);
 }
