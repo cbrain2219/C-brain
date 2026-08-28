@@ -185,7 +185,7 @@ export function createPaymentAlimtalkOrderFields(
   return {
     category,
     pageCount: readOption(snapshot, "pageCount") || EMPTY_VALUE,
-    paper: paper || (material ? `${material} (재질)` : EMPTY_VALUE),
+    paper: paper || material || EMPTY_VALUE,
     quantity:
       selectedQuantity ||
       (baseQuantity

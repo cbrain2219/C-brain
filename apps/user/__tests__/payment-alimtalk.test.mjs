@@ -150,7 +150,7 @@ test("all site products map to non-empty approved template variables", async () 
       output: {
         category: "배너 · 족자 · 현수막",
         pageCount: "해당 없음",
-        paper: `${material} (재질)`,
+        paper: material,
         quantity: "1개",
         service: `${variant} · 디자인 + 인쇄`,
       },
@@ -168,7 +168,7 @@ test("all site products map to non-empty approved template variables", async () 
       output: {
         category: "명함 · 봉투",
         pageCount: "해당 없음",
-        paper: "일반지(스노우, 무광코팅) (재질)",
+        paper: "일반지(스노우, 무광코팅)",
         quantity: "일반지 500장 × 1명",
         service: "명함 · 디자인 + 인쇄",
       },
@@ -183,7 +183,7 @@ test("all site products map to non-empty approved template variables", async () 
       output: {
         category: "명함 · 봉투",
         pageCount: "해당 없음",
-        paper: "일반 봉투재질(백모조지) (재질)",
+        paper: "일반 봉투재질(백모조지)",
         quantity: "500장",
         service: "봉투 · 디자인 + 인쇄",
       },
