@@ -56,3 +56,26 @@ test("Next robots route delegates to shared SEO content", async () => {
   assert.doesNotMatch(source, /sitemap:\s*["'`]/);
   assert.doesNotMatch(source, /disallow:\s*\[/);
 });
+
+test("production robots points to the public www sitemap", async () => {
+  const check = `
+    import assert from "node:assert/strict";
+    const { createRobotsRules } = await import(${JSON.stringify(robotsContentModuleUrl)});
+    const robots = createRobotsRules();
+
+    assert.equal(robots.sitemap, "https://www.cbrain.kr/sitemap.xml");
+  `;
+
+  await execFileAsync(
+    process.execPath,
+    ["--experimental-strip-types", "--input-type=module", "--eval", check],
+    {
+      env: {
+        ...process.env,
+        NEXT_PUBLIC_SITE_URL: "https://c-brain-user.vercel.app",
+        NODE_NO_WARNINGS: "1",
+        VERCEL_ENV: "production",
+      },
+    },
+  );
+});

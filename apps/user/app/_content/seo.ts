@@ -20,7 +20,7 @@ export const siteSeo = {
   ],
   defaultTitle: "씨브레인 | C-Brain",
   name: "C-Brain",
-  url: "https://cbrain.kr",
+  url: "https://www.cbrain.kr",
 } as const;
 
 const defaultSocialImage = {
@@ -206,7 +206,10 @@ type NoIndexMetadataInput = {
 };
 
 export function getSiteUrl() {
-  const envUrl = process.env.NEXT_PUBLIC_SITE_URL?.trim();
+  const envUrl =
+    process.env.VERCEL_ENV === "production"
+      ? siteSeo.url
+      : process.env.NEXT_PUBLIC_SITE_URL?.trim();
 
   try {
     return new URL(envUrl || siteSeo.url);
@@ -278,6 +281,12 @@ export function createRootMetadata(): Metadata {
       description: siteSeo.defaultDescription,
       images: [socialImage],
       title: siteSeo.defaultTitle,
+    },
+    verification: {
+      other: {
+        "naver-site-verification":
+          "76713c667f883801426f306acc098d7a0bbee337",
+      },
     },
   };
 }

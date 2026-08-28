@@ -66,6 +66,7 @@ test("static page metadata is configured from one SEO content module", async () 
     const expectedKeys = expectedEntries.map(([key]) => key);
 
     assert.equal(siteSeo.name, "C-Brain");
+    assert.equal(siteSeo.url, "https://www.cbrain.kr");
     assert.ok(siteSeo.defaultDescription.length > 20);
     assert.equal(
       pageSeo.home.title,
@@ -173,7 +174,7 @@ test("social images use the matching Vercel deployment URL", async () => {
     const { createRootMetadata } = await import(${JSON.stringify(seoModuleUrl)});
     const metadata = createRootMetadata();
 
-    assert.equal(metadata.openGraph.url.origin, "https://cbrain.kr");
+    assert.equal(metadata.openGraph.url.origin, "https://www.cbrain.kr");
     assert.equal(metadata.openGraph.images[0].url.origin, process.env.EXPECTED_IMAGE_ORIGIN);
     assert.equal(metadata.twitter.images[0].url.origin, process.env.EXPECTED_IMAGE_ORIGIN);
   `;
@@ -207,7 +208,7 @@ test("social images use the matching Vercel deployment URL", async () => {
             env: {
               ...process.env,
               EXPECTED_IMAGE_ORIGIN: expectedOrigin,
-              NEXT_PUBLIC_SITE_URL: "https://cbrain.kr",
+              NEXT_PUBLIC_SITE_URL: "https://www.cbrain.kr",
               VERCEL_ENV: vercelEnv,
               VERCEL_PROJECT_PRODUCTION_URL: vercelProjectProductionUrl,
               VERCEL_URL: vercelUrl,
@@ -215,6 +216,56 @@ test("social images use the matching Vercel deployment URL", async () => {
           },
         ),
     ),
+  );
+});
+
+test("production canonical URLs ignore deployment-host overrides", async () => {
+  const check = `
+    import assert from "node:assert/strict";
+    const {
+      createRootMetadata,
+      getPageUrl,
+      getSiteUrl,
+    } = await import(${JSON.stringify(seoModuleUrl)});
+    const metadata = createRootMetadata();
+
+    assert.equal(getSiteUrl().origin, "https://www.cbrain.kr");
+    assert.equal(getPageUrl("/sitemap.xml").href, "https://www.cbrain.kr/sitemap.xml");
+    assert.equal(metadata.metadataBase.origin, "https://www.cbrain.kr");
+    assert.equal(metadata.openGraph.url.origin, "https://www.cbrain.kr");
+  `;
+
+  await execFileAsync(
+    process.execPath,
+    ["--experimental-strip-types", "--input-type=module", "--eval", check],
+    {
+      env: {
+        ...process.env,
+        NEXT_PUBLIC_SITE_URL: "https://c-brain-user.vercel.app",
+        NODE_NO_WARNINGS: "1",
+        VERCEL_ENV: "production",
+      },
+    },
+  );
+});
+
+test("root metadata includes the Naver site verification token", async () => {
+  const check = `
+    import assert from "node:assert/strict";
+    const { createRootMetadata } = await import(${JSON.stringify(seoModuleUrl)});
+    const metadata = createRootMetadata();
+
+    assert.deepEqual(metadata.verification.other, {
+      "naver-site-verification": "76713c667f883801426f306acc098d7a0bbee337",
+    });
+  `;
+
+  await execFileAsync(
+    process.execPath,
+    ["--experimental-strip-types", "--input-type=module", "--eval", check],
+    {
+      env: { ...process.env, NODE_NO_WARNINGS: "1" },
+    },
   );
 });
 
