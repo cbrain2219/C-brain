@@ -1247,7 +1247,8 @@ test("shared payment result presentation is wired", () => {
   assert.doesNotMatch(resultSource, /카카오톡 채널 열기/);
   assert.doesNotMatch(resultSource, /resultActionTextDesktop/);
   assert.doesNotMatch(resultSource, /resultActionTextCompact/);
-  assert.match(resultSource, /className=\{styles\.resultActionIcon\}/);
+  assert.doesNotMatch(resultSource, /message-typing/);
+  assert.doesNotMatch(resultSource, /styles\.resultActionIcon/);
   assert.match(resultSource, /다른 제품 주문하기/);
   assert.match(resultSource, /다시 결제하기/);
   assert.equal(countMatches(guideLinesSource, /\n\s*["']/g), 4);
@@ -1307,11 +1308,7 @@ test("shared payment result presentation is wired", () => {
     stylesSource,
     /\.resultActionButton\s*\{[^}]*width:\s*min\(148px,\s*calc\(\(100% - 8px\) \/ 2\)\)/s,
   );
-  assert.match(stylesSource, /\.resultActionIcon\s*\{/);
-  assert.match(
-    stylesSource,
-    /@media \(max-width:\s*359px\)[\s\S]*?\.resultActionIcon\s*\{[\s\S]*?display:\s*none/,
-  );
+  assert.doesNotMatch(stylesSource, /\.resultActionIcon\s*\{/);
   assert.match(stylesSource, /\.resultActionBrand\s*\{/);
   assert.match(stylesSource, /\.resultActionKakao\s*\{/);
   assert.match(

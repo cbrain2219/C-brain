@@ -24,6 +24,7 @@ const GRID_LINE_COUNT = 19
 const POINT_HIT_RADIUS = 16
 const TOOLTIP_MIN_WIDTH = 124
 const TOOLTIP_HORIZONTAL_PADDING = 12
+const TOOLTIP_HEIGHT = 54
 
 type SalesTrendChartProps = {
   readonly filters: SalesFilters
@@ -433,9 +434,12 @@ function ChartTooltip({ point }: { readonly point: RenderedPoint }) {
   const labelRef = useRef<SVGTextElement>(null)
   const valueRef = useRef<SVGTextElement>(null)
   const [width, setWidth] = useState(TOOLTIP_MIN_WIDTH)
-  const height = 54
   const x = Math.min(Math.max(point.chartPoint.x + 10, 0), CHART_WIDTH - width)
-  const y = Math.max(point.chartPoint.y + PLOT_TOP - height - 12, 0)
+  const pointY = point.chartPoint.y + PLOT_TOP
+  const y = Math.min(
+    Math.max(pointY - TOOLTIP_HEIGHT / 2, 0),
+    CHART_HEIGHT - TOOLTIP_HEIGHT,
+  )
 
   useLayoutEffect(() => {
     const labelWidth = labelRef.current?.getComputedTextLength?.() ?? 0
@@ -454,7 +458,7 @@ function ChartTooltip({ point }: { readonly point: RenderedPoint }) {
       className={`admin-sales-chart-tooltip admin-sales-chart-tooltip--${point.series.productId === null ? 'brand' : 'product'} admin-sales-chart-color--${point.visualColor}`}
       transform={`translate(${x} ${y})`}
     >
-      <rect height={height} rx="12" width={width} />
+      <rect height={TOOLTIP_HEIGHT} rx="12" width={width} />
       <text
         className="admin-sales-chart-tooltip__label"
         ref={labelRef}

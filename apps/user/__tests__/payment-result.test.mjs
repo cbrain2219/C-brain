@@ -21,6 +21,13 @@ test("the shared payment result page reads only the safe ledger result", async (
   assert.match(resultPage, /params: Promise<\{ publicToken: string \}>/);
   assert.match(resultPage, /createNoIndexMetadata/);
   assert.match(resultPage, /result\.status === "payment_pending"/);
+  assert.match(resultPage, /summary: \{/);
+  assert.match(resultPage, /result\.itemSummary\.categoryLabel/);
+  assert.match(resultPage, /result\.itemSummary\.companyName/);
+  assert.match(resultPage, /result\.itemSummary\.optionRows/);
+  assert.match(resultPage, /result\.itemSummary\.serviceLabel/);
+  assert.match(resultPage, /toLowerCase\(\) === "card"/);
+  assert.doesNotMatch(resultPage, /label: "주문명"/);
   assert.match(resultComponent, /variant: "pending"/);
   assert.doesNotMatch(resultPage, /buyer_(?:name|phone|email)/);
 });

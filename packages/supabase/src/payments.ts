@@ -90,8 +90,16 @@ export type RefundRow = {
   refundedAt: string | null;
 };
 
+export type SafeOrderItemSummary = {
+  categoryLabel: string | null;
+  companyName: string | null;
+  optionRows: Array<{ label: string; value: string }>;
+  serviceLabel: string;
+};
+
 export type SafeOrderResult = {
   channel: OrderChannel;
+  itemSummary: SafeOrderItemSummary;
   orderName: string;
   paymentMethod: string | null;
   status: OrderStatus;
@@ -124,6 +132,117 @@ const successfulPaymentStatuses = new Set<PaymentStatus>([
   "partial_cancelled",
   "cancelled",
 ]);
+
+const asRecord = (value: unknown): Record<string, unknown> | null =>
+  typeof value === "object" && value !== null && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : null;
+
+const readText = (value: unknown) =>
+  typeof value === "string" ? value.trim() : "";
+
+function readLabelValueRows(value: unknown) {
+  if (!Array.isArray(value)) return [];
+
+  return value.flatMap((item) => {
+    const row = asRecord(item);
+    const label = readText(row?.label);
+    const rowValue = readText(row?.value);
+
+    return label && rowValue ? [{ label, value: rowValue }] : [];
+  });
+}
+
+function splitPageQuantity(value: string) {
+  const parts = value
+    .split(/\s*\/\s*/)
+    .map((part) => part.trim())
+    .filter(Boolean);
+
+  if (parts.length >= 2) {
+    return {
+      pageCount: parts[0]!,
+      quantity: parts.slice(1).join(" / "),
+    };
+  }
+
+  if (
+    /\d\s*(?:부|장|개|매|세트)/i.test(value) &&
+    !/\d\s*(?:p|페이지)/i.test(value)
+  ) {
+    return { pageCount: "", quantity: value };
+  }
+
+  return { pageCount: value, quantity: "" };
+}
+
+function createSafeOrderItemSummary(
+  channel: OrderChannel,
+  itemSnapshot: unknown,
+  orderName: string,
+  buyerCompany: string | null,
+): SafeOrderItemSummary {
+  const snapshot = asRecord(itemSnapshot);
+  const customerCompany = readText(buyerCompany) || null;
+
+  if (!snapshot) {
+    return {
+      categoryLabel: null,
+      companyName: customerCompany,
+      optionRows: [],
+      serviceLabel: orderName,
+    };
+  }
+
+  if (channel === "linkpay") {
+    const linkCompanyName = readText(snapshot.clientName);
+    const serviceLabel = readText(snapshot.service);
+    const paper = readText(snapshot.paper);
+    const pageQuantity = splitPageQuantity(readText(snapshot.pageQuantity));
+
+    return {
+      categoryLabel: null,
+      companyName: linkCompanyName || customerCompany,
+      optionRows: [
+        ...(paper ? [{ label: "용지", value: paper }] : []),
+        ...(pageQuantity.pageCount
+          ? [{ label: "페이지 수", value: pageQuantity.pageCount }]
+          : []),
+        ...(pageQuantity.quantity
+          ? [{ label: "수량", value: pageQuantity.quantity }]
+          : []),
+      ],
+      serviceLabel: serviceLabel || orderName,
+    };
+  }
+
+  const planning = asRecord(snapshot.planning);
+  const product = asRecord(snapshot.product);
+  const quantity = asRecord(snapshot.quantity);
+  const service = asRecord(snapshot.service);
+  const variant = asRecord(snapshot.variant);
+  const categoryLabel =
+    readText(service?.label) || readText(product?.label) || null;
+  const productLabel = readText(product?.label);
+  const variantLabel = readText(variant?.label);
+  const quantityLabel = readText(quantity?.label);
+
+  return {
+    categoryLabel,
+    companyName: customerCompany,
+    optionRows: [
+      ...(variantLabel && variantLabel !== productLabel
+        ? [{ label: "상품 종류", value: variantLabel }]
+        : []),
+      ...readLabelValueRows(snapshot.options),
+      ...(quantityLabel ? [{ label: "수량", value: quantityLabel }] : []),
+    ],
+    serviceLabel:
+      planning?.included === true
+        ? "디자인 + 인쇄 + 기획"
+        : "디자인 + 인쇄",
+  };
+}
 
 type CheckoutRpcRow = {
   amount: number;
@@ -382,7 +501,9 @@ export async function getOrderResultByPublicToken(
 ): Promise<SafeOrderResult | null> {
   const { data, error } = await client
     .from("orders")
-    .select("channel, order_name, status, amount, payments(pay_method, status)")
+    .select(
+      "channel, order_name, status, amount, item_snapshot, buyer_company, payments(pay_method, status)",
+    )
     .eq("public_token", publicToken)
     .maybeSingle();
 
@@ -391,7 +512,12 @@ export async function getOrderResultByPublicToken(
 
   const order = data as Pick<
     TableRow<"orders">,
-    "amount" | "channel" | "order_name" | "status"
+    | "amount"
+    | "buyer_company"
+    | "channel"
+    | "item_snapshot"
+    | "order_name"
+    | "status"
   > & {
     payments: Pick<TableRow<"payments">, "pay_method" | "status">[];
   };
@@ -403,6 +529,12 @@ export async function getOrderResultByPublicToken(
 
   return {
     channel: order.channel,
+    itemSummary: createSafeOrderItemSummary(
+      order.channel,
+      order.item_snapshot,
+      order.order_name,
+      order.buyer_company,
+    ),
     orderName: order.order_name,
     paymentMethod,
     status: order.status,

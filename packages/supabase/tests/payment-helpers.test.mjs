@@ -294,7 +294,17 @@ test("NICEPAY TID lookup resolves the original payment and its order", async () 
 test("order results use the successful payment method rather than an earlier failed attempt", async () => {
   const { client } = fakePaymentLookupClient({
     amount: 20000,
+    buyer_company: "고객사",
     channel: "site",
+    item_snapshot: {
+      channel: "site",
+      options: [{ key: "size", label: "사이즈", value: "A4" }],
+      planning: { amount: 10000, included: true, label: "기획" },
+      product: { id: "brochure", label: "브로슈어" },
+      quantity: { label: "500부", value: 500 },
+      service: { id: "brochure", label: "브로슈어" },
+      variant: { id: "16p", label: "16p" },
+    },
     order_name: "사이트 결제",
     payments: [
       { pay_method: null, status: "failed" },
@@ -306,4 +316,52 @@ test("order results use the successful payment method rather than an earlier fai
   const result = await getOrderResultByPublicToken(client, "order-public-token");
 
   assert.equal(result?.paymentMethod, "card");
+  assert.deepEqual(result?.itemSummary, {
+    categoryLabel: "브로슈어",
+    companyName: "고객사",
+    optionRows: [
+      { label: "상품 종류", value: "16p" },
+      { label: "사이즈", value: "A4" },
+      { label: "수량", value: "500부" },
+    ],
+    serviceLabel: "디자인 + 인쇄 + 기획",
+  });
+});
+
+test("linkpay order results expose only display-safe payment details", async () => {
+  const { client } = fakePaymentLookupClient({
+    amount: 50000,
+    channel: "linkpay",
+    item_snapshot: {
+      amount: 50000,
+      category: "브로슈어",
+      channel: "linkpay",
+      clientName: "노코더스",
+      pageQuantity: "16p / 500부",
+      paper: "일반지",
+      paymentLinkId: "private-link-id",
+      paymentName: "노코더스 브로슈어 결제",
+      service: "디자인 + 인쇄 + 기획",
+    },
+    order_name: "노코더스 브로슈어 결제",
+    payments: [{ pay_method: "card", status: "paid" }],
+    status: "paid",
+  });
+
+  const result = await getOrderResultByPublicToken(client, "order-public-token");
+
+  assert.deepEqual(result?.itemSummary, {
+    categoryLabel: null,
+    companyName: "노코더스",
+    optionRows: [
+      { label: "용지", value: "일반지" },
+      { label: "페이지 수", value: "16p" },
+      { label: "수량", value: "500부" },
+    ],
+    serviceLabel: "디자인 + 인쇄 + 기획",
+  });
+  assert.doesNotMatch(
+    JSON.stringify(result?.itemSummary),
+    /private-link-id/,
+  );
 });

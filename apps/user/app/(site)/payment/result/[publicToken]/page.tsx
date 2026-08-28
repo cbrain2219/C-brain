@@ -63,17 +63,28 @@ export default async function PaymentResultPage({
       : result.status === "refunded"
         ? "환불 완료"
         : null;
+  const rawPaymentMethod = result.paymentMethod?.trim();
+  const paymentMethod =
+    rawPaymentMethod?.toLowerCase() === "card"
+      ? "카드"
+      : (rawPaymentMethod ?? "카드");
 
   return (
     <OrderPaymentResult
       data={{
-        companyName: "C-Brain",
-        detailRows: [
-          { label: "주문명", value: result.orderName },
-          ...(statusLabel ? [{ label: "결제 상태", value: statusLabel }] : []),
-        ],
-        paymentMethod: result.paymentMethod ?? "카드",
-        totalPrice: result.totalAmount,
+        companyName: result.itemSummary.companyName ?? "C-Brain",
+        paymentMethod,
+        summary: {
+          categoryLabel: result.itemSummary.categoryLabel ?? "",
+          optionRows: [
+            ...result.itemSummary.optionRows,
+            ...(statusLabel
+              ? [{ label: "결제 상태", value: statusLabel }]
+              : []),
+          ],
+          serviceLabel: result.itemSummary.serviceLabel,
+          totalPrice: result.totalAmount,
+        },
       }}
       showProgress={result.channel === "site"}
       successPrimaryHref={primaryHref}

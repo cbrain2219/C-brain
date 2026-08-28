@@ -73,9 +73,14 @@ it('shows a measured tooltip only while a chart point is hovered', () => {
     '.admin-sales-chart-tooltip',
   )
   const background = tooltip?.querySelector('rect')
+  const transform = tooltip?.getAttribute('transform')
+  const translate = transform?.match(/^translate\(([-\d.]+) ([-\d.]+)\)$/)
+  const pointY = Number(hitAreas[1].getAttribute('cy'))
+  const tooltipHeight = Number(background?.getAttribute('height'))
 
   expect(background?.getAttribute('width')).toBe('204')
-  expect(tooltip?.getAttribute('transform')).toMatch(/^translate\(1092 /)
+  expect(Number(translate?.[1])).toBe(1092)
+  expect(Number(translate?.[2]) + tooltipHeight / 2).toBe(pointY)
 
   fireEvent.pointerLeave(hitAreas[1])
 

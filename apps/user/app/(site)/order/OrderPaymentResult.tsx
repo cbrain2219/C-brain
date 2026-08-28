@@ -265,11 +265,6 @@ function OrderResultActions({
         target="_blank"
       >
         <span>결제완료 상담하기</span>
-        <Icon
-          className={styles.resultActionIcon}
-          name="message-typing"
-          size={16}
-        />
       </a>
     </div>
   );

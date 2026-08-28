@@ -1721,10 +1721,6 @@
   white-space: nowrap;
 }
 
-.resultActionIcon {
-  flex: 0 0 auto;
-}
-
 .resultActionBrand {
   background: var(--landing-button-brand-fill);
   color: var(--landing-gray-50);
@@ -1807,12 +1803,6 @@
   }
 
   .resultProgress {
-    display: none;
-  }
-}
-
-@media (max-width: 359px) {
-  .resultActionIcon {
     display: none;
   }
 }
