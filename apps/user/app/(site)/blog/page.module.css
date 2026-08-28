@@ -16,12 +16,16 @@
   width: var(--blog-hero-image-width) !important;
   height: var(--blog-hero-image-height) !important;
   max-width: none;
-  object-fit: fill;
   object-position: center;
 }
 
 .page .blogHeroOverlay {
-  background: rgba(255, 255, 255, 0.8);
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.96) 0%,
+    rgba(255, 255, 255, 0.84) 48%,
+    rgba(255, 255, 255, 0.2) 100%
+  );
 }
 
 .title {
@@ -724,10 +728,6 @@
     --blog-hero-image-top: -10.64%;
     --blog-hero-image-width: 132.24%;
     --blog-hero-image-height: 143.63%;
-  }
-
-  .page .blogHeroOverlay {
-    background: linear-gradient(90deg, #ffffff 0%, rgba(255, 255, 255, 0) 100%);
   }
 }
 

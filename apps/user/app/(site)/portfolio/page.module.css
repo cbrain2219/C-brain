@@ -25,7 +25,12 @@
 }
 
 .heroOverlay {
-  background: rgba(255, 255, 255, 0.8);
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.96) 0%,
+    rgba(255, 255, 255, 0.84) 48%,
+    rgba(255, 255, 255, 0.2) 100%
+  );
 }
 
 .heroContent {
@@ -384,10 +389,6 @@
 }
 
 @media (min-width: 1080px) {
-  .heroOverlay {
-    background: linear-gradient(90deg, #ffffff 0%, rgba(255, 255, 255, 0) 78%);
-  }
-
   .heroContent {
     /* width: min(100%, 1080px); */
     /* padding: var(--site-page-top-offset, 124px) 80px 72px; */
