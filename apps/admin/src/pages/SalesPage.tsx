@@ -6,6 +6,7 @@ import { SalesSummaryCards } from '../components/admin-sales/SalesSummaryCards'
 import { SalesTransactionsTable } from '../components/admin-sales/SalesTransactionsTable'
 import { SalesTrendChart } from '../components/admin-sales/SalesTrendChart'
 import { refundPayment } from '../lib/paymentApi'
+import { createRefundRequestId } from '../lib/refundRequestId'
 import { supabase } from '../lib/supabase'
 import { buildSalesTrendSeries } from './salesData'
 import type { SalesFilters } from './salesData'
@@ -168,7 +169,7 @@ export function SalesPage() {
         <SalesTransactionsTable
           onRefund={(transaction) =>
             setRefundFlow({
-              requestId: crypto.randomUUID(),
+              requestId: createRefundRequestId(),
               state: 'confirm',
               transaction,
             })
