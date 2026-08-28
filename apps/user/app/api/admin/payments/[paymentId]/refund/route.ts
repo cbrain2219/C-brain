@@ -281,7 +281,7 @@ export async function POST(request: Request, { params }: RouteContext) {
   }
 
   if (
-    input.amount < reservation.payment.balanceAmount &&
+    input.amount < reservation.payment.amount &&
     reservation.payment.canPartCancel === false
   ) {
     await finishFailed(
@@ -306,6 +306,7 @@ export async function POST(request: Request, { params }: RouteContext) {
         amount: input.amount,
         currentBalance: reservation.payment.balanceAmount,
         orderId: refundOrderId,
+        originalAmount: reservation.payment.amount,
         reason: input.reason,
       },
     );

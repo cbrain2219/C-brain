@@ -56,6 +56,10 @@ test("refund, reconciliation, and webhook preserve ledger reservations", async (
     refundRoute,
     /const payment = await cancelNicepayPayment[\s\S]*hasExpectedCancellation\([\s\S]*reservation\.payment\.providerOrderId,\s*refundOrderId/,
   );
+  assert.match(
+    refundRoute,
+    /originalAmount: reservation\.payment\.amount/,
+  );
   assert.match(refundRoute, /expectedOrderIds\.some/);
   assert.match(refundRoute, /receiptUrl: cancellation\.receiptUrl/);
   assert.match(

@@ -216,15 +216,31 @@ test("NICEPAY payment parser and cancellation request retain refund fields", asy
 
   try {
     await cancelNicepayPayment(config, "original-tid", {
-      amount: 10000,
-      currentBalance: 10000,
+      amount: 110000,
+      currentBalance: 110000,
       orderId: "FULLREFUND",
+      originalAmount: 110000,
       reason: "고객 요청",
     });
     await cancelNicepayPayment(config, "original-tid", {
-      amount: 4000,
-      currentBalance: 10000,
-      orderId: "PARTIALREFUND",
+      amount: 55555,
+      currentBalance: 110000,
+      orderId: "PARTIALREFUND-1",
+      originalAmount: 110000,
+      reason: "고객 요청",
+    });
+    await cancelNicepayPayment(config, "original-tid", {
+      amount: 50000,
+      currentBalance: 54445,
+      orderId: "PARTIALREFUND-2",
+      originalAmount: 110000,
+      reason: "고객 요청",
+    });
+    await cancelNicepayPayment(config, "original-tid", {
+      amount: 4445,
+      currentBalance: 4445,
+      orderId: "PARTIALREFUND-3",
+      originalAmount: 110000,
       reason: "고객 요청",
     });
   } finally {
@@ -232,8 +248,10 @@ test("NICEPAY payment parser and cancellation request retain refund fields", asy
   }
 
   assert.equal(requestBodies[0].cancelAmt, undefined);
-  assert.equal(requestBodies[1].cancelAmt, 4000);
-  assert.equal(requestBodies[1].orderId, "PARTIALREFUND");
+  assert.equal(requestBodies[1].cancelAmt, 55555);
+  assert.equal(requestBodies[2].cancelAmt, 50000);
+  assert.equal(requestBodies[3].cancelAmt, 4445);
+  assert.equal(requestBodies[3].orderId, "PARTIALREFUND-3");
 });
 
 test("NICEPAY cancellation exposes an explicit rejection without another request", async () => {
@@ -268,6 +286,7 @@ test("NICEPAY cancellation exposes an explicit rejection without another request
           amount: 4000,
           currentBalance: 10000,
           orderId: "PARTIALREFUND",
+          originalAmount: 10000,
           reason: "고객 요청",
         },
       ),

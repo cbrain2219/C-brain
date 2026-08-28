@@ -485,14 +485,17 @@ export async function cancelNicepayPayment(
     amount: number;
     currentBalance: number;
     orderId: string;
+    originalAmount: number;
     reason: string;
   },
 ) {
   if (
     !Number.isSafeInteger(input.amount) ||
     !Number.isSafeInteger(input.currentBalance) ||
+    !Number.isSafeInteger(input.originalAmount) ||
     input.amount < 1 ||
     input.currentBalance < input.amount ||
+    input.originalAmount < input.currentBalance ||
     !input.orderId ||
     !input.reason.trim()
   ) {
@@ -504,7 +507,7 @@ export async function cancelNicepayPayment(
     reason: input.reason.trim(),
   };
 
-  if (input.amount < input.currentBalance) {
+  if (input.amount < input.originalAmount) {
     body.cancelAmt = input.amount;
   }
 
