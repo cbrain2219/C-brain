@@ -1,5 +1,17 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  async rewrites() {
+    return {
+      afterFiles: [],
+      beforeFiles: [
+        {
+          destination: "/api/sitemap",
+          source: "/sitemap.xml",
+        },
+      ],
+      fallback: [],
+    };
+  },
   images: {
     deviceSizes: [640, 750, 828, 1080, 1440, 1920],
     minimumCacheTTL: 2678400,

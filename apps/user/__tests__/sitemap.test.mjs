@@ -12,9 +12,10 @@ const sitemapContentModuleUrl = new URL(
   import.meta.url,
 ).href;
 const appSitemapPath = new URL(
-  "../app/sitemap.xml/route.ts",
+  "../app/api/sitemap/route.ts",
   import.meta.url,
 );
+const nextConfigPath = new URL("../next.config.js", import.meta.url);
 
 test("sitemap helper lists public pages and excludes private payment routes", async () => {
   const check = `
@@ -119,8 +120,11 @@ test("sitemap helper lists public pages and excludes private payment routes", as
   );
 });
 
-test("explicit sitemap route assembles public dynamic detail groups", async () => {
-  const source = await readFile(appSitemapPath, "utf8");
+test("explicit sitemap API assembles public dynamic detail groups", async () => {
+  const [source, nextConfigSource] = await Promise.all([
+    readFile(appSitemapPath, "utf8"),
+    readFile(nextConfigPath, "utf8"),
+  ]);
 
   assert.match(source, /export async function GET/);
   assert.match(source, /export const revalidate = 0/);
@@ -128,6 +132,10 @@ test("explicit sitemap route assembles public dynamic detail groups", async () =
   assert.match(source, /serializeSitemap/);
   assert.match(source, /new Response/);
   assert.match(source, /"Content-Type": "application\/xml; charset=utf-8"/);
+  assert.match(nextConfigSource, /async rewrites\(\)/);
+  assert.match(nextConfigSource, /beforeFiles:/);
+  assert.match(nextConfigSource, /source: "\/sitemap\.xml"/);
+  assert.match(nextConfigSource, /destination: "\/api\/sitemap"/);
   assert.match(source, /getPublishedBlogPosts/);
   assert.match(source, /getPublishedPortfolioItems/);
   assert.match(source, /Promise\.all/);
