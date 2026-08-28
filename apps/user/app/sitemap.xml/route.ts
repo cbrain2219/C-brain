@@ -1,24 +1,25 @@
 import type { MetadataRoute } from "next";
 
-import { getNoticePageData } from "./(site)/notice/_data/notices";
-import { getCustomerReviewPageData } from "./_content/customerReviews";
+import { getNoticePageData } from "../(site)/notice/_data/notices";
+import { getCustomerReviewPageData } from "../_content/customerReviews";
 import {
   getOrderCategoryHref,
   orderCategories,
-} from "./_content/order";
-import { getPortfolioDetailPath } from "./_content/portfolio";
+} from "../_content/order";
+import { getPortfolioDetailPath } from "../_content/portfolio";
 import {
   createSitemapEntries,
+  serializeSitemap,
   type SitemapDynamicRoute,
-} from "./_content/sitemap";
+} from "../_content/sitemap";
 import {
   getPublishedBlogPosts,
   getPublishedPortfolioItems,
-} from "../lib/publicContent";
+} from "../../lib/publicContent";
 
 export const revalidate = 0;
 
-export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+export async function GET() {
   const [posts, items, reviewPageData, noticePageData] = await Promise.all([
     getPublishedBlogPosts(),
     getPublishedPortfolioItems(),
@@ -53,12 +54,19 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     path: `/customer-review/${interview.detailSlug}`,
     priority: 0.6,
   })) satisfies SitemapDynamicRoute[];
-
-  return createSitemapEntries([
+  const entries: MetadataRoute.Sitemap = createSitemapEntries([
     ...orderCategoryRoutes,
     ...portfolioRoutes,
     ...blogRoutes,
     ...reviewRoutes,
     ...noticeRoutes,
   ]);
+
+  return new Response(serializeSitemap(entries), {
+    headers: {
+      "Cache-Control":
+        "public, max-age=0, s-maxage=300, stale-while-revalidate=86400",
+      "Content-Type": "application/xml; charset=utf-8",
+    },
+  });
 }

@@ -11,13 +11,17 @@ const sitemapContentModuleUrl = new URL(
   "../app/_content/sitemap.ts",
   import.meta.url,
 ).href;
-const appSitemapPath = new URL("../app/sitemap.ts", import.meta.url);
+const appSitemapPath = new URL(
+  "../app/sitemap.xml/route.ts",
+  import.meta.url,
+);
 
 test("sitemap helper lists public pages and excludes private payment routes", async () => {
   const check = `
     import assert from "node:assert/strict";
     const {
       createSitemapEntries,
+      serializeSitemap,
       sitemapStaticPageKeys,
     } = await import(${JSON.stringify(sitemapContentModuleUrl)});
 
@@ -84,6 +88,22 @@ test("sitemap helper lists public pages and excludes private payment routes", as
     assert.ok(!paths.includes("/faq"));
     assert.ok(!paths.includes("/complaint"));
     assert.ok(!paths.some((path) => path.startsWith("/linkpay/")));
+
+    const xml = serializeSitemap([
+      {
+        changeFrequency: "weekly",
+        lastModified: new Date("2026-08-28T00:00:00.000Z"),
+        priority: 0,
+        url: "https://example.com/search?a=1&b=2",
+      },
+    ]);
+
+    assert.ok(xml.startsWith('<?xml version="1.0" encoding="UTF-8"?>'));
+    assert.ok(xml.includes('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'));
+    assert.ok(xml.includes('<loc>https://example.com/search?a=1&amp;b=2</loc>'));
+    assert.ok(xml.includes('<lastmod>2026-08-28T00:00:00.000Z</lastmod>'));
+    assert.ok(xml.includes('<changefreq>weekly</changefreq>'));
+    assert.ok(xml.includes('<priority>0</priority>'));
   `;
 
   await execFileAsync(
@@ -99,12 +119,15 @@ test("sitemap helper lists public pages and excludes private payment routes", as
   );
 });
 
-test("Next sitemap route assembles public dynamic detail groups", async () => {
+test("explicit sitemap route assembles public dynamic detail groups", async () => {
   const source = await readFile(appSitemapPath, "utf8");
 
-  assert.match(source, /export default async function sitemap/);
+  assert.match(source, /export async function GET/);
   assert.match(source, /export const revalidate = 0/);
   assert.match(source, /createSitemapEntries/);
+  assert.match(source, /serializeSitemap/);
+  assert.match(source, /new Response/);
+  assert.match(source, /"Content-Type": "application\/xml; charset=utf-8"/);
   assert.match(source, /getPublishedBlogPosts/);
   assert.match(source, /getPublishedPortfolioItems/);
   assert.match(source, /Promise\.all/);

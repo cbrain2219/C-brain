@@ -10,6 +10,14 @@ import {
 type SitemapEntry = MetadataRoute.Sitemap[number];
 type SitemapChangeFrequency = NonNullable<SitemapEntry["changeFrequency"]>;
 
+const xmlEntities: Record<string, string> = {
+  '"': "&quot;",
+  "&": "&amp;",
+  "'": "&apos;",
+  "<": "&lt;",
+  ">": "&gt;",
+};
+
 type SitemapRouteOptions = {
   changeFrequency: SitemapChangeFrequency;
   lastModified?: Date | string;
@@ -92,4 +100,41 @@ export function createSitemapEntries(
   }
 
   return [...entriesByUrl.values()];
+}
+
+function escapeXml(value: string) {
+  return value.replace(
+    /[&<>"']/g,
+    (character) => xmlEntities[character] ?? character,
+  );
+}
+
+export function serializeSitemap(entries: MetadataRoute.Sitemap) {
+  const urls = entries.map((entry) => {
+    const lastModified =
+      entry.lastModified instanceof Date
+        ? entry.lastModified.toISOString()
+        : entry.lastModified;
+    const fields = [
+      `<loc>${escapeXml(entry.url)}</loc>`,
+      lastModified
+        ? `<lastmod>${escapeXml(lastModified)}</lastmod>`
+        : undefined,
+      entry.changeFrequency
+        ? `<changefreq>${entry.changeFrequency}</changefreq>`
+        : undefined,
+      entry.priority === undefined
+        ? undefined
+        : `<priority>${entry.priority}</priority>`,
+    ].filter((field): field is string => Boolean(field));
+
+    return ["<url>", ...fields, "</url>"].join("\n");
+  });
+
+  return [
+    '<?xml version="1.0" encoding="UTF-8"?>',
+    '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
+    ...urls,
+    "</urlset>",
+  ].join("\n");
 }
