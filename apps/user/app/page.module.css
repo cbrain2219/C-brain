@@ -3081,8 +3081,8 @@
   }
 
   .reviewsHeroContent {
-    margin: 0 auto;
-    padding: var(--site-page-top-offset) 80px 72px;
+    /* margin: 0 auto; */
+    /* padding: var(--site-page-top-offset) 80px 72px; */
   }
 
   .reviewsContent {

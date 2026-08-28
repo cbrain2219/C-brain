@@ -197,16 +197,16 @@
 @media (min-width: 1080px) {
   .subpage .content {
     width: min(100%, 1080px);
-    padding: var(--site-page-top-offset, 124px) 80px 72px;
+    /* padding: var(--site-page-top-offset, 124px) 80px 72px; */
   }
 
   .content {
     width: min(100%, 1080px);
-    margin: 0 auto;
+    /* margin: 0 auto; */
   }
 
   .landing .content {
-    padding: var(--site-page-top-offset, 124px) 80px 72px;
+    /* padding: var(--site-page-top-offset, 124px) 80px 72px; */
   }
 
   .landing.light .overlay {

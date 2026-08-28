@@ -389,8 +389,8 @@
   }
 
   .heroContent {
-    width: min(100%, 1080px);
-    padding: var(--site-page-top-offset, 124px) 80px 72px;
+    /* width: min(100%, 1080px); */
+    /* padding: var(--site-page-top-offset, 124px) 80px 72px; */
   }
 
   .heroText h1 {

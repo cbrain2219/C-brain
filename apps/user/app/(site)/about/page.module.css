@@ -1141,7 +1141,7 @@
   .sectionInner,
   .heroInner,
   .historyInner {
-    width: min(100%, 1180px);
+    /* width: min(100%, 1180px); */
     padding: 0 20px;
   }
 
@@ -1159,9 +1159,9 @@
   }
 
   .heroInner {
-    width: min(100%, 1080px);
+    /* width: min(100%, 1080px); */
     gap: 32px;
-    padding: 0 80px;
+    /* padding: 0 80px; */
   }
 
   .heroCopy h1 {

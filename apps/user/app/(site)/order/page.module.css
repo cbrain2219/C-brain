@@ -1903,10 +1903,10 @@
 
   .heroInner {
     padding-top: var(--site-page-top-offset, 124px);
-    padding-left: 80px;
-    padding-right: 80px;
+    /* padding-left: 80px;
+    padding-right: 80px; */
     padding-bottom: 104px;
-    margin: 0 auto;
+    /* margin: 0 auto; */
   }
 
   .orderFlow {
