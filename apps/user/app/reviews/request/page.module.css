@@ -46,6 +46,7 @@
 }
 
 .headerTitle {
+  margin: 0;
   font-size: 16px;
   font-weight: 700;
   line-height: 24px;
@@ -81,6 +82,7 @@
 }
 
 .intro h2 {
+  margin: 0;
   font-size: 18px;
   font-weight: 700;
   line-height: 26px;
@@ -168,9 +170,15 @@
 }
 
 .ratingField {
+  margin: 0;
   padding: 0;
   border: 0;
-  gap: 8px;
+  gap: 0;
+}
+
+.ratingField legend {
+  margin: 0 0 8px;
+  padding: 0;
 }
 
 .ratingOptions {

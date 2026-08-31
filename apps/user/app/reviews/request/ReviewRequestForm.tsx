@@ -92,7 +92,7 @@ export function ReviewRequestForm() {
         >
           <Icon name="arrow-left" size={16} />
         </button>
-        <h1 className={styles.headerTitle}>후기 등록 요청</h1>
+        <h1 className={styles.headerTitle}>후기 남기기</h1>
         <span aria-hidden="true" className={styles.headerSpacer} />
       </header>
 
@@ -103,13 +103,13 @@ export function ReviewRequestForm() {
       >
         <section className={styles.fields}>
           <div className={styles.intro}>
-            <h2>후기 등록 요청</h2>
+            <h2>후기 남기기</h2>
             <p>
               <span>씨브레인과 함께한 경험, 편하게 들려주세요!</span>
               <span>여러분의 솔직한 이야기가 저희에게 큰 힘이 됩니다.</span>
               <span>
                 정성스러운 후기를 남겨주신 분들께는 커피 기프티콘을
-                보내드립니다!
+                보내드립니다! 🙂
               </span>
             </p>
           </div>
@@ -128,7 +128,7 @@ export function ReviewRequestForm() {
               maxLength={100}
               name="companyName"
               onChange={(event) => setCompanyName(event.currentTarget.value)}
-              placeholder="기업명을 입력해주세요."
+              placeholder="예 : 씨브레인"
               required
               type="text"
               value={companyName}
@@ -136,12 +136,7 @@ export function ReviewRequestForm() {
           </label>
 
           <label className={styles.field}>
-            <span className={styles.fieldHeading}>
-              <span className={styles.label}>담당자명 · 직위</span>
-              <span className={styles.helper}>
-                * 입력하신 성함은 가운데 글자를 가려 표시됩니다.
-              </span>
-            </span>
+            <span className={styles.label}>담당자명 · 직위</span>
             <input
               autoComplete="name"
               className={styles.control}
@@ -149,7 +144,7 @@ export function ReviewRequestForm() {
               maxLength={100}
               name="managerName"
               onChange={(event) => setManagerName(event.currentTarget.value)}
-              placeholder="담당자명을 입력해주세요."
+              placeholder="예 : 홍길동 과장"
               required
               type="text"
               value={managerName}
@@ -171,7 +166,7 @@ export function ReviewRequestForm() {
                 value={productType}
               >
                 <option disabled value="">
-                  카테고리를 선택해주세요.
+                  선택해주세요.
                 </option>
                 {reviewProductTypeOptions.map((option) => (
                   <option key={option} value={option}>
@@ -215,7 +210,7 @@ export function ReviewRequestForm() {
               maxLength={20_000}
               name="content"
               onChange={(event) => setContent(event.currentTarget.value)}
-              placeholder="후기를 작성해주세요."
+              placeholder="씨브레인과의 경험을 자유롭게, 자세히 적어주시면 큰 도움이 됩니다."
               required
               value={content}
             />

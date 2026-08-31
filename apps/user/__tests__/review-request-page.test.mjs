@@ -2,10 +2,7 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 
-const pagePath = new URL(
-  "../app/reviews/request/page.tsx",
-  import.meta.url,
-);
+const pagePath = new URL("../app/reviews/request/page.tsx", import.meta.url);
 const formPath = new URL(
   "../app/reviews/request/ReviewRequestForm.tsx",
   import.meta.url,
@@ -50,6 +47,16 @@ test("review request page exposes the complete standalone Figma form", async () 
   assert.match(form, /aria-label=\{`\$\{value\}점`\}/);
   assert.match(form, /role="status"/);
   assert.match(form, /role="alert"/);
+  assert.match(form, /후기 남기기/);
+  assert.match(form, /보내드립니다! 🙂/);
+  assert.match(form, /placeholder="예 : 씨브레인"/);
+  assert.match(form, /placeholder="예 : 홍길동 과장"/);
+  assert.match(form, /선택해주세요\./);
+  assert.match(
+    form,
+    /placeholder="씨브레인과의 경험을 자유롭게, 자세히 적어주시면 큰 도움이 됩니다\."/,
+  );
+  assert.doesNotMatch(form, /입력하신 성함은 가운데 글자를 가려 표시됩니다/);
 
   assert.match(styles, /max-width:\s*390px/);
   assert.match(
@@ -62,9 +69,18 @@ test("review request page exposes the complete standalone Figma form", async () 
   assert.match(styles, /min-height:\s*320px/);
   assert.match(styles, /border-radius:\s*16px/);
   assert.match(styles, /#30bac3/i);
+  assert.match(styles, /\.intro h2\s*\{[^}]*margin:\s*0;/s);
+  assert.match(styles, /\.ratingField\s*\{[^}]*margin:\s*0;/s);
+  assert.match(
+    styles,
+    /\.ratingField legend\s*\{[^}]*margin:\s*0 0 8px;[^}]*padding:\s*0;/s,
+  );
 
   assert.match(icons, /\| "star-filled"/);
   assert.match(icons, /function StarFilledIcon/);
   assert.match(icons, /fill="currentColor"/);
-  assert.doesNotMatch(`${page}\n${form}\n${styles}`, /ios_Status Bar|home indicator/);
+  assert.doesNotMatch(
+    `${page}\n${form}\n${styles}`,
+    /ios_Status Bar|home indicator/,
+  );
 });
