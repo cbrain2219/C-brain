@@ -201,6 +201,7 @@ export type StaticPageSeoKey = keyof typeof pageSeo;
 
 type NoIndexMetadataInput = {
   description?: string;
+  includeSocial?: boolean;
   path?: `/${string}`;
   title: string;
 };
@@ -287,8 +288,7 @@ export function createRootMetadata(): Metadata {
     },
     verification: {
       other: {
-        "naver-site-verification":
-          "76713c667f883801426f306acc098d7a0bbee337",
+        "naver-site-verification": "76713c667f883801426f306acc098d7a0bbee337",
       },
     },
   };
@@ -331,16 +331,34 @@ export function createPageMetadata(pageKey: StaticPageSeoKey): Metadata {
 
 export function createNoIndexMetadata({
   description,
+  includeSocial = false,
   path,
   title,
 }: NoIndexMetadataInput): Metadata {
+  const url = path ? getPageUrl(path) : undefined;
+  const socialImage = {
+    ...defaultSocialImage,
+    url: getSocialImageUrl(),
+  };
+
   return {
-    alternates: path
+    alternates: url
       ? {
-          canonical: getPageUrl(path),
+          canonical: url,
         }
       : undefined,
     description,
+    openGraph: includeSocial
+      ? {
+          description,
+          images: [socialImage],
+          locale: "ko_KR",
+          siteName: siteSeo.name,
+          title,
+          type: "website",
+          url,
+        }
+      : undefined,
     robots: {
       follow: false,
       index: false,
@@ -348,5 +366,13 @@ export function createNoIndexMetadata({
     title: {
       absolute: title,
     },
+    twitter: includeSocial
+      ? {
+          card: "summary_large_image",
+          description,
+          images: [socialImage],
+          title,
+        }
+      : undefined,
   };
 }

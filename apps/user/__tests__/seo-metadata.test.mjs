@@ -9,7 +9,10 @@ const execFileAsync = promisify(execFile);
 
 const seoModuleUrl = new URL("../app/_content/seo.ts", import.meta.url).href;
 const appFaviconUrl = new URL("../app/favicon.ico", import.meta.url);
-const publicFaviconUrl = new URL("../public/cbrain-favicon.ico", import.meta.url);
+const publicFaviconUrl = new URL(
+  "../public/cbrain-favicon.ico",
+  import.meta.url,
+);
 
 const pageSources = {
   about: new URL("../app/(site)/about/page.tsx", import.meta.url),
@@ -357,5 +360,37 @@ test("private payment routes use noindex metadata", async () => {
       assert.match(source, /createNoIndexMetadata/);
       assert.doesNotMatch(source, /robots: \{/);
     }),
+  );
+});
+
+test("noindex metadata can include social sharing cards", async () => {
+  const check = `
+    import assert from "node:assert/strict";
+    const { createNoIndexMetadata } = await import(${JSON.stringify(seoModuleUrl)});
+
+    const metadata = createNoIndexMetadata({
+      description: "후기 공유 설명",
+      includeSocial: true,
+      path: "/reviews/request",
+      title: "후기 남기기 | 씨브레인",
+    });
+
+    assert.equal(metadata.openGraph.title, "후기 남기기 | 씨브레인");
+    assert.equal(metadata.openGraph.description, "후기 공유 설명");
+    assert.equal(metadata.openGraph.url.pathname, "/reviews/request");
+    assert.equal(
+      metadata.openGraph.images[0].url.pathname,
+      "/opengraph-image.png",
+    );
+    assert.equal(metadata.twitter.card, "summary_large_image");
+    assert.equal(metadata.twitter.title, "후기 남기기 | 씨브레인");
+  `;
+
+  await execFileAsync(
+    process.execPath,
+    ["--experimental-strip-types", "--input-type=module", "--eval", check],
+    {
+      env: { ...process.env, NODE_NO_WARNINGS: "1" },
+    },
   );
 });

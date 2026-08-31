@@ -23,8 +23,15 @@ test("review request page exposes the complete standalone Figma form", async () 
 
   assert.match(page, /className=\{styles\.pageBackground\}/);
   assert.match(page, /<ReviewRequestForm \/>/);
-  assert.match(page, /index:\s*false/);
-  assert.match(page, /후기 등록 요청/);
+  assert.match(page, /createNoIndexMetadata/);
+  assert.match(page, /includeSocial:\s*true/);
+  assert.match(page, /path:\s*"\/reviews\/request"/);
+  assert.match(page, /title:\s*"후기 남기기 \| 씨브레인"/);
+  assert.match(
+    page,
+    /씨브레인과 함께한 경험, 편하게 들려주세요! 여러분의 솔직한 이야기가 저희에게 큰 힘이 됩니다\./,
+  );
+  assert.match(page, /icon:\s*"\/cbrain-favicon\.ico"/);
   assert.doesNotMatch(page, /Header|Footer/);
 
   for (const label of [
