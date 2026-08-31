@@ -261,6 +261,9 @@ export function createRootMetadata(): Metadata {
 
   return {
     description: siteSeo.defaultDescription,
+    icons: {
+      icon: "/cbrain-favicon.ico",
+    },
     keywords: [...siteSeo.defaultKeywords],
     metadataBase: url,
     openGraph: {

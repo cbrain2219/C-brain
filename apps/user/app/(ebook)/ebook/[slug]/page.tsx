@@ -22,13 +22,14 @@ export async function generateMetadata({
   const { slug } = await params;
   const ebook = await getPublicEbook(slug);
 
-  if (!ebook) return { title: "E-book | C-Brain" };
+  if (!ebook) return { icons: null, title: "E-book | C-Brain" };
 
   const pageUrl = createPublicUrl(slug);
 
   return {
     ...createEbookMetadata(ebook, { url: pageUrl }),
     alternates: { canonical: pageUrl },
+    icons: null,
   };
 }
 

@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { execFile } from "node:child_process";
-import { readFile } from "node:fs/promises";
+import { access, readFile } from "node:fs/promises";
 import process from "node:process";
 import test from "node:test";
 import { promisify } from "node:util";
@@ -8,6 +8,8 @@ import { promisify } from "node:util";
 const execFileAsync = promisify(execFile);
 
 const seoModuleUrl = new URL("../app/_content/seo.ts", import.meta.url).href;
+const appFaviconUrl = new URL("../app/favicon.ico", import.meta.url);
+const publicFaviconUrl = new URL("../public/cbrain-favicon.ico", import.meta.url);
 
 const pageSources = {
   about: new URL("../app/(site)/about/page.tsx", import.meta.url),
@@ -267,6 +269,31 @@ test("root metadata includes the Naver site verification token", async () => {
       env: { ...process.env, NODE_NO_WARNINGS: "1" },
     },
   );
+});
+
+test("root metadata serves the site favicon from an explicit public asset", async () => {
+  const check = `
+    import assert from "node:assert/strict";
+    const { createRootMetadata } = await import(${JSON.stringify(seoModuleUrl)});
+    const metadata = createRootMetadata();
+
+    assert.deepEqual(metadata.icons, {
+      icon: "/cbrain-favicon.ico",
+    });
+  `;
+
+  await execFileAsync(
+    process.execPath,
+    ["--experimental-strip-types", "--input-type=module", "--eval", check],
+    {
+      env: { ...process.env, NODE_NO_WARNINGS: "1" },
+    },
+  );
+});
+
+test("the favicon remains opt-out capable for route metadata", async () => {
+  await assert.rejects(access(appFaviconUrl), { code: "ENOENT" });
+  await access(publicFaviconUrl);
 });
 
 test("public static pages import metadata by key instead of inlining copy", async () => {

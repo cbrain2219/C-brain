@@ -51,6 +51,7 @@ test("the public E-book page uses entered title, SEO copy, and an optional custo
 
   assert.match(page, /generateMetadata/);
   assert.match(page, /alternates: \{ canonical: pageUrl \}/);
+  assert.match(page, /icons: null/);
   assert.match(page, /url: pageUrl/);
   assert.match(page, /createEbookMetadata\(ebook/);
   assert.match(metadata, /description: ebook\.seo_description/);
@@ -83,6 +84,7 @@ test("the E-book preview shares the same OG card while remaining noindex", async
   assert.match(preview, /pageTitle: `\$\{ebook\.title\} 미리보기`/);
   assert.match(preview, /robots: \{ follow: false, index: false \}/);
   assert.doesNotMatch(preview, /canonical/);
+  assert.doesNotMatch(preview, /icons: null/);
   assert.match(metadata, /openGraph:/);
   assert.match(metadata, /twitter:/);
 });
