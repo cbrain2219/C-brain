@@ -39,11 +39,26 @@ test("public LinkPay is a reusable payment-link template", () => {
   assert.doesNotMatch(routeSource, /redirect\(/);
   assert.match(routeSource, /disabled_at !== null/);
   assert.match(routeSource, /<LinkPayPaymentForm/);
+  assert.match(
+    routeSource,
+    /openGraph:\s*\{[\s\S]*?description:\s*undefined[\s\S]*?title:\s*payment\.payment_name/,
+  );
+  assert.match(
+    routeSource,
+    /twitter:\s*\{[\s\S]*?description:\s*undefined[\s\S]*?title:\s*payment\.payment_name/,
+  );
+  assert.doesNotMatch(
+    routeSource,
+    /description:\s*`\$\{payment\.client_name\}/,
+  );
 
   assert.match(formSource, /"use client"/);
-  assert.match(formSource, /payment\.clientName/);
-  assert.match(formSource, /payment\.paymentName/);
-  assert.match(formSource, /카드 결제/);
+  assert.match(
+    formSource,
+    /<h1 id="linkpay-title">\{payment\.paymentName\}<\/h1>/,
+  );
+  assert.doesNotMatch(formSource, /payment\.clientName/);
+  assert.doesNotMatch(formSource, /카드 결제/);
   assert.match(
     formSource,
     /결제 완료 후 영업일 기준 1일 이내 배정 담당자가/,

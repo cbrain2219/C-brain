@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, ResolvingMetadata } from "next";
 import { notFound } from "next/navigation";
 import { createAdminSupabaseClient, getPublicPaymentLink } from "@repo/supabase";
 
@@ -11,7 +11,7 @@ type LinkPayPageProps = {
 
 export async function generateMetadata({
   params,
-}: LinkPayPageProps): Promise<Metadata> {
+}: LinkPayPageProps, parent: ResolvingMetadata): Promise<Metadata> {
   const { id } = await params;
   const payment = await getPaymentLink(id);
 
@@ -21,11 +21,24 @@ export async function generateMetadata({
     });
   }
 
-  return createNoIndexMetadata({
-    description: `${payment.client_name}의 ${payment.payment_name} 카드 결제 페이지입니다.`,
-    path: `/linkpay/${payment.public_token}`,
-    title: `${payment.client_name} 개인 결제 | C-Brain`,
-  });
+  const parentMetadata = await parent;
+
+  return {
+    ...createNoIndexMetadata({
+      path: `/linkpay/${payment.public_token}`,
+      title: `${payment.client_name} 개인 결제 | C-Brain`,
+    }),
+    openGraph: {
+      ...(parentMetadata.openGraph ?? {}),
+      description: undefined,
+      title: payment.payment_name,
+    },
+    twitter: {
+      ...(parentMetadata.twitter ?? {}),
+      description: undefined,
+      title: payment.payment_name,
+    },
+  };
 }
 
 export default async function LinkPayPage({ params }: LinkPayPageProps) {

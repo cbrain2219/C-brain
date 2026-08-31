@@ -372,9 +372,7 @@ export function LinkPayPaymentForm({
     <section className={styles.linkPaySection} aria-labelledby="linkpay-title">
       <div className={styles.linkPayInner}>
         <div className={styles.linkPayHeader}>
-          <h1 id="linkpay-title">
-            {payment.clientName}의 {payment.paymentName} 카드 결제
-          </h1>
+          <h1 id="linkpay-title">{payment.paymentName}</h1>
           <p>
             결제 완료 후 영업일 기준 1일 이내 배정 담당자가 카카오톡으로 집중
             상담 및 제작 일정을 안내드립니다.
