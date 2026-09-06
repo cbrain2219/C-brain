@@ -1,10 +1,13 @@
 import { getAdminSalesDashboard } from '@repo/supabase'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { SalesDashboardData, SalesTransaction } from '@repo/supabase'
-import { RefundDialog } from '../components/admin-sales/RefundDialog'
-import { SalesSummaryCards } from '../components/admin-sales/SalesSummaryCards'
-import { SalesTransactionsTable } from '../components/admin-sales/SalesTransactionsTable'
-import { SalesTrendChart } from '../components/admin-sales/SalesTrendChart'
+import {
+  RefundDialog,
+  SalesSummaryCards,
+  SalesTransactionsTable,
+  SalesTrendChart,
+} from '../components/admin-sales'
+import { getVisitorCount } from '../lib/analyticsApi'
 import { refundPayment } from '../lib/paymentApi'
 import { createRefundRequestId } from '../lib/refundRequestId'
 import { supabase } from '../lib/supabase'
@@ -62,6 +65,7 @@ function getStart(date: string) {
 export function SalesPage() {
   const [filters, setFilters] = useState<SalesFilters>(getInitialFilters)
   const [dashboard, setDashboard] = useState<SalesDashboardData | null>(null)
+  const [visitorCount, setVisitorCount] = useState<number | null>(null)
   const [refundFlow, setRefundFlow] = useState<RefundFlow>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [loadError, setLoadError] = useState('')
@@ -73,28 +77,45 @@ export function SalesPage() {
     dashboardRequest.current = request
     setIsLoading(true)
     setLoadError('')
+    setVisitorCount(null)
 
-    try {
-      const nextDashboard = await getAdminSalesDashboard(supabase, {
+    const [sales, visitors] = await Promise.allSettled([
+      getAdminSalesDashboard(supabase, {
         channel: filters.channel,
         from: getStart(filters.from),
         to: getExclusiveEnd(filters.to),
         today,
-      })
-      if (dashboardRequest.current === request) setDashboard(nextDashboard)
-    } catch {
-      if (dashboardRequest.current === request) {
-        setLoadError(
-          '매출 데이터를 불러오지 못했습니다. 잠시 후 다시 시도해주세요.',
-        )
-      }
-    } finally {
-      if (dashboardRequest.current === request) setIsLoading(false)
-    }
+      }).then((nextDashboard) => {
+        if (dashboardRequest.current === request) setDashboard(nextDashboard)
+      }),
+      getVisitorCount(filters.from, filters.to).then((count) => {
+        if (dashboardRequest.current === request) setVisitorCount(count)
+      }),
+    ])
+    if (dashboardRequest.current !== request) return
+
+    setLoadError(
+      [
+        sales.status === 'rejected'
+          ? '매출 데이터를 불러오지 못했습니다. 잠시 후 다시 시도해주세요.'
+          : '',
+        visitors.status === 'rejected'
+          ? '방문자 수를 불러오지 못했습니다. 잠시 후 다시 시도해주세요.'
+          : '',
+      ].filter(Boolean).join(' '),
+    )
+    setIsLoading(false)
   }, [filters, today])
 
   useEffect(() => {
-    void Promise.resolve().then(loadDashboard)
+    let active = true
+    void Promise.resolve().then(() => {
+      if (active) void loadDashboard()
+    })
+    return () => {
+      active = false
+      dashboardRequest.current += 1
+    }
   }, [loadDashboard])
 
   async function handleRefund(input: { amount: number; reason: string }) {
@@ -145,6 +166,7 @@ export function SalesPage() {
           filters={filters}
           onFilterChange={handleFilters}
           summary={currentDashboard.summary}
+          visitorCount={visitorCount}
         />
 
         <SalesTrendChart

@@ -11,6 +11,7 @@ type SalesSummaryCardsProps = {
   readonly filters: SalesFilters
   readonly onFilterChange: (filters: SalesFilters) => void
   readonly summary: SalesSummary
+  readonly visitorCount: number | null
 }
 
 const secondaryCards = [
@@ -32,6 +33,7 @@ export function SalesSummaryCards({
   filters,
   onFilterChange,
   summary,
+  visitorCount,
 }: SalesSummaryCardsProps) {
   return (
     <section
@@ -101,21 +103,21 @@ export function SalesSummaryCards({
             <span className="admin-sales-summary-card__icon">
               <AdminIcon name="user-profile" />
             </span>
-            <span className="pretendard-medium-16">이번 달 방문자 수</span>
+            <span className="pretendard-medium-16">기간 내 방문자 수</span>
           </div>
           <strong
             aria-label={
-              summary.monthlyVisitorCount === null
-                ? '방문자 집계 연동 전'
+              visitorCount === null
+                ? '방문자 수 미집계'
                 : undefined
             }
             className="admin-sales-summary-card__value pretendard-bold-32"
           >
-            {summary.monthlyVisitorCount === null ? (
+            {visitorCount === null ? (
               '—'
             ) : (
               <>
-                {formatSalesNumber(summary.monthlyVisitorCount)}
+                {formatSalesNumber(visitorCount)}
                 <small className="pretendard-medium-16">명</small>
               </>
             )}
