@@ -4,6 +4,7 @@ import { FIXED_PRICE_ACTION } from "../_components/ContactActionButtons";
 import { CtaSection } from "../_components/CtaSection";
 import { CustomerReviewSection } from "../_components/CustomerReviewSection";
 import { FaqSection } from "../_components/FaqSection";
+import { FloatingSocialLinks } from "../_components/FloatingSocialLinks";
 import { Hero } from "../_components/Hero";
 import { JsonLdScript } from "../_components/JsonLdScript";
 import { Metrics } from "../_components/Metrics";
@@ -51,6 +52,7 @@ export default async function Home({ searchParams }: HomeProps) {
   return (
     <>
       <JsonLdScript data={createHomeStructuredData()} />
+      <FloatingSocialLinks />
       <Hero />
       <Metrics />
       <PortfolioSection
