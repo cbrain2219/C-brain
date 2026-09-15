@@ -3,6 +3,7 @@ import Link from "next/link";
 
 import { FIXED_PRICE_ACTION } from "../../_components/ContactActionButtons";
 import { CtaSection } from "../../_components/CtaSection";
+import { FloatingSocialLinks } from "../../_components/FloatingSocialLinks";
 import { JsonLdScript } from "../../_components/JsonLdScript";
 import {
   type FeaturedCustomerInterview,
@@ -131,6 +132,7 @@ export default async function CustomerReviewsPage() {
     <>
       <JsonLdScript data={createReviewsPageStructuredData()} />
       <JsonLdScript data={createReviewsBreadcrumbStructuredData()} />
+      <FloatingSocialLinks />
       <section className={styles.reviewsPageHero}>
         <Image
           alt="씨브레인 편집디자인 팀이 고객 브로슈어 시안을 함께 검토하는 사무실 장면"

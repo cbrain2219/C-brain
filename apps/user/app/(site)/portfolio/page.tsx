@@ -2,6 +2,7 @@ import Image from "next/image";
 
 import { FIXED_PRICE_ACTION } from "../../_components/ContactActionButtons";
 import { CtaSection } from "../../_components/CtaSection";
+import { FloatingSocialLinks } from "../../_components/FloatingSocialLinks";
 import { JsonLdScript } from "../../_components/JsonLdScript";
 import {
   getPortfolioCategoryIdFromValue,
@@ -39,6 +40,7 @@ export default async function PortfolioPage({
     <div className={styles.portfolioPage}>
       <JsonLdScript data={createPortfolioPageStructuredData()} />
       <JsonLdScript data={createPortfolioBreadcrumbStructuredData()} />
+      <FloatingSocialLinks />
       <section className={styles.hero}>
         <Image
           alt="MBC 베이비페어 박람회 포스터 디자인 및 인쇄 제작 사례, 핑크 톤 베이비 일러스트가 돋보이는 행사 홍보물"

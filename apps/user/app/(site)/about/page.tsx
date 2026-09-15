@@ -2,6 +2,7 @@ import Image from "next/image";
 
 import { DarkHeroBadge } from "../../../components/DarkHeroBadge";
 import { Icon } from "../../../components/Icon";
+import { FloatingSocialLinks } from "../../_components/FloatingSocialLinks";
 import { JsonLdScript } from "../../_components/JsonLdScript";
 import { PartnerLogoCloud } from "../../_components/PartnerLogoCloud";
 import {
@@ -111,6 +112,7 @@ export default function AboutPage() {
     <>
       <JsonLdScript data={createAboutPageStructuredData()} />
       <JsonLdScript data={createAboutBreadcrumbStructuredData()} />
+      <FloatingSocialLinks />
       <section className={styles.hero}>
         <Image
           alt="편집디자인 전문회사 씨브레인 로고"

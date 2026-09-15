@@ -1,5 +1,6 @@
 import { PageHero } from "../../../components/PageHero";
 
+import { FloatingSocialLinks } from "../../_components/FloatingSocialLinks";
 import { JsonLdScript } from "../../_components/JsonLdScript";
 import { createPageMetadata } from "../../_content/seo";
 import {
@@ -32,6 +33,7 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
     <div className={styles.page}>
       <JsonLdScript data={createBlogPageStructuredData()} />
       <JsonLdScript data={createBlogBreadcrumbStructuredData()} />
+      <FloatingSocialLinks />
       <PageHero
         backgroundAlt="대전화병원 브로슈어 디자인 및 인쇄 제작 사례, 화이트 톤 표지와 병원 외관 사진을 활용한 내지 구성"
         backgroundClassName={styles.blogHeroBackground}

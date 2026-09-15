@@ -1,5 +1,6 @@
 import { PageHero } from "../../../components/PageHero";
 import { SectionLayout } from "../../../components/SectionLayout";
+import { FloatingSocialLinks } from "../../_components/FloatingSocialLinks";
 import { JsonLdScript } from "../../_components/JsonLdScript";
 import { createPageMetadata } from "../../_content/seo";
 import {
@@ -25,6 +26,7 @@ export default async function NoticePage({ searchParams }: NoticePageProps) {
     <>
       <JsonLdScript data={createNoticePageStructuredData()} />
       <JsonLdScript data={createNoticeBreadcrumbStructuredData()} />
+      <FloatingSocialLinks />
       <PageHero
         backgroundAlt="편집디자인 전문회사 씨브레인 로고"
         backgroundImage="/figma-assets/notice-hero-background.webp"
