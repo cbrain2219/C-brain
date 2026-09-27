@@ -9,6 +9,21 @@ const portfolioModuleUrl = new URL(
   import.meta.url,
 ).href;
 
+test("portfolio summaries preserve the displayed description without detail images", async () => {
+  await execFileAsync(process.execPath, ["--experimental-strip-types", "--input-type=module", "--eval", `
+    import assert from "node:assert/strict";
+    const { mapPortfolioRows } = await import(${JSON.stringify(portfolioModuleUrl)});
+    const [item] = mapPortfolioRows([{
+      id: "a", slug: "a", title: "제목", type: "리플렛 · 팜플렛", client_name: "고객",
+      content_description: "기존 설명 & 내용", images: [{ path: "portfolio/a.webp", alt: "표지" }],
+    }], path => "/" + path);
+    assert.equal(item.description, "기존 설명 & 내용");
+    assert.equal(item.image, "/portfolio/a.webp");
+    assert.equal(item.imageAlt, "표지");
+    assert.deepEqual(item.detailImages, []);
+  `], { env: { ...process.env, NODE_NO_WARNINGS: "1" } });
+});
+
 test("portfolio DB rows preserve content, database order, and valid images", async () => {
   const check = `
     import assert from "node:assert/strict";

@@ -22,6 +22,7 @@ import { createCreativeWorkStructuredData } from "../../../../_content/structure
 import {
   getPublishedPortfolioItems,
   getPublishedPortfolioItemSource,
+  getPublishedPortfolioItem,
 } from "../../../../../lib/publicContent";
 import styles from "./page.module.css";
 
@@ -46,11 +47,9 @@ export const revalidate = 0;
 export async function generateMetadata({
   params,
 }: PortfolioDetailPageProps): Promise<Metadata> {
-  const [{ category, slug }, items] = await Promise.all([
-    params,
-    getPublishedPortfolioItems(),
-  ]);
-  const detail = getPortfolioDetailBySlug(slug, items);
+  const { category, slug } = await params;
+  const detailItem = await getPublishedPortfolioItem(slug);
+  const detail = detailItem ? getPortfolioDetailBySlug(slug, [detailItem]) : undefined;
   const categoryId = getPortfolioCategoryIdFromSlug(category);
 
   if (!detail || detail.item.categoryId !== categoryId) {
@@ -103,11 +102,14 @@ export default async function PortfolioDetailPage({
     params,
     searchParams,
   ]);
-  const [items, source] = await Promise.all([
+  const [items, source, detailItem] = await Promise.all([
     itemsPromise,
     getPublishedPortfolioItemSource(slug),
+    getPublishedPortfolioItem(slug),
   ]);
-  const detail = getPortfolioDetailBySlug(slug, items);
+  const detail = detailItem
+    ? getPortfolioDetailBySlug(slug, [detailItem, ...items.filter((item) => item.slug !== slug)])
+    : undefined;
   const categoryId = getPortfolioCategoryIdFromSlug(category);
 
   if (!detail || detail.item.categoryId !== categoryId) {

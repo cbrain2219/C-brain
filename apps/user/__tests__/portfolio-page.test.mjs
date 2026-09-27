@@ -327,7 +327,7 @@ test("portfolio landing, list, and detail use DB content through the server load
   assert.match(landingPortfolio, /item\.showOnLanding/);
   assert.match(landingPortfolio, /activePortfolioItems\.map/);
   assert.match(detailPage, /getPublishedPortfolioItems/);
-  assert.match(detailPage, /getPortfolioDetailBySlug\(slug, items\)/);
+  assert.match(detailPage, /getPublishedPortfolioItem\(slug\)/);
   assert.doesNotMatch(detailPage, /generateStaticParams/);
   assert.match(detailPage, /export const revalidate = 0/);
 });

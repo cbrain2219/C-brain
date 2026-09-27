@@ -1,7 +1,24 @@
 import { requireAdmin } from "./auth.ts";
 import { assertSupabaseSuccess, unwrapSupabaseData } from "./result.ts";
 import type { CBrainSupabaseClient } from "./server.ts";
-import type { TableInsert, TableRow, TableUpdate } from "./types.ts";
+import type { Database, TableInsert, TableRow, TableUpdate } from "./types.ts";
+
+export type PublicPortfolioSummaryRecord =
+  Database["public"]["Views"]["published_portfolio_summaries"]["Row"];
+
+export async function listPublishedPortfolioSummaries(
+  client: CBrainSupabaseClient,
+) {
+  const { data, error } = await client
+    .from("published_portfolio_summaries")
+    .select(
+      "id, client_name, created_at, images, pinned, published_at, show_on_landing, slug, sort_order, status, title, type, view_count, content_description",
+    )
+    .order("pinned", { ascending: false })
+    .order("sort_order", { ascending: true })
+    .order("id", { ascending: true });
+  return unwrapSupabaseData(data, error) as PublicPortfolioSummaryRecord[];
+}
 
 const publicPortfolioColumns =
   "id, client_name, content, content_mode, content_authoring_mode, content_asset_scope, created_at, images, pinned, published_at, show_on_landing, slug, sort_order, status, title, type, view_count";

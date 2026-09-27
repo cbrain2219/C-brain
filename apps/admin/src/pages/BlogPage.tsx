@@ -7,6 +7,7 @@ import { renderAdminContentStatus, renderAdminPublicationState } from '../compon
 import { AdminDataTableSection } from '../components/admin-table/AdminDataTableSection'
 import type { AdminTableColumn, AdminTableFilter } from '../components/admin-table/AdminDataTableSection'
 import { supabase } from '../lib/supabase'
+import { refreshPublicContent } from '../lib/publicContentCache'
 import { filterBlogRows, toBlogListRow } from './blogData'
 import type { BlogListRow, BlogStatusLabel } from './blogData'
 import './PortfolioPage.css'
@@ -147,7 +148,7 @@ export function BlogPage() {
         'blog',
         nextRows.map((row) => row.id),
       )
-      toast.success('블로그 순서를 변경했습니다.')
+      if (await refreshPublicContent('blog')) toast.success('블로그 순서를 변경했습니다.')
     } catch {
       setRows(previousRows)
       toast.error('블로그 순서를 저장하지 못했습니다.')

@@ -105,7 +105,7 @@ test("blog page keeps the shared header, hero, category, and CTA contracts", asy
     /aria-current=\{\s*activeCategory === category \? "page" : undefined\s*\}/,
   );
   assert.match(blogSection, /import Link from "next\/link"/);
-  assert.match(blogSection, /import Image from "next\/image"/);
+  assert.match(blogSection, /ImageWithSkeleton as Image/);
   assert.match(blogSection, /type BlogSectionProps = \{/);
   assert.match(blogSection, /posts: readonly BlogPost\[\]/);
   assert.match(blogSection, /export function BlogSection\(\{ posts \}/);
@@ -565,7 +565,7 @@ test("blog pages load DB content while keeping detail route conventions", async 
   assert.match(detailPage, /getPublishedBlogPostSource\(slug\)/);
   assert.match(detailPage, /source\.content/);
   assert.match(detailPage, /<BlogHtmlDocumentFrame/);
-  assert.match(detailPage, /getBlogPostBySlug\(slug, posts\)/);
+  assert.match(detailPage, /getPublishedBlogPost\(slug\)/);
   assert.match(detailPage, /getRelatedBlogPosts\(post\.slug, posts\)/);
   assert.match(detailPage, /alt=\{relatedPost\.imageAlt\}/);
   assert.match(detailPage, /notFound\(\)/);

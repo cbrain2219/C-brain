@@ -7,7 +7,7 @@ import type {
   PortfolioCategory as SharedPortfolioCategory,
   PortfolioCategoryId as SharedPortfolioCategoryId,
 } from "@repo/supabase/categories";
-import type { PublicPortfolioRecord } from "@repo/supabase";
+import type { PublicPortfolioRecord, PublicPortfolioSummaryRecord } from "@repo/supabase";
 
 export type PortfolioCategoryId = SharedPortfolioCategoryId;
 export type PortfolioCategory = SharedPortfolioCategory;
@@ -180,7 +180,7 @@ function getPortfolioPlainText(
 }
 
 export function mapPortfolioRows(
-  rows: readonly PublicPortfolioRecord[],
+  rows: readonly (PublicPortfolioRecord | PublicPortfolioSummaryRecord)[],
   resolveAssetUrl: PortfolioAssetUrlResolver,
 ): PortfolioItem[] {
   return rows.flatMap((row) => {
@@ -197,7 +197,9 @@ export function mapPortfolioRows(
     const representativeImage = detailImages[0];
     if (!representativeImage) return [];
 
-    const description = getPortfolioPlainText(row.content, row.content_mode);
+    const description = "content_description" in row
+      ? row.content_description
+      : getPortfolioPlainText(row.content, row.content_mode);
 
     return [
       {
@@ -205,7 +207,7 @@ export function mapPortfolioRows(
         categoryId,
         client,
         description: description || defaultPortfolioDescription,
-        detailImages,
+        detailImages: "content" in row ? detailImages : [],
         id: row.id,
         image: representativeImage.src,
         imageAlt: representativeImage.alt,

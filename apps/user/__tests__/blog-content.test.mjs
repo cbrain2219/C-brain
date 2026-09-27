@@ -13,6 +13,21 @@ const blogCategoriesModuleUrl = new URL(
   import.meta.url,
 ).href;
 
+test("blog summaries preserve card text without carrying the article body", async () => {
+  await execFileAsync(process.execPath, ["--experimental-strip-types", "--input-type=module", "--eval", `
+    import assert from "node:assert/strict";
+    const { mapBlogRows } = await import(${JSON.stringify(blogModuleUrl)});
+    const [post] = mapBlogRows([{
+      id: "a", slug: "a", title: "제목", type: "인쇄 실무팁",
+      published_at: "2026-09-01T00:00:00Z", thumbnail_path: null,
+      content_preview: "기존 본문에서 만든 요약 & 설명", seo_description: null,
+    }], path => path);
+    assert.equal(post.summary, "기존 본문에서 만든 요약 & 설명");
+    assert.equal(post.detail.seoDescription, post.summary);
+    assert.deepEqual(post.detail.body, []);
+  `], { env: { ...process.env, NODE_NO_WARNINGS: "1" } });
+});
+
 test("blog DB rows map to the existing public content model", async () => {
   const check = `
     import assert from "node:assert/strict";

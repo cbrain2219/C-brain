@@ -10,7 +10,6 @@ import {
 } from "../_constants/blogCategories";
 import {
   getBlogDetailSeo,
-  getBlogPostBySlug,
   getRelatedBlogPosts,
 } from "../_data/blogPosts";
 import type { BlogContentBlock, BlogPost } from "../_types/blog";
@@ -21,6 +20,7 @@ import { ContentViewTracker } from "../../../_components/ContentViewTracker";
 import { createBlogPostingStructuredData } from "../../../_content/structured-data";
 import {
   getPublishedBlogPostSource,
+  getPublishedBlogPost,
   getPublishedBlogPosts,
 } from "../../../../lib/publicContent";
 import { BlogDetailBackLink } from "./BlogDetailBackLink";
@@ -234,8 +234,7 @@ export async function generateMetadata({
   params,
 }: BlogDetailPageProps): Promise<Metadata> {
   const { slug } = await params;
-  const posts = await getPublishedBlogPosts();
-  const post = getBlogPostBySlug(slug, posts);
+  const post = await getPublishedBlogPost(slug);
 
   if (!post) {
     return {
@@ -255,11 +254,11 @@ export default async function BlogDetailPage({
     params,
     searchParams,
   ]);
-  const [posts, source] = await Promise.all([
+  const [posts, source, post] = await Promise.all([
     postsPromise,
     getPublishedBlogPostSource(slug),
+    getPublishedBlogPost(slug),
   ]);
-  const post = getBlogPostBySlug(slug, posts);
 
   if (!post) {
     notFound();

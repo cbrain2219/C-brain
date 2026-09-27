@@ -31,6 +31,7 @@ import {
 } from '../lib/managedContent.ts'
 import { removeContentAssetScope } from '../lib/contentAssetStorage'
 import { supabase } from '../lib/supabase'
+import { refreshPublicContent } from '../lib/publicContentCache'
 import { useManagedContentEditorState } from '../hooks/useManagedContentEditorState'
 import { useUnpersistedContentUploads } from '../hooks/useUnpersistedContentUploads'
 import { getSubmitIntent } from './contentListState'
@@ -130,6 +131,7 @@ export function PortfolioFormPage() {
   const [isSaving, setIsSaving] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
   const operationInFlight = useRef(false)
+  const persistedSlug = useRef('')
   const contentEditorDocumentKey = `portfolio:${form.contentAssetScope}`
   const contentEditorState = useManagedContentEditorState(
     contentEditorDocumentKey,
@@ -176,6 +178,7 @@ export function PortfolioFormPage() {
         if (!isCurrent) return
 
         const values = toPortfolioFormValues(item)
+        persistedSlug.current = item.slug
         const { images, ...fields } = values
         const imageSlots = images.map((image, index) => ({
           ...image,
@@ -382,15 +385,15 @@ export function PortfolioFormPage() {
         status === 'published' ? publishedAt || new Date().toISOString() : null
       const input = toPortfolioMutationInput(form, images, status, nextPublishedAt)
 
-      if (portfolioId) {
-        await updatePortfolioItem(supabase, portfolioId, input)
-      } else {
-        await createPortfolioItem(supabase, input)
-      }
+      const savedItem = portfolioId
+        ? await updatePortfolioItem(supabase, portfolioId, input)
+        : await createPortfolioItem(supabase, input)
+      didPersist = true
+      const previousSlug = persistedSlug.current
+      persistedSlug.current = savedItem.slug
 
       unpersistedContentUploads.markPersisted()
 
-      didPersist = true
       const retainedPaths = new Set(images.map((image) => image.path))
       const stalePaths = storedImagePaths.filter((path) => !retainedPaths.has(path))
 
@@ -401,7 +404,9 @@ export function PortfolioFormPage() {
         window.alert('포트폴리오는 저장됐지만 이전 이미지를 정리하지 못했습니다.')
       }
 
-      toast.success(status === 'draft' ? '임시저장했습니다.' : '포트폴리오를 저장했습니다.')
+      if (await refreshPublicContent('portfolio', [previousSlug, savedItem.slug])) {
+        toast.success(status === 'draft' ? '임시저장했습니다.' : '포트폴리오를 저장했습니다.')
+      }
       navigate('/portfolio', { replace: status === 'draft' })
     } catch {
       if (!didPersist) {
@@ -423,10 +428,14 @@ export function PortfolioFormPage() {
 
     setIsDeleting(true)
     setSaveError('')
+    let cacheRefreshed = false
 
     try {
       await deleteRowThenCleanContentScope(
-        () => deletePortfolioItem(supabase, portfolioId),
+        async () => {
+          await deletePortfolioItem(supabase, portfolioId)
+          cacheRefreshed = await refreshPublicContent('portfolio', [persistedSlug.current])
+        },
         () => removeContentAssetScope('portfolio', form.contentAssetScope),
         () => {
           toast.error('본문 이미지 파일을 정리하지 못했습니다.')
@@ -441,7 +450,7 @@ export function PortfolioFormPage() {
         window.alert('포트폴리오는 삭제됐지만 이미지를 정리하지 못했습니다.')
       }
 
-      toast.success('포트폴리오를 삭제했습니다.')
+      if (cacheRefreshed) toast.success('포트폴리오를 삭제했습니다.')
       navigate('/portfolio', { replace: true })
     } catch {
       setSaveError('포트폴리오를 삭제하지 못했습니다. 권한을 확인해주세요.')

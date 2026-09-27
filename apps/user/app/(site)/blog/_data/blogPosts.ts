@@ -1,5 +1,5 @@
 import { normalizeBlogCategory } from "@repo/supabase/categories";
-import type { PublicPostRecord } from "@repo/supabase";
+import type { PublicPostRecord, PublicPostSummaryRecord } from "@repo/supabase";
 
 import type {
   BlogContentBlock,
@@ -109,7 +109,7 @@ function getBlogImage(
 }
 
 function createBlogBody(
-  row: PublicPostRecord,
+  row: Pick<PublicPostRecord, "id">,
   plainText: string,
   summary: string,
 ): BlogContentBlock[] {
@@ -126,12 +126,12 @@ function createBlogBody(
 }
 
 function createBlogDetail(
-  row: PublicPostRecord,
+  row: PublicPostRecord | PublicPostSummaryRecord,
   plainText: string,
   summary: string,
 ): BlogPostDetail {
   return {
-    body: createBlogBody(row, plainText, summary),
+    body: "content" in row ? createBlogBody(row, plainText, summary) : [],
     keywords: [
       ...new Set([...defaultBlogKeywords, row.type.trim(), row.title.trim()]),
     ],
@@ -140,7 +140,7 @@ function createBlogDetail(
 }
 
 export function mapBlogRows(
-  rows: readonly PublicPostRecord[],
+  rows: readonly (PublicPostRecord | PublicPostSummaryRecord)[],
   resolveAssetUrl: BlogAssetUrlResolver,
 ): BlogPost[] {
   let landingRank = 0;
@@ -148,7 +148,9 @@ export function mapBlogRows(
   let popularRank = 0;
 
   return rows.map((row) => {
-    const plainText = getBlogPlainText(row.content, row.content_mode);
+    const plainText = "content_preview" in row
+      ? row.content_preview
+      : getBlogPlainText(row.content, row.content_mode);
     const summary =
       row.excerpt?.trim() ||
       row.seo_description?.trim() ||

@@ -1,9 +1,28 @@
 import { requireAdmin } from "./auth.ts";
 import { assertSupabaseSuccess, unwrapSupabaseData } from "./result.ts";
 import type { CBrainSupabaseClient } from "./server.ts";
-import type { TableInsert, TableRow, TableUpdate } from "./types.ts";
+import type { Database, TableInsert, TableRow, TableUpdate } from "./types.ts";
 
 type PostKind = TableRow<"posts">["kind"];
+
+export type PublicPostSummaryRecord =
+  Database["public"]["Views"]["published_post_summaries"]["Row"];
+
+export async function listPublishedPostSummaries(
+  client: CBrainSupabaseClient,
+  kind: PostKind,
+) {
+  const { data, error } = await client
+    .from("published_post_summaries")
+    .select(
+      "id, kind, status, slug, title, type, created_at, excerpt, featured, pinned, published_at, seo_description, show_as_banner, show_on_landing, sort_order, thumbnail_alt, thumbnail_path, view_count, content_preview",
+    )
+    .eq("kind", kind)
+    .order("pinned", { ascending: false })
+    .order("sort_order", { ascending: true })
+    .order("id", { ascending: true });
+  return unwrapSupabaseData(data, error) as PublicPostSummaryRecord[];
+}
 
 const publicPostColumns =
   "id, kind, status, slug, title, type, content, content_mode, content_authoring_mode, content_asset_scope, created_at, excerpt, featured, pinned, published_at, seo_description, show_as_banner, show_on_landing, sort_order, thumbnail_alt, thumbnail_path, view_count";

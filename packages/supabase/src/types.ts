@@ -883,7 +883,51 @@ export type Database = {
         Relationships: [];
       };
     };
-    Views: Record<string, never>;
+    Views: {
+      published_post_summaries: {
+        Row: Pick<
+          TableRow<"posts">,
+          | "id"
+          | "kind"
+          | "status"
+          | "slug"
+          | "title"
+          | "type"
+          | "created_at"
+          | "excerpt"
+          | "featured"
+          | "pinned"
+          | "published_at"
+          | "seo_description"
+          | "show_as_banner"
+          | "show_on_landing"
+          | "sort_order"
+          | "thumbnail_alt"
+          | "thumbnail_path"
+          | "view_count"
+        > & { content_preview: string };
+        Relationships: [];
+      };
+      published_portfolio_summaries: {
+        Row: Pick<
+          TableRow<"portfolio_items">,
+          | "id"
+          | "client_name"
+          | "created_at"
+          | "images"
+          | "pinned"
+          | "published_at"
+          | "show_on_landing"
+          | "slug"
+          | "sort_order"
+          | "status"
+          | "title"
+          | "type"
+          | "view_count"
+        > & { content_description: string };
+        Relationships: [];
+      };
+    };
     Functions: {
       create_linkpay_checkout: {
         Args: {

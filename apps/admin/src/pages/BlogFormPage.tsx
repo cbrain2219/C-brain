@@ -21,6 +21,7 @@ import { deletePublicAssets, getPublicAssetUrl, uploadPublicAsset } from '../lib
 import { removeContentAssetScope } from '../lib/contentAssetStorage'
 import { managedContentIsEmpty } from '../lib/managedContent'
 import { supabase } from '../lib/supabase'
+import { refreshPublicContent } from '../lib/publicContentCache'
 import { useManagedContentEditorState } from '../hooks/useManagedContentEditorState'
 import { useUnpersistedContentUploads } from '../hooks/useUnpersistedContentUploads'
 import {
@@ -95,6 +96,7 @@ export function BlogFormPage() {
   const [isSaving, setIsSaving] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
   const operationInFlight = useRef(false)
+  const persistedSlug = useRef('')
   const [saveError, setSaveError] = useState('')
   const contentEditorDocumentKey = `blog:${form.contentAssetScope}`
   const contentEditorState = useManagedContentEditorState(
@@ -127,9 +129,11 @@ export function BlogFormPage() {
         setBlogTypes(getBlogCategoryOptions(posts.map((item) => item.type)))
 
         if (post) {
+          persistedSlug.current = post.slug
           setForm(toBlogFormState(post, getPublicAssetUrl(post.thumbnail_path)))
           setPersistedThumbnailPath(post.thumbnail_path)
         } else {
+          persistedSlug.current = ''
           setForm(createInitialBlogForm())
           setPersistedThumbnailPath(null)
         }
@@ -249,6 +253,7 @@ export function BlogFormPage() {
     operationInFlight.current = true
 
     let uploadedThumbnailPath: string | null = null
+    let didPersist = false
 
     setIsSaving(true)
     setSaveError('')
@@ -261,11 +266,12 @@ export function BlogFormPage() {
       const nextThumbnailPath = uploadedThumbnailPath ?? form.thumbnailPath
       const input = toBlogMutationInput(form, status, nextThumbnailPath)
 
-      if (blogId) {
-        await updatePost(supabase, blogId, input)
-      } else {
-        await createPost(supabase, input)
-      }
+      const savedPost = blogId
+        ? await updatePost(supabase, blogId, input)
+        : await createPost(supabase, input)
+      didPersist = true
+      const previousSlug = persistedSlug.current
+      persistedSlug.current = savedPost.slug
 
       unpersistedContentUploads.markPersisted()
 
@@ -278,10 +284,12 @@ export function BlogFormPage() {
         }
       }
 
-      toast.success(status === 'draft' ? '임시저장했습니다.' : '블로그를 저장했습니다.')
+      if (await refreshPublicContent('blog', [previousSlug, savedPost.slug])) {
+        toast.success(status === 'draft' ? '임시저장했습니다.' : '블로그를 저장했습니다.')
+      }
       navigate('/blog', { replace: status === 'draft' })
     } catch {
-      if (uploadedThumbnailPath) {
+      if (!didPersist && uploadedThumbnailPath) {
         await deletePublicAssets([uploadedThumbnailPath]).catch(() => undefined)
       }
 
@@ -301,10 +309,14 @@ export function BlogFormPage() {
 
     setIsDeleting(true)
     setSaveError('')
+    let cacheRefreshed = false
 
     try {
       await deleteRowThenCleanContentScope(
-        () => deletePost(supabase, blogId),
+        async () => {
+          await deletePost(supabase, blogId)
+          cacheRefreshed = await refreshPublicContent('blog', [persistedSlug.current])
+        },
         () => removeContentAssetScope('blog', form.contentAssetScope),
         () => {
           toast.error('본문 이미지 파일을 정리하지 못했습니다.')
@@ -319,7 +331,7 @@ export function BlogFormPage() {
         window.alert('블로그는 삭제됐지만 썸네일 파일을 정리하지 못했습니다.')
       }
 
-      toast.success('블로그를 삭제했습니다.')
+      if (cacheRefreshed) toast.success('블로그를 삭제했습니다.')
       navigate('/blog', { replace: true })
     } catch {
       setSaveError('블로그를 삭제하지 못했습니다. 권한을 확인해주세요.')

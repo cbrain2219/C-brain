@@ -14,8 +14,8 @@ test("public content loader uses the published Supabase boundary", async () => {
   assert.match(source, /import "server-only"/);
   assert.match(source, /createPublicUserSupabaseClient/);
   assert.doesNotMatch(source, /createUserSupabaseClient/);
-  assert.match(source, /listPublishedPosts\(client, "blog"\)/);
-  assert.match(source, /listPublishedPortfolioItems\(client\)/);
+  assert.match(source, /listPublishedPostSummaries\(client, "blog"\)/);
+  assert.match(source, /listPublishedPortfolioSummaries\(client\)/);
   assert.match(source, /listPublishedProducts\(client\)/);
   assert.match(source, /createOrderProductCatalog/);
   assert.match(source, /async function loadPublishedOrderProducts/);

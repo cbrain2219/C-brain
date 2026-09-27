@@ -3,9 +3,11 @@ import "server-only";
 import {
   createOrderProductCatalog,
   getPublicAssetUrl,
+  getPublishedPost,
+  getPublishedPortfolioItem as getPortfolioRow,
   listPublishedProducts,
-  listPublishedPortfolioItems,
-  listPublishedPosts,
+  listPublishedPortfolioSummaries,
+  listPublishedPostSummaries,
 } from "@repo/supabase";
 import { connection } from "next/server";
 import { cache } from "react";
@@ -14,6 +16,7 @@ import type { PublicManagedContent } from "../components/ManagedContent";
 import { mapBlogRows } from "../app/(site)/blog/_data/blogPosts";
 import { mapPortfolioRows } from "../app/_content/portfolio";
 import { createPublicUserSupabaseClient } from "./supabase";
+import { readCachedPublicContent } from "./publicContentCache";
 
 export type PublishedBlogPostSource = PublicManagedContent & {
   id: string;
@@ -25,80 +28,108 @@ export type PublishedPortfolioItemSource = PublicManagedContent & {
   slug: string;
 };
 
-async function loadPublishedBlogContent() {
+async function loadPublishedBlogPosts() {
+  const client = createPublicUserSupabaseClient();
+  if (!client) return [];
+
   try {
-    const client = createPublicUserSupabaseClient();
-    if (!client) return { posts: [], sources: [] };
-
-    const rows = await listPublishedPosts(client, "blog");
-
-    return {
-      posts: mapBlogRows(rows, (path) => getPublicAssetUrl(client, path)),
-      sources: rows.map((row) => ({
-        content: row.content,
-        contentAssetScope: row.content_asset_scope,
-        contentAuthoringMode: row.content_authoring_mode,
-        contentMode: row.content_mode,
-        entity: "blog" as const,
-        id: row.id,
-        slug: row.slug,
-        title: row.title,
-      })),
-    };
+    return await readCachedPublicContent("blog", null, async () =>
+      mapBlogRows(await listPublishedPostSummaries(client, "blog"), (path) =>
+        getPublicAssetUrl(client, path),
+      ),
+    );
   } catch (error) {
-    console.error("Failed to load public content.", error);
-    return { posts: [], sources: [] };
+    console.error("Failed to load public blog summaries.", error);
+    return [];
   }
 }
 
-const getPublishedBlogContent = cache(loadPublishedBlogContent);
+async function loadPublishedBlogDetail(slug: string) {
+  const client = createPublicUserSupabaseClient();
+  if (!client) return null;
 
-async function loadPublishedBlogPosts() {
-  return (await getPublishedBlogContent()).posts;
+  try {
+    return await readCachedPublicContent("blog", slug, async () => {
+      const row = await getPublishedPost(client, "blog", slug);
+      if (!row) return null;
+      return {
+        post: mapBlogRows([row], (path) => getPublicAssetUrl(client, path))[0],
+        source: {
+          content: row.content,
+          contentAssetScope: row.content_asset_scope,
+          contentAuthoringMode: row.content_authoring_mode,
+          contentMode: row.content_mode,
+          entity: "blog" as const,
+          id: row.id,
+          slug: row.slug,
+          title: row.title,
+        } satisfies PublishedBlogPostSource,
+      };
+    });
+  } catch (error) {
+    console.error("Failed to load public blog detail.", error);
+    return null;
+  }
 }
+
+const getPublishedBlogDetail = cache(loadPublishedBlogDetail);
 
 async function loadPublishedBlogPostSource(slug: string) {
-  const { sources } = await getPublishedBlogContent();
-
-  return sources.find((post) => post.slug === slug);
+  return (await getPublishedBlogDetail(slug))?.source;
 }
 
-async function loadPublishedPortfolioContent() {
+async function loadPublishedPortfolioItems() {
+  const client = createPublicUserSupabaseClient();
+  if (!client) return [];
+
   try {
-    const client = createPublicUserSupabaseClient();
-    if (!client) return { items: [], sources: [] };
-
-    const rows = await listPublishedPortfolioItems(client);
-
-    return {
-      items: mapPortfolioRows(rows, (path) => getPublicAssetUrl(client, path)),
-      sources: rows.map((row) => ({
-        content: row.content,
-        contentAssetScope: row.content_asset_scope,
-        contentAuthoringMode: row.content_authoring_mode,
-        contentMode: row.content_mode,
-        entity: "portfolio" as const,
-        id: row.id,
-        slug: row.slug,
-        title: row.title,
-      })),
-    };
+    return await readCachedPublicContent("portfolio", null, async () =>
+      mapPortfolioRows(await listPublishedPortfolioSummaries(client), (path) =>
+        getPublicAssetUrl(client, path),
+      ),
+    );
   } catch (error) {
-    console.error("Failed to load public content.", error);
-    return { items: [], sources: [] };
+    console.error("Failed to load public portfolio summaries.", error);
+    return [];
   }
 }
 
-const getPublishedPortfolioContent = cache(loadPublishedPortfolioContent);
+async function loadPublishedPortfolioDetail(slug: string) {
+  const client = createPublicUserSupabaseClient();
+  if (!client) return null;
 
-async function loadPublishedPortfolioItems() {
-  return (await getPublishedPortfolioContent()).items;
+  try {
+    return await readCachedPublicContent("portfolio", slug, async () => {
+      const row = await getPortfolioRow(client, slug);
+      if (!row) return null;
+      const item = mapPortfolioRows([row], (path) =>
+        getPublicAssetUrl(client, path),
+      )[0];
+      if (!item) return null;
+      return {
+        item,
+        source: {
+          content: row.content,
+          contentAssetScope: row.content_asset_scope,
+          contentAuthoringMode: row.content_authoring_mode,
+          contentMode: row.content_mode,
+          entity: "portfolio" as const,
+          id: row.id,
+          slug: row.slug,
+          title: row.title,
+        } satisfies PublishedPortfolioItemSource,
+      };
+    });
+  } catch (error) {
+    console.error("Failed to load public portfolio detail.", error);
+    return null;
+  }
 }
 
-async function loadPublishedPortfolioItemSource(slug: string) {
-  const { sources } = await getPublishedPortfolioContent();
+const getPublishedPortfolioDetail = cache(loadPublishedPortfolioDetail);
 
-  return sources.find((item) => item.slug === slug);
+async function loadPublishedPortfolioItemSource(slug: string) {
+  return (await getPublishedPortfolioDetail(slug))?.source;
 }
 
 async function loadPublishedOrderProducts() {
@@ -116,8 +147,14 @@ async function loadPublishedOrderProducts() {
 }
 
 export const getPublishedBlogPosts = cache(loadPublishedBlogPosts);
+export const getPublishedBlogPost = cache(
+  async (slug: string) => (await getPublishedBlogDetail(slug))?.post,
+);
 export const getPublishedBlogPostSource = cache(loadPublishedBlogPostSource);
 export const getPublishedPortfolioItems = cache(loadPublishedPortfolioItems);
+export const getPublishedPortfolioItem = cache(
+  async (slug: string) => (await getPublishedPortfolioDetail(slug))?.item,
+);
 export const getPublishedPortfolioItemSource = cache(
   loadPublishedPortfolioItemSource,
 );

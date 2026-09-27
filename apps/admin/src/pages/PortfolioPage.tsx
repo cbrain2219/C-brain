@@ -8,6 +8,7 @@ import type {
   AdminTableFilter,
 } from '../components/admin-table/AdminDataTableSection'
 import { supabase } from '../lib/supabase'
+import { refreshPublicContent } from '../lib/publicContentCache'
 import { filterPortfolioRows, toPortfolioListRow } from './portfolioData'
 import type { PortfolioRow } from './portfolioData'
 import './PortfolioPage.css'
@@ -174,7 +175,7 @@ export function PortfolioPage() {
         supabase,
         nextRows.map((row) => row.id),
       )
-      toast.success('포트폴리오 순서를 변경했습니다.')
+      if (await refreshPublicContent('portfolio')) toast.success('포트폴리오 순서를 변경했습니다.')
     } catch {
       setRows(previousRows)
       toast.error('포트폴리오 순서를 저장하지 못했습니다.')

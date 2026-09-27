@@ -67,7 +67,7 @@ test('each form locks actions and removes its body scope only after the row dele
     assert.match(page, /if \(actionLocked \|\| operationInFlight\.current\) return/)
     assert.match(page, /operationInFlight\.current = true/)
     assert.match(page, /operationInFlight\.current = false/)
-    const deleteAt = page.indexOf(`() => ${deleteCall}`)
+    const deleteAt = page.search(new RegExp(`(?:await|=>)\\s+${deleteCall}\\(`))
     const cleanupAt = page.indexOf(`removeContentAssetScope('${entity}'`)
     assert.ok(deleteAt >= 0 && cleanupAt > deleteAt)
   }
