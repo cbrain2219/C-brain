@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Image from "next/image";
+import { ImageWithSkeleton } from "../../../../../components/ImageWithSkeleton";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
@@ -172,7 +173,7 @@ export default async function PortfolioDetailPage({
             <div className={styles.detailImageList}>
               {item.detailImages.map((image) => (
                 <figure className={styles.detailImageFrame} key={image.src}>
-                  <Image
+                  <ImageWithSkeleton
                     alt={image.alt}
                     className={styles.detailImage}
                     fill
@@ -218,7 +219,7 @@ export default async function PortfolioDetailPage({
                   >
                     <figure className={styles.relatedFigure}>
                       <div className={styles.relatedImageFrame}>
-                        <Image
+                        <ImageWithSkeleton
                           alt={relatedItem.imageAlt}
                           className={styles.relatedImage}
                           fill

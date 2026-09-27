@@ -1,7 +1,7 @@
 "use client";
 
 import type { OrderProductCatalogItem } from "@repo/supabase/product-catalog";
-import Image from "next/image";
+import { ImageWithSkeleton as Image } from "../../../components/ImageWithSkeleton";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { CtaSection } from "../../_components/CtaSection";

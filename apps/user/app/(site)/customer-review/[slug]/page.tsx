@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Image from "next/image";
+import { ImageWithSkeleton } from "../../../../components/ImageWithSkeleton";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
@@ -213,7 +214,7 @@ export default async function CustomerReviewDetailPage({
                     src={`${detail.videoUrl}#t=0.001`}
                   />
                 ) : (
-                  <Image
+                  <ImageWithSkeleton
                     alt={detail.videoAlt}
                     className={styles.reviewDetailVideoImage}
                     fill

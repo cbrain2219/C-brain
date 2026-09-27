@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { ImageWithSkeleton } from "../../../components/ImageWithSkeleton";
 
 import { DarkHeroBadge } from "../../../components/DarkHeroBadge";
 import { Icon } from "../../../components/Icon";
@@ -114,7 +115,7 @@ export default function AboutPage() {
       <JsonLdScript data={createAboutBreadcrumbStructuredData()} />
       <FloatingSocialLinks />
       <section className={styles.hero}>
-        <Image
+        <ImageWithSkeleton
           alt="편집디자인 전문회사 씨브레인 로고"
           className={styles.heroImage}
           fill
@@ -224,7 +225,7 @@ export default function AboutPage() {
 
             <div className={styles.introMedia} aria-label="씨브레인 작업 현장">
               <div className={styles.introMediaLarge}>
-                <Image
+                <ImageWithSkeleton
                   alt="씨브레인 디자이너가 화이트보드에 브로슈어 기획 및 레이아웃 전략을 정리하는 모습"
                   fill
                   sizes="(min-width: 1200px) 420px, (min-width: 700px) 55vw, 100vw"
@@ -232,7 +233,7 @@ export default function AboutPage() {
                 />
               </div>
               <div className={styles.introMediaSmall}>
-                <Image
+                <ImageWithSkeleton
                   alt="씨브레인 팀원들이 함께 모니터 화면을 보며 디자인을 검토하는 협업 모습"
                   fill
                   sizes="(min-width: 1200px) 200px, 50vw"
@@ -240,7 +241,7 @@ export default function AboutPage() {
                 />
               </div>
               <div className={styles.introMediaSmall}>
-                <Image
+                <ImageWithSkeleton
                   alt="씨브레인이 보유한 여성기업 인증, 한국디자인진흥원 산업디자인전문회사 인증, 중소기업 인증 현판"
                   fill
                   sizes="(min-width: 1200px) 200px, 50vw"

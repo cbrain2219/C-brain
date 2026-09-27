@@ -1,4 +1,4 @@
-import Image from "next/image";
+import { ImageWithSkeleton as Image } from "../../components/ImageWithSkeleton";
 import Link from "next/link";
 
 import { HorizontalDragScroll } from "../../components/HorizontalDragScroll";

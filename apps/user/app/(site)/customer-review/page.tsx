@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { ImageWithSkeleton } from "../../../components/ImageWithSkeleton";
 import Link from "next/link";
 
 import { FIXED_PRICE_ACTION } from "../../_components/ContactActionButtons";
@@ -47,7 +48,7 @@ function InterviewThumbnail({
       src={`${videoUrl}#t=0.001`}
     />
   ) : (
-    <Image
+    <ImageWithSkeleton
       alt={alt}
       className={styles.reviewsMediaImage}
       fill
@@ -134,7 +135,7 @@ export default async function CustomerReviewsPage() {
       <JsonLdScript data={createReviewsBreadcrumbStructuredData()} />
       <FloatingSocialLinks />
       <section className={styles.reviewsPageHero}>
-        <Image
+        <ImageWithSkeleton
           alt="씨브레인 편집디자인 팀이 고객 브로슈어 시안을 함께 검토하는 사무실 장면"
           className={styles.reviewsHeroImage}
           fill

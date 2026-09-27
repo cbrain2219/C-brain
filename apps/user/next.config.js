@@ -13,6 +13,7 @@ const nextConfig = {
     };
   },
   images: {
+    unoptimized: true,
     deviceSizes: [640, 750, 828, 1080, 1440, 1920],
     minimumCacheTTL: 2678400,
     qualities: [75, 90],

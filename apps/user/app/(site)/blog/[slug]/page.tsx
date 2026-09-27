@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Image from "next/image";
+import { ImageWithSkeleton } from "../../../../components/ImageWithSkeleton";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
@@ -95,7 +96,7 @@ function renderBlogContentBlock(block: BlogContentBlock) {
       return (
         <figure className={figureClassName} key={block.id}>
           {block.src ? (
-            <Image
+            <ImageWithSkeleton
               alt={block.alt}
               className={styles.blogDetailImage}
               fill
@@ -142,7 +143,7 @@ function MoreBlogSection({
                 >
                   <figure className={styles.moreBlogFigure}>
                     <div className={styles.moreBlogImageFrame}>
-                      <Image
+                      <ImageWithSkeleton
                         alt={relatedPost.imageAlt}
                         className={styles.moreBlogImage}
                         fill

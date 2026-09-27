@@ -1,4 +1,4 @@
-import Image from "next/image";
+import { ImageWithSkeleton as Image } from "./ImageWithSkeleton";
 import type { CSSProperties, ReactNode } from "react";
 
 import { DarkHeroBadge } from "./DarkHeroBadge";

@@ -1,4 +1,4 @@
-import Image from "next/image";
+import { ImageWithSkeleton as Image } from "../../../components/ImageWithSkeleton";
 
 import { FIXED_PRICE_ACTION } from "../../_components/ContactActionButtons";
 import { CtaSection } from "../../_components/CtaSection";
