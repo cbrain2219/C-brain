@@ -454,7 +454,7 @@ test("structured data helpers centralize site, company, breadcrumb, and FAQ data
     );
     assert.equal(faqPage.isPartOf["@id"], "https://example.com/#website");
     assert.equal(faqPage.about["@id"], "https://example.com/#organization");
-    assert.equal(faqPage.mainEntity.length, 29);
+    assert.equal(faqPage.mainEntity.length, 37);
     assert.equal(faqPage.mainEntity[0]["@type"], "Question");
     assert.equal(faqPage.mainEntity[0].acceptedAnswer["@type"], "Answer");
     assert.ok(faqPage.mainEntity[0].name.length > 5);
@@ -495,9 +495,19 @@ test("FAQ structured data preserves the approved FAQ wording", async () => {
   const check = `
     import assert from "node:assert/strict";
     const { faqCategories } = await import(${JSON.stringify(faqModuleUrl)});
-    const firstAnswer = faqCategories[0].items[0].answer;
-    const paymentAnswer = faqCategories[0].items[2].answer;
-    const alternateSpellingAnswer = faqCategories[3].items[3].answer;
+    const orderFaqs = faqCategories.find(
+      (category) => category.id === "faq-order",
+    )?.items;
+    const printFaqs = faqCategories.find(
+      (category) => category.id === "faq-print",
+    )?.items;
+
+    assert.ok(orderFaqs);
+    assert.ok(printFaqs);
+
+    const firstAnswer = orderFaqs[0].answer;
+    const paymentAnswer = orderFaqs[2].answer;
+    const alternateSpellingAnswer = printFaqs[3].answer;
 
     assert.match(firstAnswer, /^씨브레인 홈페이지에서 원하는 제품 카테고리를 선택해/);
     assert.match(paymentAnswer, /^신용카드 즉시결제와 계좌이체를 지원합니다\\./);
