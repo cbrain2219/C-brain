@@ -33,10 +33,6 @@
   line-height: 26px;
 }
 
-.rich-content :where(p, ul, ol, blockquote, figure, pre) {
-  padding-top: 20px;
-}
-
 .rich-content :where(ul, ol) {
   padding-left: 24px;
 }
