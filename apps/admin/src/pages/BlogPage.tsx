@@ -30,7 +30,7 @@ const blogColumns = [
   {
     header: '블로그 제목',
     id: 'title',
-    renderCell: (row) => <span className="admin-data-table__title-cell">{row.title}</span>,
+    renderCell: (row) => <span className="admin-data-table__title-cell admin-data-table__summary-cell">{row.title}</span>,
     track: '360fr',
   },
   {
