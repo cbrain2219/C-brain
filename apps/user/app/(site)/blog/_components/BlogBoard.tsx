@@ -21,8 +21,6 @@ type BlogBoardProps = {
   posts: readonly BlogPost[];
 };
 
-const FEATURED_SLIDE_COUNT = 3;
-
 function getCategoryHref(category: BlogCategoryFilter) {
   if (category === "전체") return "/blog";
 
@@ -38,22 +36,17 @@ function getBlogDetailHref(post: BlogPost, category: BlogCategoryFilter) {
 }
 
 function getBannerSlides(posts: readonly BlogPost[]) {
-  const bannerPosts = posts
+  return posts
     .filter(
       (post): post is BlogPost & { bannerRank: number } =>
         typeof post.bannerRank === "number",
     )
     .sort((first, second) => first.bannerRank - second.bannerRank);
-
-  return (bannerPosts.length > 0 ? bannerPosts : posts).slice(
-    0,
-    FEATURED_SLIDE_COUNT,
-  );
 }
 
 export function BlogBoard({ activeCategory, categories, posts }: BlogBoardProps) {
   const visiblePosts = filterBlogPosts(posts, activeCategory);
-  const featuredSlides = getBannerSlides(visiblePosts);
+  const featuredSlides = getBannerSlides(posts);
   const featuredPost = featuredSlides[0];
   const ordinaryPosts = visiblePosts;
   const consultPlacementIndex = Math.min(3, ordinaryPosts.length - 1);
@@ -97,7 +90,7 @@ export function BlogBoard({ activeCategory, categories, posts }: BlogBoardProps)
         </div>
 
         <BlogHistoryBoundary listHref={listHref}>
-          {featuredPost ? (
+          {featuredPost || ordinaryPosts.length > 0 ? (
             <div className={styles.blogBoardLayout}>
               <div className={styles.blogBoardContent}>
                 <BlogFeaturedCard
@@ -121,9 +114,14 @@ export function BlogBoard({ activeCategory, categories, posts }: BlogBoardProps)
                     </Fragment>
                   ))}
                   {ordinaryPosts.length === 0 ? (
-                    <li className={styles.blogConsultCardInFlow}>
-                      <BlogConsultCard />
-                    </li>
+                    <>
+                      <li className={styles.blogEmptyState}>
+                        선택한 카테고리의 게시글을 준비하고 있습니다.
+                      </li>
+                      <li className={styles.blogConsultCardInFlow}>
+                        <BlogConsultCard />
+                      </li>
+                    </>
                   ) : null}
                 </ul>
               </div>
