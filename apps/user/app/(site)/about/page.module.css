@@ -786,10 +786,10 @@
 .historyCallout strong {
   color: #30bac3;
   font-family: var(--font-sans);
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 700;
   letter-spacing: -0.015em;
-  line-height: 16px;
+  line-height: 21px;
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -816,10 +816,10 @@
 .historyCallout li {
   color: #f8fafc;
   font-family: var(--font-sans);
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 500;
   letter-spacing: -0.015em;
-  line-height: 16px;
+  line-height: 21px;
 }
 
 .timeline {
@@ -905,6 +905,10 @@
 .timelineTitle,
 .timelineDetail {
   min-width: 0;
+}
+
+.timelineTitle {
+  white-space: pre-line;
 }
 
 .timelineDetailBreak {
