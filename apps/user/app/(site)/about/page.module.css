@@ -879,6 +879,44 @@
   transform: translateY(8px);
 }
 
+@media (min-width: 640px) {
+  .timeline::before {
+    display: none;
+  }
+
+  .timelineItem::before {
+    content: "";
+    position: absolute;
+    grid-column: 2 / 3;
+    top: 0;
+    bottom: -32px;
+    left: 50%;
+    width: 0;
+    border-left: 1px dashed rgba(48, 186, 195, 0.58);
+    transform: translateX(-50%);
+  }
+
+  .timelineItem:first-child::before {
+    top: 10px;
+  }
+
+  .timelineItem:last-child {
+    align-items: center;
+  }
+
+  .timelineItem:last-child::before {
+    bottom: 50%;
+  }
+
+  .timelineDot {
+    z-index: 1;
+  }
+
+  .timelineItem:last-child .timelineDot {
+    transform: none;
+  }
+}
+
 .timelineBody {
   min-width: 0;
   display: flex;
