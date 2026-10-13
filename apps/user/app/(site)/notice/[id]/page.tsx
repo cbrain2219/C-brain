@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, ResolvingMetadata } from "next";
 import { notFound } from "next/navigation";
 
 import { JsonLdScript } from "../../../_components/JsonLdScript";
@@ -11,9 +11,10 @@ type NoticeDetailPageProps = {
   searchParams: Promise<{ from?: string }>;
 };
 
-export async function generateMetadata({
-  params,
-}: NoticeDetailPageProps): Promise<Metadata> {
+export async function generateMetadata(
+  { params }: NoticeDetailPageProps,
+  parent: ResolvingMetadata,
+): Promise<Metadata> {
   const { id } = await params;
   const notice = await getNoticeById(id);
 
@@ -21,9 +22,15 @@ export async function generateMetadata({
     return { title: "공지사항을 찾을 수 없습니다 | 씨브레인" };
   }
 
+  const parentMetadata = await parent;
+
   return {
     title: `${notice.title} | 씨브레인`,
     description: notice.excerpt,
+    openGraph: {
+      ...(parentMetadata.openGraph ?? {}),
+      title: notice.title,
+    },
   };
 }
 

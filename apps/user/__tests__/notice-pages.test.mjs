@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { Buffer } from "node:buffer";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
+import { runInNewContext } from "node:vm";
 
 const paths = {
   board: new URL(
@@ -167,6 +168,65 @@ test("notice list and detail load published Supabase rows", async () => {
   assert.match(data, /mapNoticeCategory/);
   assert.doesNotMatch(data, /const noticeFixtures/);
   assert.doesNotMatch(data, /dangerouslySetInnerHTML/);
+});
+
+test("notice share metadata uses each notice title and preserves inherited OG fields", async () => {
+  const ts = await import("typescript");
+  const { outputText } = ts.transpileModule(await source("detailPage"), {
+    compilerOptions: {
+      jsx: ts.JsxEmit.ReactJSX,
+      module: ts.ModuleKind.CommonJS,
+      target: ts.ScriptTarget.ES2022,
+    },
+  });
+  const notices = {
+    holiday: { title: "추석 휴무 안내", excerpt: "휴무 일정입니다." },
+    event: { title: '이벤트 "안내" & 소식', excerpt: "이벤트 안내입니다." },
+  };
+  const exports = {};
+  runInNewContext(outputText, {
+    exports,
+    require(specifier) {
+      if (specifier === "../_data/notices") {
+        return { getNoticeById: async (id) => notices[id] };
+      }
+      return {};
+    },
+  });
+  const parentMetadata = {
+    openGraph: {
+      title: { absolute: "씨브레인 | C-Brain", template: null },
+      description: "기존 공유 설명",
+      images: [{ url: "https://www.cbrain.kr/opengraph-image.png" }],
+      locale: "ko_KR",
+      siteName: "C-Brain",
+      type: "website",
+      url: new URL("https://www.cbrain.kr"),
+    },
+  };
+
+  for (const [id, notice] of Object.entries(notices)) {
+    const metadata = await exports.generateMetadata(
+      { params: Promise.resolve({ id }) },
+      Promise.resolve(parentMetadata),
+    );
+
+    assert.equal(metadata.openGraph?.title, notice.title);
+    assert.deepEqual(
+      { ...metadata.openGraph, title: parentMetadata.openGraph.title },
+      parentMetadata.openGraph,
+    );
+    assert.equal(metadata.title, `${notice.title} | 씨브레인`);
+    assert.equal(metadata.description, notice.excerpt);
+  }
+
+  const missing = await exports.generateMetadata(
+    { params: Promise.resolve({ id: "missing" }) },
+    Promise.resolve(parentMetadata),
+  );
+  assert.equal(missing.title, "공지사항을 찾을 수 없습니다 | 씨브레인");
+  assert.equal(missing.openGraph, undefined);
+  assert.equal(parentMetadata.openGraph.title.absolute, "씨브레인 | C-Brain");
 });
 
 test("notice list keeps category, pinned, detail-link, and shared-icon contracts", async () => {
