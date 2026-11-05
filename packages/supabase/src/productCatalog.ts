@@ -558,8 +558,7 @@ export function calculateProductSelection(
   }
 
   const includedPrintEstimate = variant.includedPrint?.amount ?? 0;
-  const designPrintEstimate =
-    estimate.designPrintEstimate - includedPrintEstimate;
+  const designPrintEstimate = estimate.designPrintEstimate;
   const isBusinessCard = variant.productSubtype === "명함";
   const serviceMultiplier = isBusinessCard ? 1 : estimateMultiplier;
   const estimatedDesignAmount = designPrintEstimate * serviceMultiplier;

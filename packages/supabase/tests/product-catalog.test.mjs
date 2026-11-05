@@ -176,7 +176,7 @@ test("business card printing and logo proposals use their multipliers", () => {
 
   assert.equal(
     businessCardEnvelope.startingPrice,
-    70000,
+    90000,
     "the public card uses the lowest price across quantity and estimate variants",
   );
 
@@ -192,8 +192,8 @@ test("business card printing and logo proposals use their multipliers", () => {
       quantity: 500,
     }),
     {
-      designPrintAmount: 30000,
-      designPrintEstimate: 30000,
+      designPrintAmount: 50000,
+      designPrintEstimate: 50000,
       estimateMultiplier: 1,
       optionRows: [
         { key: "size", label: "사이즈", value: "90x50mm" },
@@ -208,13 +208,13 @@ test("business card printing and logo proposals use their multipliers", () => {
       planningAmount: 0,
       planningEstimate: 20000,
       priceRows: [
-        { label: "디자인비", value: 30000 },
+        { label: "디자인비", value: 50000 },
         { label: "인쇄비 (500장)", value: 40000 },
       ],
       printAmount: 40000,
       quantity: 500,
       quantityLabel: "500장",
-      totalPrice: 70000,
+      totalPrice: 90000,
     },
   );
 
@@ -229,7 +229,7 @@ test("business card printing and logo proposals use their multipliers", () => {
       },
       quantity: 500,
     }).totalPrice,
-    180000,
+    200000,
   );
   assert.equal(
     calculateProductSelection(logo, {
@@ -247,6 +247,31 @@ test("business card printing and logo proposals use their multipliers", () => {
     }),
     null,
   );
+});
+
+test("business card service amounts match administrator estimates without deductions", () => {
+  for (const amount of [0, 10000, 50000, 60000]) {
+    const source = businessCardEnvelopeProduct();
+    const card = source.configuration.variants.명함;
+    card.serviceEstimatesBySelection["0:0"].designPrintEstimate = amount;
+    const businessCard = createOrderProductCatalogItem(source).variants[0];
+    const calculation = calculateProductSelection(businessCard, {
+      hasPlanning: false,
+      optionValues: {
+        material: "일반지(스노우, 무광코팅, 500장)",
+        people: "1",
+        size: "90x50mm",
+        thickness: "보통",
+      },
+      quantity: 500,
+    });
+
+    assert.ok(calculation);
+    assert.equal(calculation.designPrintEstimate, amount);
+    assert.equal(calculation.designPrintAmount, amount);
+    assert.equal(calculation.printAmount, 40000);
+    assert.equal(calculation.totalPrice, amount + 40000);
+  }
 });
 
 test("business card people changes only increase printing fees", () => {
@@ -273,16 +298,16 @@ test("business card people changes only increase printing fees", () => {
         });
 
         assert.ok(calculation);
-        assert.equal(calculation.designPrintEstimate, 30000);
-        assert.equal(calculation.designPrintAmount, 30000);
+        assert.equal(calculation.designPrintEstimate, 50000);
+        assert.equal(calculation.designPrintAmount, 50000);
         assert.equal(calculation.printAmount, printAmount);
         assert.equal(calculation.planningAmount, hasPlanning ? 20000 : 0);
         assert.equal(
           calculation.totalPrice,
-          30000 + printAmount + (hasPlanning ? 20000 : 0),
+          50000 + printAmount + (hasPlanning ? 20000 : 0),
         );
         assert.deepEqual(calculation.priceRows, [
-          { label: "디자인비", value: 30000 },
+          { label: "디자인비", value: 50000 },
           {
             label: `인쇄비 (${quantity.toLocaleString("ko-KR")}장)`,
             value: printAmount,
@@ -337,7 +362,7 @@ test("business card quantity tables preserve combination-specific edits and fail
     },
     quantity: 500,
   };
-  assert.equal(calculateProductSelection(variant, selected).totalPrice, 210000);
+  assert.equal(calculateProductSelection(variant, selected).totalPrice, 230000);
   assert.equal(
     calculateProductSelection(variant, {
       ...selected,
