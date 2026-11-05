@@ -34,7 +34,7 @@ test('blog form combines the fixed categories with reusable custom categories', 
   ])
 
   assert.match(formSource, /getBlogCategoryOptions/)
-  assert.match(formSource, /setBlogTypes\(getBlogCategoryOptions\(posts\.map/)
+  assert.match(formSource, /options: getBlogCategoryOptions\(posts\.map/)
   assert.match(formSource, /allowCustomValue/)
   assert.match(formSource, /options=\{blogTypes\}/)
   assert.match(formSource, /normalizeBlogCategory\(nextType\)/)

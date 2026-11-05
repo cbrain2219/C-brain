@@ -14,10 +14,11 @@ export type BlogCategoryFilter = string;
 
 export function getBlogCategories(
   posts: readonly Pick<BlogPost, "category">[],
+  deletedTypes: readonly string[] = [],
 ) {
   return [
     blogAllCategory,
-    ...getBlogCategoryOptions(posts.map((post) => post.category)),
+    ...getBlogCategoryOptions(posts.map((post) => post.category), deletedTypes),
   ];
 }
 

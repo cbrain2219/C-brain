@@ -89,7 +89,10 @@ export function normalizeBlogCategory(value: string) {
   return getProductCategory(normalizedValue)?.label ?? normalizedValue;
 }
 
-export function getBlogCategoryOptions(values: readonly string[]) {
+export function getBlogCategoryOptions(
+  values: readonly string[],
+  deletedTypes: readonly string[] = [],
+) {
   const categories: string[] = [...productTypes];
   const seenCategories = new Set(
     categories.map((category) => category.toLocaleLowerCase("ko-KR")),
@@ -111,7 +114,13 @@ export function getBlogCategoryOptions(values: readonly string[]) {
     seenCategories.add(categoryKey);
   }
 
-  return categories;
+  const deletedKeys = new Set(
+    // Stored keys are already resolved; mapping "logo" again would change a custom "LOGO" type.
+    deletedTypes.map((value) => normalizeProductType(value).toLocaleLowerCase("ko-KR")),
+  );
+  return categories.filter(
+    (category) => !deletedKeys.has(category.toLocaleLowerCase("ko-KR")),
+  );
 }
 
 export function getProductCategoryLabel(

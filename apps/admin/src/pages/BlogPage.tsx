@@ -1,4 +1,4 @@
-import { listAdminPosts, reorderPosts } from '@repo/supabase'
+import { listAdminPosts, listDeletedBlogTypes, reorderPosts } from '@repo/supabase'
 import { blogAllCategory, getBlogCategoryOptions } from '@repo/supabase/categories'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
@@ -77,6 +77,7 @@ const blogColumns = [
 
 export function BlogPage() {
   const [rows, setRows] = useState<readonly BlogListRow[]>([])
+  const [deletedTypes, setDeletedTypes] = useState<string[]>([])
   const [filters, setFilters] = useState<{ status: BlogStatusLabel | '전체'; type: string }>({
     status: '전체',
     type: '전체',
@@ -93,11 +94,11 @@ export function BlogPage() {
         {
           id: 'type',
           label: '유형 필터',
-          options: [blogAllCategory, ...getBlogCategoryOptions(rows.map((row) => row.type))],
+          options: [blogAllCategory, ...getBlogCategoryOptions(rows.map((row) => row.type), deletedTypes)],
         },
         { id: 'status', label: '상태 필터', options: statusFilterOptions },
       ] satisfies readonly AdminTableFilter[],
-    [rows],
+    [rows, deletedTypes],
   )
   const filteredRows = useMemo(
     () => filterBlogRows(rows, { ...filters, query }),
@@ -107,9 +108,11 @@ export function BlogPage() {
   useEffect(() => {
     let isCurrent = true
 
-    void listAdminPosts(supabase, 'blog')
-      .then((posts) => {
-        if (isCurrent) setRows(posts.map(toBlogListRow))
+    void Promise.all([listAdminPosts(supabase, 'blog'), listDeletedBlogTypes(supabase)])
+      .then(([posts, deleted]) => {
+        if (!isCurrent) return
+        setRows(posts.map(toBlogListRow))
+        setDeletedTypes(deleted)
       })
       .catch(() => {
         if (!isCurrent) return

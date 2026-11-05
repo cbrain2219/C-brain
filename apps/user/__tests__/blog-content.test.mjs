@@ -124,6 +124,11 @@ test("blog DB rows map to the existing public content model", async () => {
     ]);
     assert.equal(resolveBlogCategory("인쇄 실무팁", categories), "인쇄 실무팁");
     assert.equal(resolveBlogCategory("없는 카테고리", categories), "전체");
+    const afterDeletion = getBlogCategories(posts, ["브로슈어·카탈로그", "로고"]);
+    assert.equal(afterDeletion.includes("브로슈어 · 카탈로그"), false);
+    assert.equal(afterDeletion.includes("로고"), false);
+    assert.equal(afterDeletion.includes("인쇄 실무팁"), true);
+    assert.equal(resolveBlogCategory("로고", afterDeletion), "전체");
   `;
 
   await execFileAsync(

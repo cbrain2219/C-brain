@@ -52,7 +52,7 @@ test("portfolio uses shared portfolio-only categories without changing the produ
   assert.match(sources.blogTypes, /export type BlogCategory = string/);
   assert.match(
     sources.blogCategories,
-    /getBlogCategoryOptions\(posts\.map\(\(post\) => post\.category\)\)/,
+    /getBlogCategoryOptions\(posts\.map\(\(post\) => post\.category\), deletedTypes\)/,
   );
   assert.match(sources.blogCategories, /blogAllCategory/);
   assert.match(

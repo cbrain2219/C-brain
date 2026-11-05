@@ -1,4 +1,5 @@
-import { createPost, deletePost, getAdminPost, listAdminPosts, updatePost } from '@repo/supabase'
+import { createPost, deletePost, getAdminPost, listAdminPosts, updatePost, deleteBlogType, listDeletedBlogTypes, restoreBlogType } from '@repo/supabase'
+import type { BlogTypeDeletionResult } from '@repo/supabase'
 import {
   blogAllCategory,
   getBlogCategoryOptions,
@@ -14,9 +15,7 @@ import {
 } from '../components/admin-editor/AdminContentEditor'
 import { getManagedContentPublishError } from '../components/admin-editor/contentEditorPublish'
 import { deleteRowThenCleanContentScope } from '../components/admin-editor/contentEditorDeletion'
-import { AdminDeleteDialog } from '../components/admin-form/AdminDeleteDialog'
-import { AdminFormLayout } from '../components/admin-form/AdminFormLayout'
-import { AdminTypeCombobox } from '../components/admin-form/AdminTypeCombobox'
+import { AdminDeleteDialog, AdminFormLayout, AdminTypeCombobox } from '../components/admin-form'
 import { deletePublicAssets, getPublicAssetUrl, uploadPublicAsset } from '../lib/adminAssets'
 import { removeContentAssetScope } from '../lib/contentAssetStorage'
 import { managedContentIsEmpty } from '../lib/managedContent'
@@ -84,7 +83,16 @@ export function BlogFormPage() {
   const { blogId } = useParams<{ blogId: string }>()
   const isEditing = blogId !== undefined
   const [form, setForm] = useState<BlogFormState>(createInitialBlogForm)
-  const [blogTypes, setBlogTypes] = useState<string[]>(() => getBlogCategoryOptions([]))
+  const [blogTypeState, setBlogTypeState] = useState(() => ({
+    options: getBlogCategoryOptions([]),
+    deleted: [] as string[],
+  }))
+  const { options: blogTypes, deleted: deletedBlogTypes } = blogTypeState
+  const [typeDeletion, setTypeDeletion] = useState<{
+    type: string
+    result: Exclude<BlogTypeDeletionResult, 'deleted'> | 'confirm'
+  } | null>(null)
+  const typeOperationInFlight = useRef(0)
   const [blogSettingCounts, setBlogSettingCounts] =
     useState<BlogSettingCounts>(emptyBlogSettingCounts)
   const [slugError, setSlugError] = useState('')
@@ -118,15 +126,19 @@ export function BlogFormPage() {
       setLoadError('')
 
       try {
-        const [posts, post] = await Promise.all([
+        const [posts, post, deletedTypes] = await Promise.all([
           listAdminPosts(supabase, 'blog'),
           blogId ? getAdminPost(supabase, blogId, 'blog') : Promise.resolve(null),
+          listDeletedBlogTypes(supabase),
         ])
 
         if (!isCurrent) return
 
         setBlogSettingCounts(getBlogSettingCounts(posts))
-        setBlogTypes(getBlogCategoryOptions(posts.map((item) => item.type)))
+        setBlogTypeState({
+          deleted: deletedTypes,
+          options: getBlogCategoryOptions(posts.map((item) => item.type), deletedTypes),
+        })
 
         if (post) {
           persistedSlug.current = post.slug
@@ -170,7 +182,7 @@ export function BlogFormPage() {
     setForm((current) => ({ ...current, [key]: value }))
   }
 
-  function commitBlogType(nextType: string) {
+  async function commitBlogType(nextType: string, signal?: AbortSignal) {
     const type = normalizeBlogCategory(nextType)
 
     if (!type || type === blogAllCategory) {
@@ -187,9 +199,81 @@ export function BlogFormPage() {
     )
     const committedType = existingType ?? type
 
-    setBlogTypes((current) => getBlogCategoryOptions([...current, committedType]))
+    const typeKey = type.toLocaleLowerCase('ko-KR')
+    const wasDeleted = deletedBlogTypes.some(
+      (item) => item.toLocaleLowerCase('ko-KR') === typeKey,
+    )
+    if (wasDeleted) {
+      typeOperationInFlight.current += 1
+      try {
+        await restoreBlogType(supabase, type)
+      } finally {
+        typeOperationInFlight.current -= 1
+      }
+      void refreshPublicContent('blog', [], { notifyFailure: false })
+    }
+
+    setBlogTypeState((current) => {
+      const deleted = wasDeleted
+        ? current.deleted.filter((item) => item !== typeKey)
+        : current.deleted
+      return {
+        deleted,
+        options: getBlogCategoryOptions([...current.options, committedType], deleted),
+      }
+    })
+    if (signal?.aborted) return
     updateForm('type', committedType)
     setTypeError('')
+  }
+
+  async function requestTypeDeletion(type: string) {
+    if (actionLocked || typeOperationInFlight.current) return
+    typeOperationInFlight.current += 1
+    try {
+      const posts = await listAdminPosts(supabase, 'blog')
+      const matching = posts.filter(
+        (post) => normalizeBlogCategory(post.type).toLocaleLowerCase('ko-KR') === type.toLocaleLowerCase('ko-KR'),
+      )
+      setTypeDeletion({
+        type,
+        result: matching.some((post) => post.status === 'published')
+          ? 'blocked_published'
+          : matching.length ? 'blocked_draft' : 'confirm',
+      })
+    } catch (error) {
+      console.error('Failed to check blog type usage.', error)
+    } finally {
+      typeOperationInFlight.current -= 1
+    }
+  }
+
+  async function confirmTypeDeletion() {
+    if (!typeDeletion || typeDeletion.result !== 'confirm' || typeOperationInFlight.current) return
+    typeOperationInFlight.current += 1
+    const { type } = typeDeletion
+    try {
+      const result = await deleteBlogType(supabase, type)
+      if (result !== 'deleted') {
+        setTypeDeletion((current) => current?.type === type ? { type, result } : current)
+        return
+      }
+      setBlogTypeState((current) => {
+        const deleted = [...current.deleted, type.toLocaleLowerCase('ko-KR')]
+        return { deleted, options: getBlogCategoryOptions(current.options, deleted) }
+      })
+      setForm((current) =>
+        normalizeBlogCategory(current.type).toLocaleLowerCase('ko-KR') === type.toLocaleLowerCase('ko-KR')
+          ? { ...current, type: '' }
+          : current,
+      )
+      setTypeDeletion(null)
+      await refreshPublicContent('blog', [], { notifyFailure: false })
+    } catch (error) {
+      console.error('Failed to delete blog type.', error)
+    } finally {
+      typeOperationInFlight.current -= 1
+    }
   }
 
   function releaseThumbnailPreview() {
@@ -476,6 +560,21 @@ export function BlogFormPage() {
         </p>
       ) : null}
 
+      <AdminDeleteDialog
+        itemLabel="블로그 유형"
+        finalFocusId={formId + '-type'}
+        open={typeDeletion !== null}
+        onOpenChange={(open) => { if (!open) setTypeDeletion(null) }}
+        onConfirm={confirmTypeDeletion}
+        notice={typeDeletion?.result !== 'confirm'}
+        title={typeDeletion?.result === 'confirm' ? '유형 삭제' : '삭제 불가'}
+        description={typeDeletion?.result === 'blocked_published'
+          ? '이미 발행된 블로그 글이 있어 삭제할 수 없는 유형입니다.'
+          : typeDeletion?.result === 'blocked_draft'
+            ? '임시저장된 블로그 글이 있어 삭제할 수 없는 유형입니다.'
+            : '블로그 유형을 삭제하시겠습니까?.'}
+      />
+
       <label className="blog-form__field" htmlFor={formId + '-type'}>
         <span className="blog-form__label">블로그 유형</span>
         <AdminTypeCombobox
@@ -488,6 +587,7 @@ export function BlogFormPage() {
             setTypeError('')
           }}
           onCommit={commitBlogType}
+          onDelete={isEditing ? undefined : (type) => { void requestTypeDeletion(type) }}
           options={blogTypes}
           placeholder="블로그유형을 선택해주세요."
           value={form.type}

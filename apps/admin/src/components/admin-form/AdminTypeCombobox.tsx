@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { KeyboardEvent } from 'react'
 import { AdminIcon } from '../AdminIcon'
 import './AdminTypeCombobox.css'
@@ -14,7 +14,8 @@ type AdminTypeComboboxProps = {
   readonly inputId: string
   readonly name: string
   readonly onClear?: () => void
-  readonly onCommit: (value: string) => void
+  readonly onCommit: (value: string, signal?: AbortSignal) => void | Promise<void>
+  readonly onDelete?: (value: string) => void
   readonly onInvalid?: () => void
   readonly options: readonly string[]
   readonly placeholder: string
@@ -34,6 +35,7 @@ export function AdminTypeCombobox({
   name,
   onClear,
   onCommit,
+  onDelete,
   onInvalid,
   options,
   placeholder,
@@ -47,7 +49,9 @@ export function AdminTypeCombobox({
   const [isOpen, setIsOpen] = useState(false)
   const [isFiltering, setIsFiltering] = useState(false)
   const [activeIndex, setActiveIndex] = useState(-1)
-  const normalizedQuery = normalizeValue(query)
+  const pendingCommit = useRef<AbortController | null>(null)
+  useEffect(() => () => pendingCommit.current?.abort(), [])
+  const normalizedQuery = normalizeValue(isFiltering ? query : value)
   const comparableQuery = normalizedQuery.toLocaleLowerCase('ko-KR')
   const exactOption = options.find(
     (option) => normalizeValue(option).toLocaleLowerCase('ko-KR') === comparableQuery,
@@ -63,26 +67,36 @@ export function AdminTypeCombobox({
       : []),
   ]
   const activeItemId =
-    activeIndex >= 0 && activeIndex < menuItems.length
-      ? `${listboxId}-${activeIndex}`
-      : undefined
+    activeIndex >= 0 && activeIndex < menuItems.length ? `${listboxId}-${activeIndex}` : undefined
 
   function closeAndRestore() {
+    pendingCommit.current?.abort()
     setIsOpen(false)
     setIsFiltering(false)
     setActiveIndex(-1)
     setQuery(value)
   }
 
-  function commit(item: ComboboxItem) {
-    onCommit(item.label)
-    setQuery(item.label)
-    setIsOpen(false)
-    setIsFiltering(false)
-    setActiveIndex(-1)
+  async function commit(item: ComboboxItem) {
+    pendingCommit.current?.abort()
+    const controller = new AbortController()
+    pendingCommit.current = controller
+    try {
+      const result = onCommit(item.label, controller.signal)
+      if (result) await result
+      if (controller.signal.aborted) return
+      setQuery(item.label)
+      setIsOpen(false)
+      setIsFiltering(false)
+      setActiveIndex(-1)
+    } catch (error) {
+      console.error('Failed to commit a content type.', error)
+    }
   }
 
   function openMenu() {
+    if (isOpen) return
+    setQuery(value)
     setIsOpen(true)
     setIsFiltering(false)
     setActiveIndex(-1)
@@ -113,11 +127,11 @@ export function AdminTypeCombobox({
       return
     }
 
-    if (event.key !== 'Enter' || event.nativeEvent.isComposing || !normalizedQuery) return
-
-    event.preventDefault()
+    if (event.key !== 'Enter' || event.nativeEvent.isComposing) return
 
     const activeItem = menuItems[activeIndex]
+    if (!activeItem && !normalizedQuery) return
+    event.preventDefault()
 
     if (activeItem) {
       commit(activeItem)
@@ -141,12 +155,14 @@ export function AdminTypeCombobox({
         aria-controls={listboxId}
         aria-describedby={errorMessage ? errorId : undefined}
         aria-expanded={isOpen}
+        aria-haspopup={onDelete ? 'grid' : 'listbox'}
         aria-invalid={errorMessage ? true : undefined}
         autoComplete="off"
         className="admin-type-combobox__input"
         id={inputId}
         name={name}
         onChange={(event) => {
+          pendingCommit.current?.abort()
           const nextQuery = event.currentTarget.value
 
           setQuery(nextQuery)
@@ -166,7 +182,7 @@ export function AdminTypeCombobox({
         role="combobox"
         spellCheck={false}
         type="text"
-        value={query}
+        value={isOpen && isFiltering ? query : value}
       />
       <span
         className={
@@ -179,29 +195,61 @@ export function AdminTypeCombobox({
       </span>
 
       {isOpen ? (
-        <span className="admin-type-combobox__menu" id={listboxId} role="listbox">
-          {menuItems.map((item, index) => (
-            <button
-              aria-selected={!item.isCustom && item.label === value}
-              className={
-                index === activeIndex
-                  ? 'admin-type-combobox__option admin-type-combobox__option--active'
-                  : 'admin-type-combobox__option'
-              }
-              id={`${listboxId}-${index}`}
-              key={`${item.isCustom}-${item.label}`}
-              onClick={() => commit(item)}
-              onMouseDown={(event) => event.preventDefault()}
-              onMouseEnter={() => setActiveIndex(index)}
-              role="option"
-              type="button"
-            >
-              <span>{item.label}</span>
-              {item.isCustom ? (
-                <span className="admin-type-combobox__option-meta">새 유형 추가 · Enter</span>
-              ) : null}
-            </button>
-          ))}
+        <span
+          className="admin-type-combobox__menu"
+          id={listboxId}
+          role={onDelete ? 'grid' : 'listbox'}
+        >
+          {menuItems.map((item, index) => {
+            const option = (
+              <button
+                aria-selected={!item.isCustom && item.label === value}
+                className={
+                  index === activeIndex
+                    ? 'admin-type-combobox__option admin-type-combobox__option--active'
+                    : 'admin-type-combobox__option'
+                }
+                id={`${listboxId}-${index}`}
+                key={`${item.isCustom}-${item.label}`}
+                onClick={() => void commit(item)}
+                onMouseDown={(event) => event.preventDefault()}
+                onMouseEnter={() => setActiveIndex(index)}
+                role={onDelete ? 'gridcell' : 'option'}
+                tabIndex={onDelete ? -1 : undefined}
+                type="button"
+              >
+                <span>{item.label}</span>
+                {item.isCustom ? (
+                  <span className="admin-type-combobox__option-meta">새 유형 추가 · Enter</span>
+                ) : null}
+              </button>
+            )
+
+            return onDelete ? (
+              <span
+                className="admin-type-combobox__row"
+                key={`${item.isCustom}-${item.label}`}
+                role="row"
+              >
+                {option}
+                {!item.isCustom ? (
+                  <span role="gridcell">
+                    <button
+                      aria-label={`${item.label} 유형 삭제`}
+                      className="admin-type-combobox__delete"
+                      onClick={() => onDelete(item.label)}
+                      onMouseDown={(event) => event.preventDefault()}
+                      type="button"
+                    >
+                      <AdminIcon name="x-close" size={12} />
+                    </button>
+                  </span>
+                ) : null}
+              </span>
+            ) : (
+              option
+            )
+          })}
         </span>
       ) : null}
     </span>

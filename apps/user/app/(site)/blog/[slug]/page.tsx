@@ -23,6 +23,7 @@ import {
   getPublishedBlogPostSource,
   getPublishedBlogPost,
   getPublishedBlogPosts,
+  getDeletedBlogTypes,
 } from "../../../../lib/publicContent";
 import { BlogDetailBackLink } from "./BlogDetailBackLink";
 import { BlogHtmlDocumentFrame } from "./BlogHtmlDocumentFrame";
@@ -255,17 +256,18 @@ export default async function BlogDetailPage({
     params,
     searchParams,
   ]);
-  const [posts, source, post] = await Promise.all([
+  const [posts, source, post, deletedTypes] = await Promise.all([
     postsPromise,
     getPublishedBlogPostSource(slug),
     getPublishedBlogPost(slug),
+    getDeletedBlogTypes(),
   ]);
 
   if (!post) {
     notFound();
   }
 
-  const categories = getBlogCategories(posts);
+  const categories = getBlogCategories(posts, deletedTypes);
   const activeCategory = resolveBlogCategory(
     getSearchParamValue(resolvedSearchParams?.category),
     categories,

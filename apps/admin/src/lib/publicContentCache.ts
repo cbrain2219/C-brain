@@ -7,6 +7,7 @@ const userAppUrl = import.meta.env.VITE_USER_APP_URL || 'http://localhost:3000'
 export async function refreshPublicContent(
   entity: 'blog' | 'portfolio',
   slugs: readonly string[] = [],
+  options: { notifyFailure?: boolean } = {},
 ): Promise<boolean> {
   try {
     const {
@@ -44,6 +45,10 @@ export async function refreshPublicContent(
   } catch {
     // The save has already succeeded; report cache refresh separately.
   }
-  toast.error('변경 내용은 저장됐지만 사이트 캐시 갱신에 실패했습니다.')
+  if (options.notifyFailure !== false) {
+    toast.error('변경 내용은 저장됐지만 사이트 캐시 갱신에 실패했습니다.')
+  } else {
+    console.error('Failed to refresh public content after a type mutation.')
+  }
   return false
 }

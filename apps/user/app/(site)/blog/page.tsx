@@ -7,7 +7,7 @@ import {
   createBlogBreadcrumbStructuredData,
   createBlogPageStructuredData,
 } from "../../_content/structured-data";
-import { getPublishedBlogPosts } from "../../../lib/publicContent";
+import { getDeletedBlogTypes, getPublishedBlogPosts } from "../../../lib/publicContent";
 import { BlogBoard } from "./_components/BlogBoard";
 import {
   getBlogCategories,
@@ -22,11 +22,12 @@ type BlogPageProps = {
 export const metadata = createPageMetadata("blog");
 
 export default async function BlogPage({ searchParams }: BlogPageProps) {
-  const [{ category }, posts] = await Promise.all([
+  const [{ category }, posts, deletedTypes] = await Promise.all([
     searchParams,
     getPublishedBlogPosts(),
+    getDeletedBlogTypes(),
   ]);
-  const categories = getBlogCategories(posts);
+  const categories = getBlogCategories(posts, deletedTypes);
   const activeCategory = resolveBlogCategory(category, categories);
 
   return (

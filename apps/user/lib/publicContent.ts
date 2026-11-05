@@ -8,6 +8,7 @@ import {
   listPublishedProducts,
   listPublishedPortfolioSummaries,
   listPublishedPostSummaries,
+  listDeletedBlogTypes,
 } from "@repo/supabase";
 import { connection } from "next/server";
 import { cache } from "react";
@@ -147,6 +148,10 @@ async function loadPublishedOrderProducts() {
 }
 
 export const getPublishedBlogPosts = cache(loadPublishedBlogPosts);
+export const getDeletedBlogTypes = cache(async () => {
+  const client = createPublicUserSupabaseClient();
+  return client ? listDeletedBlogTypes(client) : [];
+});
 export const getPublishedBlogPost = cache(
   async (slug: string) => (await getPublishedBlogDetail(slug))?.post,
 );

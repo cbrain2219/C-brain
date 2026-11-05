@@ -62,3 +62,14 @@ it('does not retry a denied request or send a request without a session', async 
   expect(await refreshPublicContent('blog')).toBe(false)
   expect(fetch).toHaveBeenCalledTimes(1)
 })
+
+it('keeps type mutation refresh failures internal', async () => {
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValue(Response.json({}, { status: 503 })))
+  const log = vi.spyOn(console, 'error').mockImplementation(() => {})
+  try {
+    expect(await refreshPublicContent('blog', [], { notifyFailure: false })).toBe(false)
+    expect(showError).not.toHaveBeenCalled()
+  } finally {
+    log.mockRestore()
+  }
+})

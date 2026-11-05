@@ -858,6 +858,12 @@ export type Database = {
           },
         ];
       };
+      blog_type_deletions: {
+        Row: { type_key: string };
+        Insert: { type_key: string };
+        Update: { type_key?: string };
+        Relationships: [];
+      };
       site_settings: {
         Row: {
           created_at: string;
@@ -929,6 +935,14 @@ export type Database = {
       };
     };
     Functions: {
+      delete_blog_type: {
+        Args: { target_type: string };
+        Returns: string;
+      };
+      restore_blog_type: {
+        Args: { target_type: string };
+        Returns: undefined;
+      };
       create_linkpay_checkout: {
         Args: {
           p_buyer_company: string | null;

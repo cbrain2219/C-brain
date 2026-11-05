@@ -100,3 +100,19 @@ test("blog categories keep the fixed six first and append normalized custom valu
     [...productTypes, "인쇄 실무팁", "DESIGN"],
   );
 });
+
+test("deleted blog types stay excluded from defaults and stored post types", () => {
+  assert.deepEqual(
+    getBlogCategoryOptions(
+      ["브로슈어·카탈로그", " Design ", "인쇄 실무팁"],
+      [" 브로슈어 · 카탈로그 ", "design"],
+    ),
+    [...productTypes.slice(1), "인쇄 실무팁"],
+  );
+  assert.deepEqual(getBlogCategoryOptions([], productTypes), []);
+  assert.equal(isProductType("브로슈어 · 카탈로그"), true);
+  assert.deepEqual(
+    getBlogCategoryOptions(["LOGO"], ["logo"]),
+    productTypes,
+  );
+});

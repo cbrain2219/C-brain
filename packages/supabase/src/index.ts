@@ -1,5 +1,6 @@
 export * from "./admin.ts";
 export * from "./auth.ts";
+export * from "./blogTypes.ts";
 export * from "./client.ts";
 export * from "./categories.ts";
 export * from "./content.ts";

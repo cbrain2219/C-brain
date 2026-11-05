@@ -52,6 +52,8 @@ async function setup() {
     ]),
   );
   let failList = false;
+  let deletedTypes = [];
+  let failDeletedTypes = false;
   const nextCache = {
     unstable_cache(read, keyParts, options) {
       assert.equal(options.revalidate, 86400);
@@ -80,6 +82,10 @@ async function setup() {
     "../app/(site)/blog/_data/blogPosts": { mapBlogRows: (rows) => rows },
     "../app/_content/portfolio": { mapPortfolioRows: (rows) => rows },
     "@repo/supabase": {
+      listDeletedBlogTypes: async () => {
+        if (failDeletedTypes) throw Error("type metadata unavailable");
+        return deletedTypes;
+      },
       getPublicAssetUrl: (_, path) => path,
       listPublishedPosts: async () => {
         calls.push("all-bodies");
@@ -112,6 +118,8 @@ async function setup() {
       if (entry.tags.includes(tag)) entries.delete(key);
   };
   return {
+    setDeletedTypes: (types) => { deletedTypes = types; },
+    failDeletedTypes: (value) => { failDeletedTypes = value; },
     data,
     calls,
     rows,
@@ -122,6 +130,17 @@ async function setup() {
     },
   };
 }
+
+test("deleted blog metadata is fresh per request and read failures do not restore categories", async () => {
+  const { data, setDeletedTypes, failDeletedTypes } = await setup();
+  assert.deepEqual(await data.getDeletedBlogTypes(), []);
+  setDeletedTypes(["로고"]);
+  assert.deepEqual(await data.getDeletedBlogTypes(), ["로고"]);
+  setDeletedTypes([]);
+  assert.deepEqual(await data.getDeletedBlogTypes(), []);
+  failDeletedTypes(true);
+  await assert.rejects(data.getDeletedBlogTypes(), /type metadata unavailable/);
+});
 
 test("public lists and individual bodies are shared across requests and invalidated separately", async () => {
   const { data, calls, rows, invalidate, cacheHelpers } = await setup();
