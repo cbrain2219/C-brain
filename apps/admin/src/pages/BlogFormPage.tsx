@@ -587,7 +587,7 @@ export function BlogFormPage() {
             setTypeError('')
           }}
           onCommit={commitBlogType}
-          onDelete={isEditing ? undefined : (type) => { void requestTypeDeletion(type) }}
+          onDelete={(type) => { void requestTypeDeletion(type) }}
           options={blogTypes}
           placeholder="블로그유형을 선택해주세요."
           value={form.type}
