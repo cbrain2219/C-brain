@@ -1760,8 +1760,8 @@ $variants$
           "고급지 200"
         ],
         "material": [
-          "일반지(스노우, 무광코팅)",
-          "고급지(랑데뷰)"
+          "일반지(스노우, 무광코팅, 500장)",
+          "고급지(랑데뷰 200장)"
         ],
         "thickness": [
           "보통",
@@ -1773,7 +1773,56 @@ $variants$
           "3"
         ]
       },
-      "priceRowsBySelection": {},
+      "priceRowsBySelection": {
+        "0:0": [
+          {
+            "quantity": 500,
+            "unitPrice": 120,
+            "printAmount": 40000
+          },
+          {
+            "quantity": 1000,
+            "unitPrice": 90,
+            "printAmount": 60000
+          }
+        ],
+        "0:1": [
+          {
+            "quantity": 500,
+            "unitPrice": 120,
+            "printAmount": 40000
+          },
+          {
+            "quantity": 1000,
+            "unitPrice": 90,
+            "printAmount": 60000
+          }
+        ],
+        "1:0": [
+          {
+            "quantity": 500,
+            "unitPrice": 120,
+            "printAmount": 40000
+          },
+          {
+            "quantity": 1000,
+            "unitPrice": 90,
+            "printAmount": 60000
+          }
+        ],
+        "1:1": [
+          {
+            "quantity": 500,
+            "unitPrice": 120,
+            "printAmount": 40000
+          },
+          {
+            "quantity": 1000,
+            "unitPrice": 90,
+            "printAmount": 60000
+          }
+        ]
+      },
       "serviceEstimatesBySelection": {
         "0:0": {
           "designPrintEstimate": 50000,
@@ -1792,7 +1841,8 @@ $variants$
           "planningEstimate": 20000
         }
       },
-      "priceModel": "service-plus-print-total-workbook-v3"
+      "priceModel": "service-plus-print-total-workbook-v3",
+      "quantityTableVersion": 1
     }
   },
   {
@@ -1988,7 +2038,7 @@ select setval(
 
 commit;
 
--- Expected result after the initial run: 6 / 98 / 17.
+-- Expected result after the initial run: 6 / 102 / 17.
 select
   count(*) as product_count,
   sum(variant_counts.price_count) as price_selection_count,

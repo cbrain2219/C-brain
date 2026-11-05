@@ -176,6 +176,24 @@ test("all site products map to non-empty approved template variables", async () 
     {
       input: siteInput({
         category: "명함 · 봉투",
+        options: [
+          { key: "material", value: "일반지(스노우, 무광코팅, 500장)" },
+          { key: "people", value: "2명" },
+        ],
+        quantity: "1,000장",
+        variant: "명함",
+      }),
+      output: {
+        category: "명함 · 봉투",
+        pageCount: "해당 없음",
+        paper: "일반지(스노우, 무광코팅, 500장)",
+        quantity: "1,000장",
+        service: "명함 · 디자인 + 인쇄",
+      },
+    },
+    {
+      input: siteInput({
+        category: "명함 · 봉투",
         options: [{ key: "material", value: "일반 봉투재질(백모조지)" }],
         quantity: "500장",
         variant: "봉투",

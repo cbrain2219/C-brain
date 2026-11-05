@@ -23,7 +23,7 @@ test("all seed quantity rows keep workbook unit prices and print totals unchange
   const sourceVariants = JSON.parse(payload);
   const result = transformSeedVariants(sourceVariants);
 
-  assert.equal(result.priceRowCount, 272);
+  assert.equal(result.priceRowCount, 280);
 
   const byVariant = Object.fromEntries(
     result.variants.map((variant) => [
@@ -113,10 +113,11 @@ test("legacy grouped products recover exact totals from the seed only once", () 
     (product) => product.product_type === "브로슈어 · 카탈로그",
   );
   const recoveredRow =
-    brochure.configuration.variants["브로슈어 · 카탈로그"]
-      .priceRowsBySelection["0:0:0:0"][2];
+    brochure.configuration.variants["브로슈어 · 카탈로그"].priceRowsBySelection[
+      "0:0:0:0"
+    ][2];
 
-  assert.equal(first.changedRowCount, 272);
+  assert.equal(first.changedRowCount, 280);
   assert.deepEqual(recoveredRow, {
     printAmount: 490000,
     quantity: 300,
@@ -126,3 +127,52 @@ test("legacy grouped products recover exact totals from the seed only once", () 
   const second = transformGroupedProducts(first.products, seedVariants);
   assert.equal(second.changedRowCount, 0);
 });
+
+test("existing v3 products upgrade the empty business card table without replacing other prices", () => {
+  const seedVariants = JSON.parse(payload);
+  const productsByType = new Map();
+  for (const variant of seedVariants) {
+    const product = productsByType.get(variant.product_type) ?? {
+      configuration: { variants: {} },
+      product_type: variant.product_type,
+      status: "published",
+    };
+    product.configuration.variants[
+      variant.product_subtype || variant.product_type
+    ] = clone(variant.configuration);
+    productsByType.set(variant.product_type, product);
+  }
+  const products = [...productsByType.values()];
+  const card = productsByType.get("명함 · 봉투").configuration.variants.명함;
+  delete card.quantityTableVersion;
+  card.optionValues.material = ["일반지(스노우, 무광코팅)", "고급지(랑데뷰)"];
+  card.priceRowsBySelection = {};
+  const before = clone(products);
+  const first = transformGroupedProducts(products, seedVariants);
+  assert.equal(first.priceRowCount, 280);
+  assert.equal(first.changedRowCount, 8);
+  assert.deepEqual(products, before);
+  assert.deepEqual(first.products.slice(0, 4), before.slice(0, 4));
+  const upgraded = first.products.find(
+    (product) => product.product_type === "명함 · 봉투",
+  );
+  assert.deepEqual(
+    upgraded.configuration.variants.명함.priceRowsBySelection["1:1"],
+    [
+      { quantity: 500, unitPrice: 120, printAmount: 40000 },
+      { quantity: 1000, unitPrice: 90, printAmount: 60000 },
+    ],
+  );
+  assert.deepEqual(
+    upgraded.configuration.variants.봉투,
+    productsByType.get("명함 · 봉투").configuration.variants.봉투,
+  );
+  assert.equal(
+    transformGroupedProducts(first.products, seedVariants).changedRowCount,
+    0,
+  );
+});
+
+function clone(value) {
+  return structuredClone(value);
+}

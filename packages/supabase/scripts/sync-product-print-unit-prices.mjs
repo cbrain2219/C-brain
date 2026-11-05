@@ -9,6 +9,7 @@ import {
   getProductSelectionKey,
   getProductServiceOptionKeys,
   getProductVariants,
+  upgradeBusinessCardConfiguration,
 } from "../src/productConfiguration.ts";
 import { productTypes } from "../src/categories.ts";
 
@@ -99,11 +100,10 @@ function getDesignAmount(
 
   assertSafeAmount(designPrintEstimate, `${label} designPrintEstimate`);
 
-  const multiplier = getProductEstimateMultiplier(
-    productType,
-    productSubtype,
-    optionValues,
-  );
+  const multiplier =
+    productSubtype === "명함"
+      ? 1
+      : getProductEstimateMultiplier(productType, productSubtype, optionValues);
 
   assertPositiveInteger(multiplier, `${label} estimate multiplier`);
 
@@ -298,6 +298,10 @@ export function transformGroupedProducts(products, seedVariants = []) {
     for (const variantName of expectedVariants) {
       const subtype = variantName === product.product_type ? "" : variantName;
       const sourceConfiguration = variants[variantName];
+      const upgradedConfiguration =
+        subtype === "명함"
+          ? upgradeBusinessCardConfiguration(sourceConfiguration)
+          : sourceConfiguration;
       const seedVariant = seedVariantsByKey.get(
         getSeedVariantKey(product.product_type, subtype),
       );
@@ -305,12 +309,12 @@ export function transformGroupedProducts(products, seedVariants = []) {
         sourceConfiguration.priceModel !== priceModel && seedVariant;
       const configuration = needsExactSeedTotals
         ? {
-            ...sourceConfiguration,
+            ...upgradedConfiguration,
             priceModel,
             priceRowsBySelection:
               seedVariant.configuration.priceRowsBySelection,
           }
-        : sourceConfiguration;
+        : upgradedConfiguration;
       const result = transformVariantConfiguration(
         product.product_type,
         subtype,
@@ -319,9 +323,10 @@ export function transformGroupedProducts(products, seedVariants = []) {
 
       nextVariants[variantName] = result.configuration;
       priceRowCount += result.priceRowCount;
-      changedRowCount += needsExactSeedTotals
-        ? result.priceRowCount
-        : result.changedRowCount;
+      changedRowCount +=
+        needsExactSeedTotals || upgradedConfiguration !== sourceConfiguration
+          ? result.priceRowCount
+          : result.changedRowCount;
     }
 
     return {
@@ -330,9 +335,9 @@ export function transformGroupedProducts(products, seedVariants = []) {
     };
   });
 
-  if (priceRowCount !== 272) {
+  if (priceRowCount !== 280) {
     throw new Error(
-      `Expected 272 quantity price rows, found ${priceRowCount}.`,
+      `Expected 280 quantity price rows, found ${priceRowCount}.`,
     );
   }
 
@@ -376,9 +381,9 @@ async function writeSeed() {
   const sourceVariants = JSON.parse(match[2]);
   const result = transformSeedVariants(sourceVariants);
 
-  if (result.priceRowCount !== 272) {
+  if (result.priceRowCount !== 280) {
     throw new Error(
-      `Expected 272 seed price rows, found ${result.priceRowCount}.`,
+      `Expected 280 seed price rows, found ${result.priceRowCount}.`,
     );
   }
 

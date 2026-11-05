@@ -68,7 +68,7 @@ test("shared profiles preserve administrator option order and units", () => {
     getProductUiProfile("명함 · 봉투", "명함").sections.map(
       (section) => section.key,
     ),
-    ["size", "baseQuantity", "material", "thickness", "people"],
+    ["size", "material", "thickness", "people", "quantity"],
   );
   assert.deepEqual(
     getProductUiProfile("명함 · 봉투", "명함").includedPrint,
@@ -87,6 +87,10 @@ test("shared price and service axes create the same keys as the admin form", () 
   );
   assert.deepEqual(
     getProductServiceOptionKeys("명함 · 봉투", "명함"),
+    ["material", "thickness"],
+  );
+  assert.deepEqual(
+    getProductPriceOptionKeys("명함 · 봉투", "명함"),
     ["material", "thickness"],
   );
   assert.deepEqual(getProductPriceOptionKeys("로고"), []);

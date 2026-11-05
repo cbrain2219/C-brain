@@ -10,6 +10,7 @@ import {
   getProductServiceOptionKeys,
   getProductUiProfile,
   getProductVariants,
+  upgradeBusinessCardConfiguration,
 } from "./productConfiguration.ts";
 import type {
   ProductOptionSectionKey,
@@ -306,12 +307,17 @@ function readVariant(
   variantName: ProductVariant,
   value: Json | undefined,
 ): OrderProductVariant | null {
-  if (!isJsonObject(value)) return null;
+  const configuration =
+    variantName === "명함" ? upgradeBusinessCardConfiguration(value) : value;
+  if (!isJsonObject(configuration)) return null;
 
   const productSubtype =
     variantName === productType ? "" : (variantName as ProductSubtype);
   const profile = getProductUiProfile(productType, productSubtype);
-  const optionSections = readOptionSections(profile, value.optionValues);
+  const optionSections = readOptionSections(
+    profile,
+    configuration.optionValues,
+  );
 
   if (!optionSections) return null;
 
@@ -327,12 +333,12 @@ function readVariant(
     optionSections,
   );
   const priceRowsBySelection = readPriceRows(
-    value.priceRowsBySelection,
+    configuration.priceRowsBySelection,
     priceKeys,
     quantitySection !== null,
   );
   const serviceEstimatesBySelection = readServiceEstimates(
-    value.serviceEstimatesBySelection,
+    configuration.serviceEstimatesBySelection,
     serviceKeys,
     profile.showPlanningEstimate,
   );
@@ -554,12 +560,16 @@ export function calculateProductSelection(
   const includedPrintEstimate = variant.includedPrint?.amount ?? 0;
   const designPrintEstimate =
     estimate.designPrintEstimate - includedPrintEstimate;
-  const estimatedDesignAmount = designPrintEstimate * estimateMultiplier;
+  const isBusinessCard = variant.productSubtype === "명함";
+  const serviceMultiplier = isBusinessCard ? 1 : estimateMultiplier;
+  const estimatedDesignAmount = designPrintEstimate * serviceMultiplier;
   const designPrintAmount = estimatedDesignAmount;
   const includedPrintAmount = includedPrintEstimate * estimateMultiplier;
-  const printAmount = quantityRow?.printAmount ?? includedPrintAmount;
+  const printAmount = quantityRow
+    ? quantityRow.printAmount * (isBusinessCard ? estimateMultiplier : 1)
+    : includedPrintAmount;
   const planningAmount = selection.hasPlanning
-    ? (estimate.planningEstimate ?? 0) * estimateMultiplier
+    ? (estimate.planningEstimate ?? 0) * serviceMultiplier
     : 0;
   const totalPrice = designPrintAmount + planningAmount + printAmount;
 

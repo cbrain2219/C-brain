@@ -57,7 +57,7 @@ test('seed retains ten source variants and inserts six grouped rows', () => {
   assert.match(seed, /on conflict \(product_type\)/i)
   assert.match(seed, /on conflict \(product_type\) do nothing/i)
   assert.doesNotMatch(seed, /set configuration = excluded\.configuration/i)
-  assert.match(seed, /Expected result after the initial run: 6 \/ 98 \/ 17\./)
+  assert.match(seed, /Expected result after the initial run: 6 \/ 102 \/ 17\./)
 })
 
 test('spreadsheet seed contains only complete price rows', () => {
@@ -95,11 +95,11 @@ test('spreadsheet seed contains only complete price rows', () => {
   )
 
   assert.deepEqual(totals, {
-    priceSelections: 98,
-    priceRows: 272,
+    priceSelections: 102,
+    priceRows: 280,
     serviceSelections: 17,
   })
-  assert.match(seed, /고급지\(랑데뷰\)/)
+  assert.match(seed, /고급지\(랑데뷰 200장\)/)
   assert.doesNotMatch(seed, /고급지\(량데뷰\)/)
   assert.doesNotMatch(seed, /"unitPrice": null/)
   assert.doesNotMatch(seed, /"finalPrice"/)

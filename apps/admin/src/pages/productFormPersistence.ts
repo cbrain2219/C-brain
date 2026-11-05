@@ -4,6 +4,7 @@ import type {
   ProductRecord,
   ProductStatus,
 } from '@repo/supabase'
+import { upgradeBusinessCardConfiguration } from '@repo/supabase'
 import { formatDecimalNumericValue, formatNumericValue } from './productData.ts'
 import { createProductFormDraft } from './productFormGroup.ts'
 import type { ProductFormDraft } from './productFormGroup.ts'
@@ -224,7 +225,11 @@ function toVariantUiDraft(
   productSubtype: ProductSubtype | '',
   configurationValue: Json | undefined,
 ): ProductUiDraft {
-  const configuration = requireJsonObject(configurationValue)
+  const configuration = requireJsonObject(
+    productSubtype === '명함'
+      ? upgradeBusinessCardConfiguration(configurationValue)
+      : configurationValue,
+  )
   const baseDraft = createProductUiDraft(productType, productSubtype)
   const optionValues = readOptionValues(configuration.optionValues)
   const selectedOptionIndexes: ProductUiDraft['selectedOptionIndexes'] = {}
@@ -320,6 +325,7 @@ function serializeVariantDraft(
 
   return {
     ...original,
+    ...(draft.productSubtype === '명함' ? { quantityTableVersion: 1 } : {}),
     optionValues: serializeOptionValues(draft.optionValues),
     priceRowsBySelection: serializePriceRows(draft.priceRowsBySelection),
     serviceEstimatesBySelection: serializeServiceEstimates(

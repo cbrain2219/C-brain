@@ -97,6 +97,13 @@ test('every product and subtype starts its custom sections at III', () => {
     'VI. 사용 환경',
     'VII. 수량 선택',
   ])
+  assert.deepEqual(headings('명함 · 봉투', '명함'), [
+    'III. 사이즈',
+    'IV. 재질 선택',
+    'V. 두께 선택',
+    'VI. 인원 선택',
+    'VII. 수량 선택',
+  ])
   assert.deepEqual(headings('명함 · 봉투', '봉투'), [
     'III. 종류',
     'IV. 재질',

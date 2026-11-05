@@ -36,9 +36,7 @@ function brochureProduct() {
           { quantity: 200, unitPrice: 1850, printAmount: 370000 },
           { quantity: 300, unitPrice: 1633.3, printAmount: 490000 },
         ],
-        "1:0:0:0": [
-          { quantity: 100, unitPrice: 2800, printAmount: 280000 },
-        ],
+        "1:0:0:0": [{ quantity: 100, unitPrice: 2800, printAmount: 280000 }],
       },
       serviceEstimatesBySelection: {
         "": { designPrintEstimate: 80000, planningEstimate: 50000 },
@@ -59,8 +57,8 @@ function businessCardEnvelopeProduct() {
     명함: {
       optionValues: {
         baseQuantity: ["일반지 500"],
-        material: ["일반지", "고급지"],
-        people: ["1", "3"],
+        material: ["일반지(스노우, 무광코팅)", "고급지(랑데뷰)"],
+        people: ["1", "2", "3"],
         size: ["90x50mm"],
         thickness: ["보통", "두꺼운"],
       },
@@ -74,9 +72,7 @@ function businessCardEnvelopeProduct() {
         thickness: ["보통"],
       },
       priceRowsBySelection: {
-        "0:0:0": [
-          { quantity: 500, unitPrice: 120, printAmount: 60000 },
-        ],
+        "0:0:0": [{ quantity: 500, unitPrice: 120, printAmount: 60000 }],
       },
       serviceEstimatesBySelection: {
         "": { designPrintEstimate: 30000, planningEstimate: 20000 },
@@ -94,7 +90,7 @@ function logoProduct() {
       },
       priceRowsBySelection: {},
       serviceEstimatesBySelection: {
-        "0": { designPrintEstimate: 50000, planningEstimate: null },
+        0: { designPrintEstimate: 50000, planningEstimate: null },
       },
     },
   });
@@ -106,9 +102,10 @@ test("grouped products parse into profile-ordered public catalog items", () => {
   assert.ok(product);
   assert.equal(product.categoryId, "brochure-catalog");
   assert.equal(product.startingPrice, 850000);
-  assert.deepEqual(product.variants.map((variant) => variant.id), [
-    "브로슈어 · 카탈로그",
-  ]);
+  assert.deepEqual(
+    product.variants.map((variant) => variant.id),
+    ["브로슈어 · 카탈로그"],
+  );
   assert.deepEqual(
     product.variants[0].optionSections.map((section) => section.key),
     ["pageCount", "paper", "thickness", "coverCoating"],
@@ -170,7 +167,7 @@ test("service estimates plus entered print totals drive calculated totals", () =
   );
 });
 
-test("service-only products use people and proposal count multipliers", () => {
+test("business card printing and logo proposals use their multipliers", () => {
   const businessCardEnvelope = createOrderProductCatalogItem(
     businessCardEnvelopeProduct(),
   );
@@ -179,7 +176,7 @@ test("service-only products use people and proposal count multipliers", () => {
 
   assert.equal(
     businessCardEnvelope.startingPrice,
-    50000,
+    70000,
     "the public card uses the lowest price across quantity and estimate variants",
   );
 
@@ -187,13 +184,12 @@ test("service-only products use people and proposal count multipliers", () => {
     calculateProductSelection(businessCard, {
       hasPlanning: false,
       optionValues: {
-        baseQuantity: "일반지 500",
-        material: "일반지",
+        material: "일반지(스노우, 무광코팅, 500장)",
         people: "1",
         size: "90x50mm",
         thickness: "보통",
       },
-      quantity: null,
+      quantity: 500,
     }),
     {
       designPrintAmount: 30000,
@@ -202,11 +198,10 @@ test("service-only products use people and proposal count multipliers", () => {
       optionRows: [
         { key: "size", label: "사이즈", value: "90x50mm" },
         {
-          key: "baseQuantity",
-          label: "기본 수량",
-          value: "일반지 500장",
+          key: "material",
+          label: "재질",
+          value: "일반지(스노우, 무광코팅, 500장)",
         },
-        { key: "material", label: "재질", value: "일반지" },
         { key: "thickness", label: "두께", value: "보통" },
         { key: "people", label: "인원", value: "1명" },
       ],
@@ -214,12 +209,12 @@ test("service-only products use people and proposal count multipliers", () => {
       planningEstimate: 20000,
       priceRows: [
         { label: "디자인비", value: 30000 },
-        { label: "인쇄비 (200매)", value: 20000 },
+        { label: "인쇄비 (500장)", value: 40000 },
       ],
-      printAmount: 20000,
-      quantity: null,
-      quantityLabel: null,
-      totalPrice: 50000,
+      printAmount: 40000,
+      quantity: 500,
+      quantityLabel: "500장",
+      totalPrice: 70000,
     },
   );
 
@@ -227,15 +222,14 @@ test("service-only products use people and proposal count multipliers", () => {
     calculateProductSelection(businessCard, {
       hasPlanning: true,
       optionValues: {
-        baseQuantity: "일반지 500",
-        material: "고급지",
+        material: "고급지(랑데뷰 200장)",
         people: "3",
         size: "90x50mm",
         thickness: "두꺼운",
       },
-      quantity: null,
+      quantity: 500,
     }).totalPrice,
-    240000,
+    180000,
   );
   assert.equal(
     calculateProductSelection(logo, {
@@ -253,6 +247,112 @@ test("service-only products use people and proposal count multipliers", () => {
     }),
     null,
   );
+});
+
+test("business card people changes only increase printing fees", () => {
+  const businessCard = createOrderProductCatalogItem(
+    businessCardEnvelopeProduct(),
+  ).variants[0];
+
+  for (const hasPlanning of [false, true]) {
+    for (const [quantity, basePrintAmount] of [
+      [500, 40000],
+      [1000, 60000],
+    ]) {
+      for (const people of ["1", "2", "3"]) {
+        const printAmount = basePrintAmount * Number(people);
+        const calculation = calculateProductSelection(businessCard, {
+          hasPlanning,
+          optionValues: {
+            material: "일반지(스노우, 무광코팅, 500장)",
+            people,
+            size: "90x50mm",
+            thickness: "보통",
+          },
+          quantity,
+        });
+
+        assert.ok(calculation);
+        assert.equal(calculation.designPrintEstimate, 30000);
+        assert.equal(calculation.designPrintAmount, 30000);
+        assert.equal(calculation.printAmount, printAmount);
+        assert.equal(calculation.planningAmount, hasPlanning ? 20000 : 0);
+        assert.equal(
+          calculation.totalPrice,
+          30000 + printAmount + (hasPlanning ? 20000 : 0),
+        );
+        assert.deepEqual(calculation.priceRows, [
+          { label: "디자인비", value: 30000 },
+          {
+            label: `인쇄비 (${quantity.toLocaleString("ko-KR")}장)`,
+            value: printAmount,
+          },
+          ...(hasPlanning ? [{ label: "기획비", value: 20000 }] : []),
+        ]);
+      }
+    }
+  }
+});
+
+test("legacy business card configuration upgrades without mutating stored data", () => {
+  const source = businessCardEnvelopeProduct();
+  const original = clone(source);
+  const product = createOrderProductCatalogItem(source);
+  assert.ok(product);
+  const card = product.variants[0];
+  assert.deepEqual(
+    card.optionSections.map((section) => section.key),
+    ["size", "material", "thickness", "people"],
+  );
+  assert.equal(card.quantitySection.quantityUnit, "장");
+  for (const key of ["0:0", "0:1", "1:0", "1:1"]) {
+    assert.deepEqual(card.priceRowsBySelection[key], [
+      { quantity: 500, unitPrice: 120, printAmount: 40000 },
+      { quantity: 1000, unitPrice: 90, printAmount: 60000 },
+    ]);
+  }
+  assert.deepEqual(source, original);
+});
+
+test("business card quantity tables preserve combination-specific edits and fail closed", () => {
+  const source = businessCardEnvelopeProduct();
+  const card = source.configuration.variants.명함;
+  card.quantityTableVersion = 1;
+  card.optionValues.material = [
+    "일반지(스노우, 무광코팅, 500장)",
+    "고급지(랑데뷰 200장)",
+  ];
+  card.priceRowsBySelection = {
+    "0:0": [{ quantity: 500, unitPrice: 120, printAmount: 40000 }],
+    "1:1": [{ quantity: 500, unitPrice: 175, printAmount: 75000 }],
+  };
+  const variant = createOrderProductCatalogItem(source).variants[0];
+  const selected = {
+    hasPlanning: true,
+    optionValues: {
+      material: "고급지(랑데뷰 200장)",
+      thickness: "두꺼운",
+      size: "90x50mm",
+      people: "2",
+    },
+    quantity: 500,
+  };
+  assert.equal(calculateProductSelection(variant, selected).totalPrice, 210000);
+  assert.equal(
+    calculateProductSelection(variant, {
+      ...selected,
+      optionValues: { ...selected.optionValues, thickness: "보통" },
+    }),
+    null,
+  );
+  card.priceRowsBySelection = {};
+  assert.equal(createOrderProductCatalogItem(source), null);
+  card.priceRowsBySelection = {
+    "0:0": [
+      { quantity: 500, unitPrice: 120, printAmount: Number.MAX_SAFE_INTEGER },
+    ],
+  };
+  assert.equal(createOrderProductCatalogItem(source), null);
 });
 
 test("a published variant may expose only administrator-priced service choices", () => {
@@ -295,7 +395,7 @@ test("default selections always resolve to a valid first combination", () => {
     businessCardEnvelopeProduct(),
     logoProduct(),
   ]) {
-  const product = createOrderProductCatalogItem(source);
+    const product = createOrderProductCatalogItem(source);
 
     for (const variant of product.variants) {
       const selection = createDefaultProductSelection(variant);
@@ -357,7 +457,10 @@ test("legacy rows without a print total keep the multiplication fallback", () =>
   const variant = createOrderProductCatalogItem(source).variants[0];
   const selection = createDefaultProductSelection(variant);
 
-  assert.equal(calculateProductSelection(variant, selection).printAmount, 210000);
+  assert.equal(
+    calculateProductSelection(variant, selection).printAmount,
+    210000,
+  );
 });
 
 test("stale or unknown selections are rejected", () => {
@@ -389,8 +492,7 @@ test("calculated totals that exceed safe integer precision are rejected", () => 
   const source = brochureProduct();
   source.configuration.variants[
     "브로슈어 · 카탈로그"
-  ].serviceEstimatesBySelection[""].planningEstimate =
-    Number.MAX_SAFE_INTEGER;
+  ].serviceEstimatesBySelection[""].planningEstimate = Number.MAX_SAFE_INTEGER;
   const variant = createOrderProductCatalogItem(source).variants[0];
   const selection = createDefaultProductSelection(variant);
 

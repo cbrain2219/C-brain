@@ -118,7 +118,7 @@ test('ten spreadsheet variants seed and round trip as six grouped products', () 
         count + Object.keys(variant.configuration.priceRowsBySelection).length,
       0,
     ),
-    98,
+    102,
   )
   assert.equal(
     seededVariants.reduce(
@@ -147,6 +147,48 @@ test('ten spreadsheet variants seed and round trip as six grouped products', () 
     assert.equal(input.status, product.status)
     assert.deepEqual(input.configuration, product.configuration)
   }
+})
+
+test('business card legacy data loads with quantity tables and round trips edits once', () => {
+  const record = {
+    ...structuredClone(groupedSeedProducts.find((product) => product.product_type === '명함 · 봉투')),
+    created_at: '2026-11-05T00:00:00.000Z',
+    id: 'business-card-envelope-id',
+  }
+  const card = record.configuration.variants.명함
+  delete card.quantityTableVersion
+  card.optionValues.material = ['고급지(랑데뷰)', '일반지(스노우, 무광코팅)']
+  card.optionValues.baseQuantity = ['고급지 200', '일반지 500']
+  card.priceRowsBySelection = {}
+  card.futureVariantFlag = 'keep-me'
+  const original = structuredClone(record)
+  const draft = toProductFormDraft(record)
+  const cardDraft = draft.variants.명함
+
+  assert.deepEqual(cardDraft.optionValues.material, ['고급지(랑데뷰 200장)', '일반지(스노우, 무광코팅, 500장)'])
+  assert.deepEqual(cardDraft.optionValues.baseQuantity, card.optionValues.baseQuantity)
+  assert.deepEqual(cardDraft.priceRowsBySelection['0:0'], [
+    { quantity: '500', unitPrice: '120', printAmount: '40,000' },
+    { quantity: '1,000', unitPrice: '90', printAmount: '60,000' },
+  ])
+  cardDraft.priceRowsBySelection['1:0'][0].printAmount = '75,000'
+  const input = toProductWriteInput(draft, 'draft', record.configuration)
+  const stored = input.configuration.variants.명함
+
+  assert.equal(stored.quantityTableVersion, 1)
+  assert.equal(stored.priceRowsBySelection['1:0'][0].printAmount, 75000)
+  assert.equal(stored.priceRowsBySelection['0:0'][0].printAmount, 40000)
+  assert.deepEqual(stored.serviceEstimatesBySelection, card.serviceEstimatesBySelection)
+  assert.deepEqual(input.configuration.variants.봉투, record.configuration.variants.봉투)
+  assert.equal(stored.futureVariantFlag, 'keep-me')
+  const reloaded = toProductFormDraft({ ...record, configuration: input.configuration })
+  assert.deepEqual(toProductWriteInput(reloaded, 'draft', input.configuration), input)
+  assert.deepEqual(record, original)
+
+  reloaded.variants.명함.priceRowsBySelection = {}
+  const empty = toProductWriteInput(reloaded, 'draft', input.configuration)
+  assert.deepEqual(toProductFormDraft({ ...record, configuration: empty.configuration }).variants.명함.priceRowsBySelection, {})
+  assert.match(getProductValidationMessage(reloaded, 'published'), /명함:/)
 })
 
 test('grouped JSONB round trips every variant and future key', () => {

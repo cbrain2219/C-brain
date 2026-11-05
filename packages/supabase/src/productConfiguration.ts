@@ -1,4 +1,5 @@
 import type { ProductType } from "./categories.ts";
+import type { Json } from "./types.ts";
 
 export const productSubtypeOptions = {
   "브로슈어 · 카탈로그": [],
@@ -240,13 +241,6 @@ const businessCardProfile = {
   sections: [
     { key: "size", kind: "options", label: "사이즈", inputMode: "text" },
     {
-      key: "baseQuantity",
-      kind: "options",
-      label: "기본 수량",
-      inputMode: "text",
-      valueUnit: "장",
-    },
-    {
       key: "material",
       kind: "options",
       label: "재질 선택",
@@ -264,6 +258,12 @@ const businessCardProfile = {
       label: "인원 선택",
       inputMode: "numeric",
       valueUnit: "명",
+    },
+    {
+      key: "quantity",
+      kind: "quantity-prices",
+      label: "수량 선택",
+      quantityUnit: "장",
     },
   ],
 } as const satisfies ProductUiProfile;
@@ -338,6 +338,7 @@ const priceOptionKeysByVariant: Partial<
   배너: ["size", "stand", "material", "side", "coating"],
   족자: ["size", "material", "rod", "hookCount"],
   현수막: ["size", "material", "cutting", "environment"],
+  명함: ["material", "thickness"],
   봉투: ["envelopeType", "material", "thickness"],
 };
 
@@ -385,6 +386,68 @@ export function getProductVariants(
   ] as readonly ProductSubtype[];
 
   return subtypes.length > 0 ? subtypes : [productType];
+}
+
+export function upgradeBusinessCardConfiguration(
+  value: Json | undefined,
+): Json | undefined {
+  if (
+    !value ||
+    typeof value !== "object" ||
+    Array.isArray(value) ||
+    value.quantityTableVersion !== undefined
+  )
+    return value;
+
+  const options = value.optionValues;
+  const prices = value.priceRowsBySelection;
+
+  if (
+    !options ||
+    typeof options !== "object" ||
+    Array.isArray(options) ||
+    !Array.isArray(options.baseQuantity) ||
+    !Array.isArray(options.material) ||
+    options.material.length === 0 ||
+    !options.material.every((item) => typeof item === "string") ||
+    !Array.isArray(options.thickness) ||
+    options.thickness.length === 0 ||
+    !options.thickness.every((item) => typeof item === "string") ||
+    !prices ||
+    typeof prices !== "object" ||
+    Array.isArray(prices)
+  )
+    return value;
+
+  const material = options.material.map((item) => {
+    if (item.trim() === "일반지(스노우, 무광코팅)") {
+      return "일반지(스노우, 무광코팅, 500장)";
+    }
+    if (item.trim() === "고급지(랑데뷰)") return "고급지(랑데뷰 200장)";
+    return item;
+  });
+  const thickness = options.thickness;
+
+  return {
+    ...value,
+    optionValues: { ...options, material },
+    // Upgrade only the legacy empty table; edited tables must stay empty when saved.
+    priceRowsBySelection:
+      Object.keys(prices).length === 0
+        ? Object.fromEntries(
+            material.flatMap((_, materialIndex) =>
+              thickness.map((_, thicknessIndex) => [
+                `${materialIndex}:${thicknessIndex}`,
+                [
+                  { quantity: 500, unitPrice: 120, printAmount: 40000 },
+                  { quantity: 1000, unitPrice: 90, printAmount: 60000 },
+                ],
+              ]),
+            ),
+          )
+        : prices,
+    quantityTableVersion: 1,
+  };
 }
 
 export function getProductUiProfile(
