@@ -1851,6 +1851,18 @@
     gap: 20px;
   }
 
+  .orderSummary {
+    position: sticky;
+    top: calc(var(--site-header-height, 52px) + 20px);
+    max-height: calc(100dvh - var(--site-header-height, 52px) - 40px);
+    overflow-y: auto;
+    scrollbar-width: none;
+  }
+
+  .orderSummary::-webkit-scrollbar {
+    display: none;
+  }
+
   .optionServiceGrid {
     gap: 20px;
   }
